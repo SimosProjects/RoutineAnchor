@@ -7,92 +7,132 @@
 import SwiftUI
 import UserNotifications
 
-// MARK: - Permission Request View
-struct PermissionRequestView: View {
+// MARK: - Premium Permission View
+struct PremiumPermissionView: View {
     let onAllow: () -> Void
     let onSkip: () -> Void
+    @State private var appearAnimation = false
+    @State private var pulseAnimation = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            HStack {
-                Button("Skip") {
-                    HapticManager.shared.lightImpact()
-                    onSkip()
+        GeometryReader { geometry in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    Spacer().frame(height: max(geometry.safeAreaInsets.top, 60))
+                    
+                    // Animated notification visual
+                    ZStack {
+                        // Ripple effect
+                        ForEach(0..<3) { index in
+                            Circle()
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [Color(red: 0.4, green: 0.6, blue: 1.0).opacity(0.3), Color(red: 0.6, green: 0.4, blue: 1.0).opacity(0.1)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 2
+                                )
+                                .frame(width: 120 + CGFloat(index * 40),
+                                       height: 120 + CGFloat(index * 40))
+                                .scaleEffect(pulseAnimation ? 1.2 : 1)
+                                .opacity(pulseAnimation ? 0 : 0.6)
+                                .animation(
+                                    .easeOut(duration: 2)
+                                    .repeatForever(autoreverses: false)
+                                    .delay(Double(index) * 0.3),
+                                    value: pulseAnimation
+                                )
+                        }
+                        
+                        // Central icon
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(red: 0.4, green: 0.5, blue: 1.0).opacity(0.9), Color(red: 0.6, green: 0.4, blue: 1.0).opacity(0.9)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 100, height: 100)
+                            .overlay(
+                                Image(systemName: "bell.badge.fill")
+                                    .font(.system(size: 40, weight: .medium))
+                                    .foregroundStyle(.white)
+                            )
+                            .rotation3DEffect(
+                                .degrees(appearAnimation ? 0 : 180),
+                                axis: (x: 0, y: 1, z: 0)
+                            )
+                            .shadow(color: Color(red: 0.4, green: 0.6, blue: 1.0).opacity(0.4), radius: 30, x: 0, y: 15)
+                    }
+                    .scaleEffect(appearAnimation ? 1 : 0.5)
+                    .opacity(appearAnimation ? 1 : 0)
+                    .padding(.bottom, 40)
+                    
+                    VStack(spacing: 24) {
+                        VStack(spacing: 16) {
+                            Text("Stay in Your Flow")
+                                .font(.system(size: 36, weight: .bold, design: .rounded))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [Color(red: 0.4, green: 0.6, blue: 1.0), Color(red: 0.6, green: 0.4, blue: 1.0)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                            
+                            Text("Gentle nudges at just the right moments keep you focused without the stress")
+                                .font(.system(size: 18, weight: .regular, design: .rounded))
+                                .foregroundStyle(Color.white.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(4)
+                                .padding(.horizontal, 20)
+                        }
+                        .opacity(appearAnimation ? 1 : 0)
+                        .offset(y: appearAnimation ? 0 : 20)
+                        
+                        // Interactive preview
+                        NotificationPreview()
+                            .opacity(appearAnimation ? 1 : 0)
+                            .offset(y: appearAnimation ? 0 : 20)
+                            .animation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.3), value: appearAnimation)
+                    }
+                    .padding(.top, 20)
+                    
+                    Spacer(minLength: 60)
+                    
+                    // Actions
+                    VStack(spacing: 16) {
+                        PremiumButton(
+                            title: "Enable Smart Reminders",
+                            action: {
+                                HapticManager.shared.mediumImpact()
+                                onAllow()
+                            }
+                        )
+                        
+                        Button(action: {
+                            HapticManager.shared.lightImpact()
+                            onSkip()
+                        }) {
+                            Text("I'll set this up later")
+                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                                .foregroundStyle(Color.white.opacity(0.6))
+                        }
+                        .opacity(appearAnimation ? 1 : 0)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 20)
                 }
-                .font(TypographyConstants.UI.button)
-                .foregroundColor(Color.textSecondary)
-                
-                Spacer()
+                .frame(minHeight: geometry.size.height)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
-            
-            Spacer()
-            
-            // Content
-            VStack(spacing: 32) {
-                // Notification icon with animation
-                ZStack {
-                    Circle()
-                        .fill(Color.primaryBlue.opacity(0.1))
-                        .frame(width: 120, height: 120)
-                    
-                    Image(systemName: "bell.badge.fill")
-                        .font(.system(size: 50, weight: .medium))
-                        .foregroundColor(Color.primaryBlue)
-                        .symbolRenderingMode(.hierarchical)
-                }
-                
-                VStack(spacing: 16) {
-                    Text("Stay on Track")
-                        .font(TypographyConstants.Headers.screenTitle)
-                        .foregroundColor(Color.textPrimary)
-                    
-                    Text("Routine Anchor sends gentle reminders when each time block begins, helping you stay focused on your goals.")
-                        .font(TypographyConstants.Body.description)
-                        .foregroundColor(Color.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(4)
-                        .padding(.horizontal, 30)
-                }
-                
-                // Benefits list
-                VStack(spacing: 16) {
-                    BenefitRow(
-                        icon: "clock.fill",
-                        text: "Never miss a scheduled activity"
-                    )
-                    
-                    BenefitRow(
-                        icon: "target",
-                        text: "Stay focused on your daily goals"
-                    )
-                    
-                    BenefitRow(
-                        icon: "gear.circle.fill",
-                        text: "Customize or disable anytime in Settings"
-                    )
-                }
-                .padding(.horizontal, 40)
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7)) {
+                appearAnimation = true
             }
-            
-            Spacer()
-            
-            // Action buttons
-            VStack(spacing: 12) {
-                PrimaryButton(title: "Enable Notifications") {
-                    HapticManager.shared.lightImpact()
-                    onAllow()
-                }
-                
-                SecondaryButton(title: "Maybe Later") {
-                    HapticManager.shared.lightImpact()
-                    onSkip()
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 40)
+            pulseAnimation = true
         }
     }
 }

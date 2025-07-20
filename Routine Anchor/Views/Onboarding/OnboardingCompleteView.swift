@@ -7,81 +7,132 @@
 import SwiftUI
 import UserNotifications
 
-// MARK: - Setup Complete View
-struct OnboardingCompleteView: View {
+// MARK: - Premium Setup Complete View
+struct PremiumSetupCompleteView: View {
     let onFinish: () -> Void
-    @State private var showCheckmark = false
+    @State private var appearAnimation = false
+    @State private var confettiAnimation = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            
-            VStack(spacing: 32) {
-                // Success animation
-                ZStack {
-                    Circle()
-                        .fill(Color.successGreen.opacity(0.1))
-                        .frame(width: 120, height: 120)
-                        .scaleEffect(showCheckmark ? 1.0 : 0.8)
+        GeometryReader { geometry in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    Spacer().frame(height: max(geometry.safeAreaInsets.top, 60))
                     
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60, weight: .medium))
-                        .foregroundColor(Color.successGreen)
-                        .scaleEffect(showCheckmark ? 1.0 : 0.5)
-                        .opacity(showCheckmark ? 1.0 : 0.0)
+                    // Success animation
+                    ZStack {
+                        // Confetti effect
+                        ConfettiView(isActive: $confettiAnimation)
+                            .allowsHitTesting(false)
+                        
+                        // Success icon
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(red: 0.2, green: 0.8, blue: 0.5).opacity(0.2), Color(red: 0.2, green: 0.7, blue: 0.7).opacity(0.1)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 140, height: 140)
+                                .blur(radius: 20)
+                            
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(red: 0.2, green: 0.8, blue: 0.5), Color(red: 0.2, green: 0.7, blue: 0.7)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 100, height: 100)
+                                .overlay(
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 50, weight: .bold))
+                                        .foregroundStyle(.white)
+                                )
+                                .shadow(color: Color(red: 0.2, green: 0.7, blue: 0.5).opacity(0.4), radius: 30, x: 0, y: 15)
+                        }
+                        .scaleEffect(appearAnimation ? 1 : 0)
+                        .rotationEffect(.degrees(appearAnimation ? 0 : -180))
+                    }
+                    .padding(.bottom, 40)
+                    
+                    VStack(spacing: 24) {
+                        VStack(spacing: 16) {
+                            Text("You're All Set!")
+                                .font(.system(size: 38, weight: .bold, design: .rounded))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [Color(red: 0.2, green: 0.8, blue: 0.5), Color(red: 0.2, green: 0.7, blue: 0.7)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                            
+                            Text("Your journey to a more\nbalanced life starts now")
+                                .font(.system(size: 20, weight: .regular, design: .rounded))
+                                .foregroundStyle(Color.white.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(4)
+                        }
+                        .opacity(appearAnimation ? 1 : 0)
+                        .offset(y: appearAnimation ? 0 : 20)
+                        
+                        // Quick start tips
+                        VStack(spacing: 12) {
+                            QuickTip(
+                                number: "1",
+                                text: "Start with just 3-4 time blocks",
+                                delay: 0.4
+                            )
+                            QuickTip(
+                                number: "2",
+                                text: "Be honest when checking in",
+                                delay: 0.5
+                            )
+                            QuickTip(
+                                number: "3",
+                                text: "Celebrate small wins daily",
+                                delay: 0.6
+                            )
+                        }
+                        .padding(.top, 20)
+                        .padding(.horizontal, 40)
+                    }
+                    
+                    Spacer(minLength: 60)
+                    
+                    // Final CTA
+                    VStack(spacing: 20) {
+                        PremiumButton(
+                            title: "Create My First Routine",
+                            style: .gradient,
+                            action: {
+                                HapticManager.shared.success()
+                                onFinish()
+                            }
+                        )
+                        
+                        Text("Let's make today count 🚀")
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color.white.opacity(0.6))
+                            .opacity(appearAnimation ? 1 : 0)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 20)
                 }
-                .animation(.spring(response: 0.6, dampingFraction: 0.6), value: showCheckmark)
-                
-                VStack(spacing: 16) {
-                    Text("You're All Set!")
-                        .font(TypographyConstants.Headers.screenTitle)
-                        .foregroundColor(Color.textPrimary)
-                    
-                    Text("Ready to build consistent daily habits? Create your first routine to get started with time-blocked productivity.")
-                        .font(TypographyConstants.Body.description)
-                        .foregroundColor(Color.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(4)
-                        .padding(.horizontal, 30)
-                }
-                
-                // Next steps
-                VStack(spacing: 16) {
-                    NextStepRow(
-                        number: "1",
-                        title: "Create Your Routine",
-                        description: "Set up time blocks for your day"
-                    )
-                    
-                    NextStepRow(
-                        number: "2",
-                        title: "Follow Your Schedule",
-                        description: "Get reminders and check off completed tasks"
-                    )
-                    
-                    NextStepRow(
-                        number: "3",
-                        title: "Track Your Progress",
-                        description: "See how well you're sticking to your goals"
-                    )
-                }
-                .padding(.horizontal, 30)
+                .frame(minHeight: geometry.size.height)
             }
-            
-            Spacer()
-            
-            // Finish button
-            PrimaryButton(title: "Start Building Habits") {
-                HapticManager.shared.success()
-                onFinish()
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 40)
         }
         .onAppear {
-            // Trigger checkmark animation after a delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                showCheckmark = true
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.6)) {
+                appearAnimation = true
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                confettiAnimation = true
             }
         }
     }
