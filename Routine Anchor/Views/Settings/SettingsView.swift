@@ -2,259 +2,141 @@
 //  SettingsView.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/19/25.
+//  Created by Christopher Simonson on 7/21/25.
 //
 import SwiftUI
 import SwiftData
-import UserNotifications
 
 struct SettingsView: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @State private var viewModel: SettingsViewModel?
+    @Environment(\.modelContext) private var modelContext
     
     // MARK: - State
+    @State private var viewModel: SettingsViewModel?
+    @State private var animationPhase = 0
+    @State private var particleSystem = ParticleSystem()
+    
+    // MARK: - Settings State
+    @State private var notificationsEnabled = true
+    @State private var dailyReminderTime = Date()
+    @State private var notificationSound = "Default"
+    @State private var hapticsEnabled = true
+    @State private var autoResetEnabled = true
+    
+    // MARK: - Sheet States
     @State private var showingPrivacyPolicy = false
     @State private var showingAbout = false
-    @State private var showingResetConfirmation = false
+    @State private var showingHelp = false
     @State private var showingExportData = false
-    @State private var notificationsEnabled = true
-    @State private var notificationSound = "Default"
-    @State private var dailyReminderTime = Date()
+    @State private var showingResetConfirmation = false
+    @State private var showingDeleteAllConfirmation = false
+    
+    // MARK: - UI State
+    @State private var showingSuccessMessage = false
+    @State private var showingErrorMessage = false
     
     var body: some View {
-        NavigationView {
-            List {
-                // MARK: - Routine Section
-                Section {
-                    NavigationLink(destination: ScheduleBuilderView()) {
-                        SettingsRowView(
-                            icon: "clock",
-                            title: "Edit Daily Routine",
-                            subtitle: "Modify your time blocks",
-                            iconColor: Color.primaryBlue
-                        )
-                    }
+        ZStack {
+            // Premium animated background
+            AnimatedGradientBackground()
+            AnimatedMeshBackground()
+                .opacity(0.3)
+                .allowsHitTesting(false)
+            ParticleEffectView(system: particleSystem)
+                .allowsHitTesting(false)
+            
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header
+                    headerSection
                     
-                    Button {
-                        viewModel?.resetTodaysProgress()
-                    } label: {
-                        SettingsRowView(
-                            icon: "arrow.clockwise",
-                            title: "Reset Today's Progress",
-                            subtitle: "Start today over",
-                            iconColor: Color.warningOrange
-                        )
-                    }
+                    // Settings sections
+                    notificationSettings
                     
-                    Button {
-                        showingResetConfirmation = true
-                    } label: {
-                        SettingsRowView(
-                            icon: "trash",
-                            title: "Clear All Data",
-                            subtitle: "Delete all routines and progress",
-                            iconColor: Color.errorRed
-                        )
-                    }
-                } header: {
-                    Text("Routine")
+                    appPreferences
+                    
+                    dataManagement
+                    
+                    supportAndInfo
+                    
+                    appVersion
+                    
+                    Spacer(minLength: 40)
                 }
-                
-                // MARK: - Notifications Section
-                Section {
-                    HStack {
-                        SettingsRowView(
-                            icon: "bell",
-                            title: "Enable Reminders",
-                            subtitle: "Get notified when blocks start",
-                            iconColor: Color.primaryBlue
-                        )
-                        
-                        Spacer()
-                        
-                        Toggle("", isOn: $notificationsEnabled)
-                            .tint(Color.primaryBlue)
-                    }
-                    
-                    if notificationsEnabled {
-                        NavigationLink(destination: NotificationSoundView(selectedSound: $notificationSound)) {
-                            SettingsRowView(
-                                icon: "speaker.wave.2",
-                                title: "Notification Sound",
-                                subtitle: notificationSound,
-                                iconColor: Color.successGreen
-                            )
-                        }
-                        
-                        DatePicker("Daily Reminder", selection: $dailyReminderTime, displayedComponents: .hourAndMinute)
-                            .foregroundColor(Color.textPrimary)
-                    }
-                } header: {
-                    Text("Notifications")
-                } footer: {
-                    if !notificationsEnabled {
-                        Text("Enable notifications to get reminders when your time blocks start.")
-                    }
-                }
-                
-                // MARK: - Data & Privacy Section
-                Section {
-                    Button {
-                        showingExportData = true
-                    } label: {
-                        SettingsRowView(
-                            icon: "square.and.arrow.up",
-                            title: "Export Data",
-                            subtitle: "Save your routines and progress",
-                            iconColor: Color.primaryBlue
-                        )
-                    }
-                    
-                    Button {
-                        showingPrivacyPolicy = true
-                    } label: {
-                        SettingsRowView(
-                            icon: "hand.raised",
-                            title: "Privacy Policy",
-                            subtitle: "How we handle your data",
-                            iconColor: Color.successGreen
-                        )
-                    }
-                } header: {
-                    Text("Data & Privacy")
-                } footer: {
-                    Text("All data is stored locally on your device. We don't collect or share any personal information.")
-                }
-                
-                // MARK: - Support Section
-                Section {
-                    NavigationLink(destination: HelpView()) {
-                        SettingsRowView(
-                            icon: "questionmark.circle",
-                            title: "Help & FAQ",
-                            subtitle: "Get answers to common questions",
-                            iconColor: Color.primaryBlue
-                        )
-                    }
-                    
-                    Button {
-                        sendFeedback()
-                    } label: {
-                        SettingsRowView(
-                            icon: "envelope",
-                            title: "Send Feedback",
-                            subtitle: "Help us improve the app",
-                            iconColor: Color.warningOrange
-                        )
-                    }
-                    
-                    Button {
-                        shareApp()
-                    } label: {
-                        SettingsRowView(
-                            icon: "square.and.arrow.up",
-                            title: "Share App",
-                            subtitle: "Tell friends about Routine Anchor",
-                            iconColor: Color.successGreen
-                        )
-                    }
-                } header: {
-                    Text("Support")
-                }
-                
-                // MARK: - About Section
-                Section {
-                    Button {
-                        showingAbout = true
-                    } label: {
-                        SettingsRowView(
-                            icon: "info.circle",
-                            title: "About",
-                            subtitle: "Version \(appVersion)",
-                            iconColor: Color.textSecondary
-                        )
-                    }
-                    
-                    Button {
-                        rateApp()
-                    } label: {
-                        SettingsRowView(
-                            icon: "star",
-                            title: "Rate App",
-                            subtitle: "Leave a review on the App Store",
-                            iconColor: Color.warningOrange
-                        )
-                    }
-                } header: {
-                    Text("About")
-                }
-                
-                // MARK: - Debug Section (only in debug builds)
-                #if DEBUG
-                Section {
-                    Button {
-                        viewModel?.addSampleData()
-                    } label: {
-                        SettingsRowView(
-                            icon: "hammer",
-                            title: "Add Sample Data",
-                            subtitle: "For testing purposes",
-                            iconColor: Color.primaryBlue
-                        )
-                    }
-                    
-                    Button {
-                        viewModel?.clearAllNotifications()
-                    } label: {
-                        SettingsRowView(
-                            icon: "bell.slash",
-                            title: "Clear Notifications",
-                            subtitle: "Remove all pending notifications",
-                            iconColor: Color.errorRed
-                        )
-                    }
-                } header: {
-                    Text("Debug")
-                }
-                #endif
+                .padding(.horizontal, 24)
+                .padding(.top, 20)
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .foregroundColor(Color.primaryBlue)
-                }
+        }
+        .navigationBarHidden(true)
+        .onAppear {
+            setupViewModel()
+            loadSettings()
+            particleSystem.startEmitting()
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                animationPhase += 1
             }
-            .onAppear {
-                setupViewModel()
-                loadSettings()
-            }
-            .onChange(of: notificationsEnabled) { _, newValue in
-                updateNotificationSettings(enabled: newValue)
-            }
-            .onChange(of: dailyReminderTime) { _, newTime in
-                scheduleDailyReminder(at: newTime)
-            }
+        }
+        .onChange(of: notificationsEnabled) { _, newValue in
+            viewModel?.notificationsEnabled = newValue
+        }
+        .onChange(of: dailyReminderTime) { _, newTime in
+            viewModel?.dailyReminderTime = newTime
+        }
+        .onChange(of: notificationSound) { _, newValue in
+            viewModel?.notificationSound = newValue
+        }
+        .onChange(of: hapticsEnabled) { _, newValue in
+            viewModel?.hapticsEnabled = newValue
+        }
+        .onChange(of: autoResetEnabled) { _, newValue in
+            viewModel?.autoResetEnabled = newValue
         }
         .sheet(isPresented: $showingPrivacyPolicy) {
-            //PrivacyPolicyView()
+            PrivacyPolicyView()
         }
         .sheet(isPresented: $showingAbout) {
-            //AboutView()
+            AboutView()
+        }
+        .sheet(isPresented: $showingHelp) {
+            HelpView()
         }
         .sheet(isPresented: $showingExportData) {
-            //ExportDataView()
+            ExportDataView(viewModel: viewModel)
+        }
+        .overlay(alignment: .top) {
+            // Success/Error message overlay
+            if let viewModel = viewModel {
+                if let successMessage = viewModel.successMessage {
+                    MessageBanner(message: successMessage, type: .success)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: viewModel.successMessage)
+                }
+                
+                if let errorMessage = viewModel.errorMessage {
+                    MessageBanner(message: errorMessage, type: .error)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: viewModel.errorMessage)
+                }
+            }
         }
         .confirmationDialog(
-            "Clear All Data",
+            "Reset Today's Progress",
             isPresented: $showingResetConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Clear All Data", role: .destructive) {
+            Button("Reset Progress", role: .destructive) {
+                viewModel?.resetTodaysProgress()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will reset all time blocks back to 'Not Started' for today. This action cannot be undone.")
+        }
+        .confirmationDialog(
+            "Delete All Data",
+            isPresented: $showingDeleteAllConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete All Data", role: .destructive) {
                 viewModel?.clearAllData()
             }
             Button("Cancel", role: .cancel) {}
@@ -263,173 +145,622 @@ struct SettingsView: View {
         }
     }
     
-    // MARK: - Computed Properties
+    // MARK: - Header Section
+    private var headerSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.8))
+                        .frame(width: 32, height: 32)
+                        .background(
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                                .background(
+                                    Circle().fill(Color.white.opacity(0.1))
+                                )
+                        )
+                }
+                
+                Spacer()
+            }
+            
+            VStack(spacing: 12) {
+                Image(systemName: "gear")
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .scaleEffect(animationPhase == 0 ? 1.0 : 1.1)
+                    .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animationPhase)
+                
+                Text("Settings")
+                    .font(TypographyConstants.Headers.welcome)
+                    .foregroundStyle(Color.premiumTextPrimary)
+                
+                Text("Customize your experience")
+                    .font(TypographyConstants.Body.secondary)
+                    .foregroundStyle(Color.premiumTextSecondary)
+            }
+        }
+    }
     
-    private var appVersion: String {
+    // MARK: - Notification Settings
+    private var notificationSettings: some View {
+        SettingsSection(title: "Notifications", icon: "bell", color: Color.premiumBlue) {
+            VStack(spacing: 16) {
+                SettingsToggle(
+                    title: "Enable Notifications",
+                    subtitle: "Get reminders for your time blocks",
+                    isOn: $notificationsEnabled,
+                    icon: "bell.badge"
+                )
+                
+                if notificationsEnabled {
+                    VStack(spacing: 12) {
+                        SettingsDatePicker(
+                            title: "Daily Reminder",
+                            subtitle: "Daily check-in notification",
+                            selection: $dailyReminderTime,
+                            icon: "clock"
+                        )
+                        
+                        SettingsPicker(
+                            title: "Notification Sound",
+                            subtitle: notificationSound,
+                            icon: "speaker.2",
+                            options: ["Default", "Bell", "Chime", "Glass", "Horn"],
+                            selection: $notificationSound
+                        )
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+        }
+    }
+    
+    // MARK: - App Preferences
+    private var appPreferences: some View {
+        SettingsSection(title: "Preferences", icon: "slider.horizontal.3", color: Color.premiumGreen) {
+            VStack(spacing: 16) {
+                SettingsToggle(
+                    title: "Haptic Feedback",
+                    subtitle: "Feel interactions and confirmations",
+                    isOn: $hapticsEnabled,
+                    icon: "hand.tap"
+                )
+                
+                SettingsToggle(
+                    title: "Auto-Reset Daily",
+                    subtitle: "Reset progress at midnight",
+                    isOn: $autoResetEnabled,
+                    icon: "arrow.clockwise"
+                )
+                
+                SettingsButton(
+                    title: "Reset Today's Progress",
+                    subtitle: "Start today over",
+                    icon: "arrow.counterclockwise",
+                    color: Color.premiumWarning,
+                    action: { showingResetConfirmation = true }
+                )
+            }
+        }
+    }
+    
+    // MARK: - Data Management
+    private var dataManagement: some View {
+        SettingsSection(title: "Data & Privacy", icon: "shield.checkered", color: Color.premiumPurple) {
+            VStack(spacing: 16) {
+                SettingsButton(
+                    title: "Export My Data",
+                    subtitle: "Download your routine data",
+                    icon: "square.and.arrow.up",
+                    color: Color.premiumBlue,
+                    action: { showingExportData = true }
+                )
+                
+                SettingsButton(
+                    title: "Privacy Policy",
+                    subtitle: "How we protect your data",
+                    icon: "hand.raised",
+                    color: Color.premiumGreen,
+                    action: { showingPrivacyPolicy = true }
+                )
+                
+                SettingsButton(
+                    title: "Delete All Data",
+                    subtitle: "Permanently remove everything",
+                    icon: "trash",
+                    color: Color.premiumError,
+                    action: { showingDeleteAllConfirmation = true }
+                )
+            }
+        }
+    }
+    
+    // MARK: - Support and Info
+    private var supportAndInfo: some View {
+        SettingsSection(title: "Support & Info", icon: "questionmark.circle", color: Color.premiumTeal) {
+            VStack(spacing: 16) {
+                SettingsButton(
+                    title: "Help & FAQ",
+                    subtitle: "Get answers to common questions",
+                    icon: "questionmark.circle",
+                    color: Color.premiumBlue,
+                    action: { showingHelp = true }
+                )
+                
+                SettingsButton(
+                    title: "About Routine Anchor",
+                    subtitle: "App info and acknowledgments",
+                    icon: "info.circle",
+                    color: Color.premiumPurple,
+                    action: { showingAbout = true }
+                )
+                
+                SettingsButton(
+                    title: "Rate the App",
+                    subtitle: "Support development",
+                    icon: "star",
+                    color: Color.premiumWarning,
+                    action: rateApp
+                )
+                
+                SettingsButton(
+                    title: "Contact Support",
+                    subtitle: "Get help from our team",
+                    icon: "envelope",
+                    color: Color.premiumGreen,
+                    action: contactSupport
+                )
+            }
+        }
+    }
+    
+    // MARK: - App Version
+    private var appVersion: some View {
+        VStack(spacing: 8) {
+            Text("Routine Anchor")
+                .font(TypographyConstants.Body.emphasized)
+                .foregroundStyle(Color.premiumTextPrimary)
+            
+            Text("Version \(appVersionString)")
+                .font(TypographyConstants.UI.caption)
+                .foregroundStyle(Color.premiumTextSecondary)
+            
+            Text("© 2025 Simo's Media & Tech, LLC.")
+                .font(TypographyConstants.UI.caption)
+                .foregroundStyle(Color.premiumTextTertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(20)
+        .glassMorphism()
+    }
+    
+    // MARK: - Computed Properties
+    private var appVersionString: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
     
     // MARK: - Helper Methods
-    
     private func setupViewModel() {
         let dataManager = DataManager(modelContext: modelContext)
         viewModel = SettingsViewModel(dataManager: dataManager)
     }
     
     private func loadSettings() {
-        // Load notification settings from UserDefaults
-        notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
-        notificationSound = UserDefaults.standard.string(forKey: "notificationSound") ?? "Default"
-        
-        if let reminderData = UserDefaults.standard.object(forKey: "dailyReminderTime") as? Data,
-           let reminderTime = try? JSONDecoder().decode(Date.self, from: reminderData) {
-            dailyReminderTime = reminderTime
-        }
-    }
-    
-    private func updateNotificationSettings(enabled: Bool) {
-        UserDefaults.standard.set(enabled, forKey: "notificationsEnabled")
-        
-        if enabled {
-            requestNotificationPermission()
+        // Load settings from viewModel if available, otherwise use defaults
+        if let viewModel = viewModel {
+            notificationsEnabled = viewModel.notificationsEnabled
+            notificationSound = viewModel.notificationSound
+            hapticsEnabled = viewModel.hapticsEnabled
+            autoResetEnabled = viewModel.autoResetEnabled
+            dailyReminderTime = viewModel.dailyReminderTime
         } else {
-            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-        }
-    }
-    
-    private func requestNotificationPermission() {
-        Task {
-            do {
-                let granted = try await UNUserNotificationCenter.current()
-                    .requestAuthorization(options: [.alert, .badge, .sound])
-                
-                if !granted {
-                    await MainActor.run {
-                        notificationsEnabled = false
-                    }
-                }
-            } catch {
-                print("Error requesting notification permission: \(error)")
+            // Fallback to UserDefaults
+            notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+            notificationSound = UserDefaults.standard.string(forKey: "notificationSound") ?? "Default"
+            hapticsEnabled = HapticManager.shared.isHapticsEnabled
+            autoResetEnabled = UserDefaults.standard.bool(forKey: "autoResetEnabled")
+            
+            if let reminderData = UserDefaults.standard.object(forKey: "dailyReminderTime") as? Data,
+               let reminderTime = try? JSONDecoder().decode(Date.self, from: reminderData) {
+                dailyReminderTime = reminderTime
             }
         }
     }
     
-    private func scheduleDailyReminder(at time: Date) {
-        // Save the time
-        if let timeData = try? JSONEncoder().encode(time) {
-            UserDefaults.standard.set(timeData, forKey: "dailyReminderTime")
-        }
-        
-        // Schedule the reminder
-        viewModel?.scheduleDailyReminder(at: time)
-    }
-    
-    private func sendFeedback() {
-        guard let url = URL(string: "mailto:feedback@routineanchor.app?subject=Routine%20Anchor%20Feedback") else { return }
-        
-        if UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url)
-        }
-    }
-    
-    private func shareApp() {
-        let appURL = "https://apps.apple.com/app/routine-anchor/id123456789" // Replace with actual App Store URL
-        let activityVC = UIActivityViewController(
-            activityItems: [
-                "Check out Routine Anchor - the best app for building daily habits with time-blocked routines!",
-                URL(string: appURL)!
-            ],
-            applicationActivities: nil
-        )
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.rootViewController?.present(activityVC, animated: true)
-        }
-    }
-    
+    // Remove the old update functions since they're now handled by the viewModel
     private func rateApp() {
-        guard let url = URL(string: "https://apps.apple.com/app/routine-anchor/id123456789?action=write-review") else { return }
-        UIApplication.shared.open(url)
+        viewModel?.rateApp()
+    }
+    
+    private func contactSupport() {
+        viewModel?.contactSupport()
     }
 }
 
-// MARK: - Settings Row View
-struct SettingsRowView: View {
+// MARK: - Settings Components
+
+struct SettingsSection<Content: View>: View {
+    let title: String
     let icon: String
+    let color: Color
+    let content: Content
+    
+    @State private var isVisible = false
+    
+    init(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.icon = icon
+        self.color = color
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Section header
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(color)
+                    .frame(width: 24, height: 24)
+                
+                Text(title)
+                    .font(TypographyConstants.Headers.cardTitle)
+                    .foregroundStyle(Color.premiumTextPrimary)
+                
+                Spacer()
+            }
+            
+            // Section content
+            content
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.ultraThinMaterial)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.08),
+                                    Color.white.opacity(0.04)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            color.opacity(0.3),
+                            color.opacity(0.1)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: color.opacity(0.2), radius: 8, x: 0, y: 4)
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+                isVisible = true
+            }
+        }
+    }
+}
+
+struct SettingsToggle: View {
     let title: String
     let subtitle: String
-    let iconColor: Color
+    @Binding var isOn: Bool
+    let icon: String
     
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(iconColor)
+                .foregroundStyle(Color.premiumBlue)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundStyle(Color.premiumTextPrimary)
                 
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundStyle(Color.premiumTextSecondary)
             }
             
             Spacer()
+            
+            Toggle("", isOn: $isOn)
+                .toggleStyle(PremiumToggleStyle())
         }
-        .contentShape(Rectangle())
+        .onTapGesture {
+            HapticManager.shared.lightImpact()
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                isOn.toggle()
+            }
+        }
     }
 }
 
-// MARK: - Notification Sound View
-struct NotificationSoundView: View {
-    @Binding var selectedSound: String
-    @Environment(\.dismiss) private var dismiss
-    
-    private let sounds = ["Default", "Chime", "Bell", "Ping", "Pop", "Gentle"]
+struct SettingsButton: View {
+    let title: String
+    let subtitle: String
+    let icon: String
+    let color: Color
+    let action: () -> Void
     
     var body: some View {
-        List {
-            ForEach(sounds, id: \.self) { sound in
-                Button {
-                    selectedSound = sound
-                    UserDefaults.standard.set(sound, forKey: "notificationSound")
-                    dismiss()
-                } label: {
-                    HStack {
-                        Text(sound)
-                            .foregroundColor(Color.textPrimary)
-                        
-                        Spacer()
-                        
-                        if selectedSound == sound {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(Color.primaryBlue)
-                        }
+        Button(action: {
+            HapticManager.shared.lightImpact()
+            action()
+        }) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(color)
+                    .frame(width: 24, height: 24)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(TypographyConstants.Body.emphasized)
+                        .foregroundStyle(Color.premiumTextPrimary)
+                    
+                    Text(subtitle)
+                        .font(TypographyConstants.UI.caption)
+                        .foregroundStyle(Color.premiumTextSecondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.premiumTextSecondary)
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct SettingsDatePicker: View {
+    let title: String
+    let subtitle: String
+    @Binding var selection: Date
+    let icon: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color.premiumBlue)
+                .frame(width: 24, height: 24)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(TypographyConstants.Body.emphasized)
+                    .foregroundStyle(Color.premiumTextPrimary)
+                
+                Text(subtitle)
+                    .font(TypographyConstants.UI.caption)
+                    .foregroundStyle(Color.premiumTextSecondary)
+            }
+            
+            Spacer()
+            
+            DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
+                .labelsHidden()
+                .datePickerStyle(.compact)
+                .accentColor(Color.premiumBlue)
+        }
+    }
+}
+
+struct SettingsPicker: View {
+    let title: String
+    let subtitle: String
+    let icon: String
+    let options: [String]
+    @Binding var selection: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color.premiumBlue)
+                .frame(width: 24, height: 24)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(TypographyConstants.Body.emphasized)
+                    .foregroundStyle(Color.premiumTextPrimary)
+                
+                Text(subtitle)
+                    .font(TypographyConstants.UI.caption)
+                    .foregroundStyle(Color.premiumTextSecondary)
+            }
+            
+            Spacer()
+            
+            Picker("", selection: $selection) {
+                ForEach(options, id: \.self) { option in
+                    Text(option).tag(option)
+                }
+            }
+            .pickerStyle(.menu)
+            .accentColor(Color.premiumBlue)
+        }
+    }
+}
+
+// MARK: - Custom Toggle Style
+struct PremiumToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+            
+            RoundedRectangle(cornerRadius: 16)
+                .fill(configuration.isOn ? Color.premiumGreen : Color.white.opacity(0.2))
+                .frame(width: 44, height: 26)
+                .overlay(
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 22, height: 22)
+                        .offset(x: configuration.isOn ? 9 : -9)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isOn)
+                )
+                .onTapGesture {
+                    configuration.isOn.toggle()
+                }
+        }
+    }
+}
+
+// MARK: - Export Data View
+struct ExportDataView: View {
+    @Environment(\.dismiss) private var dismiss
+    let viewModel: SettingsViewModel?
+    @State private var isExporting = false
+    @State private var exportedData = ""
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Export Your Data")
+                    .font(TypographyConstants.Headers.screenTitle)
+                    .foregroundStyle(Color.premiumTextPrimary)
+                
+                Text("Download all your routine data as a JSON file. You can use this to backup your progress or transfer to another device.")
+                    .font(TypographyConstants.Body.secondary)
+                    .foregroundStyle(Color.premiumTextSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+                
+                Spacer()
+                
+                if isExporting {
+                    ProgressView("Preparing export...")
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.premiumBlue))
+                } else {
+                    PrimaryButton("Export Data") {
+                        exportData()
                     }
+                    .padding(.horizontal, 20)
+                }
+                
+                Spacer()
+            }
+            .padding(20)
+            .navigationTitle("Export Data")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
                 }
             }
         }
-        .navigationTitle("Notification Sound")
-        .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    private func exportData() {
+        guard let viewModel = viewModel else { return }
+        
+        isExporting = true
+        HapticManager.shared.lightImpact()
+        
+        // Use viewModel's export functionality
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            let exportString = viewModel.exportUserData()
+            
+            let activityVC = UIActivityViewController(
+                activityItems: [exportString],
+                applicationActivities: nil
+            )
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                window.rootViewController?.present(activityVC, animated: true)
+            }
+            
+            isExporting = false
+            HapticManager.shared.success()
+        }
     }
 }
 
-// MARK: - Previews
-#Preview("Settings View") {
-    SettingsView()
-        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
+// MARK: - Message Banner
+struct MessageBanner: View {
+    let message: String
+    let type: MessageType
+    
+    enum MessageType {
+        case success, error
+        
+        var color: Color {
+            switch self {
+            case .success: return Color.premiumGreen
+            case .error: return Color.premiumError
+            }
+        }
+        
+        var icon: String {
+            switch self {
+            case .success: return "checkmark.circle.fill"
+            case .error: return "exclamationmark.triangle.fill"
+            }
+        }
+    }
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: type.icon)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(type.color)
+            
+            Text(message)
+                .font(TypographyConstants.Body.emphasized)
+                .foregroundStyle(Color.premiumTextPrimary)
+                .lineLimit(2)
+            
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(type.color.opacity(0.1))
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(type.color.opacity(0.3), lineWidth: 1)
+        )
+        .shadow(color: type.color.opacity(0.2), radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+    }
 }
 
-#Preview("Settings Row") {
-    SettingsRowView(
-        icon: "clock",
-        title: "Edit Daily Routine",
-        subtitle: "Modify your time blocks",
-        iconColor: Color.primaryBlue
-    )
-    .padding()
+// MARK: - Preview
+#Preview {
+    SettingsView()
 }

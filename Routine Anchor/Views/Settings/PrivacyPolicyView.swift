@@ -2,251 +2,260 @@
 //  PrivacyPolicyView.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/19/25.
+//  Created by Christopher Simonson on 7/21/25.
 //
 import SwiftUI
 
 struct PrivacyPolicyView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var animationPhase = 0
+    @State private var particleSystem = ParticleSystem()
     
     var body: some View {
-        NavigationStack {
+        ZStack {
+            // Premium animated background
+            AnimatedGradientBackground()
+            AnimatedMeshBackground()
+                .opacity(0.3)
+                .allowsHitTesting(false)
+            ParticleEffectView(system: particleSystem)
+                .allowsHitTesting(false)
+            
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(spacing: 24) {
                     // Header
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Privacy Policy")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.primary)
-                        
-                        Text("Last updated: January 2025")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    headerSection
                     
-                    // Introduction
-                    PrivacySection(
-                        title: "Our Commitment to Privacy",
-                        content: "Routine Anchor is designed with privacy at its core. We believe your personal routine data should remain exactly that - personal. This privacy policy explains how we handle your information when you use our app."
-                    )
+                    // Privacy sections
+                    privacySections
                     
-                    // Data Collection
-                    PrivacySection(
-                        title: "Information We Collect",
-                        content: "Routine Anchor stores your daily routine data locally on your device. We do not collect, transmit, or have access to any of your personal information. The app works completely offline and does not require user accounts or internet connectivity."
-                    )
+                    // Contact section
+                    contactSection
                     
-                    // Data Storage
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Data Storage")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            PrivacyBulletPoint(
-                                title: "Local Storage Only",
-                                description: "All your routine data, time blocks, and progress tracking information is stored exclusively on your device using iOS's secure local storage."
-                            )
-                            
-                            PrivacyBulletPoint(
-                                title: "No Cloud Sync",
-                                description: "We do not sync your data to any cloud services or external servers. Your information never leaves your device."
-                            )
-                            
-                            PrivacyBulletPoint(
-                                title: "No User Accounts",
-                                description: "Routine Anchor does not require user registration, login credentials, or any form of account creation."
-                            )
-                            
-                            PrivacyBulletPoint(
-                                title: "No Analytics or Tracking",
-                                description: "We do not use analytics services, crash reporting tools, or any tracking mechanisms that would collect usage data."
-                            )
-                        }
-                    }
-                    
-                    // Notifications
-                    PrivacySection(
-                        title: "Notifications",
-                        content: "Routine Anchor uses local notifications to remind you when time blocks begin. These notifications are generated and processed entirely on your device. No notification data is sent to external services or our servers."
-                    )
-                    
-                    // Data Security
-                    PrivacySection(
-                        title: "Data Security",
-                        content: "Your routine data is protected by iOS's built-in security features, including device encryption and app sandboxing. Since all data remains on your device, it benefits from the same security protections as your other personal information."
-                    )
-                    
-                    // Data Deletion
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Data Control and Deletion")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            PrivacyBulletPoint(
-                                title: "Complete Control",
-                                description: "You have full control over your routine data at all times since it's stored locally on your device."
-                            )
-                            
-                            PrivacyBulletPoint(
-                                title: "Easy Deletion",
-                                description: "You can delete all app data by uninstalling Routine Anchor from your device, or by using the 'Clear All Data' option in Settings."
-                            )
-                            
-                            PrivacyBulletPoint(
-                                title: "No Recovery Required",
-                                description: "Since we don't store your data externally, there are no accounts to delete or data recovery processes needed."
-                            )
-                        }
-                    }
-                    
-                    // iOS Permissions
-                    PrivacySection(
-                        title: "iOS Permissions",
-                        content: "Routine Anchor only requests permission to send local notifications. This permission is used exclusively to remind you when time blocks begin. We do not access your contacts, location, camera, microphone, or any other device features."
-                    )
-                    
-                    // Third-Party Services
-                    PrivacySection(
-                        title: "Third-Party Services",
-                        content: "Routine Anchor does not integrate with or share data with any third-party services, analytics platforms, advertising networks, or social media platforms. The app operates in complete isolation from external services."
-                    )
-                    
-                    // Children's Privacy
-                    PrivacySection(
-                        title: "Children's Privacy",
-                        content: "Since Routine Anchor does not collect any personal information and operates entirely offline, it is safe for users of all ages. We do not knowingly collect personal information from children under 13 or any other age group."
-                    )
-                    
-                    // Changes to Policy
-                    PrivacySection(
-                        title: "Changes to This Privacy Policy",
-                        content: "If we make changes to this privacy policy, we will update the 'Last updated' date at the top of this policy. Since the app operates offline, policy updates will be included in app updates distributed through the App Store."
-                    )
-                    
-                    // Contact Information
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Contact Us")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-                        
-                        Text("If you have questions about this privacy policy or our privacy practices, please contact us:")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            Button("Email: support@routineanchor.com") {
-                                if let url = URL(string: "mailto:support@routineanchor.com?subject=Privacy%20Policy%20Question") {
-                                    UIApplication.shared.open(url)
-                                }
-                            }
-                            .foregroundStyle(.blue)
-                            .font(.body)
-                            
-                            Button("Website: routineanchor.com/privacy") {
-                                if let url = URL(string: "https://routineanchor.com/privacy") {
-                                    UIApplication.shared.open(url)
-                                }
-                            }
-                            .foregroundStyle(.blue)
-                            .font(.body)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    
-                    // Summary Box
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Image(systemName: "checkmark.shield.fill")
-                                .foregroundStyle(.green)
-                                .font(.title3)
-                            
-                            Text("Privacy Summary")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.primary)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("• All data stays on your device")
-                            Text("• No user accounts or registration")
-                            Text("• No internet connectivity required")
-                            Text("• No analytics or tracking")
-                            Text("• No data sharing with third parties")
-                        }
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    }
-                    .padding(16)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    Spacer(minLength: 40)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .padding(.horizontal, 24)
+                .padding(.top, 20)
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .fontWeight(.medium)
+        }
+        .navigationBarHidden(true)
+        .onAppear {
+            particleSystem.startEmitting()
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                animationPhase += 1
+            }
+        }
+    }
+    
+    // MARK: - Header Section
+    private var headerSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.8))
+                        .frame(width: 32, height: 32)
+                        .background(
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                                .background(
+                                    Circle().fill(Color.white.opacity(0.1))
+                                )
+                        )
                 }
+                
+                Spacer()
             }
+            
+            VStack(spacing: 12) {
+                Image(systemName: "shield.checkered")
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .scaleEffect(animationPhase == 0 ? 1.0 : 1.1)
+                    .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animationPhase)
+                
+                Text("Privacy Policy")
+                    .font(TypographyConstants.Headers.welcome)
+                    .foregroundStyle(Color.premiumTextPrimary)
+                    .multilineTextAlignment(.center)
+                
+                Text("Your privacy is our priority")
+                    .font(TypographyConstants.Body.secondary)
+                    .foregroundStyle(Color.premiumTextSecondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+    }
+    
+    // MARK: - Privacy Sections
+    private var privacySections: some View {
+        VStack(spacing: 20) {
+            PrivacySection(
+                icon: "iphone",
+                title: "Local Storage Only",
+                content: "All your routine data is stored locally on your device. We never collect, transmit, or store your personal information on external servers.",
+                color: Color.premiumGreen
+            )
+            
+            PrivacySection(
+                icon: "bell.badge",
+                title: "Notification Permissions",
+                content: "We only request notification permissions to send you helpful reminders about your time blocks. You can disable these at any time in Settings.",
+                color: Color.premiumBlue
+            )
+            
+            PrivacySection(
+                icon: "lock.shield",
+                title: "No Data Collection",
+                content: "Routine Anchor does not collect analytics, usage data, or any personal information. Your productivity data remains completely private.",
+                color: Color.premiumPurple
+            )
+            
+            PrivacySection(
+                icon: "externaldrive",
+                title: "No Third Parties",
+                content: "We don't share data with third parties because we don't collect it in the first place. Your information never leaves your device.",
+                color: Color.premiumTeal
+            )
+            
+            PrivacySection(
+                icon: "trash",
+                title: "Data Deletion",
+                content: "You can delete all your data at any time from the Settings screen. When you delete the app, all data is permanently removed.",
+                color: Color.premiumWarning
+            )
+        }
+    }
+    
+    // MARK: - Contact Section
+    private var contactSection: some View {
+        VStack(spacing: 16) {
+            Text("Questions About Privacy?")
+                .font(TypographyConstants.Headers.cardTitle)
+                .foregroundStyle(Color.premiumTextPrimary)
+            
+            Text("If you have any questions about this privacy policy or how we handle your data, please contact us.")
+                .font(TypographyConstants.Body.secondary)
+                .foregroundStyle(Color.premiumTextSecondary)
+                .multilineTextAlignment(.center)
+            
+            Button(action: contactSupport) {
+                HStack(spacing: 8) {
+                    Image(systemName: "envelope")
+                        .font(.system(size: 16, weight: .medium))
+                    
+                    Text("Contact Support")
+                        .font(TypographyConstants.UI.button)
+                        .fontWeight(.medium)
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(
+                    LinearGradient(
+                        colors: [Color.premiumBlue, Color.premiumPurple],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(12)
+                .shadow(color: Color.premiumBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+            }
+            .padding(.horizontal, 20)
+        }
+        .padding(20)
+        .glassMorphism()
+    }
+    
+    // MARK: - Actions
+    private func contactSupport() {
+        HapticManager.shared.lightImpact()
+        
+        if let url = URL(string: "mailto:support@routineanchor.com?subject=Privacy%20Question") {
+            UIApplication.shared.open(url)
         }
     }
 }
 
 // MARK: - Privacy Section Component
 struct PrivacySection: View {
+    let icon: String
     let title: String
     let content: String
+    let color: Color
+    
+    @State private var isVisible = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-            
-            Text(content)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .lineLimit(nil)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-// MARK: - Privacy Bullet Point Component
-struct PrivacyBulletPoint: View {
-    let title: String
-    let description: String
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "circle.fill")
-                .font(.caption2)
-                .foregroundStyle(.blue)
-                .padding(.top, 6)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.primary)
+        HStack(alignment: .top, spacing: 16) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 48, height: 48)
                 
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(color)
+            }
+            
+            // Content
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(TypographyConstants.Headers.cardTitle)
+                    .foregroundStyle(Color.premiumTextPrimary)
+                
+                Text(content)
+                    .font(TypographyConstants.Body.secondary)
+                    .foregroundStyle(Color.premiumTextSecondary)
+                    .lineSpacing(2)
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.ultraThinMaterial)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.08),
+                                    Color.white.opacity(0.04)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            color.opacity(0.3),
+                            color.opacity(0.1)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: color.opacity(0.2), radius: 8, x: 0, y: 4)
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+                isVisible = true
             }
         }
     }

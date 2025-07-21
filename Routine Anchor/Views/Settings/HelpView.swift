@@ -2,317 +2,476 @@
 //  HelpView.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/19/25.
+//  Created by Christopher Simonson on 7/21/25.
 //
 import SwiftUI
 
 struct HelpView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedSection: HelpSection? = .gettingStarted
+    @State private var animationPhase = 0
+    @State private var particleSystem = ParticleSystem()
+    @State private var searchText = ""
+    @State private var selectedCategory: HelpCategory = .gettingStarted
     
     var body: some View {
-        NavigationStack {
+        ZStack {
+            // Premium animated background
+            AnimatedGradientBackground()
+            AnimatedMeshBackground()
+                .opacity(0.3)
+                .allowsHitTesting(false)
+            ParticleEffectView(system: particleSystem)
+                .allowsHitTesting(false)
+            
             VStack(spacing: 0) {
                 // Header
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Image(systemName: "questionmark.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(.blue)
-                        
-                        Text("Help & Support")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Spacer()
-                    }
-                    
-                    Text("Learn how to build consistent daily habits with time-blocked routines and gentle accountability.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
+                headerSection
                 
-                Divider()
-                    .padding(.vertical, 16)
+                // Search bar
+                searchSection
                 
-                // Content
+                // Category picker
+                categoryPicker
+                
+                // Help content
                 ScrollView {
-                    LazyVStack(spacing: 20) {
-                        ForEach(HelpSection.allCases, id: \.self) { section in
-                            HelpSectionView(
-                                section: section,
-                                isExpanded: selectedSection == section
-                            ) {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    selectedSection = selectedSection == section ? nil : section
-                                }
-                            }
+                    LazyVStack(spacing: 16) {
+                        ForEach(filteredHelpItems, id: \.id) { item in
+                            HelpItemView(item: item)
                         }
-                        
-                        // Contact Support Section
-                        ContactSupportView()
-                            .padding(.top, 20)
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 40)
+                }
+                .background(Color.clear)
+            }
+        }
+        .navigationBarHidden(true)
+        .onAppear {
+            particleSystem.startEmitting()
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                animationPhase += 1
+            }
+        }
+    }
+    
+    // MARK: - Header Section
+    private var headerSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.8))
+                        .frame(width: 32, height: 32)
+                        .background(
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                                .background(
+                                    Circle().fill(Color.white.opacity(0.1))
+                                )
+                        )
+                }
+                
+                Spacer()
+                
+                Button(action: contactSupport) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "envelope")
+                            .font(.system(size: 14, weight: .medium))
+                        Text("Support")
+                            .font(.system(size: 14, weight: .medium))
+                    }
+                    .foregroundStyle(Color.premiumBlue)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.white.opacity(0.15))
+                    .cornerRadius(8)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .fontWeight(.medium)
+            
+            VStack(spacing: 12) {
+                Image(systemName: "questionmark.circle")
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .scaleEffect(animationPhase == 0 ? 1.0 : 1.1)
+                    .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animationPhase)
+                
+                Text("Help & Support")
+                    .font(TypographyConstants.Headers.welcome)
+                    .foregroundStyle(Color.premiumTextPrimary)
+                    .multilineTextAlignment(.center)
+                
+                Text("Find answers and get the most out of Routine Anchor")
+                    .font(TypographyConstants.Body.secondary)
+                    .foregroundStyle(Color.premiumTextSecondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 20)
+    }
+    
+    // MARK: - Search Section
+    private var searchSection: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color.premiumTextSecondary)
+            
+            TextField("Search help topics...", text: $searchText)
+                .font(TypographyConstants.Body.primary)
+                .foregroundStyle(Color.premiumTextPrimary)
+                .textFieldStyle(PlainTextFieldStyle())
+            
+            if !searchText.isEmpty {
+                Button(action: { searchText = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color.premiumTextSecondary)
                 }
             }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white.opacity(0.05))
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+        )
+        .padding(.horizontal, 24)
+        .padding(.top, 16)
+    }
+    
+    // MARK: - Category Picker
+    private var categoryPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(HelpCategory.allCases, id: \.self) { category in
+                    CategoryChip(
+                        category: category,
+                        isSelected: selectedCategory == category,
+                        action: { selectedCategory = category }
+                    )
+                }
+            }
+            .padding(.horizontal, 24)
+        }
+        .padding(.top, 16)
+    }
+    
+    // MARK: - Computed Properties
+    private var filteredHelpItems: [HelpItem] {
+        let categoryItems = helpItems.filter { item in
+            selectedCategory == .all || item.category == selectedCategory
+        }
+        
+        if searchText.isEmpty {
+            return categoryItems
+        } else {
+            return categoryItems.filter { item in
+                item.title.localizedCaseInsensitiveContains(searchText) ||
+                item.content.localizedCaseInsensitiveContains(searchText) ||
+                item.keywords.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            }
+        }
+    }
+    
+    // MARK: - Actions
+    private func contactSupport() {
+        HapticManager.shared.lightImpact()
+        
+        if let url = URL(string: "mailto:support@routineanchor.com?subject=Help%20Request") {
+            UIApplication.shared.open(url)
         }
     }
 }
 
-// MARK: - Help Section Model
-enum HelpSection: String, CaseIterable {
-    case gettingStarted = "Getting Started"
-    case routineBuilder = "Building Your Routine"
-    case dailyTracking = "Daily Progress & Check-ins"
-    case notifications = "Notifications & Reminders"
-    case troubleshooting = "Troubleshooting"
+// MARK: - Help Models
+enum HelpCategory: CaseIterable {
+    case all
+    case gettingStarted
+    case timeBlocks
+    case notifications
+    case settings
+    case troubleshooting
+    
+    var title: String {
+        switch self {
+        case .all: return "All"
+        case .gettingStarted: return "Getting Started"
+        case .timeBlocks: return "Time Blocks"
+        case .notifications: return "Notifications"
+        case .settings: return "Settings"
+        case .troubleshooting: return "Troubleshooting"
+        }
+    }
     
     var icon: String {
         switch self {
+        case .all: return "grid.circle"
         case .gettingStarted: return "play.circle"
-        case .routineBuilder: return "calendar"
-        case .dailyTracking: return "checkmark.circle"
-        case .notifications: return "bell.circle"
-        case .troubleshooting: return "wrench.and.screwdriver"
+        case .timeBlocks: return "clock"
+        case .notifications: return "bell"
+        case .settings: return "gear"
+        case .troubleshooting: return "wrench"
         }
     }
     
-    var questions: [HelpQuestion] {
+    var color: Color {
         switch self {
-        case .gettingStarted:
-            return [
-                HelpQuestion(
-                    question: "What is Routine Anchor?",
-                    answer: "Routine Anchor helps you build consistent daily habits using time-blocked routines. Create a structured daily schedule, receive gentle reminders, and track your progress with simple check-ins."
-                ),
-                HelpQuestion(
-                    question: "How do I get started?",
-                    answer: "First, create your daily routine by adding time blocks for different activities. Then use the Today view to track your progress throughout the day. You'll receive notifications when each time block begins."
-                ),
-                HelpQuestion(
-                    question: "Do I need an account or internet connection?",
-                    answer: "No! Routine Anchor works completely offline. All your data is stored locally on your device, so you can use it anywhere without worrying about internet connectivity or creating accounts."
-                )
-            ]
-        case .routineBuilder:
-            return [
-                HelpQuestion(
-                    question: "How do I create a time block?",
-                    answer: "Go to the Schedule Builder, tap 'Add Block', then enter a title and set your start and end times. Give each block a clear, specific name like 'Morning Workout' or 'Deep Work Session'."
-                ),
-                HelpQuestion(
-                    question: "Can I edit or delete time blocks?",
-                    answer: "Yes! In the Schedule Builder, tap on any time block to edit it, or swipe left to delete. Remember to save your changes when you're done editing your routine."
-                ),
-                HelpQuestion(
-                    question: "What makes a good time block?",
-                    answer: "Effective time blocks are specific, realistic, and focused on one main activity. Aim for 30 minutes to 2 hours per block, and include both work activities and personal care like meals and breaks."
-                ),
-                HelpQuestion(
-                    question: "Can time blocks overlap?",
-                    answer: "While the app allows overlapping blocks, it's recommended to avoid them for clarity. If you need flexibility, consider creating broader blocks like 'Morning Routine' rather than multiple overlapping activities."
-                )
-            ]
-        case .dailyTracking:
-            return [
-                HelpQuestion(
-                    question: "How do I mark a time block as complete?",
-                    answer: "In the Today view, you'll see 'Done' and 'Skip' buttons for your current time block. Tap 'Done' when you've completed the activity, or 'Skip' if you need to move on to the next block."
-                ),
-                HelpQuestion(
-                    question: "What's the difference between 'Done' and 'Skip'?",
-                    answer: "Use 'Done' when you've completed the activity as planned. Use 'Skip' when you choose not to do the activity or need to move on. Both help you stay honest about your progress."
-                ),
-                HelpQuestion(
-                    question: "When can I see my daily summary?",
-                    answer: "Your daily summary shows your progress throughout the day. At the end of the day, you'll see a complete breakdown of completed and skipped activities, plus the option to reset for tomorrow."
-                ),
-                HelpQuestion(
-                    question: "What happens when I reset my day?",
-                    answer: "Resetting clears all check-ins and sets every time block back to 'not started' for the next day. Your routine structure stays the same, but your progress tracking starts fresh."
-                )
-            ]
-        case .notifications:
-            return [
-                HelpQuestion(
-                    question: "Why am I not receiving notifications?",
-                    answer: "Check that you've enabled notifications for Routine Anchor in your iPhone Settings > Notifications. Also ensure you've allowed notifications when the app first asked for permission."
-                ),
-                HelpQuestion(
-                    question: "When do notifications appear?",
-                    answer: "You'll receive a notification when each time block is scheduled to begin. This helps you transition smoothly between activities and stay on track with your routine."
-                ),
-                HelpQuestion(
-                    question: "Can I turn off notifications?",
-                    answer: "Yes! Go to Settings in the app and toggle off 'Enable Reminders', or adjust notification settings in your iPhone's main Settings app under Routine Anchor."
-                ),
-                HelpQuestion(
-                    question: "Can I customize notification sounds?",
-                    answer: "Currently, notifications use the default system sound. You can change this in your iPhone Settings > Notifications > Routine Anchor > Sounds."
-                )
-            ]
-        case .troubleshooting:
-            return [
-                HelpQuestion(
-                    question: "My time blocks aren't showing the right status",
-                    answer: "Try refreshing the Today view by pulling down to reload. If problems persist, go to Settings and tap 'Reset Progress' to clear any stuck states."
-                ),
-                HelpQuestion(
-                    question: "The app seems slow or unresponsive",
-                    answer: "Close and reopen the app by double-tapping the home button and swiping up on Routine Anchor. If issues continue, restart your iPhone or check for app updates in the App Store."
-                ),
-                HelpQuestion(
-                    question: "I accidentally deleted my routine",
-                    answer: "Unfortunately, deleted routines cannot be recovered since all data is stored locally. You'll need to recreate your routine using the Schedule Builder. Consider writing down your routine as a backup."
-                ),
-                HelpQuestion(
-                    question: "My progress reset unexpectedly",
-                    answer: "Progress automatically resets each day to give you a fresh start. If it reset during the day, check that your device's date and time settings are correct in iPhone Settings > General > Date & Time."
-                )
-            ]
+        case .all: return Color.premiumBlue
+        case .gettingStarted: return Color.premiumGreen
+        case .timeBlocks: return Color.premiumPurple
+        case .notifications: return Color.premiumWarning
+        case .settings: return Color.premiumTeal
+        case .troubleshooting: return Color.premiumError
         }
     }
 }
 
-// MARK: - Help Question Model
-struct HelpQuestion {
-    let question: String
-    let answer: String
+struct HelpItem {
+    let id = UUID()
+    let category: HelpCategory
+    let title: String
+    let content: String
+    let keywords: [String]
 }
 
-// MARK: - Help Section View
-struct HelpSectionView: View {
-    let section: HelpSection
-    let isExpanded: Bool
-    let onTap: () -> Void
+// MARK: - Help Content Data
+private let helpItems: [HelpItem] = [
+    // Getting Started
+    HelpItem(
+        category: .gettingStarted,
+        title: "Welcome to Routine Anchor",
+        content: "Routine Anchor helps you build consistent daily routines through time-blocking. Create structured schedules, track your progress, and develop productive habits that stick.\n\nTo get started:\n1. Create your first time block\n2. Set up your daily routine\n3. Start tracking your progress",
+        keywords: ["welcome", "intro", "start", "begin", "new"]
+    ),
+    
+    HelpItem(
+        category: .gettingStarted,
+        title: "Creating Your First Time Block",
+        content: "Time blocks are the foundation of your routine. Each block represents a dedicated period for a specific activity.\n\nTo create a time block:\n1. Tap the '+' button in Schedule Builder\n2. Enter a descriptive title\n3. Set your start and end times\n4. Add notes and choose a category\n5. Save your block",
+        keywords: ["create", "new", "first", "block", "schedule"]
+    ),
+    
+    HelpItem(
+        category: .gettingStarted,
+        title: "Building Your Daily Routine",
+        content: "A good routine balances work, personal time, and self-care. Start with 3-5 essential time blocks and gradually add more.\n\nTips for success:\n• Be realistic with timing\n• Include buffer time between activities\n• Start small and build consistency\n• Adjust as needed",
+        keywords: ["routine", "daily", "schedule", "tips", "success"]
+    ),
+    
+    // Time Blocks
+    HelpItem(
+        category: .timeBlocks,
+        title: "Understanding Time Block Status",
+        content: "Each time block has a status that shows your progress:\n\n• Not Started: Upcoming or scheduled\n• In Progress: Currently active\n• Completed: Successfully finished\n• Skipped: Missed or intentionally skipped\n\nYou can manually update status by tapping on blocks.",
+        keywords: ["status", "progress", "completed", "skipped", "active"]
+    ),
+    
+    HelpItem(
+        category: .timeBlocks,
+        title: "Editing and Deleting Time Blocks",
+        content: "You can modify your time blocks at any time:\n\nTo edit: Tap on a time block and select 'Edit'\nTo delete: Swipe left on a time block or use the delete button\n\nNote: Changes to active blocks will apply to future instances.",
+        keywords: ["edit", "delete", "modify", "change", "remove"]
+    ),
+    
+    HelpItem(
+        category: .timeBlocks,
+        title: "Time Block Categories and Icons",
+        content: "Organize your blocks with categories and visual icons:\n\n• Work: Professional tasks and meetings\n• Personal: Self-care and hobbies\n• Health: Exercise and wellness\n• Learning: Study and skill development\n• Social: Time with others\n\nIcons help you quickly identify different types of activities.",
+        keywords: ["category", "organize", "icon", "work", "personal", "health"]
+    ),
+    
+    // Notifications
+    HelpItem(
+        category: .notifications,
+        title: "Setting Up Notifications",
+        content: "Routine Anchor can remind you when time blocks are starting:\n\n1. Go to Settings\n2. Enable 'Notifications'\n3. Choose your preferred notification sound\n4. Set up daily reminders if desired\n\nNotifications help you stay on track with your routine.",
+        keywords: ["notification", "reminder", "alert", "sound", "enable"]
+    ),
+    
+    HelpItem(
+        category: .notifications,
+        title: "Managing Notification Permissions",
+        content: "If notifications aren't working:\n\n1. Check iOS Settings > Notifications > Routine Anchor\n2. Ensure 'Allow Notifications' is enabled\n3. Check that 'Sounds' and 'Badges' are enabled\n4. Make sure 'Do Not Disturb' isn't blocking notifications",
+        keywords: ["permission", "ios", "settings", "allow", "enable", "fix"]
+    ),
+    
+    // Settings
+    HelpItem(
+        category: .settings,
+        title: "Customizing Your Experience",
+        content: "Personalize Routine Anchor in Settings:\n\n• Notification preferences\n• Daily reminder times\n• Haptic feedback options\n• Data export and backup\n• Privacy settings\n\nAdjust these settings to match your preferences.",
+        keywords: ["customize", "personalize", "preferences", "haptic", "backup"]
+    ),
+    
+    HelpItem(
+        category: .settings,
+        title: "Data Privacy and Storage",
+        content: "Your privacy is our priority:\n\n• All data is stored locally on your device\n• No personal information is collected or transmitted\n• You can export your data anytime\n• Deleting the app removes all data permanently\n\nYour routine data never leaves your device.",
+        keywords: ["privacy", "data", "local", "export", "security", "storage"]
+    ),
+    
+    // Troubleshooting
+    HelpItem(
+        category: .troubleshooting,
+        title: "App Performance Issues",
+        content: "If the app is running slowly:\n\n1. Close and restart the app\n2. Restart your device\n3. Check for app updates in the App Store\n4. Ensure you have sufficient storage space\n5. Contact support if issues persist",
+        keywords: ["slow", "performance", "crash", "fix", "restart", "update"]
+    ),
+    
+    HelpItem(
+        category: .troubleshooting,
+        title: "Time Blocks Not Saving",
+        content: "If your time blocks aren't saving:\n\n1. Check that you have storage space available\n2. Ensure the app has necessary permissions\n3. Try creating a simple block first\n4. Restart the app and try again\n5. Contact support with details about the issue",
+        keywords: ["save", "saving", "storage", "permission", "error", "fix"]
+    ),
+    
+    HelpItem(
+        category: .troubleshooting,
+        title: "Syncing and Backup",
+        content: "Routine Anchor stores data locally for privacy. To backup your data:\n\n1. Go to Settings > Export Data\n2. Save the exported file to your preferred location\n3. Use this file to restore data if needed\n\nNote: Data doesn't sync between devices automatically.",
+        keywords: ["sync", "backup", "export", "restore", "data", "transfer"]
+    )
+]
+
+// MARK: - Supporting Views
+struct CategoryChip: View {
+    let category: HelpCategory
+    let isSelected: Bool
+    let action: () -> Void
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Section Header
-            Button(action: onTap) {
-                HStack {
-                    Image(systemName: section.icon)
-                        .font(.title3)
-                        .foregroundStyle(.blue)
-                        .frame(width: 24)
+        Button(action: {
+            HapticManager.shared.lightImpact()
+            action()
+        }) {
+            HStack(spacing: 6) {
+                Image(systemName: category.icon)
+                    .font(.system(size: 14, weight: .medium))
+                
+                Text(category.title)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundStyle(isSelected ? .white : Color.premiumTextSecondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isSelected ? category.color : Color.white.opacity(0.1))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(
+                        isSelected ? Color.clear : Color.white.opacity(0.15),
+                        lineWidth: 1
+                    )
+            )
+        }
+        .scaleEffect(isSelected ? 1.0 : 0.95)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+    }
+}
+
+struct HelpItemView: View {
+    let item: HelpItem
+    @State private var isExpanded = false
+    @State private var isVisible = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            Button(action: {
+                HapticManager.shared.lightImpact()
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                    isExpanded.toggle()
+                }
+            }) {
+                HStack(spacing: 12) {
+                    Image(systemName: item.category.icon)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(item.category.color)
+                        .frame(width: 24, height: 24)
                     
-                    Text(section.rawValue)
-                        .font(.headline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.primary)
+                    Text(item.title)
+                        .font(TypographyConstants.Headers.cardTitle)
+                        .foregroundStyle(Color.premiumTextPrimary)
                         .multilineTextAlignment(.leading)
                     
                     Spacer()
                     
-                    Image(systemName: "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                        .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.premiumTextSecondary)
+                        .rotationEffect(.degrees(isExpanded ? 0 : 0))
                 }
-                .padding(.vertical, 16)
-                .padding(.horizontal, 16)
+                .padding(16)
             }
             .buttonStyle(PlainButtonStyle())
             
-            // Expanded Content
+            // Content
             if isExpanded {
-                VStack(spacing: 12) {
-                    ForEach(Array(section.questions.enumerated()), id: \.offset) { index, question in
-                        HelpQuestionView(question: question)
-                        
-                        if index < section.questions.count - 1 {
-                            Divider()
-                                .padding(.horizontal, 16)
-                        }
-                    }
+                VStack(alignment: .leading, spacing: 12) {
+                    Divider()
+                        .background(Color.separatorColor)
+                    
+                    Text(item.content)
+                        .font(TypographyConstants.Body.secondary)
+                        .foregroundStyle(Color.premiumTextSecondary)
+                        .lineSpacing(2)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
                 }
-                .padding(.bottom, 16)
                 .transition(.asymmetric(
                     insertion: .opacity.combined(with: .move(edge: .top)),
-                    removal: .opacity
+                    removal: .opacity.combined(with: .move(edge: .top))
                 ))
             }
         }
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-}
-
-// MARK: - Help Question View
-struct HelpQuestionView: View {
-    let question: HelpQuestion
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(question.question)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(.primary)
-            
-            Text(question.answer)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16)
-    }
-}
-
-// MARK: - Contact Support View
-struct ContactSupportView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            VStack(spacing: 8) {
-                Image(systemName: "envelope.circle.fill")
-                    .font(.title)
-                    .foregroundStyle(.blue)
-                
-                Text("Still need help?")
-                    .font(.headline)
-                    .fontWeight(.medium)
-                
-                Text("Contact our support team for assistance with Routine Anchor or to share feedback about your experience.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            
-            VStack(spacing: 12) {
-                Button("Send Feedback") {
-                    // Handle feedback action
-                    if let url = URL(string: "mailto:support@routineanchor.com?subject=Routine%20Anchor%20Feedback") {
-                        UIApplication.shared.open(url)
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("Visit Support Website") {
-                    // Handle support website action
-                    if let url = URL(string: "https://routineanchor.com/support") {
-                        UIApplication.shared.open(url)
-                    }
-                }
-                .buttonStyle(.bordered)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white.opacity(0.05))
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            item.category.color.opacity(0.3),
+                            item.category.color.opacity(0.1)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: item.category.color.opacity(0.1), radius: 8, x: 0, y: 4)
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+                isVisible = true
             }
         }
-        .padding(20)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
