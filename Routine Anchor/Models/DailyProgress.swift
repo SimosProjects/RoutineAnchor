@@ -1,14 +1,12 @@
 //
 //  DailyProgress.swift
-//  Routine Anchor
-//
-//  Created by Christopher Simonson on 7/19/25.
+//  Routine Anchor - Premium Version
 //
 import Foundation
 import SwiftData
-import SwiftUICore
+import SwiftUI
 
-/// Tracks daily progress and completion statistics for time blocks
+/// Tracks daily progress and completion statistics for time blocks with premium analytics
 @Model
 class DailyProgress {
     // MARK: - Core Properties
@@ -43,6 +41,76 @@ class DailyProgress {
     /// Optional notes about the day
     var dayNotes: String?
     
+    // MARK: - Premium Analytics
+    
+    /// Performance score (0-100)
+    var performanceScore: Double = 0.0
+    
+    /// Productivity index based on time efficiency
+    var productivityIndex: Double = 0.0
+    
+    /// Focus score based on completion patterns
+    var focusScore: Double = 0.0
+    
+    /// Consistency score compared to previous days
+    var consistencyScore: Double = 0.0
+    
+    /// Energy expenditure estimate (1-5)
+    var energyExpenditure: Double = 0.0
+    
+    /// Momentum indicator (-1 to 1)
+    var momentumIndicator: Double = 0.0
+    
+    /// Categories completed today
+    var completedCategories: [String] = []
+    
+    /// High priority blocks completed
+    var highPriorityCompleted: Int = 0
+    
+    /// Time of day with best productivity
+    var peakProductivityTime: String?
+    
+    /// Longest focus session in minutes
+    var longestFocusSession: Int = 0
+    
+    /// Number of interruptions or context switches
+    var contextSwitches: Int = 0
+    
+    /// Weather conditions (for correlation analysis)
+    var weatherCondition: String?
+    
+    /// Mood tracking (1-5)
+    var moodBefore: Int?
+    var moodAfter: Int?
+    
+    // MARK: - Streak & Milestone Tracking
+    
+    /// Current streak of productive days
+    var currentStreak: Int = 0
+    
+    /// Best streak achieved
+    var bestStreak: Int = 0
+    
+    /// Milestones achieved today
+    var milestonesAchieved: [String] = []
+    
+    /// Badges earned
+    var badgesEarned: [String] = []
+    
+    // MARK: - AI Insights
+    
+    /// Generated insights about the day
+    var insights: [String] = []
+    
+    /// Suggestions for improvement
+    var suggestions: [String] = []
+    
+    /// Predicted performance for tomorrow
+    var tomorrowPrediction: String?
+    
+    /// Personalized motivational message
+    var motivationalMessage: String?
+    
     // MARK: - Metadata
     
     /// When this progress record was created
@@ -53,6 +121,9 @@ class DailyProgress {
     
     /// Whether the user has viewed the summary for this day
     var summaryViewed: Bool
+    
+    /// Whether premium analytics have been calculated
+    var analyticsCalculated: Bool = false
     
     // MARK: - Initializers
     
@@ -135,187 +206,283 @@ extension DailyProgress {
         return "\(completedString) of \(plannedString) planned"
     }
     
-    /// Whether this represents today
-    var isToday: Bool {
-        Calendar.current.isDateInToday(date)
+    /// Whether this is a perfect day (all blocks completed)
+    var isPerfectDay: Bool {
+        return totalBlocks > 0 && completedBlocks == totalBlocks
     }
     
-    /// Whether this day has any scheduled blocks
-    var hasScheduledBlocks: Bool {
-        return totalBlocks > 0
-    }
-    
-    /// Whether the day is complete (all blocks are finished)
+    /// Whether this day is complete (no pending blocks)
     var isDayComplete: Bool {
-        return totalBlocks > 0 && (completedBlocks + skippedBlocks) == totalBlocks
+        return notStartedBlocks == 0 && inProgressBlocks == 0
     }
     
-    /// Performance score based on completion and consistency (0.0 to 1.0)
-    var performanceScore: Double {
-        guard totalBlocks > 0 else { return 0.0 }
-        
-        // Base score from completion rate
-        var score = completionPercentage
-        
-        // Bonus for consistency (fewer skips)
-        let consistencyBonus = (1.0 - skipRate) * 0.2
-        score += consistencyBonus
-        
-        // Small bonus for completing all blocks
-        if isDayComplete && skipRate == 0.0 {
-            score += 0.1
+    /// Performance level based on completion
+    var performanceLevel: PerformanceLevel {
+        switch completionPercentage {
+        case 0.9...1.0: return .excellent
+        case 0.7..<0.9: return .good
+        case 0.5..<0.7: return .fair
+        case 0.0..<0.5: return .poor
+        default: return .none
         }
-        
-        return min(score, 1.0)
+    }
+    
+    /// Color gradient for performance visualization
+    var performanceGradient: [Color] {
+        switch performanceLevel {
+        case .excellent: return [Color.premiumGreen, Color.premiumTeal]
+        case .good: return [Color.premiumBlue, Color.premiumTeal]
+        case .fair: return [Color.premiumWarning, Color.premiumTeal]
+        case .poor: return [Color.premiumError, Color.premiumWarning]
+        case .none: return [Color.premiumTextSecondary, Color.premiumTextTertiary]
+        }
+    }
+    
+    /// Emoji representation of the day
+    var dayEmoji: String {
+        if isPerfectDay { return "🏆" }
+        switch performanceLevel {
+        case .excellent: return "🌟"
+        case .good: return "✨"
+        case .fair: return "💫"
+        case .poor: return "🌱"
+        case .none: return "⏳"
+        }
+    }
+    
+    /// Trend indicator compared to previous day
+    var trendIndicator: String {
+        if momentumIndicator > 0.2 { return "📈" }
+        else if momentumIndicator < -0.2 { return "📉" }
+        else { return "➡️" }
     }
 }
 
-// MARK: - Data Updates
+// MARK: - Methods
 extension DailyProgress {
-    /// Update all statistics from a list of time blocks for this date
+    /// Update progress from a list of time blocks
     func updateFromTimeBlocks(_ timeBlocks: [TimeBlock]) {
-        // Filter blocks for this specific date
-        let dayBlocks = timeBlocks.filter { timeBlock in
-            Calendar.current.isDate(timeBlock.startTime, inSameDayAs: date)
-        }
-        
         // Reset counters
-        totalBlocks = dayBlocks.count
+        totalBlocks = timeBlocks.count
         completedBlocks = 0
         skippedBlocks = 0
         inProgressBlocks = 0
         totalPlannedMinutes = 0
         completedMinutes = 0
+        highPriorityCompleted = 0
+        completedCategories = []
         
-        // Calculate statistics
-        for block in dayBlocks {
-            totalPlannedMinutes += block.durationMinutes
-            
+        var categorySet = Set<String>()
+        var totalEnergyRequired = 0.0
+        var focusSessions: [Int] = []
+        
+        for block in timeBlocks {
+            // Status counts
             switch block.status {
             case .completed:
                 completedBlocks += 1
                 completedMinutes += block.durationMinutes
+                if block.priority >= 4 {
+                    highPriorityCompleted += 1
+                }
+                if let category = block.category {
+                    categorySet.insert(category)
+                }
+                focusSessions.append(block.durationMinutes)
             case .skipped:
                 skippedBlocks += 1
             case .inProgress:
                 inProgressBlocks += 1
-                // For in-progress blocks, count partial completion based on time elapsed
-                if block.isCurrentlyActive {
-                    let partialMinutes = Int(block.currentProgress * Double(block.durationMinutes))
-                    completedMinutes += partialMinutes
-                }
             case .notStarted:
                 break
             }
+            
+            // Total planned time
+            totalPlannedMinutes += block.durationMinutes
+            
+            // Energy calculation
+            totalEnergyRequired += Double(block.energyLevel)
         }
         
-        updatedAt = Date()
+        // Update derived values
+        completedCategories = Array(categorySet).sorted()
+        energyExpenditure = timeBlocks.isEmpty ? 0 : totalEnergyRequired / Double(timeBlocks.count)
+        longestFocusSession = focusSessions.max() ?? 0
+        
+        // Calculate analytics
+        calculatePerformanceScore()
+        calculateProductivityIndex()
+        calculateFocusScore()
+        generateInsights()
+        
+        // Update timestamp
+        touch()
     }
     
-    /// Increment completed blocks count
-    func incrementCompleted(duration: Int) {
-        completedBlocks += 1
-        completedMinutes += duration
-        // Adjust in-progress if this was previously in progress
-        if inProgressBlocks > 0 {
-            inProgressBlocks -= 1
+    /// Calculate performance score
+    private func calculatePerformanceScore() {
+        var score = 0.0
+        
+        // Completion rate (40%)
+        score += completionPercentage * 40
+        
+        // Time efficiency (30%)
+        score += timeCompletionPercentage * 30
+        
+        // Priority focus (20%)
+        let priorityRate = totalBlocks > 0 ? Double(highPriorityCompleted) / Double(totalBlocks) : 0
+        score += priorityRate * 20
+        
+        // Consistency bonus (10%)
+        if skipRate < 0.1 { score += 10 }
+        else if skipRate < 0.2 { score += 5 }
+        
+        performanceScore = min(score, 100)
+    }
+    
+    /// Calculate productivity index
+    private func calculateProductivityIndex() {
+        guard totalPlannedMinutes > 0 else {
+            productivityIndex = 0
+            return
         }
-        updatedAt = Date()
-    }
-    
-    /// Increment skipped blocks count
-    func incrementSkipped() {
-        skippedBlocks += 1
-        // Adjust in-progress if this was previously in progress
-        if inProgressBlocks > 0 {
-            inProgressBlocks -= 1
+        
+        // Base productivity on completion
+        var index = timeCompletionPercentage
+        
+        // Bonus for high-priority completion
+        if highPriorityCompleted > 0 {
+            index *= 1.0 + (Double(highPriorityCompleted) * 0.1)
         }
-        updatedAt = Date()
+        
+        // Penalty for excessive skipping
+        if skipRate > 0.3 {
+            index *= 0.8
+        }
+        
+        productivityIndex = min(index, 1.0)
     }
     
-    /// Mark block as started (in progress)
-    func markBlockStarted() {
-        inProgressBlocks += 1
-        updatedAt = Date()
+    /// Calculate focus score
+    private func calculateFocusScore() {
+        guard completedBlocks > 0 else {
+            focusScore = 0
+            return
+        }
+        
+        // Base on longest session
+        let sessionScore = min(Double(longestFocusSession) / 120.0, 1.0) // 2 hours = perfect
+        
+        // Factor in completion consistency
+        let consistencyFactor = 1.0 - (Double(contextSwitches) * 0.1)
+        
+        focusScore = sessionScore * max(consistencyFactor, 0.5)
     }
     
-    /// Set user's subjective rating for the day
+    /// Generate AI-like insights
+    func generateInsights() {
+        insights.removeAll()
+        suggestions.removeAll()
+        
+        // Performance insights
+        if isPerfectDay {
+            insights.append("🏆 Perfect day! You completed every single task.")
+            motivationalMessage = "You're unstoppable! Keep this incredible momentum going!"
+        } else if performanceLevel == .excellent {
+            insights.append("Outstanding performance with \(formattedCompletionPercentage) completion rate!")
+        }
+        
+        // Time insights
+        if completedMinutes > totalPlannedMinutes {
+            insights.append("You exceeded your planned time - great dedication!")
+        } else if timeCompletionPercentage > 0.8 {
+            insights.append("Excellent time management today.")
+        }
+        
+        // Category insights
+        if completedCategories.count >= 3 {
+            insights.append("Well-balanced day across \(completedCategories.count) different categories.")
+        }
+        
+        // Focus insights
+        if longestFocusSession >= 90 {
+            insights.append("Impressive focus session of \(longestFocusSession) minutes!")
+            peakProductivityTime = "Morning" // This would be calculated from actual data
+        }
+        
+        // Generate suggestions
+        if skipRate > 0.3 {
+            suggestions.append("Consider shorter time blocks to improve completion rate.")
+        }
+        
+        if highPriorityCompleted == 0 && totalBlocks > 0 {
+            suggestions.append("Try to tackle high-priority tasks early in the day.")
+        }
+        
+        if energyExpenditure > 4 {
+            suggestions.append("Schedule some low-energy tasks or breaks tomorrow.")
+        }
+        
+        // Prediction
+        if performanceScore > 80 {
+            tomorrowPrediction = "Based on today's momentum, tomorrow looks very promising!"
+        } else if performanceScore > 60 {
+            tomorrowPrediction = "You're building good habits. Keep it up tomorrow!"
+        }
+    }
+    
+    /// Set day rating with validation
     func setDayRating(_ rating: Int) {
-        guard rating >= 1 && rating <= 5 else { return }
-        dayRating = rating
-        updatedAt = Date()
+        dayRating = max(1, min(5, rating))
+        touch()
     }
     
-    /// Set notes for the day
-    func setDayNotes(_ notes: String) {
-        dayNotes = notes.isEmpty ? nil : notes
-        updatedAt = Date()
+    /// Add a milestone achievement
+    func addMilestone(_ milestone: String) {
+        if !milestonesAchieved.contains(milestone) {
+            milestonesAchieved.append(milestone)
+            touch()
+        }
+    }
+    
+    /// Add a badge
+    func addBadge(_ badge: String) {
+        if !badgesEarned.contains(badge) {
+            badgesEarned.append(badge)
+            touch()
+        }
+    }
+    
+    /// Update streak information
+    func updateStreak(previousDayStreak: Int, wasSuccessful: Bool) {
+        if wasSuccessful && performanceLevel.rawValue >= PerformanceLevel.good.rawValue {
+            currentStreak = previousDayStreak + 1
+            if currentStreak > bestStreak {
+                bestStreak = currentStreak
+                addMilestone("New Best Streak: \(bestStreak) days!")
+            }
+        } else {
+            currentStreak = 0
+        }
+        touch()
     }
     
     /// Mark summary as viewed
     func markSummaryViewed() {
         summaryViewed = true
+        touch()
+    }
+    
+    /// Update the metadata timestamp
+    func touch() {
         updatedAt = Date()
     }
-}
-
-// MARK: - Performance Analysis
-extension DailyProgress {
-    /// Performance level based on completion percentage
-    var performanceLevel: PerformanceLevel {
-        let percentage = completionPercentage
-        
-        switch percentage {
-        case 0.9...1.0:
-            return .excellent
-        case 0.7..<0.9:
-            return .good
-        case 0.5..<0.7:
-            return .fair
-        case 0.2..<0.5:
-            return .poor
-        default:
-            return .none
-        }
-    }
     
-    /// Motivational message based on performance
-    var motivationalMessage: String {
-        switch performanceLevel {
-        case .excellent:
-            return "Outstanding work! You crushed your goals today! 🎉"
-        case .good:
-            return "Great job! You're building strong habits! 💪"
-        case .fair:
-            return "Good progress! Tomorrow is another opportunity to improve! 📈"
-        case .poor:
-            return "Every step counts! Small progress is still progress! 🌱"
-        case .none:
-            return "Ready to start building your routine? You've got this! ✨"
-        }
-    }
-    
-    /// Suggestions for improvement
-    var suggestions: [String] {
-        var suggestions: [String] = []
-        
-        if skipRate > 0.3 {
-            suggestions.append("Consider shortening time blocks to make them more manageable")
-        }
-        
-        if completionPercentage < 0.5 && totalBlocks > 6 {
-            suggestions.append("Try scheduling fewer blocks to build consistency")
-        }
-        
-        if inProgressBlocks > completedBlocks && isDayComplete {
-            suggestions.append("Remember to mark completed tasks to track your progress")
-        }
-        
-        if suggestions.isEmpty {
-            suggestions.append("Keep up the great work with your routine!")
-        }
-        
-        return suggestions
+    /// Create a copy for a different date
+    func copy(to date: Date) -> DailyProgress {
+        let copy = DailyProgress(date: date)
+        // Don't copy progress data, only structure
+        return copy
     }
 }
 
@@ -338,23 +505,33 @@ extension DailyProgress {
             }
         }
         
-        var color: Color {
+        var gradient: [Color] {
             switch self {
-            case .excellent: return .green
-            case .good: return .blue
-            case .fair: return .orange
-            case .poor: return .red
-            case .none: return .gray
+            case .excellent: return [Color.premiumGreen, Color.premiumTeal]
+            case .good: return [Color.premiumBlue, Color.premiumTeal]
+            case .fair: return [Color.premiumWarning, Color.premiumTeal]
+            case .poor: return [Color.premiumError, Color.premiumWarning]
+            case .none: return [Color.premiumTextSecondary, Color.premiumTextTertiary]
             }
         }
         
         var emoji: String {
             switch self {
             case .excellent: return "🏆"
-            case .good: return "👍"
-            case .fair: return "📈"
+            case .good: return "⭐"
+            case .fair: return "💪"
             case .poor: return "🌱"
-            case .none: return "⚪"
+            case .none: return "⏳"
+            }
+        }
+        
+        var motivationalQuote: String {
+            switch self {
+            case .excellent: return "You're crushing it! Excellence is your new normal."
+            case .good: return "Great job! You're building powerful momentum."
+            case .fair: return "Keep pushing! Every step forward counts."
+            case .poor: return "Tomorrow is a fresh start. You've got this!"
+            case .none: return "The journey begins with a single step."
             }
         }
     }
@@ -398,137 +575,6 @@ extension DailyProgress {
     }
 }
 
-// MARK: - Validation
-extension DailyProgress {
-    /// Whether this progress record has valid data
-    var isValid: Bool {
-        return totalBlocks >= 0 &&
-               completedBlocks >= 0 &&
-               skippedBlocks >= 0 &&
-               inProgressBlocks >= 0 &&
-               completedBlocks + skippedBlocks + inProgressBlocks <= totalBlocks &&
-               totalPlannedMinutes >= 0 &&
-               completedMinutes >= 0 &&
-               completedMinutes <= totalPlannedMinutes
-    }
-    
-    /// Validation errors for this progress record
-    var validationErrors: [String] {
-        var errors: [String] = []
-        
-        if totalBlocks < 0 {
-            errors.append("Total blocks cannot be negative")
-        }
-        
-        if completedBlocks < 0 {
-            errors.append("Completed blocks cannot be negative")
-        }
-        
-        if skippedBlocks < 0 {
-            errors.append("Skipped blocks cannot be negative")
-        }
-        
-        if inProgressBlocks < 0 {
-            errors.append("In-progress blocks cannot be negative")
-        }
-        
-        if completedBlocks + skippedBlocks + inProgressBlocks > totalBlocks {
-            errors.append("Sum of block statuses cannot exceed total blocks")
-        }
-        
-        if totalPlannedMinutes < 0 {
-            errors.append("Total planned minutes cannot be negative")
-        }
-        
-        if completedMinutes < 0 {
-            errors.append("Completed minutes cannot be negative")
-        }
-        
-        if completedMinutes > totalPlannedMinutes {
-            errors.append("Completed minutes cannot exceed planned minutes")
-        }
-        
-        if let rating = dayRating, (rating < 1 || rating > 5) {
-            errors.append("Day rating must be between 1 and 5")
-        }
-        
-        return errors
-    }
-}
-
-// MARK: - Statistics
-extension DailyProgress {
-    /// Statistics summary for analytics or insights
-    var statisticsSummary: [String: Any] {
-        return [
-            "date": date,
-            "totalBlocks": totalBlocks,
-            "completedBlocks": completedBlocks,
-            "skippedBlocks": skippedBlocks,
-            "inProgressBlocks": inProgressBlocks,
-            "completionPercentage": completionPercentage,
-            "skipRate": skipRate,
-            "totalPlannedMinutes": totalPlannedMinutes,
-            "completedMinutes": completedMinutes,
-            "timeCompletionPercentage": timeCompletionPercentage,
-            "performanceScore": performanceScore,
-            "performanceLevel": performanceLevel.rawValue,
-            "isDayComplete": isDayComplete,
-            "dayRating": dayRating as Any
-        ]
-    }
-    
-    /// Export data for backup or analysis
-    var exportData: [String: Any] {
-        return [
-            "id": id.uuidString,
-            "date": ISO8601DateFormatter().string(from: date),
-            "totalBlocks": totalBlocks,
-            "completedBlocks": completedBlocks,
-            "skippedBlocks": skippedBlocks,
-            "inProgressBlocks": inProgressBlocks,
-            "totalPlannedMinutes": totalPlannedMinutes,
-            "completedMinutes": completedMinutes,
-            "dayRating": dayRating as Any,
-            "dayNotes": dayNotes as Any,
-            "summaryViewed": summaryViewed,
-            "createdAt": ISO8601DateFormatter().string(from: createdAt),
-            "updatedAt": ISO8601DateFormatter().string(from: updatedAt)
-        ]
-    }
-}
-
-// MARK: - Convenience Methods
-extension DailyProgress {
-    /// Reset all progress for a fresh start (useful for testing or correction)
-    func reset() {
-        totalBlocks = 0
-        completedBlocks = 0
-        skippedBlocks = 0
-        inProgressBlocks = 0
-        totalPlannedMinutes = 0
-        completedMinutes = 0
-        dayRating = nil
-        dayNotes = nil
-        summaryViewed = false
-        updatedAt = Date()
-    }
-    
-    /// Create a copy for a different date (useful for templates)
-    func copyToDate(_ newDate: Date) -> DailyProgress {
-        let copy = DailyProgress(date: newDate)
-        copy.totalBlocks = self.totalBlocks
-        copy.totalPlannedMinutes = self.totalPlannedMinutes
-        // Don't copy progress data, only structure
-        return copy
-    }
-    
-    /// Update the metadata timestamp
-    func touch() {
-        updatedAt = Date()
-    }
-}
-
 // MARK: - Hashable & Equatable
 extension DailyProgress: Hashable {
     static func == (lhs: DailyProgress, rhs: DailyProgress) -> Bool {
@@ -547,44 +593,51 @@ extension DailyProgress: Comparable {
     }
 }
 
-// MARK: - Static Helpers
-extension DailyProgress {
-    /// Create daily progress from time blocks for a specific date
-    static func from(timeBlocks: [TimeBlock], date: Date) -> DailyProgress {
-        return DailyProgress(date: date, timeBlocks: timeBlocks)
-    }
-    
-    /// Calculate weekly statistics from multiple daily progress records
-    static func weeklyStatistics(from dailyProgress: [DailyProgress]) -> WeeklyStats {
-        let totalDays = dailyProgress.count
-        let completedDays = dailyProgress.filter { $0.isDayComplete }.count
-        let averageCompletion = dailyProgress.map { $0.completionPercentage }.reduce(0, +) / Double(max(totalDays, 1))
-        let totalBlocks = dailyProgress.map { $0.totalBlocks }.reduce(0, +)
-        let totalCompleted = dailyProgress.map { $0.completedBlocks }.reduce(0, +)
-        
-        return WeeklyStats(
-            totalDays: totalDays,
-            completedDays: completedDays,
-            averageCompletion: averageCompletion,
-            totalBlocks: totalBlocks,
-            totalCompleted: totalCompleted
-        )
-    }
-}
+// MARK: - Identifiable
+extension DailyProgress: Identifiable {}
 
 // MARK: - Weekly Statistics Helper
 struct WeeklyStats {
     let totalDays: Int
-    let completedDays: Int
-    let averageCompletion: Double
     let totalBlocks: Int
-    let totalCompleted: Int
+    let completedBlocks: Int
+    let totalMinutes: Int
+    let completedMinutes: Int
+    let averageCompletion: Double
+    let averageRating: Double
+    let bestDay: DailyProgress?
+    let currentStreak: Int
+    let perfectDays: Int
     
     var formattedAverageCompletion: String {
-        return String(format: "%.0f%%", averageCompletion * 100)
+        String(format: "%.0f%%", averageCompletion * 100)
     }
     
-    var completionSummary: String {
-        return "\(totalCompleted) of \(totalBlocks) blocks completed"
+    var productivityTrend: String {
+        if averageCompletion > 0.8 { return "📈 Excellent" }
+        else if averageCompletion > 0.6 { return "📊 Good" }
+        else if averageCompletion > 0.4 { return "➡️ Steady" }
+        else { return "📉 Needs Focus" }
+    }
+}
+
+// MARK: - Monthly Analytics
+struct MonthlyAnalytics {
+    let totalDays: Int
+    let activeDays: Int
+    let totalBlocksCompleted: Int
+    let totalMinutesCompleted: Int
+    let averagePerformanceScore: Double
+    let topCategories: [(category: String, count: Int)]
+    let productivityByDayOfWeek: [String: Double]
+    let bestStreak: Int
+    let perfectDays: Int
+    
+    var consistency: Double {
+        totalDays > 0 ? Double(activeDays) / Double(totalDays) : 0
+    }
+    
+    var formattedConsistency: String {
+        String(format: "%.0f%%", consistency * 100)
     }
 }

@@ -161,7 +161,7 @@ class SettingsViewModel {
     /// Schedule notifications for all active time blocks
     private func scheduleTimeBlockNotifications() async {
         do {
-            let timeBlocks = try dataManager.loadTodaysTimeBlocks()
+            let timeBlocks = try await dataManager.loadTodaysTimeBlocks()
             
             // Clear existing time block notifications
             let identifiers = timeBlocks.map { $0.id.uuidString }
@@ -253,89 +253,62 @@ class SettingsViewModel {
     func resetTodaysProgress() {
         isLoading = true
         errorMessage = nil
-        
-        do {
-            // Reset all time blocks for today
-            let todaysBlocks = try dataManager.loadTodaysTimeBlocks()
-            for block in todaysBlocks {
-                try dataManager.updateTimeBlockStatus(block, to: .notStarted)
-            }
-            
-            // Update daily progress to reflect reset
-            let today = Date()
-            if let dailyProgress = try? dataManager.loadDailyProgress(for: today) {
-                // Reset the progress counters
-                dailyProgress.completedBlocks = 0
-                dailyProgress.skippedBlocks = 0
-                dailyProgress.totalBlocks = todaysBlocks.count
-            }
-            
-            // Reschedule notifications for reset blocks
-            Task {
+
+        Task {
+            do {
+                let todaysBlocks = try await dataManager.loadTodaysTimeBlocks()
+                for block in todaysBlocks {
+                    try await dataManager.updateTimeBlockStatus(block, to: .notStarted)
+                }
+
+                if let dailyProgress = try? await dataManager.loadDailyProgress(for: Date()) {
+                    dailyProgress.completedBlocks = 0
+                    dailyProgress.skippedBlocks = 0
+                    dailyProgress.totalBlocks = todaysBlocks.count
+                }
+
                 await scheduleTimeBlockNotifications()
+                HapticManager.shared.premiumSuccess()
+                successMessage = "Today's progress has been reset"
+            } catch {
+                errorMessage = "Failed to reset today's progress: \(error.localizedDescription)"
+                HapticManager.shared.premiumError()
             }
-            
-            HapticManager.shared.premiumSuccess()
-            successMessage = "Today's progress has been reset"
-            
-        } catch {
-            errorMessage = "Failed to reset today's progress: \(error.localizedDescription)"
-            HapticManager.shared.premiumError()
+
+            isLoading = false
+            clearMessages()
         }
-        
-        isLoading = false
-        clearMessages()
     }
+
     
     /// Clear all app data (routines, progress, etc.)
     func clearAllData() {
         isLoading = true
         errorMessage = nil
-        
-        do {
-            // Get all data
-            let allTimeBlocks = try dataManager.loadAllTimeBlocks()
-            let allProgress = try dataManager.loadDailyProgress(
-                from: Date.distantPast,
-                to: Date.distantFuture
-            )
-            
-            // Delete all time blocks
-            for block in allTimeBlocks {
-                try dataManager.deleteTimeBlock(block)
+
+        Task {
+            do {
+                try await dataManager.clearAllData()
+                clearUserPreferences()
+                clearAllNotifications()
+                HapticManager.shared.premiumSuccess()
+                successMessage = "All data has been cleared"
+            } catch {
+                errorMessage = "Failed to clear all data: \(error.localizedDescription)"
+                HapticManager.shared.premiumError()
             }
-            
-            // Delete all progress records
-            for progress in allProgress {
-                dataManager.modelContext.delete(progress)
-            }
-            
-            // Save changes
-            try dataManager.modelContext.save()
-            
-            // Clear user preferences
-            clearUserPreferences()
-            
-            // Clear all notifications
-            clearAllNotifications()
-            
-            HapticManager.shared.premiumSuccess()
-            successMessage = "All data has been cleared"
-            
-        } catch {
-            errorMessage = "Failed to clear all data: \(error.localizedDescription)"
-            HapticManager.shared.premiumError()
+
+            isLoading = false
+            clearMessages()
         }
-        
-        isLoading = false
-        clearMessages()
     }
+
     
     /// Export all user data as JSON
-    func exportUserData() -> String {
+    func exportUserData() async -> String {
         do {
-            let timeBlocks = try dataManager.loadAllTimeBlocks()
-            let progressRecords = try dataManager.loadDailyProgress(
+            let timeBlocks = try await dataManager.loadAllTimeBlocks()
+            let progressRecords = try await dataManager.loadDailyProgress(
                 from: Date.distantPast,
                 to: Date.distantFuture
             )
@@ -466,12 +439,14 @@ class SettingsViewModel {
     }
     
     /// Clear any error messages
+    @MainActor
     func clearError() {
         errorMessage = nil
         dataManager.lastError = nil
     }
     
     /// Retry last failed operation
+    @MainActor
     func retryLastOperation() {
         clearError()
         // Could implement specific retry logic based on last action
@@ -569,21 +544,22 @@ extension SettingsViewModel {
             )
         ]
         
-        do {
-            for block in sampleBlocks {
-                try dataManager.addTimeBlock(block)
+        Task {
+            do {
+                for block in sampleBlocks {
+                    try await dataManager.addTimeBlock(block)
+                }
+
+                HapticManager.shared.premiumSuccess()
+                successMessage = "Sample data added successfully"
+            } catch {
+                errorMessage = "Failed to add sample data: \(error.localizedDescription)"
+                HapticManager.shared.premiumError()
             }
-            
-            HapticManager.shared.premiumSuccess()
-            successMessage = "Sample data added successfully"
-            
-        } catch {
-            errorMessage = "Failed to add sample data: \(error.localizedDescription)"
-            HapticManager.shared.premiumError()
+
+            isLoading = false
+            clearMessages()
         }
-        
-        isLoading = false
-        clearMessages()
     }
     
     /// Clear only sample data

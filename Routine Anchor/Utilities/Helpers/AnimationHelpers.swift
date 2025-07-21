@@ -5,6 +5,7 @@
 //  Premium Animation Effects and Transitions
 //
 import SwiftUI
+import Combine
 
 // MARK: - Custom Animations
 extension Animation {
@@ -287,48 +288,125 @@ struct AnimatedGradientBackground: View {
 }
 
 // MARK: - Particle System
-struct ParticleSystem {
-    var particles: [Particle] = []
+class ParticleSystem: ObservableObject {
+    @Published var particles: [Particle] = []
+    private var cancellables = Set<AnyCancellable>()
     
-    mutating func startEmitting() {
-        for _ in 0..<20 {
-            particles.append(Particle())
+    // New emit method that ScheduleBuilderView needs
+    func emit(at point: CGPoint, count: Int = 20) {
+        // Create particles at the specified point
+        for _ in 0..<count {
+            let particle = Particle(
+                position: point,
+                velocity: CGPoint(
+                    x: CGFloat.random(in: -100...100),
+                    y: CGFloat.random(in: -200...(-50))
+                ),
+                color: [Color.premiumBlue, Color.premiumPurple, Color.premiumTeal, Color.premiumGreen].randomElement()!,
+                size: CGFloat.random(in: 4...8),
+                lifetime: Double.random(in: 1.5...2.5)
+            )
+            particles.append(particle)
         }
+        
+        // Start animation timer
+        Timer.publish(every: 0.016, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.updateParticles()
+            }
+            .store(in: &cancellables)
+        
+        // Clean up after animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.particles.removeAll()
+            self.cancellables.removeAll()
+        }
+    }
+    
+    private func updateParticles() {
+        for i in particles.indices {
+            particles[i].age += 0.016
+            particles[i].position.x += particles[i].velocity.x * 0.016
+            particles[i].position.y += particles[i].velocity.y * 0.016
+            particles[i].velocity.y += 300 * 0.016 // Gravity
+            
+            // Fade out
+            particles[i].opacity = max(0, 1.0 - (particles[i].age / particles[i].lifetime))
+        }
+        
+        // Remove dead particles
+        particles.removeAll { $0.age >= $0.lifetime }
     }
 }
 
 struct Particle: Identifiable {
     let id = UUID()
-    var position: CGPoint = CGPoint(
-        x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
-        y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
-    )
-    var opacity: Double = Double.random(in: 0.1...0.3)
-    var scale: CGFloat = CGFloat.random(in: 0.5...1.5)
+    var position: CGPoint
+    var velocity: CGPoint = .zero
+    var color: Color = .blue
+    var size: CGFloat = 4
+    var lifetime: Double = 2.0
+    var age: Double = 0
+    var opacity: Double = 1.0
+    var scale: CGFloat = 1.0
+    
+    // Keep old initializer for compatibility
+    init() {
+        self.position = CGPoint(
+            x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+            y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
+        )
+        self.opacity = Double.random(in: 0.1...0.3)
+        self.scale = CGFloat.random(in: 0.5...1.5)
+    }
+    
+    // New initializer with parameters
+    init(position: CGPoint, velocity: CGPoint, color: Color, size: CGFloat, lifetime: Double) {
+        self.position = position
+        self.velocity = velocity
+        self.color = color
+        self.size = size
+        self.lifetime = lifetime
+        self.opacity = 1.0
+        self.scale = 1.0
+    }
 }
 
 struct ParticleEffectView: View {
-    let system: ParticleSystem
+    @ObservedObject var system: ParticleSystem
     @State private var animate = false
     
     var body: some View {
-        GeometryReader { geometry in
-            ForEach(system.particles) { particle in
-                Circle()
-                    .fill(Color.blue.opacity(particle.opacity))
-                    .frame(width: 4 * particle.scale, height: 4 * particle.scale)
-                    .position(particle.position)
-                    .blur(radius: 2)
-                    .offset(y: animate ? -geometry.size.height : 0)
-                    .animation(
-                        .linear(duration: Double.random(in: 20...40))
-                        .repeatForever(autoreverses: false),
-                        value: animate
-                    )
+        Canvas { context, size in
+            for particle in system.particles {
+                var contextCopy = context
+                
+                // Apply transformations
+                contextCopy.translateBy(x: particle.position.x, y: particle.position.y)
+                contextCopy.scaleBy(x: particle.scale, y: particle.scale)
+                contextCopy.opacity = particle.opacity
+                
+                // Draw particle
+                let rect = CGRect(
+                    x: -particle.size / 2,
+                    y: -particle.size / 2,
+                    width: particle.size,
+                    height: particle.size
+                )
+                
+                contextCopy.fill(
+                    Circle().path(in: rect),
+                    with: .color(particle.color)
+                )
+                
+                // Add glow effect
+                contextCopy.addFilter(.blur(radius: 2))
+                contextCopy.fill(
+                    Circle().path(in: rect),
+                    with: .color(particle.color.opacity(0.5))
+                )
             }
-        }
-        .onAppear {
-            animate = true
         }
     }
 }
@@ -415,3 +493,5 @@ struct ConfettiParticle: Identifiable {
     let rotation: Double
     var opacity: Double
 }
+
+

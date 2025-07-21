@@ -10,21 +10,23 @@ import SwiftData
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var showOnboarding = true
-    
+
     var body: some View {
         Group {
             if showOnboarding {
                 OnboardingFlow(showOnboarding: $showOnboarding)
             } else {
                 MainTabView()
-                    .environment(DataManager(modelContext: modelContext))
+                    .onAppear {
+                        DataManager.shared.configure(with: modelContext)
+                    }
             }
         }
         .onAppear {
             checkFirstLaunch()
         }
     }
-    
+
     private func checkFirstLaunch() {
         // Check UserDefaults for first launch
         // Set showOnboarding accordingly
