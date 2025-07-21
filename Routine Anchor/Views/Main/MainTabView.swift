@@ -66,7 +66,7 @@ struct MainTabView: View {
                 
                 // Settings Tab - Premium configuration
                 NavigationStack {
-                    PremiumSettingsView()
+                    SettingsView()
                         .background(Color.clear)
                 }
                 .tabItem {
@@ -329,13 +329,6 @@ struct PremiumScheduleBuilderView: View {
 struct PremiumDailySummaryView: View {
     var body: some View {
         Text("Premium Daily Summary")
-            .foregroundStyle(.white)
-    }
-}
-
-struct PremiumSettingsView: View {
-    var body: some View {
-        Text("Premium Settings")
             .foregroundStyle(.white)
     }
 }

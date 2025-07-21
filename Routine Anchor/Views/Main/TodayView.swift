@@ -68,7 +68,7 @@ struct PremiumTodayView: View {
             startPeriodicUpdates()
         }
         .sheet(isPresented: $showingSettings) {
-            PremiumSettingsView()
+            SettingsView()
         }
         .sheet(isPresented: $showingSummary) {
             PremiumDailySummaryView()
