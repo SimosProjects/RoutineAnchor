@@ -159,29 +159,6 @@ extension View {
     }
 }
 
-// MARK: - Haptic Feedback Manager (Enhanced)
-extension HapticManager {
-    func premiumImpact() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred(intensity: 0.8)
-    }
-    
-    func premiumSuccess() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-        
-        // Double tap for emphasis
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            generator.notificationOccurred(.success)
-        }
-    }
-    
-    func premiumSelection() {
-        let generator = UISelectionFeedbackGenerator()
-        generator.selectionChanged()
-    }
-}
-
 // MARK: - Animated Number Display
 struct AnimatedNumber: View {
     let value: Double
