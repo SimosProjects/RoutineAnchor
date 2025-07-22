@@ -317,15 +317,6 @@ extension MainTabView {
     }
 }
 
-// MARK: - Premium View Placeholders
-
-struct PremiumDailySummaryView: View {
-    var body: some View {
-        Text("Premium Daily Summary")
-            .foregroundStyle(.white)
-    }
-}
-
 // MARK: - Enhanced Tab View Model
 @MainActor
 class MainTabViewModel: ObservableObject {

@@ -1,8 +1,6 @@
 //
 //  DailySummaryViewModel.swift
-//  Routine Anchor
-//
-//  Created by Christopher Simonson on 7/19/25.
+//  Routine Anchor - Updated Version
 //
 import SwiftUI
 import SwiftData
@@ -20,6 +18,7 @@ class DailySummaryViewModel {
     
     // MARK: - Private Properties
     private let dataManager: DataManager
+    private var loadTask: Task<Void, Never>?
     
     // MARK: - Initialization
     init(dataManager: DataManager) {
@@ -33,6 +32,10 @@ class DailySummaryViewModel {
         loadData(for: date)
     }
     
+    deinit {
+        loadTask?.cancel()
+    }
+    
     // MARK: - Data Loading
     
     /// Load all data for the specified date
@@ -41,36 +44,33 @@ class DailySummaryViewModel {
         isLoading = true
         errorMessage = nil
         
-        do {
-            // Load time blocks for the selected date
-            todaysTimeBlocks = try dataManager.loadTimeBlocks(for: date)
-            
-            // Load or create daily progress
-            dailyProgress = try dataManager.loadOrCreateDailyProgress(for: date)
-            
-            // Update progress based on current time blocks
-            try dataManager.updateDailyProgress(for: date)
-            
-            // Reload progress after update
-            dailyProgress = try dataManager.loadDailyProgress(for: date)
-            
-            // Load weekly statistics
-            loadWeeklyStatistics(for: date)
-            
-        } catch {
-            errorMessage = "Failed to load daily summary: \(error.localizedDescription)"
-            print("Error loading daily summary: \(error)")
-        }
+        // Cancel any existing load task
+        loadTask?.cancel()
         
-        isLoading = false
-    }
-    
-    /// Load weekly statistics for context
-    private func loadWeeklyStatistics(for date: Date) {
-        do {
-            weeklyStats = try dataManager.getWeeklyStatistics(for: date)
-        } catch {
-            print("Error loading weekly stats: \(error)")
+        loadTask = Task { @MainActor in
+            do {
+                // Load time blocks for the selected date
+                todaysTimeBlocks = try dataManager.loadTimeBlocks(for: date)
+                
+                // Load or create daily progress
+                dailyProgress = try dataManager.loadOrCreateDailyProgress(for: date)
+                
+                // Update progress based on current time blocks
+                try dataManager.updateDailyProgress(for: date)
+                
+                // Reload progress after update
+                dailyProgress = try dataManager.loadDailyProgress(for: date)
+                
+                // Load weekly statistics
+                weeklyStats = try dataManager.getWeeklyStatistics(for: date)
+                
+                isLoading = false
+                
+            } catch {
+                errorMessage = "Failed to load daily summary: \(error.localizedDescription)"
+                print("Error loading daily summary: \(error)")
+                isLoading = false
+            }
         }
     }
     
@@ -85,34 +85,49 @@ class DailySummaryViewModel {
     func saveDayRatingAndNotes(rating: Int, notes: String) {
         guard let progress = dailyProgress else { return }
         
-        do {
-            if rating > 0 {
-                progress.setDayRating(rating)
+        Task { @MainActor in
+            do {
+                // Update the progress object
+                if rating > 0 {
+                    progress.setDayRating(rating)
+                }
+                
+                let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmedNotes.isEmpty {
+                    progress.setDayNotes(trimmedNotes)
+                }
+                
+                // Mark summary as viewed
+                progress.markSummaryViewed()
+                
+                // Save changes through data manager
+                try dataManager.updateDailyProgress(for: selectedDate)
+                
+                // Trigger success haptic
+                HapticManager.shared.lightImpact()
+                
+            } catch {
+                errorMessage = "Failed to save rating and notes: \(error.localizedDescription)"
+                HapticManager.shared.error()
             }
-            
-            if !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                progress.setDayNotes(notes)
-            }
-            
-            try dataManager.updateDailyProgress(for: selectedDate)
-            
-            // Mark summary as viewed
-            progress.markSummaryViewed()
-            
-        } catch {
-            errorMessage = "Failed to save rating and notes: \(error.localizedDescription)"
         }
     }
     
     /// Update a specific time block status from summary view
     func updateTimeBlockStatus(_ timeBlock: TimeBlock, to status: BlockStatus) {
-        do {
-            try dataManager.updateTimeBlockStatus(timeBlock, to: status)
-            refreshData() // Reload to show updated data
-            HapticManager.shared.success()
-        } catch {
-            errorMessage = "Failed to update time block: \(error.localizedDescription)"
-            HapticManager.shared.error()
+        Task { @MainActor in
+            do {
+                try dataManager.updateTimeBlockStatus(timeBlock, to: status)
+                
+                // Refresh data to show updated statistics
+                refreshData()
+                
+                HapticManager.shared.success()
+                
+            } catch {
+                errorMessage = "Failed to update time block: \(error.localizedDescription)"
+                HapticManager.shared.error()
+            }
         }
     }
     
@@ -177,41 +192,54 @@ class DailySummaryViewModel {
         switch progress.performanceLevel {
         case .excellent:
             insights.append("Outstanding work! You're building incredible momentum.")
-            insights.append("Consider sharing your success strategy with others.")
+            if progress.completedBlocks >= 5 {
+                insights.append("Managing \(progress.completedBlocks) blocks shows exceptional time management.")
+            }
             
         case .good:
             insights.append("Great job! You're on track to build lasting habits.")
-            insights.append("Small tweaks could help you reach excellent performance.")
+            if let suggestion = progress.suggestions.first {
+                insights.append(suggestion)
+            }
             
         case .fair:
             insights.append("Good progress! Consistency is key to improvement.")
-            insights.append("Try breaking larger blocks into smaller, manageable pieces.")
+            insights.append(contentsOf: progress.suggestions.prefix(2))
             
         case .poor:
             insights.append("Every step forward counts. Tomorrow is a new opportunity.")
-            insights.append("Consider reducing your time blocks to build confidence.")
+            if progress.skipRate > 0.5 {
+                insights.append("High skip rate detected. Consider shorter, more manageable blocks.")
+            }
             
         case .none:
             insights.append("Ready to start? Create your first time block!")
         }
         
-        // Skip rate insights
-        if progress.skipRate > 0.3 {
-            insights.append("High skip rate detected. Consider shorter time blocks.")
-        }
-        
         // Time-based insights
-        if progress.totalPlannedMinutes > 8 * 60 { // More than 8 hours
-            insights.append("Long days can be challenging. Remember to include breaks.")
+        if progress.totalPlannedMinutes > 8 * 60 {
+            insights.append("Remember to include breaks in long schedules for sustainability.")
         }
         
-        // Weekly context if available
+        // Weekly context insights
         if let weeklyStats = weeklyStats {
-            if weeklyStats.averageCompletion > progress.completionPercentage {
-                insights.append("Today was below your weekly average. You've got this!")
-            } else if weeklyStats.averageCompletion < progress.completionPercentage {
-                insights.append("Above your weekly average! Great improvement.")
+            let todayVsAverage = progress.completionPercentage - weeklyStats.averageCompletion
+            
+            if todayVsAverage > 0.2 {
+                insights.append("You're \(Int(todayVsAverage * 100))% above your weekly average! 🌟")
+            } else if todayVsAverage < -0.2 {
+                insights.append("Today was challenging, but you're still making progress.")
             }
+            
+            if weeklyStats.totalDays >= 7 && weeklyStats.averageCompletion > 0.7 {
+                insights.append("A full week of consistent progress - you're building a solid routine!")
+            }
+        }
+        
+        // Pattern insights
+        let completedCategories = Set(todaysTimeBlocks.filter { $0.status == .completed }.compactMap { $0.category })
+        if completedCategories.count >= 3 {
+            insights.append("Great balance across \(completedCategories.count) different life areas today.")
         }
         
         return insights
@@ -223,32 +251,39 @@ class DailySummaryViewModel {
         
         var suggestions: [String] = []
         
-        // Based on completion rate
-        if progress.completionPercentage < 0.5 {
-            suggestions.append("Start with 2-3 small time blocks to build momentum")
-            suggestions.append("Choose your easiest tasks first to gain confidence")
-        } else if progress.completionPercentage < 0.8 {
-            suggestions.append("You're doing well! Try adding one more manageable block")
-            suggestions.append("Focus on consistency over perfection")
+        // Completion rate suggestions
+        if progress.completionPercentage < 0.5 && progress.totalBlocks > 5 {
+            suggestions.append("Consider reducing to 3-4 essential blocks to build momentum.")
         }
         
-        // Based on skip patterns
-        if progress.skippedBlocks > progress.completedBlocks {
-            suggestions.append("Consider what's causing you to skip blocks")
-            suggestions.append("Try scheduling blocks at your most energetic times")
+        // Skip pattern analysis
+        let skippedBlocks = todaysTimeBlocks.filter { $0.status == .skipped }
+        if !skippedBlocks.isEmpty {
+            let categories = Set(skippedBlocks.compactMap { $0.category })
+            if categories.count == 1, let category = categories.first {
+                suggestions.append("Notice a pattern? \(category) blocks are frequently skipped.")
+            }
         }
         
-        // Time-based suggestions
-        let calendar = Calendar.current
-        let hour = calendar.component(.hour, from: Date())
+        // Time of day patterns
+        let morningBlocks = todaysTimeBlocks.filter {
+            Calendar.current.component(.hour, from: $0.startTime) < 12
+        }
+        let morningCompletion = morningBlocks.filter { $0.status == .completed }.count
         
-        if hour < 12 && progress.completionPercentage < 0.3 {
-            suggestions.append("Morning blocks set the tone - prioritize early wins")
-        } else if hour > 18 && progress.completionPercentage > 0.8 {
-            suggestions.append("Strong day! Plan tomorrow while momentum is high")
+        if morningBlocks.count > 0 && Double(morningCompletion) / Double(morningBlocks.count) < 0.5 {
+            suggestions.append("Morning blocks have lower completion. Are you a night owl?")
         }
         
-        return suggestions.isEmpty ? ["Keep up the great work!"] : suggestions
+        // Duration insights
+        let longBlocks = todaysTimeBlocks.filter { $0.durationMinutes > 90 }
+        let longBlocksSkipped = longBlocks.filter { $0.status == .skipped }.count
+        
+        if longBlocks.count > 0 && Double(longBlocksSkipped) / Double(longBlocks.count) > 0.5 {
+            suggestions.append("Long blocks (90+ min) are often skipped. Try breaking them down.")
+        }
+        
+        return suggestions.isEmpty ? ["Keep experimenting to find your optimal routine!"] : suggestions
     }
     
     // MARK: - Sharing & Export
@@ -262,48 +297,39 @@ class DailySummaryViewModel {
         let formatter = DateFormatter()
         formatter.dateStyle = .full
         
-        var text = "📊 Daily Summary - \(formatter.string(from: selectedDate))\n\n"
+        var text = """
+        📊 Daily Summary - \(formatter.string(from: selectedDate))
         
-        // Main stats
-        text += "✅ Completed: \(progress.completedBlocks)/\(progress.totalBlocks) blocks (\(progress.formattedCompletionPercentage))\n"
+        ✨ Performance: \(progress.performanceLevel.displayName) \(progress.performanceLevel.emoji)
+        📈 Completion: \(progress.formattedCompletionPercentage) (\(progress.completionSummary))
+        """
         
         if progress.totalPlannedMinutes > 0 {
-            text += "⏰ Time: \(progress.timeSummary)\n"
+            text += "\n⏰ Time: \(progress.timeSummary)"
         }
         
-        text += "📈 Performance: \(progress.performanceLevel.displayName) \(progress.performanceLevel.emoji)\n\n"
-        
-        // Breakdown by status
+        // Add breakdown if meaningful
         let counts = statusCounts
         if counts.completed > 0 || counts.skipped > 0 {
-            text += "📋 Breakdown:\n"
-            if counts.completed > 0 { text += "• Completed: \(counts.completed)\n" }
-            if counts.skipped > 0 { text += "• Skipped: \(counts.skipped)\n" }
-            if counts.inProgress > 0 { text += "• In Progress: \(counts.inProgress)\n" }
-            if counts.upcoming > 0 { text += "• Upcoming: \(counts.upcoming)\n" }
-            text += "\n"
+            text += "\n\n📋 Breakdown:"
+            if counts.completed > 0 { text += "\n• Completed: \(counts.completed)" }
+            if counts.inProgress > 0 { text += "\n• In Progress: \(counts.inProgress)" }
+            if counts.skipped > 0 { text += "\n• Skipped: \(counts.skipped)" }
+            if counts.upcoming > 0 { text += "\n• Upcoming: \(counts.upcoming)" }
         }
         
-        // Personal reflection
-        if progress.dayRating != nil || progress.dayNotes != nil {
-            text += "💭 Reflection:\n"
-            if let rating = progress.dayRating {
-                text += "Rating: \(String(repeating: "⭐", count: rating)) (\(rating)/5)\n"
-            }
-            if let notes = progress.dayNotes, !notes.isEmpty {
-                text += "Notes: \(notes)\n"
-            }
-            text += "\n"
+        // Add rating and reflection
+        if let rating = progress.dayRating {
+            text += "\n\n💭 Personal Rating: \(String(repeating: "⭐", count: rating))"
         }
         
-        // Weekly context if available
-        if let weeklyStats = weeklyStats {
-            text += "📈 Week Overview:\n"
-            text += "• Average: \(weeklyStats.formattedAverageCompletion)\n"
-            text += "• Total: \(weeklyStats.completionSummary)\n\n"
+        if let notes = progress.dayNotes, !notes.isEmpty {
+            text += "\n📝 Reflection: \(notes)"
         }
         
-        text += "Built with Routine Anchor 📱"
+        // Add motivational close
+        text += "\n\n\(progress.motivationalMessage)"
+        text += "\n\n—\nBuilt with Routine Anchor 🎯"
         
         return text
     }
@@ -314,71 +340,66 @@ class DailySummaryViewModel {
             return ["error": "No data available"]
         }
         
-        var exportData: [String: Any] = [:]
-        
-        // Basic info
-        exportData["date"] = ISO8601DateFormatter().string(from: selectedDate)
-        exportData["summary"] = progress.exportData
-        
-        // Time blocks
-        exportData["timeBlocks"] = todaysTimeBlocks.map { block in
-            return [
-                "id": block.id.uuidString,
-                "title": block.title,
-                "startTime": ISO8601DateFormatter().string(from: block.startTime),
-                "endTime": ISO8601DateFormatter().string(from: block.endTime),
-                "duration": block.durationMinutes,
-                "status": block.status.rawValue,
-                "notes": block.notes ?? "",
-                "category": block.category ?? "",
-                "icon": block.icon ?? ""
-            ]
-        }
-        
-        // Analysis
-        exportData["insights"] = getPersonalizedInsights()
-        exportData["suggestions"] = getImprovementSuggestions()
-        
-        // Weekly context
-        if let weeklyStats = weeklyStats {
-            exportData["weeklyContext"] = [
-                "totalDays": weeklyStats.totalDays,
-                "completedDays": weeklyStats.completedDays,
-                "averageCompletion": weeklyStats.averageCompletion,
-                "totalBlocks": weeklyStats.totalBlocks,
-                "totalCompleted": weeklyStats.totalCompleted
-            ]
-        }
-        
-        exportData["exportedAt"] = ISO8601DateFormatter().string(from: Date())
-        
-        return exportData
+        return [
+            "summary": [
+                "date": ISO8601DateFormatter().string(from: selectedDate),
+                "completionPercentage": progress.completionPercentage,
+                "performanceLevel": progress.performanceLevel.rawValue,
+                "totalBlocks": progress.totalBlocks,
+                "completedBlocks": progress.completedBlocks,
+                "skippedBlocks": progress.skippedBlocks,
+                "totalMinutes": progress.totalPlannedMinutes,
+                "completedMinutes": progress.completedMinutes,
+                "dayRating": progress.dayRating as Any,
+                "dayNotes": progress.dayNotes as Any
+            ],
+            "timeBlocks": todaysTimeBlocks.map { block in
+                [
+                    "id": block.id.uuidString,
+                    "title": block.title,
+                    "startTime": ISO8601DateFormatter().string(from: block.startTime),
+                    "endTime": ISO8601DateFormatter().string(from: block.endTime),
+                    "duration": block.durationMinutes,
+                    "status": block.status.rawValue,
+                    "category": block.category ?? "",
+                    "icon": block.icon ?? ""
+                ]
+            },
+            "insights": getPersonalizedInsights(),
+            "suggestions": getImprovementSuggestions(),
+            "weeklyContext": weeklyStats != nil ? [
+                "averageCompletion": weeklyStats!.averageCompletion,
+                "totalDays": weeklyStats!.totalDays,
+                "completedDays": weeklyStats!.completedDays
+            ] : nil,
+            "exportedAt": ISO8601DateFormatter().string(from: Date())
+        ]
     }
     
     // MARK: - Navigation Helpers
     
     /// Load previous day's data
     func loadPreviousDay() {
-        let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
+        guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) else { return }
         loadData(for: previousDay)
     }
     
     /// Load next day's data
     func loadNextDay() {
-        let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
+        guard let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) else { return }
         loadData(for: nextDay)
     }
     
-    /// Check if we can navigate to next day (don't go beyond today)
+    /// Check if we can navigate to next day
     var canNavigateToNextDay: Bool {
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
+        guard let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) else { return false }
         return Calendar.current.compare(tomorrow, to: Date(), toGranularity: .day) != .orderedDescending
     }
     
-    /// Check if we can navigate to previous day (reasonable limit)
+    /// Check if we have sufficient history to navigate back
     var canNavigateToPreviousDay: Bool {
-        let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
-        return Calendar.current.compare(selectedDate, to: thirtyDaysAgo, toGranularity: .day) == .orderedDescending
+        guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) else { return false }
+        return selectedDate > thirtyDaysAgo
     }
     
     // MARK: - Error Handling
@@ -386,7 +407,6 @@ class DailySummaryViewModel {
     /// Clear any error messages
     func clearError() {
         errorMessage = nil
-        dataManager.clearError()
     }
     
     /// Retry last failed operation
