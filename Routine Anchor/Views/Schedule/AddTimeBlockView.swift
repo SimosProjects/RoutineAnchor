@@ -1,309 +1,210 @@
 //
-//  AddTimeBlockView.swift
-//  Routine Anchor
-//
-//  Created by Christopher Simonson on 7/19/25.
+//  PremiumAddTimeBlockView.swift
+//  Routine Anchor - Premium Version (Refactored with Shared Components)
 //
 import SwiftUI
 
-struct AddTimeBlockView: View {
+struct PremiumAddTimeBlockView: View {
     @Environment(\.dismiss) private var dismiss
-    
-    // MARK: - Form Data
-    @State private var title = ""
-    @State private var startTime = Date()
-    @State private var endTime = Date()
-    @State private var notes = ""
-    @State private var category = ""
-    @State private var selectedIcon = ""
+    @StateObject private var formData = TimeBlockFormData()
     
     // MARK: - State
     @State private var showingValidationErrors = false
-    @State private var validationErrors: [String] = []
-    @State private var isFormValid = false
+    @State private var isVisible = false
     
     // MARK: - Callback
     let onSave: (String, Date, Date, String?, String?) -> Void
     
-    // MARK: - Constants
-    private let categories = ["Work", "Personal", "Health", "Learning", "Social", "Other"]
-    private let icons = ["💼", "🏠", "💪", "📚", "👥", "🎯", "☕", "🍽️", "🧘", "🎵", "📱", "🚗"]
-    
-    init(onSave: @escaping (String, Date, Date, String?, String?) -> Void) {
-        self.onSave = onSave
-        
-        // Set default times
-        let calendar = Calendar.current
-        let now = Date()
-        let nextHour = calendar.date(byAdding: .hour, value: 1, to: now) ?? now
-        
-        self._startTime = State(initialValue: calendar.dateInterval(of: .hour, for: nextHour)?.start ?? nextHour)
-        self._endTime = State(initialValue: calendar.date(byAdding: .hour, value: 1, to: nextHour) ?? nextHour)
-    }
-    
     var body: some View {
-        NavigationView {
-            Form {
+        PremiumTimeBlockFormView(
+            title: "New Time Block",
+            icon: "plus.circle",
+            subtitle: "Add structure to your day",
+            onDismiss: { dismiss() }
+        ) {
+            VStack(spacing: 24) {
                 // Basic Information Section
-                Section {
-                    TextField("Time block title", text: $title)
-                        .font(TypographyConstants.Body.primary)
-                    
-                    TextField("Notes (optional)", text: $notes, axis: .vertical)
-                        .font(TypographyConstants.Body.secondary)
-                        .lineLimit(2...4)
-                } header: {
-                    Text("Basic Information")
-                } footer: {
-                    if !title.isEmpty && title.count < 3 {
-                        Text("Title should be at least 3 characters")
-                            .foregroundColor(Color.errorRed)
-                    }
-                }
+                basicInfoSection
                 
                 // Time Section
-                Section {
-                    DatePicker("Start time", selection: $startTime, displayedComponents: .hourAndMinute)
-                        .font(TypographyConstants.Body.primary)
-                    
-                    DatePicker("End time", selection: $endTime, displayedComponents: .hourAndMinute)
-                        .font(TypographyConstants.Body.primary)
-                    
-                    HStack {
-                        Text("Duration")
-                            .font(TypographyConstants.Body.primary)
-                        
-                        Spacer()
-                        
-                        Text(formattedDuration)
-                            .font(TypographyConstants.UI.timeBlock)
-                            .foregroundColor(durationColor)
-                            .fontWeight(.medium)
-                    }
-                } header: {
-                    Text("Schedule")
-                } footer: {
-                    if startTime >= endTime {
-                        Text("End time must be after start time")
-                            .foregroundColor(Color.errorRed)
-                    } else if durationMinutes > 480 {
-                        Text("Long time blocks may be hard to complete")
-                            .foregroundColor(Color.warningOrange)
-                    }
-                }
+                timeSection
                 
-                // Category Section
-                Section {
-                    Picker("Category", selection: $category) {
-                        Text("No Category").tag("")
-                        ForEach(categories, id: \.self) { cat in
-                            Text(cat).tag(cat)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .font(TypographyConstants.Body.primary)
-                } header: {
-                    Text("Organization")
-                }
+                // Organization Section
+                organizationSection
                 
                 // Icon Section
-                Section {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            // No icon option
-                            Button {
-                                selectedIcon = ""
-                            } label: {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(selectedIcon.isEmpty ? Color.primaryBlue.opacity(0.2) : Color.clear)
-                                    .frame(width: 44, height: 44)
-                                    .overlay {
-                                        Image(systemName: "minus.circle")
-                                            .foregroundColor(selectedIcon.isEmpty ? Color.primaryBlue : Color.textSecondary)
-                                    }
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(selectedIcon.isEmpty ? Color.primaryBlue : Color.clear, lineWidth: 2)
-                                    }
-                            }
-                            
-                            // Icon options
-                            ForEach(icons, id: \.self) { icon in
-                                Button {
-                                    selectedIcon = icon
-                                } label: {
-                                    Text(icon)
-                                        .font(.system(size: 24))
-                                        .frame(width: 44, height: 44)
-                                        .background(selectedIcon == icon ? Color.primaryBlue.opacity(0.2) : Color.clear)
-                                        .cornerRadius(8)
-                                        .overlay {
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(selectedIcon == icon ? Color.primaryBlue : Color.clear, lineWidth: 2)
-                                        }
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 4)
-                    }
-                } header: {
-                    Text("Icon (Optional)")
-                } footer: {
-                    Text("Choose an icon to help identify this time block")
-                }
+                iconSection
                 
                 // Quick Duration Section
-                Section {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach([15, 30, 45, 60, 90, 120], id: \.self) { minutes in
-                                Button {
-                                    setDuration(minutes: minutes)
-                                } label: {
-                                    Text("\(minutes)m")
-                                        .font(TypographyConstants.UI.caption)
-                                        .fontWeight(.medium)
-                                        .foregroundColor(Color.primaryBlue)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(Color.primaryBlue.opacity(0.1))
-                                        .cornerRadius(6)
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 4)
-                    }
-                } header: {
-                    Text("Quick Duration")
-                } footer: {
-                    Text("Tap to quickly set common durations")
-                }
-            }
-            .navigationTitle("New Time Block")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .foregroundColor(Color.textSecondary)
-                }
+                quickDurationSection
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveTimeBlock()
-                    }
-                    .foregroundColor(isFormValid ? Color.primaryBlue : Color.textSecondary)
-                    .fontWeight(.semibold)
-                    .disabled(!isFormValid)
-                }
-            }
-            .onChange(of: title) { _, _ in validateForm() }
-            .onChange(of: startTime) { _, _ in validateForm() }
-            .onChange(of: endTime) { _, _ in validateForm() }
-            .onAppear {
-                validateForm()
+                // Action Buttons
+                actionButtons
             }
         }
+        .onAppear {
+            formData.validateForm()
+            
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.3)) {
+                isVisible = true
+            }
+        }
+        .onChange(of: formData.title) { _, _ in formData.validateForm() }
+        .onChange(of: formData.startTime) { _, _ in formData.validateForm() }
+        .onChange(of: formData.endTime) { _, _ in formData.validateForm() }
         .alert("Invalid Time Block", isPresented: $showingValidationErrors) {
             Button("OK") {}
         } message: {
-            Text(validationErrors.joined(separator: "\n"))
+            Text(formData.validationErrors.joined(separator: "\n"))
         }
     }
     
-    // MARK: - Computed Properties
+    // MARK: - Form Sections
     
-    private var durationMinutes: Int {
-        max(0, Int(endTime.timeIntervalSince(startTime) / 60))
+    private var basicInfoSection: some View {
+        PremiumFormSection(
+            title: "Basic Information",
+            icon: "doc.text",
+            color: Color.premiumBlue
+        ) {
+            VStack(spacing: 16) {
+                PremiumTextField(
+                    title: "Title",
+                    text: $formData.title,
+                    placeholder: "What will you be doing?",
+                    icon: "textformat"
+                )
+                
+                PremiumTextField(
+                    title: "Notes",
+                    text: $formData.notes,
+                    placeholder: "Add details or reminders (optional)",
+                    icon: "note.text",
+                    isMultiline: true
+                )
+            }
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(x: isVisible ? 0 : -20)
     }
     
-    private var formattedDuration: String {
-        let hours = durationMinutes / 60
-        let minutes = durationMinutes % 60
-        
-        if hours > 0 && minutes > 0 {
-            return "\(hours)h \(minutes)m"
-        } else if hours > 0 {
-            return "\(hours)h"
-        } else {
-            return "\(minutes)m"
+    private var timeSection: some View {
+        PremiumFormSection(
+            title: "Schedule",
+            icon: "clock",
+            color: Color.premiumGreen
+        ) {
+            VStack(spacing: 16) {
+                HStack(spacing: 16) {
+                    PremiumTimePicker(
+                        title: "Start",
+                        selection: $formData.startTime,
+                        icon: "play.circle"
+                    )
+                    
+                    PremiumTimePicker(
+                        title: "End",
+                        selection: $formData.endTime,
+                        icon: "stop.circle"
+                    )
+                }
+                
+                DurationCard(
+                    minutes: formData.durationMinutes,
+                    color: formData.durationColor
+                )
+            }
         }
+        .opacity(isVisible ? 1 : 0)
+        .offset(x: isVisible ? 0 : 20)
     }
     
-    private var durationColor: Color {
-        switch durationMinutes {
-        case 0:
-            return Color.errorRed
-        case 1...30:
-            return Color.warningOrange
-        case 31...120:
-            return Color.successGreen
-        case 121...240:
-            return Color.primaryBlue
-        default:
-            return Color.warningOrange
+    private var organizationSection: some View {
+        PremiumFormSection(
+            title: "Organization",
+            icon: "folder",
+            color: Color.premiumPurple
+        ) {
+            CategorySelector(
+                categories: formData.categories,
+                selectedCategory: $formData.category
+            )
         }
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
     }
     
-    // MARK: - Methods
-    
-    private func validateForm() {
-        validationErrors.removeAll()
-        
-        // Title validation
-        if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            validationErrors.append("Title is required")
-        } else if title.count < 3 {
-            validationErrors.append("Title must be at least 3 characters")
+    private var iconSection: some View {
+        PremiumFormSection(
+            title: "Icon",
+            icon: "face.smiling",
+            color: Color.premiumTeal
+        ) {
+            IconSelector(
+                icons: formData.icons,
+                selectedIcon: $formData.selectedIcon
+            )
         }
-        
-        // Time validation
-        if startTime >= endTime {
-            validationErrors.append("End time must be after start time")
-        }
-        
-        if durationMinutes < 1 {
-            validationErrors.append("Duration must be at least 1 minute")
-        }
-        
-        if durationMinutes > 24 * 60 {
-            validationErrors.append("Duration cannot exceed 24 hours")
-        }
-        
-        isFormValid = validationErrors.isEmpty
+        .opacity(isVisible ? 1 : 0)
+        .offset(x: isVisible ? 0 : -20)
     }
     
-    private func setDuration(minutes: Int) {
-        endTime = Calendar.current.date(byAdding: .minute, value: minutes, to: startTime) ?? endTime
-        validateForm()
+    private var quickDurationSection: some View {
+        PremiumFormSection(
+            title: "Quick Duration",
+            icon: "timer",
+            color: Color.premiumWarning
+        ) {
+            QuickDurationSelector { minutes in
+                formData.setDuration(minutes: minutes)
+            }
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(x: isVisible ? 0 : 20)
     }
+    
+    private var actionButtons: some View {
+        VStack(spacing: 16) {
+            PremiumButton(
+                title: "Create Time Block",
+                style: .gradient,
+                action: saveTimeBlock
+            )
+            .disabled(!formData.isFormValid)
+            .opacity(formData.isFormValid ? 1.0 : 0.6)
+            
+            SecondaryActionButton(
+                title: "Cancel",
+                icon: "xmark",
+                action: { dismiss() }
+            )
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
+    }
+    
+    // MARK: - Actions
     
     private func saveTimeBlock() {
-        validateForm()
+        formData.validateForm()
         
-        guard isFormValid else {
+        guard formData.isFormValid else {
             showingValidationErrors = true
             return
         }
         
-        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        let finalNotes = trimmedNotes.isEmpty ? nil : trimmedNotes
-        let finalCategory = category.isEmpty ? nil : category
+        let (title, notes, category) = formData.prepareForSave()
         
-        onSave(trimmedTitle, startTime, endTime, finalNotes, finalCategory)
+        onSave(title, formData.startTime, formData.endTime, notes, category)
         
-        // Add haptic feedback
-        HapticManager.shared.success()
-        
+        HapticManager.shared.premiumSuccess()
         dismiss()
     }
 }
 
 // MARK: - Preview
 #Preview {
-    AddTimeBlockView { title, startTime, endTime, notes, category in
+    PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
         print("Saving: \(title) from \(startTime) to \(endTime)")
     }
 }

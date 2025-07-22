@@ -319,13 +319,6 @@ extension MainTabView {
 
 // MARK: - Premium View Placeholders
 
-struct PremiumScheduleBuilderView: View {
-    var body: some View {
-        Text("Premium Schedule Builder")
-            .foregroundStyle(.white)
-    }
-}
-
 struct PremiumDailySummaryView: View {
     var body: some View {
         Text("Premium Daily Summary")

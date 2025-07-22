@@ -1,307 +1,98 @@
 //
-//  EditTimeBlockView.swift
-//  Routine Anchor
-//
-//  Created by Christopher Simonson on 7/19/25.
+//  PremiumEditTimeBlockView.swift
+//  Routine Anchor - Premium Version
 //
 import SwiftUI
 
-struct EditTimeBlockView: View {
+struct PremiumEditTimeBlockView: View {
     @Environment(\.dismiss) private var dismiss
     
     // MARK: - Original Data
     let originalTimeBlock: TimeBlock
     
     // MARK: - Form Data
-    @State private var title = ""
-    @State private var startTime = Date()
-    @State private var endTime = Date()
-    @State private var notes = ""
-    @State private var category = ""
-    @State private var selectedIcon = ""
+    @StateObject private var formData: TimeBlockFormData
     
     // MARK: - State
     @State private var showingValidationErrors = false
-    @State private var validationErrors: [String] = []
-    @State private var isFormValid = false
-    @State private var hasChanges = false
     @State private var showingDiscardAlert = false
+    @State private var isVisible = false
     
     // MARK: - Callback
     let onSave: (TimeBlock) -> Void
     
-    // MARK: - Constants
-    private let categories = ["Work", "Personal", "Health", "Learning", "Social", "Other"]
-    private let icons = ["💼", "🏠", "💪", "📚", "👥", "🎯", "☕", "🍽️", "🧘", "🎵", "📱", "🚗"]
-    
     init(timeBlock: TimeBlock, onSave: @escaping (TimeBlock) -> Void) {
         self.originalTimeBlock = timeBlock
         self.onSave = onSave
-        
-        // Initialize state with existing values
-        self._title = State(initialValue: timeBlock.title)
-        self._startTime = State(initialValue: timeBlock.startTime)
-        self._endTime = State(initialValue: timeBlock.endTime)
-        self._notes = State(initialValue: timeBlock.notes ?? "")
-        self._category = State(initialValue: timeBlock.category ?? "")
-        self._selectedIcon = State(initialValue: timeBlock.icon ?? "")
+        self._formData = StateObject(wrappedValue: TimeBlockFormData(from: timeBlock))
     }
     
     var body: some View {
-        NavigationView {
-            Form {
-                // Status Section (if block has been started)
+        PremiumTimeBlockFormView(
+            title: "Edit Time Block",
+            icon: "pencil.circle",
+            subtitle: "Refine your schedule",
+            onDismiss: handleDismiss
+        ) {
+            VStack(spacing: 24) {
+                // Status section (if block has been started)
                 if originalTimeBlock.status != .notStarted {
-                    Section {
-                        HStack {
-                            originalTimeBlock.status.statusIndicator
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Current Status")
-                                    .font(TypographyConstants.UI.caption)
-                                    .foregroundColor(Color.textSecondary)
-                                
-                                Text(originalTimeBlock.status.displayName)
-                                    .font(TypographyConstants.Body.emphasized)
-                                    .foregroundColor(originalTimeBlock.status.color)
-                            }
-                            
-                            Spacer()
-                            
-                            if originalTimeBlock.status == .inProgress,
-                               let remainingMinutes = originalTimeBlock.remainingMinutes {
-                                VStack(alignment: .trailing, spacing: 2) {
-                                    Text("Time Left")
-                                        .font(TypographyConstants.UI.caption)
-                                        .foregroundColor(Color.textSecondary)
-                                    
-                                    Text("\(remainingMinutes)m")
-                                        .font(TypographyConstants.UI.timeBlock)
-                                        .foregroundColor(Color.warningOrange)
-                                        .fontWeight(.medium)
-                                }
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    } header: {
-                        Text("Status")
-                    } footer: {
-                        if originalTimeBlock.status != .notStarted {
-                            Text("This time block has been started. Changes will apply to future instances.")
-                        }
-                    }
+                    statusSection
                 }
                 
                 // Basic Information Section
-                Section {
-                    TextField("Time block title", text: $title)
-                        .font(TypographyConstants.Body.primary)
-                    
-                    TextField("Notes (optional)", text: $notes, axis: .vertical)
-                        .font(TypographyConstants.Body.secondary)
-                        .lineLimit(2...4)
-                } header: {
-                    Text("Basic Information")
-                } footer: {
-                    if !title.isEmpty && title.count < 3 {
-                        Text("Title should be at least 3 characters")
-                            .foregroundColor(Color.errorRed)
-                    }
-                }
+                basicInfoSection
                 
                 // Time Section
-                Section {
-                    DatePicker("Start time", selection: $startTime, displayedComponents: .hourAndMinute)
-                        .font(TypographyConstants.Body.primary)
-                        .disabled(originalTimeBlock.status == .inProgress)
-                    
-                    DatePicker("End time", selection: $endTime, displayedComponents: .hourAndMinute)
-                        .font(TypographyConstants.Body.primary)
-                    
-                    HStack {
-                        Text("Duration")
-                            .font(TypographyConstants.Body.primary)
-                        
-                        Spacer()
-                        
-                        Text(formattedDuration)
-                            .font(TypographyConstants.UI.timeBlock)
-                            .foregroundColor(durationColor)
-                            .fontWeight(.medium)
-                    }
-                } header: {
-                    Text("Schedule")
-                } footer: {
-                    if originalTimeBlock.status == .inProgress {
-                        Text("Start time cannot be changed for active blocks")
-                            .foregroundColor(Color.warningOrange)
-                    } else if startTime >= endTime {
-                        Text("End time must be after start time")
-                            .foregroundColor(Color.errorRed)
-                    } else if durationMinutes > 480 {
-                        Text("Long time blocks may be hard to complete")
-                            .foregroundColor(Color.warningOrange)
-                    }
-                }
+                timeSection
                 
-                // Category Section
-                Section {
-                    Picker("Category", selection: $category) {
-                        Text("No Category").tag("")
-                        ForEach(categories, id: \.self) { cat in
-                            Text(cat).tag(cat)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .font(TypographyConstants.Body.primary)
-                } header: {
-                    Text("Organization")
-                }
+                // Organization Section
+                organizationSection
                 
                 // Icon Section
-                Section {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            // No icon option
-                            Button {
-                                selectedIcon = ""
-                            } label: {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(selectedIcon.isEmpty ? Color.primaryBlue.opacity(0.2) : Color.clear)
-                                    .frame(width: 44, height: 44)
-                                    .overlay {
-                                        Image(systemName: "minus.circle")
-                                            .foregroundColor(selectedIcon.isEmpty ? Color.primaryBlue : Color.textSecondary)
-                                    }
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(selectedIcon.isEmpty ? Color.primaryBlue : Color.clear, lineWidth: 2)
-                                    }
-                            }
-                            
-                            // Icon options
-                            ForEach(icons, id: \.self) { icon in
-                                Button {
-                                    selectedIcon = icon
-                                } label: {
-                                    Text(icon)
-                                        .font(.system(size: 24))
-                                        .frame(width: 44, height: 44)
-                                        .background(selectedIcon == icon ? Color.primaryBlue.opacity(0.2) : Color.clear)
-                                        .cornerRadius(8)
-                                        .overlay {
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(selectedIcon == icon ? Color.primaryBlue : Color.clear, lineWidth: 2)
-                                        }
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 4)
-                    }
-                } header: {
-                    Text("Icon (Optional)")
-                }
+                iconSection
                 
                 // Quick Duration Section (only if not in progress)
                 if originalTimeBlock.status != .inProgress {
-                    Section {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach([15, 30, 45, 60, 90, 120], id: \.self) { minutes in
-                                    Button {
-                                        setDuration(minutes: minutes)
-                                    } label: {
-                                        Text("\(minutes)m")
-                                            .font(TypographyConstants.UI.caption)
-                                            .fontWeight(.medium)
-                                            .foregroundColor(Color.primaryBlue)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(Color.primaryBlue.opacity(0.1))
-                                            .cornerRadius(6)
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 4)
-                        }
-                    } header: {
-                        Text("Quick Duration")
-                    } footer: {
-                        Text("Tap to quickly set common durations")
-                    }
+                    quickDurationSection
                 }
                 
                 // History Section (if block has history)
                 if originalTimeBlock.status != .notStarted {
-                    Section {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("Created")
-                                    .font(TypographyConstants.UI.caption)
-                                    .foregroundColor(Color.textSecondary)
-                                
-                                Spacer()
-                                
-                                Text(originalTimeBlock.createdAt.formatted(date: .abbreviated, time: .shortened))
-                                    .font(TypographyConstants.UI.caption)
-                                    .foregroundColor(Color.textSecondary)
-                            }
-                            
-                            HStack {
-                                Text("Last Updated")
-                                    .font(TypographyConstants.UI.caption)
-                                    .foregroundColor(Color.textSecondary)
-                                
-                                Spacer()
-                                
-                                Text(originalTimeBlock.updatedAt.formatted(date: .abbreviated, time: .shortened))
-                                    .font(TypographyConstants.UI.caption)
-                                    .foregroundColor(Color.textSecondary)
-                            }
-                        }
-                    } header: {
-                        Text("History")
-                    }
-                }
-            }
-            .navigationTitle("Edit Time Block")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(hasChanges ? "Cancel" : "Done") {
-                        if hasChanges {
-                            showingDiscardAlert = true
-                        } else {
-                            dismiss()
-                        }
-                    }
-                    .foregroundColor(Color.textSecondary)
+                    historySection
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveTimeBlock()
-                    }
-                    .foregroundColor(isFormValid && hasChanges ? Color.primaryBlue : Color.textSecondary)
-                    .fontWeight(.semibold)
-                    .disabled(!isFormValid || !hasChanges)
-                }
-            }
-            .onChange(of: title) { _, _ in checkForChanges(); validateForm() }
-            .onChange(of: startTime) { _, _ in checkForChanges(); validateForm() }
-            .onChange(of: endTime) { _, _ in checkForChanges(); validateForm() }
-            .onChange(of: notes) { _, _ in checkForChanges() }
-            .onChange(of: category) { _, _ in checkForChanges() }
-            .onChange(of: selectedIcon) { _, _ in checkForChanges() }
-            .onAppear {
-                validateForm()
-                checkForChanges()
+                // Action Buttons
+                actionButtons
             }
         }
+        .onAppear {
+            formData.validateForm()
+            formData.checkForChanges()
+            
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.3)) {
+                isVisible = true
+            }
+        }
+        .onChange(of: formData.title) { _, _ in
+            formData.checkForChanges()
+            formData.validateForm()
+        }
+        .onChange(of: formData.startTime) { _, _ in
+            formData.checkForChanges()
+            formData.validateForm()
+        }
+        .onChange(of: formData.endTime) { _, _ in
+            formData.checkForChanges()
+            formData.validateForm()
+        }
+        .onChange(of: formData.notes) { _, _ in formData.checkForChanges() }
+        .onChange(of: formData.category) { _, _ in formData.checkForChanges() }
+        .onChange(of: formData.selectedIcon) { _, _ in formData.checkForChanges() }
         .alert("Invalid Time Block", isPresented: $showingValidationErrors) {
             Button("OK") {}
         } message: {
-            Text(validationErrors.joined(separator: "\n"))
+            Text(formData.validationErrors.joined(separator: "\n"))
         }
         .alert("Discard Changes?", isPresented: $showingDiscardAlert) {
             Button("Discard", role: .destructive) {
@@ -313,106 +104,259 @@ struct EditTimeBlockView: View {
         }
     }
     
+    // MARK: - Status Section
+    private var statusSection: some View {
+        PremiumFormSection(
+            title: "Current Status",
+            icon: originalTimeBlock.status.iconName,
+            color: statusColor
+        ) {
+            HStack(spacing: 16) {
+                // Status indicator
+                ZStack {
+                    Circle()
+                        .fill(statusColor.opacity(0.2))
+                        .frame(width: 48, height: 48)
+                    
+                    Image(systemName: originalTimeBlock.status.iconName)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(statusColor)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(originalTimeBlock.status.displayName)
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    if originalTimeBlock.status == .inProgress,
+                       let remainingMinutes = originalTimeBlock.remainingMinutes {
+                        Text("\(remainingMinutes) minutes remaining")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Color.premiumWarning)
+                    } else {
+                        Text("Status cannot be changed here")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Color.white.opacity(0.6))
+                    }
+                }
+                
+                Spacer()
+            }
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
+    }
+    
+    // MARK: - Form Sections
+    
+    private var basicInfoSection: some View {
+        PremiumFormSection(
+            title: "Basic Information",
+            icon: "doc.text",
+            color: Color.premiumBlue
+        ) {
+            VStack(spacing: 16) {
+                PremiumTextField(
+                    title: "Title",
+                    text: $formData.title,
+                    placeholder: "What will you be doing?",
+                    icon: "textformat"
+                )
+                
+                PremiumTextField(
+                    title: "Notes",
+                    text: $formData.notes,
+                    placeholder: "Add details or reminders (optional)",
+                    icon: "note.text",
+                    isMultiline: true
+                )
+            }
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(x: isVisible ? 0 : -20)
+    }
+    
+    private var timeSection: some View {
+        PremiumFormSection(
+            title: "Schedule",
+            icon: "clock",
+            color: Color.premiumGreen
+        ) {
+            VStack(spacing: 16) {
+                if originalTimeBlock.status == .inProgress {
+                    // Warning for active blocks
+                    HStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(Color.premiumWarning)
+                        
+                        Text("Start time cannot be changed for active blocks")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Color.premiumWarning)
+                        
+                        Spacer()
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.premiumWarning.opacity(0.15))
+                    )
+                }
+                
+                HStack(spacing: 16) {
+                    PremiumTimePicker(
+                        title: "Start",
+                        selection: $formData.startTime,
+                        icon: "play.circle",
+                        isDisabled: originalTimeBlock.status == .inProgress
+                    )
+                    
+                    PremiumTimePicker(
+                        title: "End",
+                        selection: $formData.endTime,
+                        icon: "stop.circle"
+                    )
+                }
+                
+                DurationCard(
+                    minutes: formData.durationMinutes,
+                    color: formData.durationColor
+                )
+            }
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(x: isVisible ? 0 : 20)
+    }
+    
+    private var organizationSection: some View {
+        PremiumFormSection(
+            title: "Organization",
+            icon: "folder",
+            color: Color.premiumPurple
+        ) {
+            CategorySelector(
+                categories: formData.categories,
+                selectedCategory: $formData.category
+            )
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
+    }
+    
+    private var iconSection: some View {
+        PremiumFormSection(
+            title: "Icon",
+            icon: "face.smiling",
+            color: Color.premiumTeal
+        ) {
+            IconSelector(
+                icons: formData.icons,
+                selectedIcon: $formData.selectedIcon
+            )
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(x: isVisible ? 0 : -20)
+    }
+    
+    private var quickDurationSection: some View {
+        PremiumFormSection(
+            title: "Quick Duration",
+            icon: "timer",
+            color: Color.premiumWarning
+        ) {
+            QuickDurationSelector { minutes in
+                formData.setDuration(minutes: minutes)
+            }
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(x: isVisible ? 0 : 20)
+    }
+    
+    private var historySection: some View {
+        PremiumFormSection(
+            title: "History",
+            icon: "clock.arrow.circlepath",
+            color: Color.white.opacity(0.6)
+        ) {
+            VStack(spacing: 12) {
+                HistoryRow(
+                    title: "Created",
+                    date: originalTimeBlock.createdAt,
+                    icon: "plus.circle"
+                )
+                
+                HistoryRow(
+                    title: "Last Updated",
+                    date: originalTimeBlock.updatedAt,
+                    icon: "pencil.circle"
+                )
+            }
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
+    }
+    
+    private var actionButtons: some View {
+        VStack(spacing: 16) {
+            PremiumButton(
+                title: formData.hasChanges ? "Save Changes" : "No Changes Made",
+                style: .gradient,
+                action: saveTimeBlock
+            )
+            .disabled(!formData.isFormValid || !formData.hasChanges)
+            .opacity((formData.isFormValid && formData.hasChanges) ? 1.0 : 0.6)
+            
+            SecondaryActionButton(
+                title: formData.hasChanges ? "Discard Changes" : "Close",
+                icon: formData.hasChanges ? "trash" : "xmark",
+                action: handleDismiss
+            )
+        }
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
+    }
+    
     // MARK: - Computed Properties
     
-    private var durationMinutes: Int {
-        max(0, Int(endTime.timeIntervalSince(startTime) / 60))
+    private var statusColor: Color {
+        switch originalTimeBlock.status {
+        case .completed: return Color.premiumGreen
+        case .inProgress: return Color.premiumBlue
+        case .notStarted: return Color.premiumPurple
+        case .skipped: return Color.premiumError
+        }
     }
     
-    private var formattedDuration: String {
-        let hours = durationMinutes / 60
-        let minutes = durationMinutes % 60
-        
-        if hours > 0 && minutes > 0 {
-            return "\(hours)h \(minutes)m"
-        } else if hours > 0 {
-            return "\(hours)h"
+    // MARK: - Actions
+    
+    private func handleDismiss() {
+        if formData.hasChanges {
+            showingDiscardAlert = true
         } else {
-            return "\(minutes)m"
+            dismiss()
         }
-    }
-    
-    private var durationColor: Color {
-        switch durationMinutes {
-        case 0:
-            return Color.errorRed
-        case 1...30:
-            return Color.warningOrange
-        case 31...120:
-            return Color.successGreen
-        case 121...240:
-            return Color.primaryBlue
-        default:
-            return Color.warningOrange
-        }
-    }
-    
-    // MARK: - Methods
-    
-    private func checkForChanges() {
-        hasChanges = title != originalTimeBlock.title ||
-                    startTime != originalTimeBlock.startTime ||
-                    endTime != originalTimeBlock.endTime ||
-                    notes != (originalTimeBlock.notes ?? "") ||
-                    category != (originalTimeBlock.category ?? "") ||
-                    selectedIcon != (originalTimeBlock.icon ?? "")
-    }
-    
-    private func validateForm() {
-        validationErrors.removeAll()
-        
-        // Title validation
-        if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            validationErrors.append("Title is required")
-        } else if title.count < 3 {
-            validationErrors.append("Title must be at least 3 characters")
-        }
-        
-        // Time validation
-        if startTime >= endTime {
-            validationErrors.append("End time must be after start time")
-        }
-        
-        if durationMinutes < 1 {
-            validationErrors.append("Duration must be at least 1 minute")
-        }
-        
-        if durationMinutes > 24 * 60 {
-            validationErrors.append("Duration cannot exceed 24 hours")
-        }
-        
-        isFormValid = validationErrors.isEmpty
-    }
-    
-    private func setDuration(minutes: Int) {
-        endTime = Calendar.current.date(byAdding: .minute, value: minutes, to: startTime) ?? endTime
-        validateForm()
     }
     
     private func saveTimeBlock() {
-        validateForm()
+        formData.validateForm()
         
-        guard isFormValid else {
+        guard formData.isFormValid else {
             showingValidationErrors = true
             return
         }
         
         // Update the time block with new values
-        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        let (title, notes, category) = formData.prepareForSave()
         
-        originalTimeBlock.title = trimmedTitle
-        originalTimeBlock.startTime = startTime
-        originalTimeBlock.endTime = endTime
-        originalTimeBlock.notes = trimmedNotes.isEmpty ? nil : trimmedNotes
-        originalTimeBlock.category = category.isEmpty ? nil : category
-        originalTimeBlock.icon = selectedIcon.isEmpty ? nil : selectedIcon
+        originalTimeBlock.title = title
+        originalTimeBlock.startTime = formData.startTime
+        originalTimeBlock.endTime = formData.endTime
+        originalTimeBlock.notes = notes
+        originalTimeBlock.category = category
         
         onSave(originalTimeBlock)
         
-        // Add haptic feedback
-        HapticManager.shared.success()
-        
+        HapticManager.shared.premiumSuccess()
         dismiss()
     }
 }
@@ -426,8 +370,9 @@ struct EditTimeBlockView: View {
         notes: "Start the day right",
         category: "Personal"
     )
+    sampleBlock.icon = "🌅"
     
-    return EditTimeBlockView(timeBlock: sampleBlock) { updatedBlock in
+    return PremiumEditTimeBlockView(timeBlock: sampleBlock) { updatedBlock in
         print("Updated: \(updatedBlock.title)")
     }
 }

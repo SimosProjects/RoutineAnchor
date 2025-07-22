@@ -160,7 +160,7 @@ struct HelpView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 ForEach(HelpCategory.allCases, id: \.self) { category in
-                    CategoryChip(
+                    HelpCategoryChip(
                         category: category,
                         isSelected: selectedCategory == category,
                         action: { selectedCategory = category }
@@ -196,6 +196,43 @@ struct HelpView: View {
         if let url = URL(string: "mailto:support@routineanchor.com?subject=Help%20Request") {
             UIApplication.shared.open(url)
         }
+    }
+}
+
+struct HelpCategoryChip: View {
+    let category: HelpCategory
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: {
+            HapticManager.shared.lightImpact()
+            action()
+        }) {
+            HStack(spacing: 6) {
+                Image(systemName: category.icon)
+                    .font(.system(size: 14, weight: .medium))
+                
+                Text(category.title)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundStyle(isSelected ? .white : Color.premiumTextSecondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isSelected ? category.color : Color.white.opacity(0.1))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(
+                        isSelected ? Color.clear : Color.white.opacity(0.15),
+                        lineWidth: 1
+                    )
+            )
+        }
+        .scaleEffect(isSelected ? 1.0 : 0.95)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
     }
 }
 
@@ -350,43 +387,6 @@ private let helpItems: [HelpItem] = [
 ]
 
 // MARK: - Supporting Views
-struct CategoryChip: View {
-    let category: HelpCategory
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: {
-            HapticManager.shared.lightImpact()
-            action()
-        }) {
-            HStack(spacing: 6) {
-                Image(systemName: category.icon)
-                    .font(.system(size: 14, weight: .medium))
-                
-                Text(category.title)
-                    .font(.system(size: 14, weight: .medium))
-            }
-            .foregroundStyle(isSelected ? .white : Color.premiumTextSecondary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? category.color : Color.white.opacity(0.1))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(
-                        isSelected ? Color.clear : Color.white.opacity(0.15),
-                        lineWidth: 1
-                    )
-            )
-        }
-        .scaleEffect(isSelected ? 1.0 : 0.95)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
-    }
-}
-
 struct HelpItemView: View {
     let item: HelpItem
     @State private var isExpanded = false
