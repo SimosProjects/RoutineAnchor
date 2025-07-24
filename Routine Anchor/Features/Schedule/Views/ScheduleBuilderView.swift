@@ -58,9 +58,6 @@ struct PremiumScheduleBuilderView: View {
                     updateScrollProgress(value, geometry: geometry)
                 }
             }
-            
-            // Floating Action Button
-            floatingActionButton
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -101,200 +98,37 @@ struct PremiumScheduleBuilderView: View {
         .actionSheet(isPresented: $showingQuickAdd) {
             quickAddActionSheet
         }
-        .alert("Error", isPresented: .constant(viewModel?.errorMessage != nil)) {
-            Button("Retry") {
-                viewModel?.retryLastOperation()
-            }
-            Button("Dismiss", role: .cancel) {
-                viewModel?.clearError()
-            }
-        } message: {
-            Text(viewModel?.errorMessage ?? "")
+        .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlock)) { _ in
+            showingAddBlock = true
         }
     }
     
     // MARK: - Header Section
     private var headerSection: some View {
-        VStack(spacing: 24) {
-            // Top navigation bar
+        VStack(spacing: 20) {
             HStack {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.8))
-                        .frame(width: 36, height: 36)
-                        .background(
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                                .background(
-                                    Circle().fill(Color.white.opacity(0.1))
-                                )
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Schedule Builder")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.premiumPurple, Color.premiumBlue],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                    
+                    Text("Design your perfect routine")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.7))
                 }
                 
                 Spacer()
-                
-                HStack(spacing: 16) {
-                    NavigationButton(
-                        icon: "sparkles",
-                        gradient: [Color.premiumPurple, Color.premiumBlue]
-                    ) {
-                        showingQuickAdd = true
-                    }
-                    
-                    NavigationButton(
-                        icon: "checkmark.circle",
-                        gradient: [Color.premiumGreen, Color.premiumTeal]
-                    ) {
-                        saveAndDismiss()
-                    }
-                }
             }
             .padding(.horizontal, 24)
-            
-            // Title and description
-            VStack(spacing: 16) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Schedule Builder")
-                            .font(.system(size: 34, weight: .bold, design: .rounded))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.premiumBlue, Color.premiumPurple],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                        
-                        Text("Craft your perfect day")
-                            .font(.system(size: 18, weight: .medium, design: .rounded))
-                            .foregroundStyle(Color.white.opacity(0.7))
-                    }
-                    
-                    Spacer()
-                    
-                    // Animated icon
-                    ZStack {
-                        Circle()
-                            .fill(
-                                RadialGradient(
-                                    colors: [
-                                        Color.premiumBlue.opacity(0.4),
-                                        Color.premiumPurple.opacity(0.2),
-                                        Color.clear
-                                    ],
-                                    center: .center,
-                                    startRadius: 20,
-                                    endRadius: 60
-                                )
-                            )
-                            .frame(width: 80, height: 80)
-                            .blur(radius: 20)
-                        
-                        Image(systemName: "calendar.badge.plus")
-                            .font(.system(size: 32, weight: .medium))
-                            .foregroundStyle(Color.premiumBlue)
-                            .scaleEffect(animationPhase == 0 ? 1.0 : 1.1)
-                    }
-                }
-                
-                // Summary card if has blocks
-                if let viewModel = viewModel, viewModel.hasTimeBlocks {
-                    summaryCard(viewModel: viewModel)
-                }
-            }
-            .padding(.horizontal, 24)
+            .padding(.top, 60)
+            .offset(y: headerOffset)
         }
-        .background(
-            GeometryReader { geo in
-                Color.clear
-                    .preference(key: ScrollOffsetPreferenceKey.self, value: geo.frame(in: .named("scroll")).minY)
-            }
-        )
-    }
-    
-    // MARK: - Summary Card
-    private func summaryCard(viewModel: ScheduleBuilderViewModel) -> some View {
-        HStack(spacing: 20) {
-            // Block count
-            VStack(spacing: 4) {
-                Text("\(viewModel.timeBlocks.count)")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.premiumBlue)
-                
-                Text("Blocks")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.6))
-                    .textCase(.uppercase)
-                    .tracking(1)
-            }
-            
-            Spacer()
-            
-            // Total duration
-            VStack(spacing: 4) {
-                Text(viewModel.formattedTotalDuration)
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.premiumGreen)
-                
-                Text("Total Time")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.6))
-                    .textCase(.uppercase)
-                    .tracking(1)
-            }
-            
-            Spacer()
-            
-            // Loading indicator
-            if viewModel.isLoading {
-                VStack(spacing: 4) {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        .scaleEffect(0.8)
-                    
-                    Text("Saving")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.6))
-                        .textCase(.uppercase)
-                        .tracking(1)
-                }
-            }
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.1),
-                                    Color.white.opacity(0.05)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.3),
-                            Color.white.opacity(0.1)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
-        .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
     }
     
     // MARK: - Main Content
@@ -424,7 +258,7 @@ struct PremiumScheduleBuilderView: View {
                             .frame(width: 200, height: 200)
                             .blur(radius: 30)
                         
-                        Image(systemName: "clock.badge.plus")
+                        Image(systemName: "plus.circle")
                             .font(.system(size: 80, weight: .thin))
                             .foregroundStyle(
                                 LinearGradient(
@@ -433,7 +267,6 @@ struct PremiumScheduleBuilderView: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            //.premiumFloat()
                     }
                 }
             }
@@ -453,36 +286,36 @@ struct PremiumScheduleBuilderView: View {
                     .multilineTextAlignment(.center)
                 
                 Text("Create time blocks to structure your day and build consistent, productive habits.")
-                    .font(.system(size: 18, weight: .regular, design: .rounded))
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Color.white.opacity(0.7))
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .padding(.horizontal, 40)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .padding(.horizontal, 40)
             
             Spacer()
             
-            // Actions
+            // Action buttons
             VStack(spacing: 16) {
                 PremiumButton(
-                    title: "Create Your First Block",
+                    title: "Add Your First Block",
                     style: .gradient,
                     action: {
-                        HapticManager.shared.premiumSuccess()
+                        HapticManager.shared.premiumImpact()
                         showingAddBlock = true
                     }
                 )
                 
                 SecondaryActionButton(
-                    title: "Use Quick Templates",
+                    title: "Use a Template",
                     icon: "sparkles",
                     action: {
-                        HapticManager.shared.premiumImpact()
+                        HapticManager.shared.lightImpact()
                         showingQuickAdd = true
                     }
                 )
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 40)
             .padding(.bottom, 40)
         }
     }
@@ -492,11 +325,11 @@ struct PremiumScheduleBuilderView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            // Elegant loading animation
+            // Loading animation
             ZStack {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(Color.premiumBlue.opacity(0.3))
+                        .fill(Color.premiumPurple.opacity(0.3))
                         .frame(width: 12, height: 12)
                         .scaleEffect(animationPhase == 0 ? 0.8 : 1.2)
                         .animation(
@@ -514,25 +347,6 @@ struct PremiumScheduleBuilderView: View {
                 .foregroundStyle(Color.white.opacity(0.7))
             
             Spacer()
-        }
-    }
-    
-    // MARK: - Floating Action Button
-    private var floatingActionButton: some View {
-        VStack {
-            Spacer()
-            HStack {
-                Spacer()
-                
-                if let viewModel = viewModel, viewModel.hasTimeBlocks {
-                    FloatingActionButton {
-                        HapticManager.shared.premiumImpact()
-                        showingAddBlock = true
-                    }
-                    .padding(.trailing, 24)
-                    .padding(.bottom, 120) // Above tab bar
-                }
-            }
         }
     }
     
@@ -626,88 +440,73 @@ struct PremiumScheduleBlockRowView: View {
                 }
             }
             
-            // Content
+            // Main content
             VStack(alignment: .leading, spacing: 8) {
-                // Title and icon
                 HStack(spacing: 8) {
                     if let icon = timeBlock.icon {
                         Text(icon)
-                            .font(.system(size: 16))
+                            .font(.system(size: 18))
                     }
                     
                     Text(timeBlock.title)
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white)
                         .lineLimit(1)
-                    
-                    Spacer()
                 }
                 
-                // Category and notes
-                if timeBlock.category != nil || timeBlock.notes != nil {
-                    HStack(spacing: 8) {
-                        if let category = timeBlock.category {
-                            Text(category)
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(categoryColor)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(
-                                    Capsule()
-                                        .fill(categoryColor.opacity(0.15))
-                                )
-                        }
+                if let notes = timeBlock.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundStyle(Color.white.opacity(0.6))
+                        .lineLimit(2)
+                }
+                
+                if let category = timeBlock.category {
+                    HStack(spacing: 4) {
+                        Image(systemName: "folder")
+                            .font(.system(size: 10, weight: .medium))
                         
-                        if let notes = timeBlock.notes, !notes.isEmpty {
-                            Text(notes)
-                                .font(.system(size: 12, weight: .regular))
-                                .foregroundStyle(Color.white.opacity(0.6))
-                                .lineLimit(1)
-                        }
-                        
-                        Spacer()
+                        Text(category)
+                            .font(.system(size: 12, weight: .medium))
                     }
+                    .foregroundStyle(Color.white.opacity(0.5))
                 }
             }
             
+            Spacer()
+            
             // Action buttons
             HStack(spacing: 8) {
-                Button(action: {
-                    HapticManager.shared.lightImpact()
-                    onEdit()
-                }) {
+                Button(action: onEdit) {
                     Image(systemName: "pencil")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(Color.premiumBlue)
-                        .frame(width: 28, height: 28)
+                        .frame(width: 36, height: 36)
                         .background(Color.premiumBlue.opacity(0.15))
-                        .cornerRadius(8)
+                        .cornerRadius(10)
                 }
                 
-                Button(action: {
-                    HapticManager.shared.lightImpact()
-                    onDelete()
-                }) {
+                Button(action: onDelete) {
                     Image(systemName: "trash")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(Color.premiumError)
-                        .frame(width: 28, height: 28)
+                        .frame(width: 36, height: 36)
                         .background(Color.premiumError.opacity(0.15))
-                        .cornerRadius(8)
+                        .cornerRadius(10)
                 }
             }
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 20)
                 .fill(.ultraThinMaterial)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 20)
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(backgroundOpacity),
-                                    Color.white.opacity(backgroundOpacity * 0.5)
+                                    Color.white.opacity(0.05),
+                                    Color.white.opacity(0.02)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -716,7 +515,7 @@ struct PremiumScheduleBlockRowView: View {
                 )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 20)
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -729,71 +528,34 @@ struct PremiumScheduleBlockRowView: View {
                     lineWidth: 1
                 )
         )
-        .shadow(color: statusColor.opacity(0.2), radius: 8, x: 0, y: 4)
-        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .scaleEffect(isPressed ? 0.98 : 1)
         .opacity(isVisible ? 1 : 0)
-        .offset(y: isVisible ? 0 : 20)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
+        .offset(x: isVisible ? 0 : 50)
         .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.1)) {
                 isVisible = true
             }
         }
-        .contextMenu {
-            contextMenuButtons
-        }
     }
-    
-    @ViewBuilder
-    private var contextMenuButtons: some View {
-        Button {
-            onEdit()
-        } label: {
-            Label("Edit", systemImage: "pencil")
-        }
-        
-        Button(role: .destructive) {
-            onDelete()
-        } label: {
-            Label("Delete", systemImage: "trash")
-        }
-    }
-    
-    // MARK: - Computed Properties
     
     private var statusColor: Color {
         switch timeBlock.status {
-        case .completed: return Color.premiumGreen
+        case .notStarted: return Color.white.opacity(0.6)
         case .inProgress: return Color.premiumBlue
-        case .notStarted: return Color.white.opacity(0.4)
-        case .skipped: return Color.premiumError
+        case .completed: return Color.premiumGreen
+        case .skipped: return Color.premiumWarning
         }
     }
-    
-    private var backgroundOpacity: Double {
-        switch timeBlock.status {
-        case .completed: return 0.12
-        case .inProgress: return 0.15
-        case .notStarted: return 0.06
-        case .skipped: return 0.08
-        }
-    }
-    
-    private var categoryColor: Color {
-        guard let category = timeBlock.category else { return Color.white }
-        
-        switch category.lowercased() {
-        case "work": return Color.premiumBlue
-        case "personal": return Color.premiumPurple
-        case "health": return Color.premiumGreen
-        case "learning": return Color.premiumTeal
-        default: return Color.white.opacity(0.6)
-        }
-    }
+}
+
+// MARK: - Notification Names Extension
+extension Notification.Name {
+    static let showAddTimeBlock = Notification.Name("showAddTimeBlock")
 }
 
 // MARK: - Preview
 #Preview {
     PremiumScheduleBuilderView()
-        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
+        .modelContainer(for: [TimeBlock.self], inMemory: true)
 }

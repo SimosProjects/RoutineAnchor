@@ -1,6 +1,6 @@
 //
 //  TodayEmptyStateView.swift
-//  Routine Anchor - Premium Version
+//  Routine Anchor
 //
 import SwiftUI
 

@@ -60,14 +60,6 @@ struct PremiumTodayView: View {
                     updateScrollProgress(value, geometry: geometry)
                 }
             }
-            
-            // Floating elements overlay
-            if let viewModel = viewModel {
-                TodayFloatingElements(
-                    viewModel: viewModel,
-                    showingSummary: $showingSummary
-                )
-            }
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -164,14 +156,14 @@ struct PremiumTodayView: View {
                     Circle()
                         .fill(Color.premiumBlue.opacity(0.3))
                         .frame(width: 12, height: 12)
-                        .scaleEffect(refreshTrigger ? 1.2 : 0.8)
+                        .scaleEffect(refreshTrigger ? 1.5 : 1.0)
+                        .offset(x: CGFloat(index - 1) * 25)
                         .animation(
-                            .easeInOut(duration: 0.8)
-                            .repeatForever(autoreverses: true)
+                            .spring(response: 0.8, dampingFraction: 0.6)
+                            .repeatForever()
                             .delay(Double(index) * 0.2),
                             value: refreshTrigger
                         )
-                        .offset(x: CGFloat(index - 1) * 20)
                 }
             }
             
@@ -189,41 +181,50 @@ struct PremiumTodayView: View {
     // MARK: - Helper Methods
     
     private func setupViewModel() {
-        let dataManager = DataManager(modelContext: modelContext)
-        viewModel = TodayViewModel(dataManager: dataManager)
+        if viewModel == nil {
+            let dataManager = DataManager(modelContext: modelContext)
+            viewModel = TodayViewModel(dataManager: dataManager)
+        }
     }
     
     private func startPeriodicUpdates() {
-        Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { _ in
-            viewModel?.refreshData()
+        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
+            Task { @MainActor in
+                viewModel?.refreshData()
+            }
+        }
+    }
+    
+    private func updateScrollProgress(_ offset: CGFloat, geometry: GeometryProxy) {
+        let progress = min(max(offset / 100, 0), 1)
+        if abs(scrollProgress - progress) > 0.01 {
+            scrollProgress = progress
+            headerOffset = -offset * 0.5
         }
     }
     
     private func refreshData() async {
-        await viewModel?.pullToRefresh()
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            refreshTrigger.toggle()
+        }
         
-        // Add subtle haptic feedback
-        HapticManager.shared.lightImpact()
-    }
-    
-    private func updateScrollProgress(_ offset: CGFloat, geometry: GeometryProxy) {
-        let progress = min(max(-offset / 100, 0), 1)
+        // Small delay for visual feedback
+        try? await Task.sleep(nanoseconds: 500_000_000)
         
-        withAnimation(.easeOut(duration: 0.1)) {
-            scrollProgress = progress
-            headerOffset = offset
+        await MainActor.run {
+            viewModel?.refreshData()
+            HapticManager.shared.lightImpact()
         }
     }
     
     private func navigateToScheduleBuilder() {
-        // Navigate to schedule builder
-        // This would typically be handled by your navigation system
-        print("Navigate to schedule builder")
+        // Navigate to schedule tab through parent
+        NotificationCenter.default.post(name: .navigateToSchedule, object: nil)
     }
     
     private func showTemplates() {
-        // Show template picker
-        print("Show templates")
+        // Show template selection
+        NotificationCenter.default.post(name: .showTemplates, object: nil)
     }
     
     // MARK: - Notification Handlers
@@ -258,6 +259,12 @@ struct PremiumTodayView: View {
         // Scroll to the block if needed
         // This would require additional implementation
     }
+}
+
+// MARK: - Notification Names
+extension Notification.Name {
+    static let navigateToSchedule = Notification.Name("navigateToSchedule")
+    static let showTemplates = Notification.Name("showTemplates")
 }
 
 // MARK: - Scroll Offset Preference Key

@@ -11,6 +11,7 @@ struct MainTabView: View {
     @State private var selectedTab: Tab = .today
     @State private var tabBarOffset: CGFloat = 0
     @State private var showFloatingAction = false
+    @State private var showingAddTimeBlock = false
     
     var body: some View {
         ZStack {
@@ -86,23 +87,21 @@ struct MainTabView: View {
                 
                 // Animate floating action button
                 withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.5)) {
-                    showFloatingAction = true
+                    showFloatingAction = shouldShowFloatingButton(for: selectedTab)
                 }
             }
             .onChange(of: selectedTab) { oldValue, newValue in
                 handleTabSelection(newValue)
             }
             
-            // Floating Action Button (appears on Today tab)
+            // Floating Action Button (appears on Today and Schedule tabs)
             if selectedTab == .today && showFloatingAction {
                 VStack {
                     Spacer()
                     HStack {
                         Spacer()
                         FloatingActionButton {
-                            // Quick add time block action
-                            HapticManager.shared.premiumImpact()
-                            // Navigate to add block
+                            handleFloatingActionTap()
                         }
                         .padding(.trailing, 24)
                         .padding(.bottom, 100) // Above tab bar
@@ -112,6 +111,12 @@ struct MainTabView: View {
                     insertion: .scale(scale: 0.8).combined(with: .opacity),
                     removal: .scale(scale: 0.6).combined(with: .opacity)
                 ))
+            }
+        }
+        .sheet(isPresented: $showingAddTimeBlock) {
+            PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
+                // Handle the new time block creation
+                handleNewTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes, category: category)
             }
         }
     }
@@ -164,8 +169,43 @@ struct MainTabView: View {
         
         // Show/hide floating action button based on tab
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-            showFloatingAction = (tab == .today)
+            showFloatingAction = shouldShowFloatingButton(for: tab)
         }
+    }
+    
+    private func shouldShowFloatingButton(for tab: Tab) -> Bool {
+        switch tab {
+        case .today, .schedule:
+            return true
+        case .summary, .settings:
+            return false
+        }
+    }
+    
+    private func handleFloatingActionTap() {
+        HapticManager.shared.premiumImpact()
+        
+        switch selectedTab {
+        case .today:
+            // Navigate to schedule tab to add time block
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                selectedTab = .schedule
+            }
+            // Delay showing the add sheet to allow tab transition
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                showingAddTimeBlock = true
+            }
+        case .schedule:
+            // Show add time block directly
+            showingAddTimeBlock = true
+        default:
+            break
+        }
+    }
+    
+    private func handleNewTimeBlock(title: String, startTime: Date, endTime: Date, notes: String?, category: String?) {
+        // This will be handled by the Schedule view model
+        // The sheet dismissal will trigger the Schedule view to reload
     }
 }
 
