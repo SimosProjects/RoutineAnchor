@@ -84,6 +84,26 @@ struct MainTabView: View {
                 setupPremiumTabBar()
                 tabViewModel.setup(with: modelContext)
                 
+                NotificationCenter.default.addObserver(
+                    forName: .navigateToSchedule,
+                    object: nil,
+                    queue: .main
+                ) { _ in
+                    selectedTab = .schedule
+                }
+                
+                NotificationCenter.default.addObserver(
+                    forName: .showTemplates,
+                    object: nil,
+                    queue: .main
+                ) { _ in
+                    selectedTab = .schedule
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        // This will trigger the template sheet in ScheduleBuilderView
+                        NotificationCenter.default.post(name: .showTemplates, object: nil)
+                    }
+                }
+                
                 // Animate floating action button
                 withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.5)) {
                     showFloatingAction = shouldShowFloatingButton(for: selectedTab)
@@ -93,7 +113,7 @@ struct MainTabView: View {
                 handleTabSelection(newValue)
             }
             
-            // Floating Action Button (appears on Today and Schedule tabs)
+            // Floating Action Button
             if selectedTab == .today && showFloatingAction {
                 VStack {
                     Spacer()
@@ -112,12 +132,6 @@ struct MainTabView: View {
                 ))
             }
         }
-        /*.sheet(isPresented: $showingAddTimeBlock) {
-            PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
-                // Handle the new time block creation
-                handleNewTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes, category: category)
-            }
-        }*/
     }
     
     private func setupPremiumTabBar() {
