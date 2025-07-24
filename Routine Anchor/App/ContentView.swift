@@ -26,8 +26,8 @@ struct ContentView: View {
     }
     
     private func checkFirstLaunch() {
-        // Check UserDefaults for first launch
-        // Set showOnboarding accordingly
+        let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+        showOnboarding = !hasCompletedOnboarding
     }
 }
 

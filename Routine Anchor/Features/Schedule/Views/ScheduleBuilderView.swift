@@ -64,6 +64,9 @@ struct PremiumScheduleBuilderView: View {
             setupViewModel()
             startAnimations()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlockFromTab)) { _ in
+            showingAddBlock = true
+        }
         .sheet(isPresented: $showingAddBlock) {
             PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
                 viewModel?.addTimeBlock(

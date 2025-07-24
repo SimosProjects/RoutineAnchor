@@ -80,6 +80,7 @@ class NotificationService: NSObject, ObservableObject {
     // MARK: - Time Block Notifications
     
     /// Schedule notifications for multiple time blocks
+    /// Schedule notifications for multiple time blocks
     func scheduleTimeBlockNotifications(for blocks: [TimeBlock]) async {
         // Remove existing time block notifications
         let existingIds = blocks.map { timeBlockIdentifier(for: $0.id) }
@@ -89,7 +90,11 @@ class NotificationService: NSObject, ObservableObject {
         for block in blocks {
             do {
                 try await scheduleTimeBlockNotification(for: block)
+            } catch NotificationError.invalidTimeBlock {
+                // Silently skip past or completed blocks - this is expected
+                continue
             } catch {
+                // Only log unexpected errors
                 print("Failed to schedule notification for block '\(block.title)': \(error)")
             }
         }

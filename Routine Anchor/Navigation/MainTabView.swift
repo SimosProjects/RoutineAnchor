@@ -11,7 +11,6 @@ struct MainTabView: View {
     @State private var selectedTab: Tab = .today
     @State private var tabBarOffset: CGFloat = 0
     @State private var showFloatingAction = false
-    @State private var showingAddTimeBlock = false
     
     var body: some View {
         ZStack {
@@ -113,12 +112,12 @@ struct MainTabView: View {
                 ))
             }
         }
-        .sheet(isPresented: $showingAddTimeBlock) {
+        /*.sheet(isPresented: $showingAddTimeBlock) {
             PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
                 // Handle the new time block creation
                 handleNewTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes, category: category)
             }
-        }
+        }*/
     }
     
     private func setupPremiumTabBar() {
@@ -193,11 +192,10 @@ struct MainTabView: View {
             }
             // Delay showing the add sheet to allow tab transition
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                showingAddTimeBlock = true
+                NotificationCenter.default.post(name: .showAddTimeBlockFromTab, object: nil)
             }
         case .schedule:
-            // Show add time block directly
-            showingAddTimeBlock = true
+            NotificationCenter.default.post(name: .showAddTimeBlockFromTab, object: nil)
         default:
             break
         }
@@ -319,6 +317,10 @@ extension MainTabView {
             }
         }
     }
+}
+
+extension Notification.Name {
+    static let showAddTimeBlockFromTab = Notification.Name("showAddTimeBlockFromTab")
 }
 
 // MARK: - Preview

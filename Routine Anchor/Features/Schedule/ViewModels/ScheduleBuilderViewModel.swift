@@ -327,12 +327,21 @@ class ScheduleBuilderViewModel {
 extension ScheduleBuilderViewModel {
     /// Quick add methods for common time blocks
     
+    // MARK: - Quick Templates
+
     func addMorningRoutine() {
         let calendar = Calendar.current
         let now = Date()
+        var targetDate = now
         
-        guard let startTime = calendar.date(bySettingHour: 7, minute: 0, second: 0, of: now),
-              let endTime = calendar.date(bySettingHour: 8, minute: 0, second: 0, of: now) else {
+        // If it's already past 8 AM, schedule for tomorrow
+        if let todayMorning = calendar.date(bySettingHour: 8, minute: 0, second: 0, of: now),
+           now > todayMorning {
+            targetDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
+        }
+        
+        guard let startTime = calendar.date(bySettingHour: 7, minute: 0, second: 0, of: targetDate),
+              let endTime = calendar.date(bySettingHour: 8, minute: 0, second: 0, of: targetDate) else {
             return
         }
         
@@ -340,33 +349,49 @@ extension ScheduleBuilderViewModel {
             title: "Morning Routine",
             startTime: startTime,
             endTime: endTime,
+            notes: "Exercise, shower, breakfast",
             category: "Personal"
         )
     }
-    
+
     func addWorkBlock() {
         let calendar = Calendar.current
         let now = Date()
+        var targetDate = now
         
-        guard let startTime = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: now),
-              let endTime = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now) else {
+        // If it's already past 12 PM, schedule for tomorrow
+        if let todayNoon = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now),
+           now > todayNoon {
+            targetDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
+        }
+        
+        guard let startTime = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: targetDate),
+              let endTime = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: targetDate) else {
             return
         }
         
         addTimeBlock(
-            title: "Work Session",
+            title: "Deep Work Session",
             startTime: startTime,
             endTime: endTime,
+            notes: "Focus time - no distractions",
             category: "Work"
         )
     }
-    
+
     func addBreak() {
         let calendar = Calendar.current
         let now = Date()
+        var targetDate = now
         
-        guard let startTime = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now),
-              let endTime = calendar.date(bySettingHour: 13, minute: 0, second: 0, of: now) else {
+        // If it's already past 1 PM, schedule for tomorrow
+        if let todayLunch = calendar.date(bySettingHour: 13, minute: 0, second: 0, of: now),
+           now > todayLunch {
+            targetDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
+        }
+        
+        guard let startTime = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: targetDate),
+              let endTime = calendar.date(bySettingHour: 13, minute: 0, second: 0, of: targetDate) else {
             return
         }
         
@@ -374,6 +399,7 @@ extension ScheduleBuilderViewModel {
             title: "Lunch Break",
             startTime: startTime,
             endTime: endTime,
+            notes: "Rest and recharge",
             category: "Personal"
         )
     }

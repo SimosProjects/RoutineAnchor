@@ -65,6 +65,7 @@ struct PremiumTodayView: View {
         .onAppear {
             setupViewModel()
             startPeriodicUpdates()
+            viewModel?.refreshData()
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
