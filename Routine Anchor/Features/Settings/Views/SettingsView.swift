@@ -136,7 +136,7 @@ struct SettingsView: View {
             HelpView()
         }
         .sheet(isPresented: $showingExportData) {
-            ExportDataView(viewModel: viewModel)
+            ExportDataView()
         }
         .overlay(alignment: .top) {
             // Success/Error message overlay
@@ -386,77 +386,6 @@ struct PremiumToggleStyle: ToggleStyle {
                 .onTapGesture {
                     configuration.isOn.toggle()
                 }
-        }
-    }
-}
-
-// MARK: - Export Data View
-struct ExportDataView: View {
-    @Environment(\.dismiss) private var dismiss
-    let viewModel: SettingsViewModel?
-    @State private var isExporting = false
-    @State private var exportedData = ""
-    
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Text("Export Your Data")
-                    .font(TypographyConstants.Headers.screenTitle)
-                    .foregroundStyle(Color.premiumTextPrimary)
-                
-                Text("Download all your routine data as a JSON file. You can use this to backup your progress or transfer to another device.")
-                    .font(TypographyConstants.Body.secondary)
-                    .foregroundStyle(Color.premiumTextSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
-                
-                Spacer()
-                
-                if isExporting {
-                    ProgressView("Preparing export...")
-                        .progressViewStyle(CircularProgressViewStyle(tint: Color.premiumBlue))
-                } else {
-                    PrimaryButton("Export Data") {
-                        exportData()
-                    }
-                    .padding(.horizontal, 20)
-                }
-                
-                Spacer()
-            }
-            .padding(20)
-            .navigationTitle("Export Data")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
-            }
-        }
-    }
-    
-    private func exportData() {
-        guard let viewModel = viewModel else { return }
-        
-        isExporting = true
-        HapticManager.shared.lightImpact()
-        
-        // Use viewModel's export functionality
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            let exportString = viewModel.exportUserData()
-            
-            let activityVC = UIActivityViewController(
-                activityItems: [exportString],
-                applicationActivities: nil
-            )
-            
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = windowScene.windows.first {
-                window.rootViewController?.present(activityVC, animated: true)
-            }
-            
-            isExporting = false
-            HapticManager.shared.success()
         }
     }
 }

@@ -18,6 +18,10 @@ struct PremiumTodayView: View {
     @State private var scrollProgress: CGFloat = 0
     @State private var refreshTrigger = false
     
+    // MARK: - Scroll Support State
+    @State private var scrollProxy: ScrollViewProxy?
+    @State private var highlightedBlockId: UUID?
+    
     var body: some View {
         ZStack {
             // Premium background
@@ -25,39 +29,44 @@ struct PremiumTodayView: View {
                 .ignoresSafeArea()
             
             GeometryReader { geometry in
-                ScrollView(showsIndicators: false) {
-                    LazyVStack(spacing: 0) {
-                        // Header section
-                        if let viewModel = viewModel {
-                            TodayHeaderView(
-                                viewModel: viewModel,
-                                showingSettings: $showingSettings,
-                                showingSummary: $showingSummary
-                            )
-                            .padding(.top, geometry.safeAreaInsets.top + 20)
-                        }
-                        
-                        // Content based on state
-                        if let viewModel = viewModel {
-                            if viewModel.hasScheduledBlocks {
-                                mainContent(viewModel: viewModel)
-                            } else {
-                                PremiumTodayEmptyStateView(
-                                    onCreateRoutine: navigateToScheduleBuilder,
-                                    onUseTemplate: showTemplates
+                ScrollViewReader { proxy in
+                    ScrollView(showsIndicators: false) {
+                        LazyVStack(spacing: 0) {
+                            // Header section
+                            if let viewModel = viewModel {
+                                TodayHeaderView(
+                                    viewModel: viewModel,
+                                    showingSettings: $showingSettings,
+                                    showingSummary: $showingSummary
                                 )
+                                .padding(.top, geometry.safeAreaInsets.top + 20)
                             }
-                        } else {
-                            loadingState
+                            
+                            // Content based on state
+                            if let viewModel = viewModel {
+                                if viewModel.hasScheduledBlocks {
+                                    mainContent(viewModel: viewModel)
+                                } else {
+                                    PremiumTodayEmptyStateView(
+                                        onCreateRoutine: navigateToScheduleBuilder,
+                                        onUseTemplate: showTemplates
+                                    )
+                                }
+                            } else {
+                                loadingState
+                            }
                         }
                     }
-                }
-                .coordinateSpace(name: "scroll")
-                .refreshable {
-                    await refreshData()
-                }
-                .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                    updateScrollProgress(value, geometry: geometry)
+                    .onAppear {
+                        scrollProxy = proxy
+                    }
+                    .coordinateSpace(name: "scroll")
+                    .refreshable {
+                        await refreshData()
+                    }
+                    .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                        updateScrollProgress(value, geometry: geometry)
+                    }
                 }
             }
         }
@@ -66,36 +75,7 @@ struct PremiumTodayView: View {
             setupViewModel()
             startPeriodicUpdates()
             viewModel?.refreshData()
-        }
-        .sheet(isPresented: $showingSettings) {
-            SettingsView()
-        }
-        .sheet(isPresented: $showingSummary) {
-            if let viewModel = viewModel {
-                PremiumDailySummaryView()
-                    .environment(DataManager(modelContext: modelContext))
-                    .onDisappear {
-                        viewModel.markDayAsReviewed()
-                    }
-            }
-        }
-        .confirmationDialog(
-            "Time Block Actions",
-            isPresented: $showingActionSheet,
-            titleVisibility: .visible,
-            presenting: selectedTimeBlock
-        ) { timeBlock in
-            Button("Mark as Completed") {
-                viewModel?.markBlockCompleted(timeBlock)
-            }
-            
-            Button("Skip This Block", role: .destructive) {
-                viewModel?.markBlockSkipped(timeBlock)
-            }
-            
-            Button("Cancel", role: .cancel) {}
-        } message: { timeBlock in
-            Text("What would you like to do with '\(timeBlock.title)'?")
+            scrollToCurrentBlockIfNeeded()
         }
         .alert("Error", isPresented: .constant(viewModel?.errorMessage != nil)) {
             Button("Retry") {
@@ -135,7 +115,9 @@ struct PremiumTodayView: View {
             TodayTimeBlocksList(
                 viewModel: viewModel,
                 selectedTimeBlock: $selectedTimeBlock,
-                showingActionSheet: $showingActionSheet
+                showingActionSheet: $showingActionSheet,
+                highlightedBlockId: $highlightedBlockId,
+                scrollProxy: scrollProxy
             )
             
             // Motivational section
@@ -228,6 +210,35 @@ struct PremiumTodayView: View {
         NotificationCenter.default.post(name: .showTemplates, object: nil)
     }
     
+    // MARK: - Scroll Support Methods
+    
+    private func scrollToCurrentBlockIfNeeded() {
+        guard let viewModel = viewModel,
+              let currentBlock = viewModel.getCurrentBlock() else {
+            return
+        }
+        
+        // Delay slightly to ensure view is laid out
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                scrollProxy?.scrollTo(currentBlock.id, anchor: .center)
+            }
+        }
+    }
+    
+    private func highlightBlock(_ blockId: UUID) {
+        highlightedBlockId = blockId
+        
+        // Remove highlight after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                if highlightedBlockId == blockId {
+                    highlightedBlockId = nil
+                }
+            }
+        }
+    }
+    
     // MARK: - Notification Handlers
     
     private func handleTimeBlockCompletion(_ notification: Notification) {
@@ -257,8 +268,13 @@ struct PremiumTodayView: View {
         
         selectedTimeBlock = block
         
-        // Scroll to the block if needed
-        // This would require additional implementation
+        // Scroll to the block with animation
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            scrollProxy?.scrollTo(blockId, anchor: .center)
+        }
+        
+        // Highlight the block temporarily
+        highlightBlock(blockId)
     }
 }
 

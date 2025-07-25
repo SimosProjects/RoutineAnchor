@@ -10,6 +10,8 @@ struct TodayTimeBlocksList: View {
     let viewModel: TodayViewModel
     @Binding var selectedTimeBlock: TimeBlock?
     @Binding var showingActionSheet: Bool
+    @Binding var highlightedBlockId: UUID?
+    let scrollProxy: ScrollViewProxy?
     
     // MARK: - State
     @State private var expandedSections: Set<BlockStatus> = []
@@ -85,6 +87,7 @@ struct TodayTimeBlocksList: View {
             ForEach(viewModel.sortedTimeBlocks) { timeBlock in
                 PremiumTimeBlockRowView(
                     timeBlock: timeBlock,
+                    isHighlighted: highlightedBlockId == timeBlock.id,
                     onTap: {
                         handleTimeBlockTap(timeBlock)
                     },
@@ -95,11 +98,11 @@ struct TodayTimeBlocksList: View {
                         viewModel.markBlockSkipped(timeBlock)
                     }
                 )
+                .id(timeBlock.id) // Important for ScrollViewReader
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
                     removal: .move(edge: .leading).combined(with: .opacity)
                 ))
-                .id(timeBlock.id)
             }
         }
         .padding(.horizontal, 24)
@@ -110,30 +113,36 @@ struct TodayTimeBlocksList: View {
     private var groupedTimeBlocks: some View {
         LazyVStack(spacing: 16) {
             ForEach(BlockStatus.allCases, id: \.self) { status in
-                if let blocks = viewModel.timeBlocksByStatus[status], !blocks.isEmpty {
-                    GroupedSection(
+                let blocks = blocksForStatus(status)
+                if !blocks.isEmpty {
+                    StatusGroupSection(
                         status: status,
                         blocks: blocks,
-                        isExpanded: expandedSections.contains(status),
                         currentBlock: viewModel.getCurrentBlock(),
+                        isExpanded: expandedSections.contains(status),
+                        highlightedBlockId: highlightedBlockId,
                         onToggle: {
-                            toggleSection(status)
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                if expandedSections.contains(status) {
+                                    expandedSections.remove(status)
+                                } else {
+                                    expandedSections.insert(status)
+                                }
+                            }
                         },
                         onBlockTap: handleTimeBlockTap,
                         onComplete: viewModel.markBlockCompleted,
                         onSkip: viewModel.markBlockSkipped
                     )
+                    .id(status)
                 }
             }
         }
         .padding(.horizontal, 24)
         .onAppear {
-            // Auto-expand active sections
+            // Auto-expand active section
             if viewModel.getCurrentBlock() != nil {
                 expandedSections.insert(.inProgress)
-            }
-            if viewModel.upcomingBlocksCount > 0 {
-                expandedSections.insert(.notStarted)
             }
         }
     }
@@ -141,68 +150,67 @@ struct TodayTimeBlocksList: View {
     // MARK: - Empty Message
     private var emptyMessage: some View {
         VStack(spacing: 16) {
-            Image(systemName: "calendar.badge.exclamationmark")
-                .font(.system(size: 48, weight: .thin))
+            Image(systemName: "calendar.badge.plus")
+                .font(.system(size: 48, weight: .light))
                 .foregroundStyle(Color.white.opacity(0.3))
             
-            Text("No time blocks scheduled")
-                .font(.system(size: 18, weight: .medium, design: .rounded))
+            Text("No blocks scheduled for today")
+                .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(Color.white.opacity(0.6))
             
-            Text("Add time blocks to structure your day")
-                .font(.system(size: 14, weight: .regular))
-                .foregroundStyle(Color.white.opacity(0.4))
+            Button(action: {
+                NotificationCenter.default.post(name: .navigateToSchedule, object: nil)
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 16, weight: .medium))
+                    
+                    Text("Add Time Blocks")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(
+                    LinearGradient(
+                        colors: [Color.premiumBlue, Color.premiumPurple],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(12)
+                .shadow(color: Color.premiumBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 60)
-        .padding(.horizontal, 24)
+        .padding(.vertical, 40)
     }
     
     // MARK: - Helper Methods
     
-    private func handleTimeBlockTap(_ timeBlock: TimeBlock) {
-        HapticManager.shared.premiumSelection()
-        
-        selectedTimeBlock = timeBlock
-        
-        switch timeBlock.status {
-        case .inProgress:
-            showingActionSheet = true
-        case .notStarted:
-            if timeBlock.isCurrentlyActive {
-                viewModel.startTimeBlock(timeBlock)
-            }
-        case .completed, .skipped:
-            // Could show details or allow undo
-            break
-        }
-    }
-    
-    private func toggleSection(_ status: BlockStatus) {
-        HapticManager.shared.lightImpact()
-        
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            if expandedSections.contains(status) {
-                expandedSections.remove(status)
-            } else {
-                expandedSections.insert(status)
-            }
-        }
-    }
-    
-    // MARK: - Computed Properties
-    
     private var useGroupedView: Bool {
         UserDefaults.standard.bool(forKey: "useGroupedTimeBlocks")
     }
+    
+    private func blocksForStatus(_ status: BlockStatus) -> [TimeBlock] {
+        viewModel.timeBlocks.filter { $0.status == status }
+            .sorted { $0.startTime < $1.startTime }
+    }
+    
+    private func handleTimeBlockTap(_ timeBlock: TimeBlock) {
+        HapticManager.shared.lightImpact()
+        selectedTimeBlock = timeBlock
+        showingActionSheet = true
+    }
 }
 
-// MARK: - Grouped Section Component
-struct GroupedSection: View {
+// MARK: - Status Group Section
+
+struct StatusGroupSection: View {
     let status: BlockStatus
     let blocks: [TimeBlock]
-    let isExpanded: Bool
     let currentBlock: TimeBlock?
+    let isExpanded: Bool
+    let highlightedBlockId: UUID?
     let onToggle: () -> Void
     let onBlockTap: (TimeBlock) -> Void
     let onComplete: (TimeBlock) -> Void
@@ -212,47 +220,33 @@ struct GroupedSection: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Section header
+            // Header
             Button(action: onToggle) {
-                HStack(spacing: 12) {
+                HStack(spacing: 16) {
                     // Status icon
-                    ZStack {
-                        Circle()
-                            .fill(status.color.opacity(0.2))
-                            .frame(width: 36, height: 36)
-                        
-                        Image(systemName: status.iconName)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(status.color)
-                    }
+                    Image(systemName: status.iconName)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(status.color)
+                        .frame(width: 24, height: 24)
                     
                     // Title and count
                     VStack(alignment: .leading, spacing: 2) {
                         Text(status.displayName)
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
+                            .font(.system(size: 18, weight: .bold))
                             .foregroundStyle(.white)
                         
                         Text("\(blocks.count) \(blocks.count == 1 ? "block" : "blocks")")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(Color.white.opacity(0.6))
                     }
                     
                     Spacer()
                     
-                    // Progress indicator for in-progress
-                    if status == .inProgress, let current = currentBlock {
-                        CircularProgressIndicator(
-                            progress: current.currentProgress,
-                            color: status.color,
-                            size: 32
-                        )
-                    }
-                    
-                    // Chevron
-                    Image(systemName: "chevron.right")
+                    // Expand icon
+                    Image(systemName: "chevron.down")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.4))
-                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                        .foregroundStyle(Color.white.opacity(0.6))
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
                 .padding(16)
                 .contentShape(Rectangle())
@@ -266,10 +260,12 @@ struct GroupedSection: View {
                         CompactTimeBlockRow(
                             timeBlock: block,
                             isActive: block.id == currentBlock?.id,
+                            isHighlighted: highlightedBlockId == block.id,
                             onTap: { onBlockTap(block) },
                             onComplete: { onComplete(block) },
                             onSkip: { onSkip(block) }
                         )
+                        .id(block.id) // Important for ScrollViewReader
                         .transition(.asymmetric(
                             insertion: .opacity.combined(with: .move(edge: .top)),
                             removal: .opacity.combined(with: .move(edge: .top))
@@ -315,7 +311,7 @@ struct GroupedSection: View {
         .scaleEffect(sectionAnimation ? 1 : 0.95)
         .opacity(sectionAnimation ? 1 : 0)
         .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
                 sectionAnimation = true
             }
         }
@@ -323,9 +319,11 @@ struct GroupedSection: View {
 }
 
 // MARK: - Compact Time Block Row
+
 struct CompactTimeBlockRow: View {
     let timeBlock: TimeBlock
     let isActive: Bool
+    let isHighlighted: Bool
     let onTap: () -> Void
     let onComplete: () -> Void
     let onSkip: () -> Void
@@ -334,51 +332,52 @@ struct CompactTimeBlockRow: View {
         Button(action: onTap) {
             HStack(spacing: 12) {
                 // Time
-                VStack(spacing: 2) {
-                    Text(timeBlock.startTime.formatted(date: .omitted, time: .shortened))
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(isActive ? timeBlock.status.color : Color.white.opacity(0.6))
-                    
-                    Text(timeBlock.formattedDuration)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.4))
-                }
-                .frame(width: 50)
+                Text(timeBlock.startTime, style: .time)
+                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .foregroundStyle(isActive ? Color.premiumBlue : Color.white.opacity(0.6))
+                    .frame(width: 60, alignment: .leading)
                 
-                // Content
-                HStack(spacing: 8) {
-                    if let icon = timeBlock.icon {
-                        Text(icon)
-                            .font(.system(size: 14))
-                    }
-                    
+                // Title and category
+                VStack(alignment: .leading, spacing: 4) {
                     Text(timeBlock.title)
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     
-                    Spacer()
+                    if let category = timeBlock.category {
+                        Text(category)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color.white.opacity(0.6))
+                    }
                 }
                 
-                // Quick actions for in-progress
-                if timeBlock.status == .inProgress {
-                    HStack(spacing: 8) {
+                Spacer()
+                
+                // Quick actions
+                if timeBlock.status == .notStarted || timeBlock.status == .inProgress {
+                    HStack(spacing: 4) {
                         Button(action: {
                             HapticManager.shared.success()
                             onComplete()
                         }) {
-                            Image(systemName: "checkmark.circle")
-                                .font(.system(size: 20, weight: .medium))
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .medium))
                                 .foregroundStyle(Color.premiumGreen)
+                                .frame(width: 32, height: 32)
+                                .background(Color.premiumGreen.opacity(0.15))
+                                .cornerRadius(8)
                         }
                         
                         Button(action: {
                             HapticManager.shared.lightImpact()
                             onSkip()
                         }) {
-                            Image(systemName: "xmark.circle")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundStyle(Color.premiumError)
+                            Image(systemName: "forward")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(Color.premiumWarning)
+                                .frame(width: 32, height: 32)
+                                .background(Color.premiumWarning.opacity(0.15))
+                                .cornerRadius(8)
                         }
                     }
                 }
@@ -386,52 +385,19 @@ struct CompactTimeBlockRow: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(
-                        isActive ?
-                        timeBlock.status.color.opacity(0.15) :
-                        Color.white.opacity(0.05)
-                    )
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isActive ? Color.premiumBlue.opacity(0.1) : Color.white.opacity(0.05))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 12)
                     .stroke(
-                        isActive ?
-                        timeBlock.status.color.opacity(0.5) :
-                        Color.white.opacity(0.1),
-                        lineWidth: isActive ? 1.5 : 1
+                        isHighlighted ? Color.premiumBlue : (isActive ? Color.premiumBlue.opacity(0.3) : Color.clear),
+                        lineWidth: isHighlighted ? 2 : 1
                     )
             )
+            .scaleEffect(isHighlighted ? 1.02 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHighlighted)
         }
         .buttonStyle(PlainButtonStyle())
-    }
-}
-
-// MARK: - Circular Progress Indicator
-struct CircularProgressIndicator: View {
-    let progress: Double
-    let color: Color
-    let size: CGFloat
-    
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(color.opacity(0.2), lineWidth: 3)
-                .frame(width: size, height: size)
-            
-            Circle()
-                .trim(from: 0, to: CGFloat(progress))
-                .stroke(
-                    color,
-                    style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                )
-                .frame(width: size, height: size)
-                .rotationEffect(.degrees(-90))
-                .animation(.spring(response: 0.8, dampingFraction: 0.9), value: progress)
-            
-            Text("\(Int(progress * 100))%")
-                .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(color)
-        }
     }
 }

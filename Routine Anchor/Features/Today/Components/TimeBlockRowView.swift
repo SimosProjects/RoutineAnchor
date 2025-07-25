@@ -6,6 +6,7 @@ import SwiftUI
 
 struct PremiumTimeBlockRowView: View {
     let timeBlock: TimeBlock
+    let isHighlighted: Bool
     let onTap: (() -> Void)?
     let onComplete: (() -> Void)?
     let onSkip: (() -> Void)?
@@ -16,161 +17,177 @@ struct PremiumTimeBlockRowView: View {
     @State private var showActions = false
     
     var body: some View {
-        Button(action: {
+        Button(action: handleTap) {
+            mainContent
+        }
+        .buttonStyle(PlainButtonStyle())
+        .onLongPressGesture {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                isPressed = true
+                showActions.toggle()
+                HapticManager.shared.lightImpact()
             }
+        }
+        .onAppear {
+            if timeBlock.isCurrentlyActive {
+                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                    glowIntensity = 0.6
+                }
+            }
+        }
+    }
+    
+    // MARK: - Main Content View
+    private var mainContent: some View {
+        VStack(spacing: 0) {
+            // Main content row
+            mainRow
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    isPressed = false
-                }
-                onTap?()
-            }
-        }) {
-            VStack(spacing: 0) {
-                // Main content
-                HStack(spacing: 16) {
-                    // Status indicator with animation
-                    StatusIndicatorView(
-                        status: timeBlock.status,
-                        isActive: timeBlock.isCurrentlyActive,
-                        progress: timeBlock.currentProgress
-                    )
-                    
-                    // Content area
-                    VStack(alignment: .leading, spacing: 8) {
-                        // Header row
-                        HStack(alignment: .top, spacing: 8) {
-                            // Icon and title
-                            HStack(spacing: 8) {
-                                if let icon = timeBlock.icon {
-                                    Text(icon)
-                                        .font(.system(size: 16))
-                                } else {
-                                    Image(systemName: "clock")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(statusColor.opacity(0.8))
-                                }
-                                
-                                Text(timeBlock.title)
-                                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(.white)
-                                    .lineLimit(2)
-                            }
-                            
-                            Spacer()
-                            
-                            // Time and duration
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text(formatTimeRange())
-                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(Color.white.opacity(0.7))
-                                
-                                Text(timeBlock.formattedDuration)
-                                    .font(.system(size: 11, weight: .medium))
-                                    .foregroundStyle(statusColor)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(
-                                        Capsule()
-                                            .fill(statusColor.opacity(0.15))
-                                    )
-                            }
-                        }
-                        
-                        // Category and notes
-                        if timeBlock.category != nil || timeBlock.notes != nil {
-                            HStack {
-                                if let category = timeBlock.category {
-                                    CategoryBadge(category: category)
-                                }
-                                
-                                if let notes = timeBlock.notes, !notes.isEmpty {
-                                    Text(notes)
-                                        .font(.system(size: 13, weight: .regular))
-                                        .foregroundStyle(Color.white.opacity(0.6))
-                                        .lineLimit(1)
-                                }
-                                
-                                Spacer()
-                            }
-                        }
-                        
-                        // Progress bar for active blocks
-                        if timeBlock.isCurrentlyActive {
-                            ProgressIndicatorView(
-                                progress: timeBlock.currentProgress,
-                                color: statusColor
-                            )
-                            .animation(.easeInOut(duration: 0.5), value: timeBlock.currentProgress)
-                        }
-                    }
-                }
-                .padding(20)
-                
-                // Action buttons for active blocks
-                if timeBlock.status == .inProgress && showActions {
-                    ActionButtonsView(
-                        onComplete: onComplete,
-                        onSkip: onSkip
-                    )
+            // Quick actions (for notStarted/in-progress blocks)
+            if showActions && (timeBlock.status == .notStarted || timeBlock.status == .inProgress) {
+                quickActionsView
                     .transition(.asymmetric(
                         insertion: .move(edge: .bottom).combined(with: .opacity),
                         removal: .move(edge: .bottom).combined(with: .opacity)
                     ))
+            }
+        }
+        .background(backgroundView)
+        .overlay(overlayBorder)
+        .shadow(
+            color: shadowColor,
+            radius: isPressed ? 4 : 8,
+            x: 0,
+            y: isPressed ? 2 : 4
+        )
+        .scaleEffect(isHighlighted ? 1.02 : (isPressed ? 0.98 : 1))
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHighlighted)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
+    }
+    
+    // MARK: - Main Row Content
+    private var mainRow: some View {
+        HStack(spacing: 16) {
+            // Status indicator with animation
+            StatusIndicatorView(
+                status: timeBlock.status,
+                isActive: timeBlock.isCurrentlyActive,
+                progress: timeBlock.currentProgress
+            )
+            
+            // Content area
+            VStack(alignment: .leading, spacing: 8) {
+                // Header row
+                headerRow
+                
+                // Category and notes
+                detailsRow
+                
+                // Progress bar for active blocks
+                if timeBlock.status == .inProgress {
+                    ProgressBar(
+                        progress: timeBlock.currentProgress,
+                        color: .premiumBlue,
+                        animated: true
+                    )
+                    .frame(height: 4)
+                    .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: progressAnimation)
+                    .onAppear {
+                        progressAnimation = 1
+                    }
                 }
             }
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(
-            // Glass morphism background
-            RoundedRectangle(cornerRadius: 20)
-                .fill(.ultraThinMaterial)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(backgroundOpacity),
-                                    Color.white.opacity(backgroundOpacity * 0.5)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            // Border with status color
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            statusColor.opacity(borderOpacity),
-                            statusColor.opacity(borderOpacity * 0.3)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: borderWidth
-                )
-        )
-        .shadow(
-            color: shadowColor,
-            radius: shadowRadius,
-            x: 0,
-            y: shadowY
-        )
-        .scaleEffect(isPressed ? 0.98 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
-        .onAppear {
-            setupAnimations()
-        }
-        .onChange(of: timeBlock.status) { _, newStatus in
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                showActions = (newStatus == .inProgress)
+        .padding(20)
+    }
+    
+    // MARK: - Header Row
+    private var headerRow: some View {
+        HStack(alignment: .top, spacing: 8) {
+            // Icon and title
+            HStack(spacing: 8) {
+                if let icon = timeBlock.icon {
+                    Text(icon)
+                        .font(.system(size: 16))
+                } else {
+                    Image(systemName: "clock")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(statusColor.opacity(0.8))
+                }
+                
+                Text(timeBlock.title)
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
             }
+            
+            Spacer()
+            
+            // Time display
+            TimeDisplayView(
+                startTime: timeBlock.startTime,
+                endTime: timeBlock.endTime,
+                status: timeBlock.status
+            )
+        }
+    }
+    
+    // MARK: - Details Row
+    private var detailsRow: some View {
+        HStack(spacing: 16) {
+            if let category = timeBlock.category {
+                CategoryBadge(
+                    category: category,
+                    color: categoryColor(for: category)
+                )
+            }
+            
+            if let notes = timeBlock.notes, !notes.isEmpty {
+                Text(notes)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.white.opacity(0.6))
+                    .lineLimit(1)
+            }
+        }
+    }
+    
+    // MARK: - Background View
+    private var backgroundView: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(.ultraThinMaterial)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            colors: backgroundGradient,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            )
+    }
+    
+    // MARK: - Overlay Border
+    private var overlayBorder: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .stroke(
+                isHighlighted ? Color.premiumBlue : borderColor,
+                lineWidth: isHighlighted ? 2 : 1
+            )
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHighlighted)
+    }
+    
+    // MARK: - Actions
+    private func handleTap() {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            isPressed = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                isPressed = false
+            }
+            onTap?()
         }
     }
     
@@ -178,259 +195,90 @@ struct PremiumTimeBlockRowView: View {
     
     private var statusColor: Color {
         switch timeBlock.status {
-        case .completed: return Color.premiumGreen
-        case .inProgress: return Color.premiumBlue
-        case .notStarted: return Color.white.opacity(0.4)
-        case .skipped: return Color.premiumError
+        case .notStarted: return .white
+        case .inProgress: return .premiumBlue
+        case .completed: return .premiumGreen
+        case .skipped: return .premiumWarning
         }
     }
     
-    private var backgroundOpacity: Double {
-        switch timeBlock.status {
-        case .completed: return 0.12
-        case .inProgress: return 0.15
-        case .notStarted: return 0.06
-        case .skipped: return 0.08
+    private var backgroundGradient: [Color] {
+        if timeBlock.isCurrentlyActive {
+            return [
+                Color.premiumBlue.opacity(0.15),
+                Color.premiumBlue.opacity(0.08)
+            ]
+        } else {
+            return [
+                Color.white.opacity(0.08),
+                Color.white.opacity(0.04)
+            ]
         }
     }
     
-    private var borderOpacity: Double {
-        switch timeBlock.status {
-        case .completed: return 0.6
-        case .inProgress: return 0.8
-        case .notStarted: return 0.2
-        case .skipped: return 0.4
-        }
-    }
-    
-    private var borderWidth: CGFloat {
-        switch timeBlock.status {
-        case .inProgress: return 2
-        default: return 1
+    private var borderColor: Color {
+        if timeBlock.isCurrentlyActive {
+            return Color.premiumBlue.opacity(glowIntensity)
+        } else {
+            switch timeBlock.status {
+            case .completed:
+                return Color.premiumGreen.opacity(0.3)
+            case .skipped:
+                return Color.premiumWarning.opacity(0.3)
+            default:
+                return Color.white.opacity(0.2)
+            }
         }
     }
     
     private var shadowColor: Color {
-        switch timeBlock.status {
-        case .completed: return Color.premiumGreen.opacity(0.3)
-        case .inProgress: return Color.premiumBlue.opacity(0.4)
-        case .notStarted: return Color.black.opacity(0.1)
-        case .skipped: return Color.premiumError.opacity(0.2)
-        }
-    }
-    
-    private var shadowRadius: CGFloat {
-        timeBlock.status == .inProgress ? 15 : 8
-    }
-    
-    private var shadowY: CGFloat {
-        timeBlock.status == .inProgress ? 8 : 4
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func formatTimeRange() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return "\(formatter.string(from: timeBlock.startTime)) - \(formatter.string(from: timeBlock.endTime))"
-    }
-    
-    private func setupAnimations() {
-        if timeBlock.status == .inProgress {
-            showActions = true
-            
-            // Gentle glow animation for active blocks
-            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
-                glowIntensity = 0.8
-            }
-        }
-    }
-}
-
-// MARK: - Status Indicator View
-struct StatusIndicatorView: View {
-    let status: BlockStatus
-    let isActive: Bool
-    let progress: Double
-    
-    @State private var pulseScale: CGFloat = 1.0
-    @State private var rotation: Double = 0
-    
-    var body: some View {
-        ZStack {
-            // Background circle
-            Circle()
-                .fill(statusColor.opacity(0.2))
-                .frame(width: 44, height: 44)
-            
-            // Progress ring for active blocks
-            if status == .inProgress {
-                Circle()
-                    .trim(from: 0, to: CGFloat(progress))
-                    .stroke(
-                        statusColor,
-                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                    )
-                    .frame(width: 44, height: 44)
-                    .rotationEffect(.degrees(-90))
-                    .animation(.spring(response: 0.8, dampingFraction: 0.9), value: progress)
-            }
-            
-            // Status icon
-            Group {
-                switch status {
-                case .notStarted:
-                    Circle()
-                        .stroke(statusColor, lineWidth: 2)
-                        .frame(width: 16, height: 16)
-                        .opacity(0.6)
-                        
-                case .inProgress:
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(statusColor)
-                        .scaleEffect(pulseScale)
-                        
-                case .completed:
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(.white)
-                        .background(
-                            Circle()
-                                .fill(statusColor)
-                                .frame(width: 20, height: 20)
-                        )
-                        
-                case .skipped:
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(statusColor)
-                        .rotationEffect(.degrees(rotation))
-                }
-            }
-        }
-        .onAppear {
-            if status == .inProgress {
-                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                    pulseScale = 1.2
-                }
-            } else if status == .skipped {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
-                    rotation = 180
-                }
+        if timeBlock.isCurrentlyActive {
+            return Color.premiumBlue.opacity(0.3)
+        } else {
+            switch timeBlock.status {
+            case .completed:
+                return Color.premiumGreen.opacity(0.2)
+            case .skipped:
+                return Color.premiumWarning.opacity(0.2)
+            default:
+                return Color.black.opacity(0.1)
             }
         }
     }
     
-    private var statusColor: Color {
-        switch status {
-        case .completed: return Color.premiumGreen
-        case .inProgress: return Color.premiumBlue
-        case .notStarted: return Color.white.opacity(0.5)
-        case .skipped: return Color.premiumError
-        }
-    }
-}
-
-// MARK: - Category Badge
-struct CategoryBadge: View {
-    let category: String
-    
-    var body: some View {
-        Text(category)
-            .font(.system(size: 11, weight: .medium))
-            .foregroundStyle(categoryColor)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(
-                Capsule()
-                    .fill(categoryColor.opacity(0.15))
-                    .overlay(
-                        Capsule()
-                            .stroke(categoryColor.opacity(0.3), lineWidth: 0.5)
-                    )
-            )
-    }
-    
-    private var categoryColor: Color {
+    private func categoryColor(for category: String) -> Color {
         switch category.lowercased() {
-        case "work": return Color.premiumBlue
-        case "personal": return Color.premiumPurple
-        case "health": return Color.premiumGreen
-        case "learning": return Color.premiumTeal
-        default: return Color.white.opacity(0.6)
+        case "work": return .premiumBlue
+        case "personal": return .premiumPurple
+        case "health": return .premiumGreen
+        case "learning": return .premiumTeal
+        default: return .premiumTextSecondary
         }
     }
-}
-
-// MARK: - Progress Indicator
-struct ProgressIndicatorView: View {
-    let progress: Double
-    let color: Color
     
-    var body: some View {
-        VStack(spacing: 4) {
-            HStack {
-                Text("Progress")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.6))
-                
-                Spacer()
-                
-                Text("\(Int(progress * 100))%")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(color)
-            }
-            
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    // Track
-                    Capsule()
-                        .fill(Color.white.opacity(0.1))
-                        .frame(height: 4)
-                    
-                    // Progress
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [color, color.opacity(0.7)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: geometry.size.width * CGFloat(progress), height: 4)
-                        .animation(.spring(response: 0.8, dampingFraction: 0.9), value: progress)
-                }
-            }
-            .frame(height: 4)
-        }
-    }
-}
-
-// MARK: - Action Buttons
-struct ActionButtonsView: View {
-    let onComplete: (() -> Void)?
-    let onSkip: (() -> Void)?
+    // MARK: - Quick Actions View
     
-    var body: some View {
+    private var quickActionsView: some View {
         HStack(spacing: 12) {
-            // Complete button
             Button(action: {
-                HapticManager.shared.premiumSuccess()
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    showActions = false
+                }
+                HapticManager.shared.success()
                 onComplete?()
             }) {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 14, weight: .medium))
                     Text("Complete")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 14, weight: .medium))
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [Color.premiumGreen, Color.premiumTeal],
+                        colors: [Color.premiumGreen, Color.premiumGreen.opacity(0.8)],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -438,8 +286,10 @@ struct ActionButtonsView: View {
                 .cornerRadius(12)
             }
             
-            // Skip button
             Button(action: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    showActions = false
+                }
                 HapticManager.shared.lightImpact()
                 onSkip?()
             }) {
@@ -464,5 +314,178 @@ struct ActionButtonsView: View {
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 16)
+    }
+}
+
+// MARK: - Supporting Views
+
+struct StatusIndicatorView: View {
+    let status: BlockStatus
+    let isActive: Bool
+    let progress: Double
+    
+    @State private var pulseAnimation = false
+    
+    var body: some View {
+        ZStack {
+            // Background circle
+            Circle()
+                .fill(backgroundColor)
+                .frame(width: 44, height: 44)
+            
+            // Progress ring for active blocks
+            if isActive {
+                Circle()
+                    .trim(from: 0, to: CGFloat(progress))
+                    .stroke(
+                        Color.premiumBlue,
+                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: 40, height: 40)
+                    .animation(.linear(duration: 0.5), value: progress)
+            }
+            
+            // Status icon
+            Image(systemName: iconName)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(iconColor)
+                .scaleEffect(pulseAnimation ? 1.1 : 1.0)
+        }
+        .onAppear {
+            if isActive {
+                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                    pulseAnimation = true
+                }
+            }
+        }
+    }
+    
+    private var backgroundColor: Color {
+        if isActive {
+            return Color.premiumBlue.opacity(0.15)
+        }
+        
+        switch status {
+        case .notStarted: return Color.white.opacity(0.1)
+        case .inProgress: return Color.premiumBlue.opacity(0.15)
+        case .completed: return Color.premiumGreen.opacity(0.15)
+        case .skipped: return Color.premiumWarning.opacity(0.15)
+        }
+    }
+    
+    private var iconName: String {
+        switch status {
+        case .notStarted: return "clock"
+        case .inProgress: return "play.fill"
+        case .completed: return "checkmark"
+        case .skipped: return "forward.fill"
+        }
+    }
+    
+    private var iconColor: Color {
+        switch status {
+        case .notStarted: return .white.opacity(0.6)
+        case .inProgress: return .premiumBlue
+        case .completed: return .premiumGreen
+        case .skipped: return .premiumWarning
+        }
+    }
+}
+
+struct TimeDisplayView: View {
+    let startTime: Date
+    let endTime: Date
+    let status: BlockStatus
+    
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            Text("\(startTime, style: .time) - \(endTime, style: .time)")
+                .font(.system(size: 14, weight: .medium, design: .monospaced))
+                .foregroundStyle(Color.white.opacity(0.8))
+            
+            Text(durationText)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Color.white.opacity(0.6))
+        }
+    }
+    
+    private var durationText: String {
+        let duration = endTime.timeIntervalSince(startTime)
+        let hours = Int(duration) / 3600
+        let minutes = Int(duration) % 3600 / 60
+        
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
+}
+
+struct CategoryBadge: View {
+    let category: String
+    let color: Color
+    
+    var body: some View {
+        Text(category)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(color.opacity(0.15))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(color.opacity(0.3), lineWidth: 1)
+            )
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    ZStack {
+        AnimatedGradientBackground()
+            .ignoresSafeArea()
+        
+        VStack(spacing: 16) {
+            PremiumTimeBlockRowView(
+                timeBlock: TimeBlock(
+                    title: "Morning Workout",
+                    startTime: Date(),
+                    endTime: Date().addingTimeInterval(3600),
+                    notes: "Focus on cardio today",
+                    icon: "💪",
+                    category: "Health"
+                ),
+                isHighlighted: false,
+                onTap: {},
+                onComplete: {},
+                onSkip: {}
+            )
+            
+            PremiumTimeBlockRowView(
+                timeBlock: {
+                    let block = TimeBlock(
+                        title: "Team Meeting",
+                        startTime: Date(),
+                        endTime: Date().addingTimeInterval(1800),
+                        notes: nil,
+                        icon: "👥",
+                        category: "Work"
+                    )
+                    block.status = .inProgress
+                    return block
+                }(),
+                isHighlighted: true,
+                onTap: {},
+                onComplete: {},
+                onSkip: {}
+            )
+        }
+        .padding()
     }
 }

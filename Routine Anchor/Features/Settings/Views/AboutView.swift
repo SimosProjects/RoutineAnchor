@@ -211,7 +211,7 @@ struct AboutView: View {
                 .shadow(color: Color.premiumBlue.opacity(0.3), radius: 8, x: 0, y: 4)
             }
             
-            Text("© 2025 Christopher Simonson. All rights reserved.")
+            Text("© 2025 Simo's Media & Tech, LLC. All rights reserved.")
                 .font(TypographyConstants.UI.caption)
                 .foregroundStyle(Color.premiumTextTertiary)
                 .multilineTextAlignment(.center)
@@ -225,19 +225,21 @@ struct AboutView: View {
     }
     
     // MARK: - Actions
+    // MARK: - Actions
     private func writeReview() {
         HapticManager.shared.lightImpact()
-        // Open App Store review page
-        if let url = URL(string: "https://apps.apple.com/app/routine-anchor/idXXXXXXXXX?action=write-review") {
+        // Open App Store (temporary URL until app is live)
+        if let url = URL(string: "https://apps.apple.com/") {
             UIApplication.shared.open(url)
         }
     }
-    
+
     private func shareApp() {
         HapticManager.shared.lightImpact()
         
         let shareText = "Check out Routine Anchor - a beautiful time-blocking app that helps you build consistent routines!"
-        let appURL = URL(string: "https://apps.apple.com/app/routine-anchor/idXXXXXXXXX")!
+        // Use website URL until app is live on App Store
+        let appURL = URL(string: "https://routineanchor.com")!
         
         let activityVC = UIActivityViewController(
             activityItems: [shareText, appURL],

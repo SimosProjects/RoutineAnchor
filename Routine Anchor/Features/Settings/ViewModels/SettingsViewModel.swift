@@ -55,9 +55,40 @@ class SettingsViewModel {
         set { HapticManager.shared.setHapticsEnabled(newValue) }
     }
     
+    /// Handle auto-reset toggle
     var autoResetEnabled: Bool {
         get { UserDefaults.standard.bool(forKey: "autoResetEnabled") }
-        set { UserDefaults.standard.set(newValue, forKey: "autoResetEnabled") }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "autoResetEnabled")
+            if newValue {
+                scheduleAutoReset()
+            } else {
+                cancelAutoReset()
+            }
+        }
+    }
+    
+    /// Schedule auto-reset at midnight
+    private func scheduleAutoReset() {
+        Task {
+            await notificationService.scheduleMidnightReset()
+        }
+        
+        // Also set up a timer to check for midnight
+        scheduleMidnightTimer()
+    }
+
+    /// Cancel auto-reset
+    private func cancelAutoReset() {
+        // Remove midnight reset notification
+        Task {
+            await MainActor.run {
+                notificationService.removeMidnightReset()
+            }
+        }
+        
+        // Cancel the timer
+        cancelMidnightTimer()
     }
     
     // MARK: - Private Properties
@@ -73,7 +104,69 @@ class SettingsViewModel {
             await observeNotificationStatus()
         }
         
-        checkForMidnightReset()
+        Task {
+            await checkForMidnightReset()
+        }
+    }
+    
+    // MARK: - Midnight Timer for Auto-Reset
+
+    private var midnightTimer: Timer?
+
+    /// Schedule a timer to check for midnight
+    private func scheduleMidnightTimer() {
+        // Cancel existing timer
+        cancelMidnightTimer()
+        
+        // Calculate time until next midnight
+        let calendar = Calendar.current
+        let now = Date()
+        
+        guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
+              let nextMidnight = calendar.dateInterval(of: .day, for: tomorrow)?.start else {
+            return
+        }
+        
+        let timeInterval = nextMidnight.timeIntervalSince(now)
+        
+        // Schedule timer on main queue to avoid actor isolation issues
+        DispatchQueue.main.async { [weak self] in
+            self?.midnightTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: false) { _ in
+                Task { [weak self] in
+                    await self?.performMidnightReset()
+                }
+            }
+        }
+    }
+
+    /// Cancel midnight timer
+    private func cancelMidnightTimer() {
+        DispatchQueue.main.async { [weak self] in
+            self?.midnightTimer?.invalidate()
+            self?.midnightTimer = nil
+        }
+    }
+
+    /// Perform midnight reset
+    private func performMidnightReset() async {
+        guard autoResetEnabled else { return }
+        
+        await MainActor.run { [weak self] in
+            guard let self = self else { return }
+            
+            // Reset today's progress
+            self.resetTodaysProgress()
+            
+            // Record the reset
+            UserDefaults.standard.set(Date(), forKey: "lastAutoReset")
+            
+            // Schedule next midnight timer
+            self.scheduleMidnightTimer()
+            
+            // Show success message (will only be visible if app is open)
+            self.successMessage = "Daily routine reset successfully"
+            self.clearMessages()
+        }
     }
     
     // MARK: - Notification Management (UI Actions Only)
@@ -119,27 +212,30 @@ class SettingsViewModel {
         guard notificationsEnabled else { return }
         
         Task {
-            do {
-                let sound = NotificationSound(rawValue: notificationSound) ?? .default
-                try await notificationService.scheduleDailyReminder(
-                    at: dailyReminderTime,
-                    sound: sound
-                )
-            } catch {
-                await MainActor.run {
-                    self.errorMessage = "Failed to schedule daily reminder: \(error.localizedDescription)"
-                    self.clearMessages()
-                }
-            }
+            await notificationService.scheduleDailyReminder(at: dailyReminderTime)
         }
     }
     
-    /// Reschedule all notifications with new settings
+    // MARK: - Notification Re-scheduling
+
+    /// Re-schedule all notifications if enabled
     private func rescheduleNotificationsIfEnabled() {
         guard notificationsEnabled else { return }
         
         Task {
-            await scheduleAllNotifications()
+            // Re-schedule time block notifications
+            let timeBlocks = try? dataManager.loadTodaysTimeBlocks()
+            if let blocks = timeBlocks {
+                await notificationService.scheduleTimeBlockNotifications(for: blocks)
+            }
+            
+            // Re-schedule daily reminder
+            await notificationService.scheduleDailyReminder(at: dailyReminderTime)
+            
+            // Re-schedule midnight reset if enabled
+            if autoResetEnabled {
+                await notificationService.scheduleMidnightReset()
+            }
         }
     }
     
@@ -318,19 +414,17 @@ class SettingsViewModel {
     // MARK: - Auto-Reset Functionality
     
     /// Check if it's past midnight and auto-reset is enabled
-    private func checkForMidnightReset() {
+    private func checkForMidnightReset() async {
         guard autoResetEnabled else { return }
         
         let lastResetDate = UserDefaults.standard.object(forKey: "lastAutoReset") as? Date ?? Date.distantPast
         let calendar = Calendar.current
         
         if !calendar.isDate(lastResetDate, inSameDayAs: Date()) {
-            // It's a new day, perform auto-reset
-            Task { @MainActor in
-                self.resetTodaysProgress()
-                UserDefaults.standard.set(Date(), forKey: "lastAutoReset")
-            }
+            await performMidnightReset()
         }
+
+        scheduleMidnightTimer()
     }
     
     // MARK: - Helper Methods
@@ -398,7 +492,8 @@ class SettingsViewModel {
     func rateApp() {
         HapticManager.shared.lightImpact()
         
-        guard let url = URL(string: "https://apps.apple.com/app/routine-anchor/idXXXXXXXXX?action=write-review") else {
+        // Temporary URL until App Store ID is available
+        guard let url = URL(string: "https://apps.apple.com/") else {
             errorMessage = "Unable to open App Store"
             clearMessages()
             return
@@ -419,7 +514,8 @@ class SettingsViewModel {
         Device Model: \(UIDevice.current.model)
         """
         
-        let mailtoString = "mailto:support@routineanchor.com?subject=Support%20Request&body=\(systemInfo.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+        // Updated email address
+        let mailtoString = "mailto:christopher@simosmediatech.com?subject=Routine%20Anchor%20Support&body=\(systemInfo.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
         
         guard let url = URL(string: mailtoString) else {
             errorMessage = "Unable to open email client"

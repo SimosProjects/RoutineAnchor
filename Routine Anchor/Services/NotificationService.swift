@@ -161,46 +161,50 @@ class NotificationService: NSObject, ObservableObject {
     // MARK: - Daily Reminder
         
     /// Schedule daily reminder at specified time
-    func scheduleDailyReminder(at time: Date, sound: NotificationSound = .default) async throws {
-        guard isNotificationsEnabled else {
-            throw NotificationError.permissionDenied
-        }
+    func scheduleDailyReminder(at time: Date) async {
+        // Remove any existing daily reminders
+        removeDailyReminder()
         
-        // Remove existing daily reminder
-        removePendingNotifications(withIdentifiers: [Constants.dailyReminderId])
+        // Get notification sound preference
+        let soundName = UserDefaults.standard.string(forKey: "notificationSound") ?? "Default"
+        let notificationSound = NotificationSound(rawValue: soundName) ?? .default
         
+        // Create notification content
         let content = UNMutableNotificationContent()
-        content.title = "Daily Check-in"
-        content.body = "How did your routine go today? Review your progress and plan tomorrow!"
-        content.categoryIdentifier = NotificationCategory.dailyReminder
-        content.badge = 1
+        content.title = "Daily Check-In 📊"
+        content.body = "How did your routine go today? Take a moment to reflect and plan for tomorrow."
+        content.categoryIdentifier = "DAILY_REMINDER"
+        content.userInfo = ["type": "dailyReminder"]
         
-        if let notificationSound = sound.sound {
-            content.sound = notificationSound
+        // Set sound based on user preference
+        if let sound = notificationSound.sound {
+            content.sound = sound
         }
         
-        let dateComponents = Calendar.current.dateComponents(
-            [.hour, .minute],
-            from: time
-        )
+        // Create daily trigger at the specified time
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.hour, .minute], from: time)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         
-        let trigger = UNCalendarNotificationTrigger(
-            dateMatching: dateComponents,
-            repeats: true
-        )
-        
+        // Create request
         let request = UNNotificationRequest(
-            identifier: Constants.dailyReminderId,
+            identifier: "dailyReminder",
             content: content,
             trigger: trigger
         )
         
+        // Schedule the notification
         do {
             try await notificationCenter.add(request)
-            await updatePendingNotificationCount()
+            print("Daily reminder scheduled for \(components.hour ?? 0):\(components.minute ?? 0)")
         } catch {
-            throw NotificationError.schedulingFailed(error.localizedDescription)
+            print("Failed to schedule daily reminder: \(error)")
         }
+    }
+    
+    /// Remove daily reminder notification
+    func removeDailyReminder() {
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: ["dailyReminder"])
     }
     
     /// Cancel daily reminder
@@ -215,6 +219,46 @@ class NotificationService: NSObject, ObservableObject {
     }
     
     // MARK: - Special Notifications
+    
+    /// Schedule midnight reset notification for auto-reset feature
+    func scheduleMidnightReset() async {
+        // Remove any existing midnight reset
+        removeMidnightReset()
+        
+        // Create notification content (silent notification)
+        let content = UNMutableNotificationContent()
+        content.title = "New Day, Fresh Start! 🌅"
+        content.body = "Your daily routine has been reset. Time to plan today's schedule!"
+        content.sound = .none // Silent notification
+        content.categoryIdentifier = "MIDNIGHT_RESET"
+        content.userInfo = ["type": "midnightReset"]
+        
+        // Create trigger for midnight
+        var dateComponents = DateComponents()
+        dateComponents.hour = 0
+        dateComponents.minute = 0
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        
+        // Create request
+        let request = UNNotificationRequest(
+            identifier: "midnightReset",
+            content: content,
+            trigger: trigger
+        )
+        
+        // Schedule the notification
+        do {
+            try await notificationCenter.add(request)
+            print("Midnight reset scheduled")
+        } catch {
+            print("Failed to schedule midnight reset: \(error)")
+        }
+    }
+
+    /// Remove midnight reset notification
+    func removeMidnightReset() {
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: ["midnightReset"])
+    }
     
     /// Schedule welcome notification for new users
     func scheduleWelcomeNotification(delay: TimeInterval = 600) {
@@ -301,13 +345,7 @@ class NotificationService: NSObject, ObservableObject {
         
         // Schedule daily reminder if enabled
         if let reminderTime = dailyReminderTime {
-            do {
-                let soundName = UserDefaults.standard.string(forKey: "notificationSound") ?? "Default"
-                let sound = NotificationSound(rawValue: soundName) ?? .default
-                try await scheduleDailyReminder(at: reminderTime, sound: sound)
-            } catch {
-                print("Failed to reschedule daily reminder: \(error)")
-            }
+            await scheduleDailyReminder(at: reminderTime)
         }
     }
     
@@ -325,7 +363,6 @@ class NotificationService: NSObject, ObservableObject {
     
     // MARK: - Badge Management
     
-    /// Update app badge count
     /// Update app badge count
     func updateBadgeCount(_ count: Int) async {
         let badgeCount = min(count, Constants.maxBadgeCount)
