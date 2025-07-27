@@ -28,6 +28,7 @@ struct SettingsView: View {
     @State private var showingAbout = false
     @State private var showingHelp = false
     @State private var showingExportData = false
+    @State private var showingImportView = false
     @State private var showingResetConfirmation = false
     @State private var showingDeleteAllConfirmation = false
     
@@ -67,18 +68,6 @@ struct SettingsView: View {
                         }
                     )
                     
-                    DataManagementSection(
-                        onExportData: {
-                            showingExportData = true
-                        },
-                        onShowPrivacyPolicy: {
-                            showingPrivacyPolicy = true
-                        },
-                        onDeleteAllData: {
-                            showingDeleteAllConfirmation = true
-                        }
-                    )
-                    
                     SupportInfoSection(
                         onShowHelp: {
                             showingHelp = true
@@ -91,6 +80,21 @@ struct SettingsView: View {
                         },
                         onContactSupport: {
                             contactSupport()
+                        }
+                    )
+                    
+                    DataManagementSection(
+                        onExportData: {
+                            showingExportData = true
+                        },
+                        onImportData: {
+                            showingImportView = true
+                        },
+                        onShowPrivacyPolicy: {
+                            showingPrivacyPolicy = true
+                        },
+                        onDeleteAllData: {
+                            showingDeleteAllConfirmation = true
                         }
                     )
                     
@@ -137,6 +141,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingExportData) {
             ExportDataView()
+        }
+        .sheet(isPresented: $showingImportView) {
+            ImportDataView()
         }
         .overlay(alignment: .top) {
             // Success/Error message overlay

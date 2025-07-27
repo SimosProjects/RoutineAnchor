@@ -216,9 +216,51 @@ struct MainTabView: View {
     }
     
     private func handleNewTimeBlock(title: String, startTime: Date, endTime: Date, notes: String?, category: String?) {
-        // This will be handled by the Schedule view model
-        // The sheet dismissal will trigger the Schedule view to reload
+        // Create a new time block using the DataManager
+        guard let modelContext = try? ModelContext(ModelContainer(for: TimeBlock.self)) else {
+            print("Failed to create model context")
+            return
+        }
+        
+        let dataManager = DataManager(modelContext: modelContext)
+        
+        // Create the time block
+        let newBlock = TimeBlock(
+            title: title,
+            startTime: startTime,
+            endTime: endTime,
+            notes: notes,
+            category: category
+        )
+        
+        do {
+            // Add the time block using DataManager's addTimeBlock method
+            try dataManager.addTimeBlock(newBlock)
+            
+            // Provide haptic feedback
+            HapticManager.shared.premiumSuccess()
+            
+            // Navigate to today tab to see the new block
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                selectedTab = .today
+            }
+            
+            // Post notification to refresh views
+            NotificationCenter.default.post(
+                name: .timeBlockCreated,
+                object: nil,
+                userInfo: ["blockId": newBlock.id]
+            )
+            
+        } catch {
+            print("Failed to add time block: \(error)")
+            HapticManager.shared.premiumError()
+        }
     }
+}
+
+extension Notification.Name {
+    static let timeBlockCreated = Notification.Name("timeBlockCreated")
 }
 
 // MARK: - Floating Action Button

@@ -8,6 +8,7 @@ import SwiftUI
 
 struct DataManagementSection: View {
     let onExportData: () -> Void
+    let onImportData: () -> Void
     let onShowPrivacyPolicy: () -> Void
     let onDeleteAllData: () -> Void
     
@@ -31,6 +32,18 @@ struct DataManagementSection: View {
                     action: {
                         HapticManager.shared.lightImpact()
                         onExportData()
+                    }
+                )
+                
+                // Import data button
+                SettingsButton(
+                    title: "Import Data",
+                    subtitle: "Restore from backup file",
+                    icon: "square.and.arrow.down",
+                    color: Color.premiumGreen,
+                    action: {
+                        HapticManager.shared.lightImpact()
+                        onImportData()
                     }
                 )
                 
@@ -169,6 +182,9 @@ struct DataPoint: View {
             DataManagementSection(
                 onExportData: {
                     print("Export data")
+                },
+                onImportData: {
+                    print("Import data")
                 },
                 onShowPrivacyPolicy: {
                     print("Show privacy policy")

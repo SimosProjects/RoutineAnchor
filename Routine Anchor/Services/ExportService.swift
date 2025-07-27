@@ -14,27 +14,7 @@ class ExportService {
     private init() {}
     
     // MARK: - Export Formats
-    enum ExportFormat: String, CaseIterable {
-        case json = "JSON"
-        case csv = "CSV"
-        case text = "Plain Text"
-        
-        var fileExtension: String {
-            switch self {
-            case .json: return "json"
-            case .csv: return "csv"
-            case .text: return "txt"
-            }
-        }
-        
-        var mimeType: String {
-            switch self {
-            case .json: return "application/json"
-            case .csv: return "text/csv"
-            case .text: return "text/plain"
-            }
-        }
-    }
+    typealias ExportFormat = DataTransferFormat
     
     // MARK: - Export Methods
     
@@ -280,73 +260,6 @@ class ExportService {
         }
         return string
     }
-}
-
-// MARK: - Export Data Models
-
-struct TimeBlockExportItem: Codable {
-    let id: String
-    let title: String
-    let startTime: Date
-    let endTime: Date
-    let status: String
-    let category: String?
-    let icon: String?
-    let notes: String?
-    let createdAt: Date
-    
-    init(from timeBlock: TimeBlock) {
-        self.id = timeBlock.id.uuidString
-        self.title = timeBlock.title
-        self.startTime = timeBlock.startTime
-        self.endTime = timeBlock.endTime
-        self.status = timeBlock.status.rawValue
-        self.category = timeBlock.category
-        self.icon = timeBlock.icon
-        self.notes = timeBlock.notes
-        self.createdAt = timeBlock.createdAt
-    }
-}
-
-struct DailyProgressExportItem: Codable {
-    let id: String
-    let date: Date
-    let completionPercentage: Double
-    let completedBlocks: Int
-    let totalBlocks: Int
-    let skippedBlocks: Int
-    let dayRating: Int?
-    let dayNotes: String?
-    
-    init(from progress: DailyProgress) {
-        self.id = progress.id.uuidString
-        self.date = progress.date
-        self.completionPercentage = progress.completionPercentage
-        self.completedBlocks = progress.completedBlocks
-        self.totalBlocks = progress.totalBlocks
-        self.skippedBlocks = progress.skippedBlocks
-        self.dayRating = progress.dayRating
-        self.dayNotes = progress.dayNotes
-    }
-}
-
-struct TimeBlocksExportData: Codable {
-    let exportDate: Date
-    let version: String
-    let timeBlocks: [TimeBlockExportItem]
-}
-
-struct DailyProgressExportData: Codable {
-    let exportDate: Date
-    let version: String
-    let dailyProgress: [DailyProgressExportItem]
-}
-
-struct CompleteExportData: Codable {
-    let exportDate: Date
-    let version: String
-    let timeBlocks: [TimeBlockExportItem]
-    let dailyProgress: [DailyProgressExportItem]
 }
 
 // MARK: - Export Error
