@@ -534,13 +534,17 @@ enum NotificationSound: String, CaseIterable {
         case .default:
             return .default
         case .bell:
-            return UNNotificationSound(named: UNNotificationSoundName("bell.aiff"))
+            // Tritone - a pleasant three-note sound
+            return UNNotificationSound(named: UNNotificationSoundName("Tritone"))
         case .chime:
-            return UNNotificationSound(named: UNNotificationSoundName("chime.aiff"))
+            // Use the default sound (it's actually a nice chime)
+            return .default
         case .glass:
-            return UNNotificationSound(named: UNNotificationSoundName("glass.aiff"))
+            // Bamboo - has a glass-like quality
+            return UNNotificationSound(named: UNNotificationSoundName("Bamboo"))
         case .horn:
-            return UNNotificationSound(named: UNNotificationSoundName("horn.aiff"))
+            // Fanfare - more triumphant than a horn but works well
+            return UNNotificationSound(named: UNNotificationSoundName("Fanfare"))
         case .none:
             return nil
         }
