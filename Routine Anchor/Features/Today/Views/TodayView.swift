@@ -1,13 +1,15 @@
 //
 //  TodayView.swift
-//  Routine Anchor - Premium Version (Refactored)
+//  Routine Anchor - Premium Version (iOS 17+ Optimized)
 //
 import SwiftUI
 import SwiftData
 
 struct PremiumTodayView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var viewModel: TodayViewModel?
+    
+    // iOS 17+ Pattern: Direct initialization with @State
+    @State private var viewModel: TodayViewModel
     
     // MARK: - State
     @State private var showingSettings = false
@@ -18,9 +20,19 @@ struct PremiumTodayView: View {
     @State private var scrollProgress: CGFloat = 0
     @State private var refreshTrigger = false
     
+    // MARK: - Timer Management
+    @State private var refreshTimer: Timer?
+    
     // MARK: - Scroll Support State
     @State private var scrollProxy: ScrollViewProxy?
     @State private var highlightedBlockId: UUID?
+    
+    // MARK: - Initialization
+    init() {
+        // Initialize with a placeholder - will be configured in .task
+        let placeholderDataManager = DataManager(modelContext: ModelContext(ModelContainer.shared))
+        _viewModel = State(initialValue: TodayViewModel(dataManager: placeholderDataManager))
+    }
     
     var body: some View {
         ZStack {
@@ -33,27 +45,21 @@ struct PremiumTodayView: View {
                     ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 0) {
                             // Header section
-                            if let viewModel = viewModel {
-                                TodayHeaderView(
-                                    viewModel: viewModel,
-                                    showingSettings: $showingSettings,
-                                    showingSummary: $showingSummary
-                                )
-                                .padding(.top, geometry.safeAreaInsets.top + 20)
-                            }
+                            TodayHeaderView(
+                                viewModel: viewModel,
+                                showingSettings: $showingSettings,
+                                showingSummary: $showingSummary
+                            )
+                            .padding(.top, geometry.safeAreaInsets.top + 20)
                             
                             // Content based on state
-                            if let viewModel = viewModel {
-                                if viewModel.hasScheduledBlocks {
-                                    mainContent(viewModel: viewModel)
-                                } else {
-                                    PremiumTodayEmptyStateView(
-                                        onCreateRoutine: navigateToScheduleBuilder,
-                                        onUseTemplate: showTemplates
-                                    )
-                                }
+                            if viewModel.hasScheduledBlocks {
+                                mainContent(viewModel: viewModel)
                             } else {
-                                loadingState
+                                PremiumTodayEmptyStateView(
+                                    onCreateRoutine: navigateToScheduleBuilder,
+                                    onUseTemplate: showTemplates
+                                )
                             }
                         }
                     }
@@ -71,21 +77,25 @@ struct PremiumTodayView: View {
             }
         }
         .navigationBarHidden(true)
-        .onAppear {
-            setupViewModel()
+        .task {
+            // Configure ViewModel with actual dependencies
+            await configureViewModel()
             startPeriodicUpdates()
-            viewModel?.refreshData()
             scrollToCurrentBlockIfNeeded()
         }
-        .alert("Error", isPresented: .constant(viewModel?.errorMessage != nil)) {
+        .onDisappear {
+            // Clean up timer to prevent memory leaks
+            stopPeriodicUpdates()
+        }
+        .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("Retry") {
-                viewModel?.retryLastOperation()
+                viewModel.retryLastOperation()
             }
             Button("Dismiss", role: .cancel) {
-                viewModel?.clearError()
+                viewModel.clearError()
             }
         } message: {
-            Text(viewModel?.errorMessage ?? "")
+            Text(viewModel.errorMessage ?? "")
         }
         .onReceive(NotificationCenter.default.publisher(for: .timeBlockCompleted)) { notification in
             handleTimeBlockCompletion(notification)
@@ -128,54 +138,37 @@ struct PremiumTodayView: View {
         .padding(.top, 32)
     }
     
-    // MARK: - Loading State
-    private var loadingState: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            
-            // Elegant loading animation
-            ZStack {
-                ForEach(0..<3) { index in
-                    Circle()
-                        .fill(Color.premiumBlue.opacity(0.3))
-                        .frame(width: 12, height: 12)
-                        .scaleEffect(refreshTrigger ? 1.5 : 1.0)
-                        .offset(x: CGFloat(index - 1) * 25)
-                        .animation(
-                            .spring(response: 0.8, dampingFraction: 0.6)
-                            .repeatForever()
-                            .delay(Double(index) * 0.2),
-                            value: refreshTrigger
-                        )
-                }
-            }
-            
-            Text("Loading your day...")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.7))
-            
-            Spacer()
-        }
-        .onAppear {
-            refreshTrigger = true
-        }
-    }
-    
     // MARK: - Helper Methods
     
-    private func setupViewModel() {
-        if viewModel == nil {
-            let dataManager = DataManager(modelContext: modelContext)
-            viewModel = TodayViewModel(dataManager: dataManager)
-        }
+    private func configureViewModel() async {
+        // Create proper DataManager with current context
+        let dataManager = DataManager(modelContext: modelContext)
+        
+        // Reinitialize ViewModel with proper dependencies
+        viewModel = TodayViewModel(dataManager: dataManager)
+        
+        // Load initial data
+        viewModel.loadTodaysBlocks()
+        
+        // Setup refresh observer
+        viewModel.setupRefreshObserver()
     }
     
     private func startPeriodicUpdates() {
-        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
+        // Invalidate any existing timer
+        refreshTimer?.invalidate()
+        
+        // Create new timer with weak self reference
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak viewModel] _ in
             Task { @MainActor in
                 viewModel?.refreshData()
             }
         }
+    }
+    
+    private func stopPeriodicUpdates() {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
     }
     
     private func updateScrollProgress(_ offset: CGFloat, geometry: GeometryProxy) {
@@ -195,7 +188,7 @@ struct PremiumTodayView: View {
         try? await Task.sleep(nanoseconds: 500_000_000)
         
         await MainActor.run {
-            viewModel?.refreshData()
+            viewModel.refreshData()
             HapticManager.shared.lightImpact()
         }
     }
@@ -213,8 +206,7 @@ struct PremiumTodayView: View {
     // MARK: - Scroll Support Methods
     
     private func scrollToCurrentBlockIfNeeded() {
-        guard let viewModel = viewModel,
-              let currentBlock = viewModel.getCurrentBlock() else {
+        guard let currentBlock = viewModel.getCurrentBlock() else {
             return
         }
         
@@ -243,58 +235,33 @@ struct PremiumTodayView: View {
     
     private func handleTimeBlockCompletion(_ notification: Notification) {
         guard let blockId = notification.userInfo?["blockId"] as? UUID,
-              let block = viewModel?.timeBlocks.first(where: { $0.id == blockId }) else {
+              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else {
             return
         }
         
-        viewModel?.markBlockCompleted(block)
+        viewModel.markBlockCompleted(block)
     }
     
     private func handleTimeBlockSkip(_ notification: Notification) {
         guard let blockId = notification.userInfo?["blockId"] as? UUID,
-              let block = viewModel?.timeBlocks.first(where: { $0.id == blockId }) else {
+              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else {
             return
         }
         
-        viewModel?.markBlockSkipped(block)
+        viewModel.markBlockSkipped(block)
     }
     
     private func handleShowTimeBlock(_ notification: Notification) {
         guard let blockIdString = notification.userInfo?["blockId"] as? String,
-              let blockId = UUID(uuidString: blockIdString),
-              let block = viewModel?.timeBlocks.first(where: { $0.id == blockId }) else {
+              let blockId = UUID(uuidString: blockIdString) else {
             return
         }
         
-        selectedTimeBlock = block
-        
-        // Scroll to the block with animation
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+        // Scroll to the block and highlight it
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             scrollProxy?.scrollTo(blockId, anchor: .center)
         }
         
-        // Highlight the block temporarily
         highlightBlock(blockId)
     }
-}
-
-// MARK: - Notification Names
-extension Notification.Name {
-    static let navigateToSchedule = Notification.Name("navigateToSchedule")
-    static let showTemplates = Notification.Name("showTemplates")
-}
-
-// MARK: - Scroll Offset Preference Key
-struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
-// MARK: - Preview
-#Preview {
-    PremiumTodayView()
-        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
 }

@@ -696,8 +696,14 @@ extension NotificationService: UNUserNotificationCenterDelegate {
 
 // MARK: - Notification Names
 extension Notification.Name {
+    static let refreshTodayView = Notification.Name("refreshTodayView")
+    static let refreshScheduleView = Notification.Name("refreshScheduleView")
+    static let refreshSummaryView = Notification.Name("refreshSummaryView")
+    static let tabDidChange = Notification.Name("tabDidChange")
+    static let navigateToSchedule = Notification.Name("navigateToSchedule")
+    static let showTemplates = Notification.Name("showTemplates")
+    static let showAddTimeBlockFromTab = Notification.Name("showAddTimeBlockFromTab")
     static let timeBlockCompleted = Notification.Name("timeBlockCompleted")
     static let timeBlockSkipped = Notification.Name("timeBlockSkipped")
-    static let showDailySummary = Notification.Name("showDailySummary")
     static let showTimeBlock = Notification.Name("showTimeBlock")
 }

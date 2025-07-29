@@ -311,11 +311,21 @@ class TodayViewModel {
 
 // MARK: - Auto-refresh Logic
 extension TodayViewModel {
-    /// Set up automatic refresh for time-sensitive updates
+    /// Set up automatic refresh for time-sensitive updates (FIXED VERSION)
     func startAutoRefresh() {
-        Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { _ in
-            self.refreshData()
+        // Cancel any existing timer
+        stopAutoRefresh()
+        
+        // Create new timer with weak self reference
+        autoRefreshTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { [weak self] _ in
+            self?.refreshData()
         }
+    }
+    
+    /// Stop automatic refresh
+    func stopAutoRefresh() {
+        autoRefreshTimer?.invalidate()
+        autoRefreshTimer = nil
     }
     
     /// Manual refresh with pull-to-refresh gesture

@@ -1,39 +1,47 @@
 //
 //  MainTabViewModel.swift
-//  Routine Anchor
+//  Routine Anchor (iOS 17+ Optimized)
 //
 //  Created by Christopher Simonson on 7/23/25.
 //
 import SwiftUI
 import SwiftData
 
+@Observable
 @MainActor
-class MainTabViewModel: ObservableObject {
-    @Published var activeTasks: Int = 0
-    @Published var shouldShowSummaryBadge: Bool = false
-    @Published var selectedTabProgress: Double = 0.0
-
+class MainTabViewModel {
+    // MARK: - Published Properties (now automatically observable)
+    var activeTasks: Int = 0
+    var shouldShowSummaryBadge: Bool = false
+    var selectedTabProgress: Double = 0.0
+    
+    // MARK: - Private Properties
     private var modelContext: ModelContext?
-
-    func setup(with context: ModelContext) {
+    
+    // MARK: - Setup
+    func setup(with context: ModelContext) async {
         self.modelContext = context
-        updateBadges()
+        await updateBadges()
     }
-
-    func didSelectTab(_ tab: MainTabView.Tab) {
+    
+    // MARK: - Public Methods
+    func didSelectTab(_ tab: MainTabView.Tab) async {
+        // Animate tab selection progress
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             selectedTabProgress = 1.0
         }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
-                self.selectedTabProgress = 0.0
-            }
+        
+        // Reset progress after animation
+        try? await Task.sleep(nanoseconds: 600_000_000)
+        
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
+            selectedTabProgress = 0.0
         }
-
+        
+        // Handle tab-specific logic
         switch tab {
         case .today:
-            updateBadges()
+            await updateBadges()
         case .summary:
             shouldShowSummaryBadge = false
             UserDefaults.standard.set(Date(), forKey: "lastSummaryViewed")
@@ -41,26 +49,58 @@ class MainTabViewModel: ObservableObject {
             break
         }
     }
-
-    private func updateBadges() {
+    
+    // MARK: - Private Methods
+    private func updateBadges() async {
         guard let context = modelContext else { return }
-        updateActiveTasks(context: context)
+        
+        await updateActiveTasks(context: context)
         updateSummaryBadge()
     }
-
-    private func updateActiveTasks(context: ModelContext) {
-        activeTasks = 0 // Replace with real logic
+    
+    private func updateActiveTasks(context: ModelContext) async {
+        do {
+            // Create a descriptor to fetch today's time blocks
+            let calendar = Calendar.current
+            let startOfDay = calendar.startOfDay(for: Date())
+            let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+            
+            let descriptor = FetchDescriptor<TimeBlock>(
+                predicate: #Predicate { timeBlock in
+                    timeBlock.startTime >= startOfDay &&
+                    timeBlock.startTime < endOfDay &&
+                    timeBlock.status == .inProgress
+                }
+            )
+            
+            let inProgressBlocks = try context.fetch(descriptor)
+            activeTasks = inProgressBlocks.count
+        } catch {
+            print("Error fetching active tasks: \(error)")
+            activeTasks = 0
+        }
     }
-
+    
     private func updateSummaryBadge() {
         let lastViewed = UserDefaults.standard.object(forKey: "lastSummaryViewed") as? Date
         let calendar = Calendar.current
-
+        
         if let lastViewed = lastViewed {
+            // Show badge if last viewed was not today
             shouldShowSummaryBadge = !calendar.isDateInToday(lastViewed)
         } else {
+            // Never viewed, show badge
             shouldShowSummaryBadge = true
         }
     }
+    
+    // MARK: - Badge Management
+    func markSummaryAsViewed() {
+        shouldShowSummaryBadge = false
+        UserDefaults.standard.set(Date(), forKey: "lastSummaryViewed")
+    }
+    
+    func refreshBadges() async {
+        await updateBadges()
+    }
 }
-
