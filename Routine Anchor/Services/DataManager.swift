@@ -91,18 +91,15 @@ class DataManager {
     
     /// Load time blocks by status
     func loadTimeBlocks(withStatus status: BlockStatus) throws -> [TimeBlock] {
-        let statusValue = status.rawValue
-        let predicate = #Predicate<TimeBlock> { block in
-            block.statusValue == statusValue
-        }
-        
+        // Since we can't use statusValue in predicate, we need to fetch all and filter
         let descriptor = FetchDescriptor<TimeBlock>(
-            predicate: predicate,
             sortBy: [SortDescriptor(\.startTime, order: .forward)]
         )
         
         do {
-            return try modelContext.fetch(descriptor)
+            let allBlocks = try modelContext.fetch(descriptor)
+            // Filter in memory instead of in the predicate
+            return allBlocks.filter { $0.status == status }
         } catch {
             throw DataManagerError.fetchFailed("Failed to load time blocks with status: \(error.localizedDescription)")
         }
@@ -110,18 +107,15 @@ class DataManager {
     
     /// Load time blocks by category
     func loadTimeBlocks(withCategory category: String) throws -> [TimeBlock] {
-        let categoryValue = category
-        let predicate = #Predicate<TimeBlock> { block in
-            block.category == categoryValue
-        }
-        
+        // For string comparisons, we need to be more careful
         let descriptor = FetchDescriptor<TimeBlock>(
-            predicate: predicate,
             sortBy: [SortDescriptor(\.startTime, order: .forward)]
         )
         
         do {
-            return try modelContext.fetch(descriptor)
+            let allBlocks = try modelContext.fetch(descriptor)
+            // Filter in memory for category
+            return allBlocks.filter { $0.category == category }
         } catch {
             throw DataManagerError.fetchFailed("Failed to load time blocks for category: \(error.localizedDescription)")
         }

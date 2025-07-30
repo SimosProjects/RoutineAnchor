@@ -17,6 +17,7 @@ class TodayViewModel {
     
     // MARK: - Private Properties
     private let dataManager: DataManager
+    private var autoRefreshTimer: Timer?
     
     // MARK: - Initialization
     init(dataManager: DataManager) {

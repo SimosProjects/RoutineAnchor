@@ -532,6 +532,46 @@ class SettingsViewModel {
     }
 }
 
+extension SettingsViewModel {
+    func exportData() {
+        // Get the export string
+        let exportString = exportUserData()
+        
+        // Create a temporary file
+        let fileName = "routine-anchor-export-\(Date().timeIntervalSince1970).json"
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+        
+        do {
+            try exportString.write(to: tempURL, atomically: true, encoding: .utf8)
+            
+            // Present share sheet
+            DispatchQueue.main.async {
+                guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                      let window = windowScene.windows.first,
+                      let rootViewController = window.rootViewController else {
+                    return
+                }
+                
+                let activityVC = UIActivityViewController(
+                    activityItems: [tempURL],
+                    applicationActivities: nil
+                )
+                
+                // For iPad
+                if let popover = activityVC.popoverPresentationController {
+                    popover.sourceView = window
+                    popover.sourceRect = CGRect(x: window.bounds.midX, y: window.bounds.midY, width: 0, height: 0)
+                    popover.permittedArrowDirections = []
+                }
+                
+                rootViewController.present(activityVC, animated: true)
+            }
+        } catch {
+            print("Failed to export data: \(error)")
+        }
+    }
+}
+
 // MARK: - Development/Debug Functions
 #if DEBUG
 extension SettingsViewModel {

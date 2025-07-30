@@ -29,8 +29,20 @@ struct SettingsView: View {
     // MARK: - Initialization
     init() {
         // Initialize with placeholder - will be configured in .task
-        let placeholderDataManager = DataManager(modelContext: ModelContext(ModelContainer.shared))
-        _viewModel = State(initialValue: SettingsViewModel(dataManager: placeholderDataManager))
+        // Using a temporary in-memory context for initialization
+        do {
+            let schema = Schema([
+                TimeBlock.self,
+                DailyProgress.self
+            ])
+            let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let placeholderDataManager = DataManager(modelContext: ModelContext(container))
+            _viewModel = State(initialValue: SettingsViewModel(dataManager: placeholderDataManager))
+        } catch {
+            // Fallback - this should never happen
+            fatalError("Failed to create placeholder ModelContainer: \(error)")
+        }
     }
     
     var body: some View {
@@ -70,7 +82,7 @@ struct SettingsView: View {
             AboutView()
         }
         .sheet(isPresented: $showingSupport) {
-            SupportView()
+            HelpView()
         }
         .sheet(isPresented: $showingPrivacy) {
             PrivacyPolicyView()
@@ -78,7 +90,7 @@ struct SettingsView: View {
         .alert("Reset All Data?", isPresented: $showingResetConfirmation) {
             Button("Cancel", role: .cancel) {}
             Button("Reset", role: .destructive) {
-                viewModel.resetAllData()
+                viewModel.clearAllData()
                 HapticManager.shared.error()
             }
         } message: {
@@ -353,7 +365,7 @@ struct SettingsView: View {
     private var footerSection: some View {
         VStack(spacing: 8) {
             Text("Made with ❤️ in SwiftUI")
-                .font(TypographyConstants.UI.footnote)
+                .font(TypographyConstants.UI.caption)
                 .foregroundStyle(Color.premiumTextSecondary)
             
             Text("© 2025 Routine Anchor")
