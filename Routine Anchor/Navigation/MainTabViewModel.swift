@@ -68,12 +68,13 @@ class MainTabViewModel {
             let descriptor = FetchDescriptor<TimeBlock>(
                 predicate: #Predicate { timeBlock in
                     timeBlock.startTime >= startOfDay &&
-                    timeBlock.startTime < endOfDay &&
-                    timeBlock.status == .inProgress
+                    timeBlock.startTime < endOfDay
                 }
             )
             
-            let inProgressBlocks = try context.fetch(descriptor)
+            let todayBlocks = try context.fetch(descriptor)
+            // Filter in memory for status
+            let inProgressBlocks = todayBlocks.filter { $0.status == .inProgress }
             activeTasks = inProgressBlocks.count
         } catch {
             print("Error fetching active tasks: \(error)")

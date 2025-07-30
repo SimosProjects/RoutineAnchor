@@ -130,7 +130,7 @@ struct PremiumDailySummaryView: View {
         VStack(spacing: 24) {
             // Progress Overview Card
             if let progress = viewModel.dailyProgress {
-                ProgressOverviewCard(progress: progress)
+                ProgressOverviewCard(viewModel: viewModel)
                     .padding(.horizontal, 24)
                     .opacity(isVisible ? 1 : 0)
                     .scaleEffect(isVisible ? 1 : 0.9)
@@ -148,7 +148,7 @@ struct PremiumDailySummaryView: View {
             
             // Insights
             if let insights = viewModel.generateInsights() {
-                InsightsCard(insights: insights)
+                QuickInsightCard(insights: insights)
                     .padding(.horizontal, 24)
                     .opacity(isVisible ? 1 : 0)
                     .scaleEffect(isVisible ? 1 : 0.9)
@@ -156,7 +156,7 @@ struct PremiumDailySummaryView: View {
             }
             
             // Day Rating
-            DayRatingCard(selectedRating: $selectedRating, dayNotes: $dayNotes)
+            Rating(selectedRating: $selectedRating, dayNotes: $dayNotes)
                 .padding(.horizontal, 24)
                 .opacity(isVisible ? 1 : 0)
                 .scaleEffect(isVisible ? 1 : 0.9)
