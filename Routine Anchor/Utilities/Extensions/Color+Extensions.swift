@@ -12,6 +12,7 @@ extension Color {
     static let premiumPurple = Color(red: 0.6, green: 0.4, blue: 1.0)
     static let premiumGreen = Color(red: 0.2, green: 0.8, blue: 0.5)
     static let premiumTeal = Color(red: 0.2, green: 0.7, blue: 0.7)
+    static let premiumYellow = Color(red: 1.0, green: 0.85, blue: 0.4)
     
     // MARK: - Gradient Colors
     static let gradientBlueStart = Color(red: 0.098, green: 0.224, blue: 0.894)

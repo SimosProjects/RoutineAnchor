@@ -290,7 +290,7 @@ struct MiniFloatingButton: View {
 
 // MARK: - Completion Celebration Card
 struct CompletionCelebrationCard: View {
-    let performanceLevel: DailyProgress.PerformanceLevel
+    let performanceLevel: PerformanceLevel
     let onViewSummary: () -> Void
     
     @State private var cardScale: CGFloat = 0.8

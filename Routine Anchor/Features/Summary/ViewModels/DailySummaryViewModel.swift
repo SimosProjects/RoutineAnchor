@@ -154,7 +154,7 @@ class DailySummaryViewModel {
     }
     
     /// Performance level for the day
-    var performanceLevel: DailyProgress.PerformanceLevel {
+    var performanceLevel: PerformanceLevel {
         return dailyProgress?.performanceLevel ?? .none
     }
     

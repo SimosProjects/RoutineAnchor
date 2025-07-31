@@ -25,7 +25,7 @@ struct MainTabView: View {
             TabView(selection: $selectedTab) {
                 // Today Tab - Premium dashboard
                 NavigationStack {
-                    PremiumTodayView()
+                    PremiumTodayView(modelContext: modelContext)
                         .background(Color.clear)
                 }
                 .tabItem {
@@ -53,9 +53,9 @@ struct MainTabView: View {
                 }
                 .tag(Tab.schedule)
                 
-                // Summary Tab - Premium insights
+                // Summary Tab
                 NavigationStack {
-                    PremiumDailySummaryView()
+                    DailySummaryView()
                         .background(Color.clear)
                 }
                 .tabItem {

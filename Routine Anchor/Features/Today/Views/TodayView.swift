@@ -28,10 +28,10 @@ struct PremiumTodayView: View {
     @State private var highlightedBlockId: UUID?
     
     // MARK: - Initialization
-    init() {
-        // Initialize with a placeholder - will be configured in .task
-        let placeholderDataManager = DataManager(modelContext: ModelContext(ModelContainer.shared))
-        _viewModel = State(initialValue: TodayViewModel(dataManager: placeholderDataManager))
+    init(modelContext: ModelContext) {
+        // Initialize with the provided context
+        let dataManager = DataManager(modelContext: modelContext)
+        _viewModel = State(initialValue: TodayViewModel(dataManager: dataManager))
     }
     
     var body: some View {
@@ -263,5 +263,39 @@ struct PremiumTodayView: View {
         }
         
         highlightBlock(blockId)
+    }
+}
+
+// MARK: - Scroll Offset Preference Key
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+// MARK: - Scroll Offset Modifier
+struct ScrollOffsetModifier: ViewModifier {
+    let coordinateSpace: String
+    @Binding var offset: CGFloat
+    
+    func body(content: Content) -> some View {
+        content
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(
+                            key: ScrollOffsetPreferenceKey.self,
+                            value: -geometry.frame(in: .named(coordinateSpace)).minY
+                        )
+                }
+            )
+    }
+}
+
+extension View {
+    func scrollOffset(coordinateSpace: String, offset: Binding<CGFloat>) -> some View {
+        modifier(ScrollOffsetModifier(coordinateSpace: coordinateSpace, offset: offset))
     }
 }

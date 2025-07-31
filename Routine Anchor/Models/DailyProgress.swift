@@ -320,45 +320,44 @@ extension DailyProgress {
 }
 
 // MARK: - Performance Level Enum
-extension DailyProgress {
-    enum PerformanceLevel: String, CaseIterable {
-        case excellent = "excellent"
-        case good = "good"
-        case fair = "fair"
-        case poor = "poor"
-        case none = "none"
-        
-        var displayName: String {
-            switch self {
-            case .excellent: return "Excellent"
-            case .good: return "Good"
-            case .fair: return "Fair"
-            case .poor: return "Poor"
-            case .none: return "Not Started"
-            }
+enum PerformanceLevel: String, CaseIterable {
+    case excellent = "excellent"
+    case good = "good"
+    case fair = "fair"
+    case poor = "poor"
+    case none = "none"
+    
+    var displayName: String {
+        switch self {
+        case .excellent: return "Excellent"
+        case .good: return "Good"
+        case .fair: return "Fair"
+        case .poor: return "Poor"
+        case .none: return "Not Started"
         }
-        
-        var color: Color {
-            switch self {
-            case .excellent: return .green
-            case .good: return .blue
-            case .fair: return .orange
-            case .poor: return .red
-            case .none: return .gray
-            }
+    }
+    
+    var color: Color {
+        switch self {
+        case .excellent: return .green
+        case .good: return .blue
+        case .fair: return .orange
+        case .poor: return .red
+        case .none: return .gray
         }
-        
-        var emoji: String {
-            switch self {
-            case .excellent: return "🏆"
-            case .good: return "👍"
-            case .fair: return "📈"
-            case .poor: return "🌱"
-            case .none: return "⚪"
-            }
+    }
+    
+    var emoji: String {
+        switch self {
+        case .excellent: return "🏆"
+        case .good: return "👍"
+        case .fair: return "📈"
+        case .poor: return "🌱"
+        case .none: return "⚪"
         }
     }
 }
+
 
 // MARK: - Date Helpers
 extension DailyProgress {

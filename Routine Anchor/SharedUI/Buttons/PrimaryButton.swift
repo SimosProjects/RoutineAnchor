@@ -12,6 +12,7 @@ struct PrimaryButton: View {
     let action: () -> Void
     
     // Optional customization
+    var icon: String? = nil
     var isEnabled: Bool = true
     var isLoading: Bool = false
     var fullWidth: Bool = true
@@ -33,7 +34,14 @@ struct PrimaryButton: View {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
                         .scaleEffect(0.8)
-                        .foregroundColor(textColor)
+                        .tint(textColor)
+                }
+                
+                // Icon (if provided)
+                if let icon = icon, !isLoading {
+                    Image(systemName: icon)
+                        .font(.system(size: iconSize, weight: .semibold))
+                        .foregroundStyle(textColor)
                 }
                 
                 // Button text
@@ -41,13 +49,19 @@ struct PrimaryButton: View {
                     Text(title)
                         .font(buttonFont)
                         .fontWeight(.semibold)
-                        .foregroundColor(textColor)
+                        .foregroundStyle(textColor)
                 }
             }
             .frame(maxWidth: fullWidth ? .infinity : nil)
             .frame(height: buttonHeight)
             .padding(.horizontal, horizontalPadding)
-            .background(backgroundColor)
+            .background(
+                LinearGradient(
+                    colors: backgroundGradientColors,
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
             .cornerRadius(cornerRadius)
             .overlay(
                 // Border for outlined style
@@ -69,21 +83,25 @@ struct PrimaryButton: View {
     }
     
     // MARK: - Computed Properties
-    private var backgroundColor: Color {
+    private var backgroundGradientColors: [Color] {
         switch style {
         case .filled:
-            return isEnabled ? Color.primaryBlue : Color.primaryBlue.opacity(0.6)
+            if isEnabled {
+                return [Color.premiumBlue, Color.premiumBlue.opacity(0.8)]
+            } else {
+                return [Color.premiumBlue.opacity(0.6), Color.premiumBlue.opacity(0.4)]
+            }
         case .outlined:
-            return Color.clear
+            return [Color.clear, Color.clear]
         }
     }
     
     private var textColor: Color {
         switch style {
         case .filled:
-            return ColorConstants.Palette.onPrimary
+            return .white
         case .outlined:
-            return Color.primaryBlue
+            return Color.premiumBlue
         }
     }
     
@@ -92,7 +110,7 @@ struct PrimaryButton: View {
         case .filled:
             return Color.clear
         case .outlined:
-            return Color.primaryBlue
+            return Color.premiumBlue
         }
     }
     
@@ -106,7 +124,7 @@ struct PrimaryButton: View {
     private var shadowColor: Color {
         switch style {
         case .filled:
-            return isEnabled ? Color.primaryBlue.opacity(0.3) : Color.clear
+            return isEnabled ? Color.premiumBlue.opacity(0.3) : Color.clear
         case .outlined:
             return Color.clear
         }
@@ -157,6 +175,14 @@ struct PrimaryButton: View {
         case .large: return .system(size: 18, weight: .semibold)
         }
     }
+    
+    private var iconSize: CGFloat {
+        switch size {
+        case .small: return 14
+        case .medium: return 16
+        case .large: return 18
+        }
+    }
 }
 
 // MARK: - Button Enums
@@ -181,6 +207,17 @@ extension PrimaryButton {
         action: @escaping () -> Void
     ) {
         self.title = title
+        self.action = action
+    }
+    
+    // Primary button with icon
+    init(
+        title: String,
+        icon: String? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.title = title
+        self.icon = icon
         self.action = action
     }
     
@@ -253,52 +290,68 @@ extension PrimaryButton {
 
 // MARK: - Previews
 #Preview("Primary Button States") {
-    VStack(spacing: 20) {
-        Group {
-            // Standard states
-            PrimaryButton("Get Started") {}
-            
-            PrimaryButton("Loading...") {}
-                .loading(true)
-            
-            PrimaryButton("Disabled") {}
-                .enabled(false)
-            
-            // Different sizes
-            PrimaryButton("Large Button") {}
-                .buttonSize(.large)
-            
-            PrimaryButton("Medium Button") {}
-                .buttonSize(.medium)
-            
-            PrimaryButton("Small Button") {}
-                .buttonSize(.small)
-            
-            // Different styles
-            PrimaryButton("Filled Style") {}
-                .buttonStyle(.filled)
-            
-            PrimaryButton("Outlined Style") {}
-                .buttonStyle(.outlined)
-            
-            // Compact width
-            PrimaryButton("Compact") {}
-                .fullWidth(false)
+    ZStack {
+        AnimatedGradientBackground()
+            .ignoresSafeArea()
+        
+        ScrollView {
+            VStack(spacing: 20) {
+                Group {
+                    // Standard states
+                    PrimaryButton("Get Started") {}
+                    
+                    PrimaryButton("Loading...") {}
+                        .loading(true)
+                    
+                    PrimaryButton("Disabled") {}
+                        .enabled(false)
+                    
+                    // With icons
+                    PrimaryButton(title: "Share", icon: "square.and.arrow.up") {}
+                    
+                    PrimaryButton(title: "Continue", icon: "arrow.right") {}
+                    
+                    // Different sizes
+                    PrimaryButton("Large Button") {}
+                        .buttonSize(.large)
+                    
+                    PrimaryButton("Medium Button") {}
+                        .buttonSize(.medium)
+                    
+                    PrimaryButton("Small Button") {}
+                        .buttonSize(.small)
+                    
+                    // Different styles
+                    PrimaryButton("Filled Style") {}
+                        .buttonStyle(.filled)
+                    
+                    PrimaryButton("Outlined Style") {}
+                        .buttonStyle(.outlined)
+                    
+                    // Compact width
+                    PrimaryButton("Compact") {}
+                        .fullWidth(false)
+                }
+            }
+            .padding(20)
         }
     }
-    .padding(20)
-    .background(Color.appBackgroundSecondary)
 }
 
 #Preview("Dark Mode") {
-    VStack(spacing: 20) {
-        PrimaryButton("Get Started") {}
-        PrimaryButton("Loading...") {}
-            .loading(true)
-        PrimaryButton("Outlined Style") {}
-            .buttonStyle(.outlined)
+    ZStack {
+        AnimatedGradientBackground()
+            .ignoresSafeArea()
+        
+        VStack(spacing: 20) {
+            PrimaryButton("Get Started") {}
+            PrimaryButton("Loading...") {}
+                .loading(true)
+            PrimaryButton("Outlined Style") {}
+                .buttonStyle(.outlined)
+            PrimaryButton(title: "Share Summary", icon: "square.and.arrow.up") {}
+        }
+        .padding(20)
     }
-    .padding(20)
-    .background(Color.appBackgroundSecondary)
     .preferredColorScheme(.dark)
 }

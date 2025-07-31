@@ -12,6 +12,7 @@ struct SecondaryButton: View {
     let action: () -> Void
     
     // Optional customization
+    var icon: String? = nil
     var isEnabled: Bool = true
     var isLoading: Bool = false
     var fullWidth: Bool = true
@@ -34,7 +35,14 @@ struct SecondaryButton: View {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
                         .scaleEffect(0.8)
-                        .foregroundColor(textColor)
+                        .tint(textColor)
+                }
+                
+                // Icon (if provided)
+                if let icon = icon, !isLoading {
+                    Image(systemName: icon)
+                        .font(.system(size: iconSize, weight: .medium))
+                        .foregroundStyle(textColor)
                 }
                 
                 // Button text
@@ -42,7 +50,7 @@ struct SecondaryButton: View {
                     Text(title)
                         .font(buttonFont)
                         .fontWeight(.medium)
-                        .foregroundColor(textColor)
+                        .foregroundStyle(textColor)
                 }
             }
             .frame(maxWidth: fullWidth ? .infinity : nil)
@@ -67,9 +75,9 @@ struct SecondaryButton: View {
         switch style {
         case .filled:
             switch variant {
-            case .neutral: return Color.appBackgroundSecondary
-            case .destructive: return Color.errorRed
-            case .success: return Color.successGreen
+            case .neutral: return Color.premiumBackgroundSecondary
+            case .destructive: return Color.premiumError
+            case .success: return Color.premiumGreen
             }
         case .outlined, .ghost:
             return Color.clear
@@ -80,14 +88,14 @@ struct SecondaryButton: View {
         switch style {
         case .filled:
             switch variant {
-            case .neutral: return Color.textPrimary
+            case .neutral: return Color.premiumTextPrimary
             case .destructive, .success: return Color.white
             }
         case .outlined, .ghost:
             switch variant {
-            case .neutral: return Color.textSecondary
-            case .destructive: return Color.errorRed
-            case .success: return Color.successGreen
+            case .neutral: return Color.premiumTextSecondary
+            case .destructive: return Color.premiumError
+            case .success: return Color.premiumGreen
             }
         }
     }
@@ -98,9 +106,9 @@ struct SecondaryButton: View {
             return Color.clear
         case .outlined:
             switch variant {
-            case .neutral: return Color.separatorColor
-            case .destructive: return Color.errorRed
-            case .success: return Color.successGreen
+            case .neutral: return Color.white.opacity(0.2)
+            case .destructive: return Color.premiumError
+            case .success: return Color.premiumGreen
             }
         case .ghost:
             return Color.clear
@@ -145,6 +153,14 @@ struct SecondaryButton: View {
         case .large: return .system(size: 18, weight: .medium)
         }
     }
+    
+    private var iconSize: CGFloat {
+        switch size {
+        case .small: return 14
+        case .medium: return 16
+        case .large: return 18
+        }
+    }
 }
 
 // MARK: - Button Enums
@@ -176,6 +192,19 @@ extension SecondaryButton {
         action: @escaping () -> Void
     ) {
         self.title = title
+        self.action = action
+    }
+    
+    // Secondary button with icon
+    init(
+        title: String,
+        icon: String? = nil,
+        style: ButtonStyle = .outlined,
+        action: @escaping () -> Void
+    ) {
+        self.title = title
+        self.icon = icon
+        self.style = style
         self.action = action
     }
     
@@ -308,101 +337,121 @@ extension SecondaryButton {
 
 // MARK: - Previews
 #Preview("Secondary Button States") {
-    VStack(spacing: 20) {
-        Group {
-            // Standard states
-            SecondaryButton("Maybe Later") {}
-            
-            SecondaryButton("Loading...") {}
-                .loading(true)
-            
-            SecondaryButton("Disabled") {}
-                .enabled(false)
-            
-            // Different variants
-            SecondaryButton("Neutral") {}
-                .variant(.neutral)
-            
-            SecondaryButton("Destructive") {}
-                .variant(.destructive)
-            
-            SecondaryButton("Success") {}
-                .variant(.success)
-            
-            // Different styles
-            SecondaryButton("Outlined") {}
-                .buttonStyle(.outlined)
-            
-            SecondaryButton("Filled") {}
-                .buttonStyle(.filled)
-            
-            SecondaryButton("Ghost") {}
-                .buttonStyle(.ghost)
-            
-            // Different sizes
-            SecondaryButton("Large") {}
-                .buttonSize(.large)
-            
-            SecondaryButton("Medium") {}
-                .buttonSize(.medium)
-            
-            SecondaryButton("Small") {}
-                .buttonSize(.small)
-            
-            // Common patterns
-            SecondaryButton.cancel {}
-            SecondaryButton.skip {}
-            SecondaryButton.delete {}
-            SecondaryButton.maybeLater {}
+    ZStack {
+        AnimatedGradientBackground()
+            .ignoresSafeArea()
+        
+        ScrollView {
+            VStack(spacing: 20) {
+                Group {
+                    // Standard states
+                    SecondaryButton("Maybe Later") {}
+                    
+                    SecondaryButton("Loading...") {}
+                        .loading(true)
+                    
+                    SecondaryButton("Disabled") {}
+                        .enabled(false)
+                    
+                    // Different variants
+                    SecondaryButton("Neutral") {}
+                        .variant(.neutral)
+                    
+                    SecondaryButton("Destructive") {}
+                        .variant(.destructive)
+                    
+                    SecondaryButton("Success") {}
+                        .variant(.success)
+                    
+                    // Different styles
+                    SecondaryButton("Outlined") {}
+                        .buttonStyle(.outlined)
+                    
+                    SecondaryButton("Filled") {}
+                        .buttonStyle(.filled)
+                    
+                    SecondaryButton("Ghost") {}
+                        .buttonStyle(.ghost)
+                    
+                    // Different sizes
+                    SecondaryButton("Large") {}
+                        .buttonSize(.large)
+                    
+                    SecondaryButton("Medium") {}
+                        .buttonSize(.medium)
+                    
+                    SecondaryButton("Small") {}
+                        .buttonSize(.small)
+                    
+                    // Common patterns
+                    SecondaryButton.cancel {}
+                    SecondaryButton.skip {}
+                    SecondaryButton.delete {}
+                    SecondaryButton.maybeLater {}
+                    
+                    // With icons
+                    SecondaryButton(title: "Previous", icon: "chevron.left", action: {})
+                    SecondaryButton(title: "Next", icon: "chevron.right", action: {})
+                }
+            }
+            .padding(20)
         }
     }
-    .padding(20)
-    .background(Color.appBackgroundSecondary)
 }
 
 #Preview("Button Combinations") {
-    VStack(spacing: 16) {
-        // Primary + Secondary combination (common pattern)
-        VStack(spacing: 12) {
-            PrimaryButton("Get Started") {}
-            SecondaryButton("Maybe Later") {}
-        }
+    ZStack {
+        AnimatedGradientBackground()
+            .ignoresSafeArea()
         
-        Divider()
-        
-        // Action + Cancel combination
-        HStack(spacing: 12) {
-            SecondaryButton("Cancel") {}
-                .buttonStyle(.ghost)
+        VStack(spacing: 16) {
+            // Primary + Secondary combination (common pattern)
+            VStack(spacing: 12) {
+                PrimaryButton("Get Started") {}
+                SecondaryButton("Maybe Later") {}
+            }
             
-            PrimaryButton("Save Changes") {}
-        }
-        
-        Divider()
-        
-        // Destructive action pattern
-        VStack(spacing: 12) {
-            SecondaryButton("Delete Routine") {}
-                .variant(.destructive)
-                .buttonStyle(.outlined)
+            Divider()
+                .background(Color.white.opacity(0.2))
             
-            SecondaryButton("Cancel") {}
-                .buttonStyle(.ghost)
+            // Action + Cancel combination
+            HStack(spacing: 12) {
+                SecondaryButton("Cancel") {}
+                    .buttonStyle(.ghost)
+                
+                PrimaryButton("Save Changes") {}
+            }
+            
+            Divider()
+                .background(Color.white.opacity(0.2))
+            
+            // Destructive action pattern
+            VStack(spacing: 12) {
+                SecondaryButton("Delete Routine") {}
+                    .variant(.destructive)
+                    .buttonStyle(.outlined)
+                
+                SecondaryButton("Cancel") {}
+                    .buttonStyle(.ghost)
+            }
         }
+        .padding(20)
     }
-    .padding(20)
-    .background(Color.appBackgroundSecondary)
 }
 
 #Preview("Dark Mode") {
-    VStack(spacing: 20) {
-        SecondaryButton("Maybe Later") {}
-        SecondaryButton("Delete") {}
-            .variant(.destructive)
-        SecondaryButton("Cancel") {}
-            .buttonStyle(.ghost)
+    ZStack {
+        AnimatedGradientBackground()
+            .ignoresSafeArea()
+        
+        VStack(spacing: 20) {
+            SecondaryButton("Maybe Later") {}
+            SecondaryButton("Delete") {}
+                .variant(.destructive)
+            SecondaryButton("Cancel") {}
+                .buttonStyle(.ghost)
+        }
+        .padding(20)
     }
-    .padding(20)
-    .background(Color.appBackgroundSecondary)
     .preferredColorScheme(.dark)
 }

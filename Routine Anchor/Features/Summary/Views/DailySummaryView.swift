@@ -1,75 +1,100 @@
 //
-//  PremiumDailySummaryView.swift
-//  Routine Anchor - Premium Version (iOS 17+ Optimized)
+//  DailySummaryView.swift
+//  Routine Anchor
+//
+//  Daily summary view showing completed tasks and statistics
 //
 import SwiftUI
 import SwiftData
 
-struct PremiumDailySummaryView: View {
-    @Environment(\.modelContext) private var modelContext
+struct DailySummaryView: View {
+    // MARK: - Properties
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     
-    // iOS 17+ Pattern: Direct initialization with @State
     @State private var viewModel: DailySummaryViewModel
-    @State private var particleSystem = ParticleSystem()
-    
-    // MARK: - State
-    @State private var selectedDate = Date()
+    @State private var selectedDate: Date
     @State private var showingDatePicker = false
     @State private var showingShareSheet = false
     @State private var isVisible = false
     @State private var animationPhase = 0
-    @State private var selectedRating = 0
-    @State private var dayNotes = ""
+    @State private var particleSystem = ParticleSystem()
+    
+    // Rating & Notes
+    @State private var selectedRating: Int = 0
+    @State private var dayNotes: String = ""
     
     // MARK: - Initialization
-    init() {
-        // Initialize with placeholder - will be configured in .task
-        let placeholderDataManager = DataManager(modelContext: ModelContext(ModelContainer.shared))
-        _viewModel = State(initialValue: DailySummaryViewModel(dataManager: placeholderDataManager))
+    init(date: Date = Date()) {
+        self._selectedDate = State(initialValue: date)
+        self._viewModel = State(initialValue: DailySummaryViewModel(
+            dataManager: DataManager(modelContext: ModelContext(try! ModelContainer(for: TimeBlock.self, DailyProgress.self))),
+            date: date
+        ))
     }
     
+    // MARK: - Body
     var body: some View {
         ZStack {
-            // Premium animated background
+            // Background
             AnimatedGradientBackground()
                 .ignoresSafeArea()
             
             AnimatedMeshBackground()
                 .opacity(0.3)
-                .allowsHitTesting(false)
+                .ignoresSafeArea()
             
             ParticleEffectView(system: particleSystem)
+                .ignoresSafeArea()
                 .allowsHitTesting(false)
             
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
+            // Content
+            ScrollView {
+                VStack(spacing: 32) {
                     // Header
                     headerSection
                     
-                    // Content based on state
+                    // Main content
                     if viewModel.isLoading {
-                        loadingState
-                    } else if viewModel.dailyProgress != nil {
+                        loadingView
+                    } else if viewModel.hasData {
                         mainContent
                     } else {
-                        emptyState
+                        emptyStateView
                     }
                 }
-                .padding(.vertical, 20)
+                .padding(.bottom, 100)
+            }
+            .refreshable {
+                await viewModel.refreshData()
             }
         }
         .navigationBarHidden(true)
         .task {
             await configureViewModel()
+            await viewModel.loadData(for: selectedDate)
+            
+            // Load existing rating and notes
+            if let progress = viewModel.dailyProgress {
+                selectedRating = progress.dayRating ?? 0
+                dayNotes = progress.dayNotes ?? ""
+            }
+            
             startAnimations()
         }
         .sheet(isPresented: $showingDatePicker) {
             datePickerSheet
         }
         .sheet(isPresented: $showingShareSheet) {
-            if let progress = viewModel.dailyProgress {
-                ShareSheet(activityItems: [generateShareText(for: progress)])
+            ShareSummaryView(viewModel: viewModel)
+        }
+        .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+            Button("OK") {
+                viewModel.clearError()
+            }
+        } message: {
+            if let error = viewModel.errorMessage {
+                Text(error)
             }
         }
     }
@@ -77,12 +102,12 @@ struct PremiumDailySummaryView: View {
     // MARK: - Header Section
     private var headerSection: some View {
         VStack(spacing: 16) {
-            // Back button and title
+            // Navigation bar
             HStack {
                 Button(action: { dismiss() }) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 8) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 16, weight: .medium))
                         Text("Back")
                             .font(.system(size: 16, weight: .medium))
                     }
@@ -130,7 +155,7 @@ struct PremiumDailySummaryView: View {
         VStack(spacing: 24) {
             // Progress Overview Card
             if let progress = viewModel.dailyProgress {
-                ProgressOverviewCard(viewModel: viewModel)
+                SummaryProgressCard(progress: progress, timeBlocks: viewModel.todaysTimeBlocks)
                     .padding(.horizontal, 24)
                     .opacity(isVisible ? 1 : 0)
                     .scaleEffect(isVisible ? 1 : 0.9)
@@ -147,8 +172,8 @@ struct PremiumDailySummaryView: View {
             }
             
             // Insights
-            if let insights = viewModel.generateInsights() {
-                QuickInsightCard(insights: insights)
+            if let insights = viewModel.generateInsights(), !insights.isEmpty {
+                InsightsCard(insights: insights)
                     .padding(.horizontal, 24)
                     .opacity(isVisible ? 1 : 0)
                     .scaleEffect(isVisible ? 1 : 0.9)
@@ -179,58 +204,83 @@ struct PremiumDailySummaryView: View {
     
     // MARK: - Action Buttons
     private var actionButtons: some View {
-        VStack(spacing: 16) {
-            PremiumPrimaryButton(
+        VStack(spacing: 12) {
+            // Share button
+            PrimaryButton(
                 title: "Share Summary",
-                icon: "square.and.arrow.up"
-            ) {
-                showingShareSheet = true
-            }
+                icon: "square.and.arrow.up",
+                action: { showingShareSheet = true }
+            )
             
-            PremiumSecondaryButton(
-                title: "Plan Tomorrow",
-                icon: "arrow.right.circle",
-                style: .ghost
-            ) {
-                planTomorrow()
+            // Navigation buttons
+            HStack(spacing: 12) {
+                SecondaryButton(
+                    title: "Previous",
+                    icon: "chevron.left",
+                    style: .outlined,
+                    action: { viewModel.loadPreviousDay() }
+                )
+                .enabled(viewModel.canNavigateToPreviousDay)
+                
+                SecondaryButton(
+                    title: "Next",
+                    icon: "chevron.right",
+                    style: .outlined,
+                    action: { viewModel.loadNextDay() }
+                )
+                .enabled(viewModel.canNavigateToNextDay)
             }
         }
-        .padding(.bottom, 40)
     }
     
     // MARK: - Empty State
-    private var emptyState: some View {
+    private var emptyStateView: some View {
         VStack(spacing: 24) {
-            Spacer()
-            
-            Image(systemName: "calendar.badge.exclamationmark")
-                .font(.system(size: 60))
+            Image(systemName: "calendar.day.timeline.left")
+                .font(.system(size: 64, weight: .light))
                 .foregroundStyle(Color.white.opacity(0.3))
+                .scaleEffect(animationPhase == 0 ? 1.0 : 1.1)
+                .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animationPhase)
             
-            Text("No data for this day")
-                .font(.system(size: 24, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.8))
+            VStack(spacing: 12) {
+                Text("No Activity")
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Text("No time blocks were scheduled for this day")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+            }
             
-            Text("Create some time blocks to track your progress")
-                .font(.system(size: 16))
-                .foregroundStyle(Color.white.opacity(0.5))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
-            Spacer()
+            // Navigate to schedule
+            if Calendar.current.isDateInToday(selectedDate) {
+                PrimaryButton(
+                    title: "Create Schedule",
+                    icon: "plus.circle.fill",
+                    action: {
+                        dismiss()
+                        // Navigate to schedule tab - handled by parent
+                    }
+                )
+                .padding(.horizontal, 60)
+                .padding(.top, 12)
+            }
         }
+        .padding(.horizontal, 40)
+        .padding(.top, 80)
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
     }
     
-    // MARK: - Loading State
-    private var loadingState: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            
-            // Elegant loading animation
-            ZStack {
-                ForEach(0..<3) { index in
+    // MARK: - Loading View
+    private var loadingView: some View {
+        VStack(spacing: 32) {
+            // Animated loading dots
+            HStack(spacing: 12) {
+                ForEach(0..<3, id: \.self) { index in
                     Circle()
-                        .fill(Color.premiumBlue.opacity(0.3))
+                        .fill(Color.white.opacity(0.3))
                         .frame(width: 12, height: 12)
                         .scaleEffect(animationPhase == 0 ? 0.8 : 1.2)
                         .animation(
@@ -308,43 +358,59 @@ struct PremiumDailySummaryView: View {
             HapticManager.shared.lightImpact()
         }
     }
+}
+
+// MARK: - Insights Card
+struct InsightsCard: View {
+    let insights: [String]
+    @State private var isVisible = false
     
-    private func planTomorrow() {
-        HapticManager.shared.premiumImpact()
-        // Navigate to schedule builder for tomorrow
-        dismiss()
-    }
-    
-    private func generateShareText(for progress: DailyProgress) -> String {
-        var text = "📊 Daily Summary for \(selectedDate.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))\n\n"
-        
-        text += "✅ Completed: \(progress.completedBlocks) blocks\n"
-        text += "⏰ Total Focus Time: \(formatTime(progress.totalFocusMinutes))\n"
-        text += "📈 Completion Rate: \(Int(progress.completionRate * 100))%\n"
-        
-        if selectedRating > 0 {
-            text += "\n⭐ Day Rating: \(selectedRating)/5\n"
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Image(systemName: "lightbulb.fill")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(Color.premiumWarning)
+                
+                Text("Insights")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Spacer()
+            }
+            
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(insights, id: \.self) { insight in
+                    HStack(alignment: .top, spacing: 12) {
+                        Circle()
+                            .fill(Color.premiumWarning.opacity(0.3))
+                            .frame(width: 6, height: 6)
+                            .offset(y: 6)
+                        
+                        Text(insight)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Color.white.opacity(0.8))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
         }
-        
-        if !dayNotes.isEmpty {
-            text += "\n📝 Notes: \(dayNotes)\n"
-        }
-        
-        text += "\n#RoutineAnchor #DailyProgress #Productivity"
-        
-        return text
-    }
-    
-    private func formatTime(_ minutes: Int) -> String {
-        let hours = minutes / 60
-        let mins = minutes % 60
-        
-        if hours > 0 && mins > 0 {
-            return "\(hours)h \(mins)m"
-        } else if hours > 0 {
-            return "\(hours)h"
-        } else {
-            return "\(mins)m"
+        .padding(20)
+        .glassMorphism(cornerRadius: 20)
+        .scaleEffect(isVisible ? 1 : 0.9)
+        .opacity(isVisible ? 1 : 0)
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+                isVisible = true
+            }
         }
     }
+}
+
+// MARK: - Preview
+#Preview("Daily Summary") {
+    NavigationStack {
+        DailySummaryView(date: Date())
+    }
+    .modelContainer(for: [TimeBlock.self, DailyProgress.self])
 }
