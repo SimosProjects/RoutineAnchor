@@ -25,10 +25,22 @@ struct PremiumScheduleBuilderView: View {
     @State private var scrollProgress: CGFloat = 0
     
     // MARK: - Initialization
+    // MARK: - Initialization
     init() {
-        // Initialize with placeholder - will be configured in .task
-        let placeholderDataManager = DataManager(modelContext: ModelContext(ModelContainer.shared))
-        _viewModel = State(initialValue: ScheduleBuilderViewModel(dataManager: placeholderDataManager))
+        // Create a temporary in-memory container for initialization
+        do {
+            let schema = Schema([
+                TimeBlock.self,
+                DailyProgress.self
+            ])
+            let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let placeholderDataManager = DataManager(modelContext: ModelContext(container))
+            _viewModel = State(initialValue: ScheduleBuilderViewModel(dataManager: placeholderDataManager))
+        } catch {
+            // Fallback - this should never happen
+            fatalError("Failed to create placeholder ModelContainer: \(error)")
+        }
     }
     
     var body: some View {
@@ -158,7 +170,7 @@ struct PremiumScheduleBuilderView: View {
                     icon: "trash",
                     style: .ghost
                 ) {
-                    viewModel.clearAllBlocks()
+                    viewModel.deleteAllTimeBlocks()
                 }
             }
             .padding(.horizontal, 24)

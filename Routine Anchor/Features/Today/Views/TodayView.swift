@@ -7,8 +7,6 @@ import SwiftData
 
 struct PremiumTodayView: View {
     @Environment(\.modelContext) private var modelContext
-    
-    // iOS 17+ Pattern: Direct initialization with @State
     @State private var viewModel: TodayViewModel
     
     // MARK: - State
