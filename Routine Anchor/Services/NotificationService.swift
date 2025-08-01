@@ -705,6 +705,7 @@ extension Notification.Name {
     static let showAddTimeBlockFromTab = Notification.Name("showAddTimeBlockFromTab")
     static let timeBlockCompleted = Notification.Name("timeBlockCompleted")
     static let timeBlockSkipped = Notification.Name("timeBlockSkipped")
+    static let timeBlockCreated = Notification.Name("timeBlockCreated")
     static let showTimeBlock = Notification.Name("showTimeBlock")
     static let showDailySummary = Notification.Name("showDailySummary")
 }

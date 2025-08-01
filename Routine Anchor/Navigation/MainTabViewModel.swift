@@ -19,34 +19,40 @@ class MainTabViewModel {
     private var modelContext: ModelContext?
     
     // MARK: - Setup
-    func setup(with context: ModelContext) async {
+    func setup(with context: ModelContext) {
         self.modelContext = context
-        await updateBadges()
+        // Start the async update without waiting
+        Task {
+            await updateBadges()
+        }
     }
     
     // MARK: - Public Methods
-    func didSelectTab(_ tab: MainTabView.Tab) async {
-        // Animate tab selection progress
+    func didSelectTab(_ tab: MainTabView.Tab) {
+        // Start animation immediately
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             selectedTabProgress = 1.0
         }
         
-        // Reset progress after animation
-        try? await Task.sleep(nanoseconds: 600_000_000)
-        
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
-            selectedTabProgress = 0.0
-        }
-        
-        // Handle tab-specific logic
-        switch tab {
-        case .today:
-            await updateBadges()
-        case .summary:
-            shouldShowSummaryBadge = false
-            UserDefaults.standard.set(Date(), forKey: "lastSummaryViewed")
-        default:
-            break
+        // Handle async operations in a Task
+        Task {
+            // Reset progress after animation
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
+                selectedTabProgress = 0.0
+            }
+            
+            // Handle tab-specific logic
+            switch tab {
+            case .today:
+                await updateBadges()
+            case .summary:
+                shouldShowSummaryBadge = false
+                UserDefaults.standard.set(Date(), forKey: "lastSummaryViewed")
+            default:
+                break
+            }
         }
     }
     
@@ -101,7 +107,9 @@ class MainTabViewModel {
         UserDefaults.standard.set(Date(), forKey: "lastSummaryViewed")
     }
     
-    func refreshBadges() async {
-        await updateBadges()
+    func refreshBadges() {
+        Task {
+            await updateBadges()
+        }
     }
 }
