@@ -97,60 +97,34 @@ class TodayViewModel {
             try dataManager.markTimeBlockSkipped(timeBlock)
             loadTodaysBlocks() // Refresh data
             
-            // Success feedback
-            HapticManager.shared.success()
+            // Skip feedback
+            HapticManager.shared.lightImpact()
             
         } catch {
-            errorMessage = "Failed to mark block as skipped: \(error.localizedDescription)"
+            errorMessage = "Failed to skip block: \(error.localizedDescription)"
             HapticManager.shared.error()
         }
         
         isLoading = false
     }
     
-    /// Start a time block (mark as in progress)
+    /// Start a time block (transition to in-progress)
     func startTimeBlock(_ timeBlock: TimeBlock) {
-        isLoading = true
-        errorMessage = nil
-        
         do {
             try dataManager.startTimeBlock(timeBlock)
             loadTodaysBlocks() // Refresh data
             
-            // Success feedback
+            // Start feedback
             HapticManager.shared.mediumImpact()
             
         } catch {
-            errorMessage = "Failed to start time block: \(error.localizedDescription)"
+            errorMessage = "Failed to start block: \(error.localizedDescription)"
             HapticManager.shared.error()
         }
-        
-        isLoading = false
     }
     
     // MARK: - Computed Properties
     
-    /// Get the currently active time block
-    func getCurrentBlock() -> TimeBlock? {
-        do {
-            return try dataManager.getCurrentActiveTimeBlock()
-        } catch {
-            print("Error getting current block: \(error)")
-            return nil
-        }
-    }
-    
-    /// Get the next upcoming time block
-    func getNextUpcomingBlock() -> TimeBlock? {
-        do {
-            return try dataManager.getNextUpcomingTimeBlock()
-        } catch {
-            print("Error getting next block: \(error)")
-            return nil
-        }
-    }
-    
-    /// Progress percentage (0.0 to 1.0)
     var progressPercentage: Double {
         return dailyProgress?.completionPercentage ?? 0.0
     }
@@ -170,11 +144,6 @@ class TodayViewModel {
         return dailyProgress?.timeSummary ?? "No time planned"
     }
     
-    /// Whether the day is complete
-    var isDayComplete: Bool {
-        return dailyProgress?.isDayComplete ?? false
-    }
-    
     /// Performance level for the day
     var performanceLevel: DailyProgress.PerformanceLevel {
         return dailyProgress?.performanceLevel ?? .none
@@ -183,11 +152,6 @@ class TodayViewModel {
     /// Motivational message based on progress
     var motivationalMessage: String {
         return dailyProgress?.motivationalMessage ?? "Ready to start your day?"
-    }
-    
-    /// Whether there are any scheduled blocks today
-    var hasScheduledBlocks: Bool {
-        return !timeBlocks.isEmpty
     }
     
     /// Sorted time blocks by start time
@@ -217,7 +181,65 @@ class TodayViewModel {
         return timeBlocks.filter { $0.status == .skipped }.count
     }
     
-    // MARK: - Time-based Logic
+    /// Check if there are any scheduled blocks for today
+    var hasScheduledBlocks: Bool {
+        !timeBlocks.isEmpty
+    }
+    
+    /// Check if all blocks are complete for today
+    var isDayComplete: Bool {
+        guard !timeBlocks.isEmpty else { return false }
+        return timeBlocks.allSatisfy { $0.status == .completed }
+    }
+    
+    /// Get completion percentage for today
+    var completionPercentage: Double {
+        guard !timeBlocks.isEmpty else { return 0 }
+        let completedCount = timeBlocks.filter { $0.status == .completed }.count
+        return Double(completedCount) / Double(timeBlocks.count)
+    }
+    
+    /// Get total scheduled time for today
+    var totalScheduledMinutes: Int {
+        timeBlocks.reduce(0) { $0 + $1.durationMinutes }
+    }
+
+    /// Get total completed time for today
+    var totalCompletedMinutes: Int {
+        timeBlocks
+            .filter { $0.status == .completed }
+            .reduce(0) { $0 + $1.durationMinutes }
+    }
+    
+    // MARK: - Helper Methods
+    
+    /// Get the currently active time block
+    func getCurrentBlock() -> TimeBlock? {
+        let now = Date()
+        return timeBlocks.first { block in
+            block.startTime <= now && block.endTime > now
+        }
+    }
+    
+    /// Get the next upcoming time block
+    func getNextUpcomingBlock() -> TimeBlock? {
+        let now = Date()
+        return timeBlocks
+            .filter { $0.startTime > now }
+            .sorted { $0.startTime < $1.startTime }
+            .first
+    }
+    
+    /// Get time blocks by status
+    func getBlocks(withStatus status: BlockStatus) -> [TimeBlock] {
+        timeBlocks.filter { $0.status == status }
+    }
+    
+    /// Check if a specific time block is current
+    func isBlockCurrent(_ block: TimeBlock) -> Bool {
+        let now = Date()
+        return block.startTime <= now && block.endTime > now
+    }
     
     /// Whether it's the right time to show summary (end of day)
     var shouldShowSummary: Bool {
@@ -310,14 +332,7 @@ class TodayViewModel {
 }
 
 // MARK: - Auto-refresh Logic
-extension TodayViewModel {
-    /// Set up automatic refresh for time-sensitive updates
-    func startAutoRefresh() {
-        Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { _ in
-            self.refreshData()
-        }
-    }
-    
+extension TodayViewModel {    
     /// Manual refresh with pull-to-refresh gesture
     func pullToRefresh() async {
         await MainActor.run {

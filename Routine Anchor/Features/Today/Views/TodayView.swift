@@ -18,6 +18,9 @@ struct PremiumTodayView: View {
     @State private var scrollProgress: CGFloat = 0
     @State private var refreshTrigger = false
     
+    // MARK: - Timer Management
+    @State private var updateTimer: Timer?
+    
     // MARK: - Scroll Support State
     @State private var scrollProxy: ScrollViewProxy?
     @State private var highlightedBlockId: UUID?
@@ -76,6 +79,10 @@ struct PremiumTodayView: View {
             startPeriodicUpdates()
             viewModel?.refreshData()
             scrollToCurrentBlockIfNeeded()
+        }
+        .onDisappear {
+            // Clean up timer when view disappears
+            stopPeriodicUpdates()
         }
         .alert("Error", isPresented: .constant(viewModel?.errorMessage != nil)) {
             Button("Retry") {
@@ -171,11 +178,20 @@ struct PremiumTodayView: View {
     }
     
     private func startPeriodicUpdates() {
-        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
+        stopPeriodicUpdates()
+
+        updateTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak viewModel] _ in
+            guard let viewModel = viewModel else { return }
+
             Task { @MainActor in
-                viewModel?.refreshData()
+                viewModel.refreshData()
             }
         }
+    }
+    
+    private func stopPeriodicUpdates() {
+        updateTimer?.invalidate()
+        updateTimer = nil
     }
     
     private func updateScrollProgress(_ offset: CGFloat, geometry: GeometryProxy) {
@@ -261,30 +277,20 @@ struct PremiumTodayView: View {
     
     private func handleShowTimeBlock(_ notification: Notification) {
         guard let blockIdString = notification.userInfo?["blockId"] as? String,
-              let blockId = UUID(uuidString: blockIdString),
-              let block = viewModel?.timeBlocks.first(where: { $0.id == blockId }) else {
+              let blockId = UUID(uuidString: blockIdString) else {
             return
         }
         
-        selectedTimeBlock = block
-        
-        // Scroll to the block with animation
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+        // Scroll to the specified block
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             scrollProxy?.scrollTo(blockId, anchor: .center)
         }
         
-        // Highlight the block temporarily
+        // Highlight the block
         highlightBlock(blockId)
     }
 }
 
-// MARK: - Notification Names
-extension Notification.Name {
-    static let navigateToSchedule = Notification.Name("navigateToSchedule")
-    static let showTemplates = Notification.Name("showTemplates")
-}
-
-// MARK: - Scroll Offset Preference Key
 struct ScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     
