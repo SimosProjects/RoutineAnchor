@@ -34,14 +34,14 @@ struct PremiumDailySummaryView: View {
                 .allowsHitTesting(false)
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 32) {
+                VStack(spacing: 12) {
                     // Header
                     headerSection
                     
                     // Main content
                     if let viewModel = viewModel {
                         if viewModel.hasData {
-                            VStack(spacing: 24) {
+                            VStack(spacing: 12) {
                                 // Progress visualization
                                 progressSection(viewModel)
                                 
@@ -69,16 +69,21 @@ struct PremiumDailySummaryView: View {
                         loadingView
                     }
                     
-                    Spacer(minLength: 40)
+                    Spacer(minLength: 16)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 20)
+                .padding(.horizontal, 12)
+                .padding(.top, 16)
             }
         }
         .navigationBarHidden(true)
         .onAppear {
-            setupViewModel()
+            if viewModel == nil {
+                setupViewModel()
+            }
             startAnimations()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .refreshSummaryView)) { _ in
+            viewModel?.refreshData()
         }
         .onDisappear {
             saveDayRatingAndNotes()
@@ -509,7 +514,10 @@ struct PremiumDailySummaryView: View {
             
             PremiumButton(
                 title: "Start Your Day",
-                action: { dismiss() }
+                action: {
+                    // Navigate to Today tab
+                    NotificationCenter.default.post(name: .navigateToToday, object: nil)
+                }
             )
         }
         .padding(.horizontal, 40)
@@ -547,8 +555,13 @@ struct PremiumDailySummaryView: View {
     // MARK: - Helper Methods
     
     private func setupViewModel() {
-        let dataManager = DataManager(modelContext: modelContext)
-        viewModel = DailySummaryViewModel(dataManager: dataManager)
+        if viewModel == nil {
+            let dataManager = DataManager(modelContext: modelContext)
+            viewModel = DailySummaryViewModel(dataManager: dataManager)
+        } else {
+            // Refresh data when returning to the view
+            viewModel?.refreshData()
+        }
     }
     
     private func startAnimations() {

@@ -95,6 +95,14 @@ struct MainTabView: View {
                 }
                 
                 NotificationCenter.default.addObserver(
+                    forName: .navigateToToday,
+                    object: nil,
+                    queue: .main
+                ) { _ in
+                    selectedTab = .today
+                }
+                
+                NotificationCenter.default.addObserver(
                     forName: .showTemplates,
                     object: nil,
                     queue: .main
@@ -112,7 +120,7 @@ struct MainTabView: View {
                 }
             }
             .onChange(of: selectedTab) { oldValue, newValue in
-                handleTabSelection(newValue)
+                handleEnhancedTabSelection(newValue)
             }
             
             // Floating Action Button
@@ -484,6 +492,7 @@ extension Notification.Name {
     static let refreshSummaryView = Notification.Name("refreshSummaryView")
     static let showAddTimeBlockFromTab = Notification.Name("showAddTimeBlockFromTab")
     static let timeBlockCreated = Notification.Name("timeBlockCreated")
+    static let navigateToToday = Notification.Name("navigateToToday")
 }
 
 // MARK: - Preview

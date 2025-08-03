@@ -77,7 +77,6 @@ struct PremiumTodayView: View {
         .onAppear {
             setupViewModel()
             startPeriodicUpdates()
-            viewModel?.refreshData()
             scrollToCurrentBlockIfNeeded()
         }
         .onDisappear {
@@ -102,6 +101,9 @@ struct PremiumTodayView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .showTimeBlock)) { notification in
             handleShowTimeBlock(notification)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .refreshTodayView)) { _ in
+            viewModel?.refreshData()
         }
     }
     
@@ -174,6 +176,9 @@ struct PremiumTodayView: View {
         if viewModel == nil {
             let dataManager = DataManager(modelContext: modelContext)
             viewModel = TodayViewModel(dataManager: dataManager)
+        } else {
+            // Refresh data when returning to the view
+            viewModel?.refreshData()
         }
     }
     

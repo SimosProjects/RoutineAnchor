@@ -61,11 +61,16 @@ struct PremiumScheduleBuilderView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            setupViewModel()
+            if viewModel == nil {
+                setupViewModel()
+            }
             startAnimations()
         }
         .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlockFromTab)) { _ in
             showingAddBlock = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .refreshScheduleView)) { _ in
+            viewModel?.loadTimeBlocks()
         }
         .sheet(isPresented: $showingAddBlock) {
             PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
@@ -379,8 +384,13 @@ struct PremiumScheduleBuilderView: View {
     // MARK: - Helper Methods
     
     private func setupViewModel() {
-        let dataManager = DataManager(modelContext: modelContext)
-        viewModel = ScheduleBuilderViewModel(dataManager: dataManager)
+        if viewModel == nil {
+            let dataManager = DataManager(modelContext: modelContext)
+            viewModel = ScheduleBuilderViewModel(dataManager: dataManager)
+        } else {
+            // Refresh data when returning to the view
+            viewModel?.loadTimeBlocks()
+        }
     }
     
     private func startAnimations() {
