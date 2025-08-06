@@ -259,7 +259,7 @@ extension TimeBlock {
 extension TimeBlock {
     /// Whether this time block has valid time constraints
     var isValid: Bool {
-        return startTime < endTime && !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return validationErrors.isEmpty
     }
     
     /// Validation errors for this time block
