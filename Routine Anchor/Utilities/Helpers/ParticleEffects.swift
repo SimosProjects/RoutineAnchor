@@ -6,28 +6,42 @@
 //
 import SwiftUI
 
-struct ParticleSystem {
-    var particles: [Particle] = []
+@MainActor
+class ParticleSystem: ObservableObject {
+    @Published var particles: [Particle] = []
 
-    mutating func startEmitting() {
+    func startEmitting(screenSize: CGSize) {
+        var newParticles: [Particle] = []
         for _ in 0..<20 {
-            particles.append(Particle())
+            let position = CGPoint(
+                x: CGFloat.random(in: 0...screenSize.width),
+                y: CGFloat.random(in: 0...screenSize.height)
+            )
+            let opacity = Double.random(in: 0.1...0.3)
+            let scale = CGFloat.random(in: 0.5...1.5)
+            newParticles.append(Particle(position: position, opacity: opacity, scale: scale))
         }
+        // No need for DispatchQueue.main.async because @MainActor guarantees main thread
+        self.particles = newParticles
     }
 }
 
 struct Particle: Identifiable {
     let id = UUID()
-    var position: CGPoint = CGPoint(
-        x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
-        y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
-    )
-    var opacity: Double = Double.random(in: 0.1...0.3)
-    var scale: CGFloat = CGFloat.random(in: 0.5...1.5)
+    var position: CGPoint
+    var opacity: Double
+    var scale: CGFloat
+    
+    // Explicit initializer, no UIKit inside struct
+    init(position: CGPoint, opacity: Double, scale: CGFloat) {
+        self.position = position
+        self.opacity = opacity
+        self.scale = scale
+    }
 }
 
 struct ParticleEffectView: View {
-    let system: ParticleSystem
+    @StateObject var system = ParticleSystem()
     @State private var animate = false
 
     var body: some View {
@@ -45,9 +59,10 @@ struct ParticleEffectView: View {
                         value: animate
                     )
             }
-        }
-        .onAppear {
-            animate = true
+            .onAppear {
+                system.startEmitting(screenSize: geometry.size)
+                animate = true
+            }
         }
     }
 }

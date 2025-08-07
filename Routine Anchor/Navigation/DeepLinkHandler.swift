@@ -28,7 +28,6 @@ class DeepLinkHandler: ObservableObject {
     private init() {}
     
     // MARK: - Handle Notification Response
-    
     func handleNotificationResponse(_ response: UNNotificationResponse) {
         let userInfo = response.notification.request.content.userInfo
         let actionIdentifier = response.actionIdentifier

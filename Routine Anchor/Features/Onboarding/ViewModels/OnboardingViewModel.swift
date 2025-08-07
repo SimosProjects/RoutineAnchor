@@ -85,6 +85,7 @@ class OnboardingViewModel {
     // MARK: - Permission Management
     
     /// Request notification permissions
+    @MainActor
     func requestNotificationPermission() {
         isRequestingPermission = true
         errorMessage = nil
@@ -124,6 +125,7 @@ class OnboardingViewModel {
     }
     
     /// Skip notification permissions
+    @MainActor
     func skipPermissions() {
         notificationPermissionGranted = false
         HapticManager.shared.lightImpact()
@@ -131,6 +133,7 @@ class OnboardingViewModel {
     }
     
     /// Check current notification permission status
+    @MainActor
     func checkNotificationPermissions() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {
@@ -142,6 +145,7 @@ class OnboardingViewModel {
     // MARK: - Onboarding Completion
     
     /// Mark onboarding as completed
+    @MainActor
     func completeOnboarding() {
         // Save onboarding completion
         UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")

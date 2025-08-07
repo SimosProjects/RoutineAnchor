@@ -37,15 +37,12 @@ class TimerManager: ObservableObject {
         // Setup notification observers for app lifecycle
         setupLifecycleObservers()
     }
-
-    deinit {
-        let timersToInvalidate = activeTimers.values
-
-        Task { @MainActor in
-            for timer in timersToInvalidate {
-                timer.invalidate()
-            }
+    
+    func shutdown() {
+        for timer in activeTimers.values {
+            timer.invalidate()
         }
+        activeTimers.removeAll()
     }
     
     // MARK: - Public Methods
@@ -174,7 +171,7 @@ extension View {
         interval: TimeInterval,
         repeats: Bool = true,
         isActive: Binding<Bool>,
-        action: @escaping () -> Void
+        action: @Sendable @escaping () -> Void
     ) -> some View {
         self
             .onAppear {

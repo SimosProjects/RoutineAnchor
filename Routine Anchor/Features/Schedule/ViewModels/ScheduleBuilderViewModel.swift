@@ -8,6 +8,7 @@ import SwiftUI
 import SwiftData
 
 @Observable
+@MainActor
 class ScheduleBuilderViewModel {
     // MARK: - Published Properties
     var timeBlocks: [TimeBlock] = []
@@ -61,6 +62,7 @@ class ScheduleBuilderViewModel {
     // MARK: - Time Block Management
     
     /// Add a new time block
+    @MainActor
     func addTimeBlock(title: String, startTime: Date, endTime: Date, notes: String? = nil, category: String? = nil) {
         isLoading = true
         errorMessage = nil
@@ -96,6 +98,7 @@ class ScheduleBuilderViewModel {
     }
     
     /// Update an existing time block
+    @MainActor
     func updateTimeBlock(_ block: TimeBlock) {
         isLoading = true
         errorMessage = nil
@@ -123,6 +126,7 @@ class ScheduleBuilderViewModel {
     }
     
     /// Delete a time block
+    @MainActor
     func deleteTimeBlock(_ block: TimeBlock) {
         isLoading = true
         errorMessage = nil
@@ -144,6 +148,7 @@ class ScheduleBuilderViewModel {
     }
     
     /// Delete all time blocks for the current day
+    @MainActor
     func deleteAllTimeBlocks() {
         isLoading = true
         errorMessage = nil
@@ -167,6 +172,7 @@ class ScheduleBuilderViewModel {
     // MARK: - Routine Management
     
     /// Save the current routine and schedule notifications
+    @MainActor
     func saveRoutine() {
         scheduleNotifications()
         
@@ -178,6 +184,7 @@ class ScheduleBuilderViewModel {
     }
     
     /// Copy today's routine to another date
+    @MainActor
     func copyRoutineToDate(_ targetDate: Date) {
         isLoading = true
         errorMessage = nil
@@ -197,6 +204,7 @@ class ScheduleBuilderViewModel {
     }
     
     /// Reset all time blocks status (back to not started)
+    @MainActor
     func resetRoutineStatus() {
         isLoading = true
         errorMessage = nil
@@ -328,7 +336,7 @@ extension ScheduleBuilderViewModel {
     /// Quick add methods for common time blocks
     
     // MARK: - Quick Templates
-
+    @MainActor
     func addMorningRoutine() {
         let calendar = Calendar.current
         let now = Date()
@@ -354,6 +362,7 @@ extension ScheduleBuilderViewModel {
         )
     }
 
+    @MainActor
     func addWorkBlock() {
         let calendar = Calendar.current
         let now = Date()
@@ -379,6 +388,7 @@ extension ScheduleBuilderViewModel {
         )
     }
 
+    @MainActor
     func addBreak() {
         let calendar = Calendar.current
         let now = Date()

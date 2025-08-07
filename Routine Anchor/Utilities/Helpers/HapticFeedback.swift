@@ -7,6 +7,7 @@
 import UIKit
 
 /// Manages haptic feedback throughout the app with premium patterns
+@MainActor
 class HapticManager {
     static let shared = HapticManager()
     

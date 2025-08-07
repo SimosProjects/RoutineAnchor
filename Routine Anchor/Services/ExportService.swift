@@ -8,6 +8,7 @@ import Foundation
 import SwiftData
 import UniformTypeIdentifiers
 
+@MainActor
 class ExportService {
     // MARK: - Singleton
     static let shared = ExportService()

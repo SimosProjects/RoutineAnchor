@@ -12,56 +12,58 @@ struct OnboardingFlow: View {
     @State private var particleSystem = ParticleSystem()
 
     var body: some View {
-        ZStack {
-            AnimatedGradientBackground()
-            AnimatedMeshBackground()
-                .opacity(0.3)
-                .allowsHitTesting(false)
-            ParticleEffectView(system: particleSystem)
-                .allowsHitTesting(false)
+        GeometryReader { geometry in
+            ZStack {
+                AnimatedGradientBackground()
+                AnimatedMeshBackground()
+                    .opacity(0.3)
+                    .allowsHitTesting(false)
+                ParticleEffectView()
+                    .allowsHitTesting(false)
 
-            VStack(spacing: 0) {
-                TabView(selection: $viewModel.currentStep) {
-                    PremiumWelcomeView(onContinue: viewModel.nextStep)
-                        .tag(OnboardingViewModel.OnboardingStep.welcome)
+                VStack(spacing: 0) {
+                    TabView(selection: $viewModel.currentStep) {
+                        PremiumWelcomeView(onContinue: viewModel.nextStep)
+                            .tag(OnboardingViewModel.OnboardingStep.welcome)
 
-                    PremiumPermissionView(
-                        onAllow: viewModel.requestNotificationPermission,
-                        onSkip: viewModel.skipPermissions
-                    )
-                    .tag(OnboardingViewModel.OnboardingStep.permissions)
+                        PremiumPermissionView(
+                            onAllow: viewModel.requestNotificationPermission,
+                            onSkip: viewModel.skipPermissions
+                        )
+                        .tag(OnboardingViewModel.OnboardingStep.permissions)
 
-                    PremiumSetupCompleteView(onFinish: completeOnboarding)
-                        .tag(OnboardingViewModel.OnboardingStep.setup)
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .animation(.spring(response: 0.8, dampingFraction: 0.85), value: viewModel.currentStep)
-
-                // Page indicators
-                HStack(spacing: 12) {
-                    ForEach(OnboardingViewModel.OnboardingStep.allCases, id: \.self) { step in
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(
-                                viewModel.currentStep == step ?
-                                LinearGradient(
-                                    colors: [Color(red: 0.4, green: 0.6, blue: 1.0), Color(red: 0.6, green: 0.4, blue: 1.0)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                ) : LinearGradient(
-                                    colors: [Color.white.opacity(0.2), Color.white.opacity(0.2)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(width: viewModel.currentStep == step ? 32 : 8, height: 8)
-                            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.currentStep)
+                        PremiumSetupCompleteView(onFinish: completeOnboarding)
+                            .tag(OnboardingViewModel.OnboardingStep.setup)
                     }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .animation(.spring(response: 0.8, dampingFraction: 0.85), value: viewModel.currentStep)
+
+                    // Page indicators
+                    HStack(spacing: 12) {
+                        ForEach(OnboardingViewModel.OnboardingStep.allCases, id: \.self) { step in
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(
+                                    viewModel.currentStep == step ?
+                                    LinearGradient(
+                                        colors: [Color(red: 0.4, green: 0.6, blue: 1.0), Color(red: 0.6, green: 0.4, blue: 1.0)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    ) : LinearGradient(
+                                        colors: [Color.white.opacity(0.2), Color.white.opacity(0.2)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(width: viewModel.currentStep == step ? 32 : 8, height: 8)
+                                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.currentStep)
+                        }
+                    }
+                    .padding(.bottom, 50)
                 }
-                .padding(.bottom, 50)
             }
-        }
-        .onAppear {
-            startAnimations()
+            .onAppear {
+                startAnimations(screenSize: geometry.size)
+            }
         }
     }
 
@@ -73,11 +75,11 @@ struct OnboardingFlow: View {
         }
     }
 
-    private func startAnimations() {
+    private func startAnimations(screenSize: CGSize) {
         withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
             animationPhase = 1
         }
-        particleSystem.startEmitting()
+        particleSystem.startEmitting(screenSize: screenSize)
     }
 }
 

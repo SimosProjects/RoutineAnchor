@@ -7,6 +7,7 @@
 import Foundation
 import SwiftData
 
+@MainActor
 class AnalyticsService {
     // MARK: - Singleton
     static let shared = AnalyticsService()
