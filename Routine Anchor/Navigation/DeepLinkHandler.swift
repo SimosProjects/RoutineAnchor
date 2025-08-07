@@ -3,6 +3,7 @@
 //  Routine Anchor
 //
 //  Handles deep linking from notifications and URLs
+//  Swift 6 Compatible Version
 //
 
 import SwiftUI
@@ -18,8 +19,14 @@ enum DeepLink {
     case showSettings
 }
 
+// Sendable wrapper for notification data
+struct NotificationResponseData: Sendable {
+    let actionIdentifier: String
+    let userInfo: [String: String] // Simplified to String values only
+}
+
 @MainActor
-class DeepLinkHandler: ObservableObject {
+final class DeepLinkHandler: ObservableObject {
     static let shared = DeepLinkHandler()
     
     @Published var pendingDeepLink: DeepLink?
@@ -27,21 +34,22 @@ class DeepLinkHandler: ObservableObject {
     
     private init() {}
     
-    // MARK: - Handle Notification Response
-    func handleNotificationResponse(_ response: UNNotificationResponse) {
-        let userInfo = response.notification.request.content.userInfo
-        let actionIdentifier = response.actionIdentifier
+    // MARK: - Handle Notification Response (Swift 6 Version)
+    // This now accepts Sendable data instead of UNNotificationResponse
+    func handleNotificationData(_ data: NotificationResponseData) {
+        let actionIdentifier = data.actionIdentifier
+        let userInfo = data.userInfo
         
         switch actionIdentifier {
         case NotificationAction.complete:
-            if let blockIdString = userInfo["timeBlockId"] as? String,
+            if let blockIdString = userInfo["timeBlockId"],
                let blockId = UUID(uuidString: blockIdString) {
                 pendingDeepLink = .completeTimeBlock(blockId: blockId)
                 activeTab = .today
             }
             
         case NotificationAction.skip:
-            if let blockIdString = userInfo["timeBlockId"] as? String,
+            if let blockIdString = userInfo["timeBlockId"],
                let blockId = UUID(uuidString: blockIdString) {
                 pendingDeepLink = .skipTimeBlock(blockId: blockId)
                 activeTab = .today
@@ -53,7 +61,7 @@ class DeepLinkHandler: ObservableObject {
             
         default:
             // User tapped on notification itself
-            if let blockIdString = userInfo["timeBlockId"] as? String,
+            if let blockIdString = userInfo["timeBlockId"],
                let blockId = UUID(uuidString: blockIdString) {
                 pendingDeepLink = .showTimeBlock(blockId: blockId)
                 activeTab = .today
@@ -61,7 +69,8 @@ class DeepLinkHandler: ObservableObject {
         }
         
         // Process the deep link after a short delay to ensure UI is ready
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        Task {
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
             self.processDeepLink()
         }
     }

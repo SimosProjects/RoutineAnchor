@@ -9,7 +9,6 @@ struct PremiumScheduleBuilderView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: ScheduleBuilderViewModel?
-    @State private var particleSystem = ParticleSystem()
     
     // MARK: - State
     @State private var showingAddBlock = false
@@ -32,7 +31,7 @@ struct PremiumScheduleBuilderView: View {
                 .opacity(0.3)
                 .allowsHitTesting(false)
             
-            ParticleEffectView(system: particleSystem)
+            ParticleEffectView()
                 .allowsHitTesting(false)
             
             GeometryReader { geometry in
@@ -64,7 +63,9 @@ struct PremiumScheduleBuilderView: View {
             if viewModel == nil {
                 setupViewModel()
             }
-            startAnimations()
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                animationPhase = 1
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlockFromTab)) { _ in
             showingAddBlock = true
@@ -390,14 +391,6 @@ struct PremiumScheduleBuilderView: View {
         } else {
             // Refresh data when returning to the view
             viewModel?.loadTimeBlocks()
-        }
-    }
-    
-    private func startAnimations() {
-        particleSystem.startEmitting()
-        
-        withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
-            animationPhase = 1
         }
     }
     

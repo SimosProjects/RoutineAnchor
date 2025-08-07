@@ -35,6 +35,8 @@ struct PremiumTodayView: View {
                 ScrollViewReader { proxy in
                     ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 0) {
+                            OffsetObservingView() // Track scroll offset
+
                             // Header section
                             if let viewModel = viewModel {
                                 TodayHeaderView(
@@ -44,7 +46,7 @@ struct PremiumTodayView: View {
                                 )
                                 .padding(.top, geometry.safeAreaInsets.top + 20)
                             }
-                            
+
                             // Content based on state
                             if let viewModel = viewModel {
                                 if viewModel.hasScheduledBlocks {
@@ -68,7 +70,9 @@ struct PremiumTodayView: View {
                         await refreshData()
                     }
                     .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                        updateScrollProgress(value, geometry: geometry)
+                        Task { @MainActor in
+                            updateScrollProgress(value, geometry: geometry)
+                        }
                     }
                 }
             }
@@ -199,6 +203,7 @@ struct PremiumTodayView: View {
         updateTimer = nil
     }
     
+    @MainActor
     private func updateScrollProgress(_ offset: CGFloat, geometry: GeometryProxy) {
         let progress = min(max(offset / 100, 0), 1)
         if abs(scrollProgress - progress) > 0.01 {
@@ -297,12 +302,24 @@ struct PremiumTodayView: View {
 }
 
 struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
+    static let defaultValue: CGFloat = 0
     
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
     }
 }
+
+struct OffsetObservingView: View {
+    var body: some View {
+        GeometryReader { geo in
+            Color.clear
+                .preference(key: ScrollOffsetPreferenceKey.self,
+                            value: geo.frame(in: .named("scroll")).minY)
+        }
+        .frame(height: 0)
+    }
+}
+
 
 // MARK: - Preview
 #Preview {

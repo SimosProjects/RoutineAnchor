@@ -1,6 +1,7 @@
 //
 //  PremiumDailySummaryView.swift
 //  Routine Anchor
+//  Swift 6 Compatible Version
 //
 import SwiftUI
 import SwiftData
@@ -12,7 +13,6 @@ struct PremiumDailySummaryView: View {
     
     // MARK: - Animation State
     @State private var animationPhase = 0
-    @State private var particleSystem = ParticleSystem()
     @State private var isVisible = false
     @State private var showingShareSheet = false
     
@@ -30,7 +30,7 @@ struct PremiumDailySummaryView: View {
                 .opacity(0.3)
                 .allowsHitTesting(false)
             
-            ParticleEffectView(system: particleSystem)
+            ParticleEffectView()
                 .allowsHitTesting(false)
             
             ScrollView(showsIndicators: false) {
@@ -76,14 +76,13 @@ struct PremiumDailySummaryView: View {
             }
         }
         .navigationBarHidden(true)
-        .onAppear {
-            if viewModel == nil {
-                setupViewModel()
-            }
-            startAnimations()
+        .task {
+            await setupInitialState()
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshSummaryView)) { _ in
-            viewModel?.refreshData()
+            Task { @MainActor in
+                viewModel?.refreshData()
+            }
         }
         .onDisappear {
             saveDayRatingAndNotes()
@@ -554,6 +553,12 @@ struct PremiumDailySummaryView: View {
     
     // MARK: - Helper Methods
     
+    @MainActor
+    private func setupInitialState() async {
+        setupViewModel()
+        startAnimations()
+    }
+    
     private func setupViewModel() {
         if viewModel == nil {
             let dataManager = DataManager(modelContext: modelContext)
@@ -565,8 +570,6 @@ struct PremiumDailySummaryView: View {
     }
     
     private func startAnimations() {
-        particleSystem.startEmitting()
-        
         withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
             animationPhase = 1
         }
@@ -605,7 +608,7 @@ struct PremiumDailySummaryView: View {
     }
 }
 
-// MARK: - Supporting Components (kept in main file)
+// MARK: - Supporting Components
 
 struct InsightRow: View {
     let text: String

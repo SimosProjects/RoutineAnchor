@@ -9,7 +9,6 @@ struct OnboardingFlow: View {
     @Binding var showOnboarding: Bool
     @State private var viewModel = OnboardingViewModel()
     @State private var animationPhase = 0
-    @State private var particleSystem = ParticleSystem()
 
     var body: some View {
         GeometryReader { geometry in
@@ -62,7 +61,9 @@ struct OnboardingFlow: View {
                 }
             }
             .onAppear {
-                startAnimations(screenSize: geometry.size)
+                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                    animationPhase = 1
+                }
             }
         }
     }
@@ -73,13 +74,6 @@ struct OnboardingFlow: View {
             HapticManager.shared.success()
             showOnboarding = false
         }
-    }
-
-    private func startAnimations(screenSize: CGSize) {
-        withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-            animationPhase = 1
-        }
-        particleSystem.startEmitting(screenSize: screenSize)
     }
 }
 

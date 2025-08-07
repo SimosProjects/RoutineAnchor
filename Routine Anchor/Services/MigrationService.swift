@@ -41,8 +41,8 @@ enum RoutineAnchorMigrationPlan: SchemaMigrationPlan {
 
 // MARK: - Schema V1 (Current)
 enum SchemaV1: VersionedSchema {
-    static var versionIdentifier = Schema.Version(1, 0, 0)
-    
+    static let versionIdentifier = Schema.Version(1, 0, 0)
+
     static var models: [any PersistentModel.Type] {
         [TimeBlock.self, DailyProgress.self]
     }

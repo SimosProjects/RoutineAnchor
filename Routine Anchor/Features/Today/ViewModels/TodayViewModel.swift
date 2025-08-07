@@ -21,105 +21,125 @@ class TodayViewModel {
     // MARK: - Initialization
     init(dataManager: DataManager) {
         self.dataManager = dataManager
-        loadTodaysBlocks()
+        
+        // Load today's blocks asynchronously on main actor
+        Task { await loadTodaysBlocks() }
     }
     
     // MARK: - Data Loading
     
     /// Load today's time blocks and calculate progress
-    func loadTodaysBlocks() {
+    func loadTodaysBlocks() async {
         isLoading = true
         errorMessage = nil
         
         do {
-            // Fetch today's time blocks
-            timeBlocks = try dataManager.loadTodaysTimeBlocks()
+            // Assume your dataManager APIs are synchronous currently,
+            // so offload blocking work off main actor and come back
             
-            // Load or create daily progress
-            dailyProgress = try dataManager.loadOrCreateDailyProgress(for: Date())
+            let blocks = try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.loadTodaysTimeBlocks()
+            }.value
             
-            // Update progress based on current time blocks
-            try dataManager.updateDailyProgress(for: Date())
+            let progress = try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.loadOrCreateDailyProgress(for: Date())
+            }.value
             
-            // Reload progress after update
-            dailyProgress = try dataManager.loadDailyProgress(for: Date())
+            try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.updateDailyProgress(for: Date())
+            }.value
+            
+            let updatedProgress = try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.loadDailyProgress(for: Date())
+            }.value
+            
+            // Back on MainActor: update published properties
+            await MainActor.run {
+                self.timeBlocks = blocks
+                self.dailyProgress = updatedProgress
+                self.isLoading = false
+            }
             
         } catch {
-            errorMessage = "Failed to load today's data: \(error.localizedDescription)"
+            await MainActor.run {
+                self.errorMessage = "Failed to load today's data: \(error.localizedDescription)"
+                self.isLoading = false
+            }
             print("Error loading today's blocks: \(error)")
         }
-        
-        isLoading = false
     }
     
     /// Refresh data and update time-based statuses
-    func refreshData() {
+    func refreshData() async {
         do {
-            // Update time blocks based on current time
-            try dataManager.updateTimeBlocksBasedOnCurrentTime()
+            try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.updateTimeBlocksBasedOnCurrentTime()
+            }.value
             
-            // Reload everything
-            loadTodaysBlocks()
+            // Reload today's blocks async
+            await loadTodaysBlocks()
             
         } catch {
-            errorMessage = "Failed to refresh data: \(error.localizedDescription)"
+            await MainActor.run {
+                self.errorMessage = "Failed to refresh data: \(error.localizedDescription)"
+            }
         }
     }
     
     // MARK: - Time Block Actions
     
     /// Mark a time block as completed
-    func markBlockCompleted(_ timeBlock: TimeBlock) {
-        isLoading = true
-        errorMessage = nil
-        
+    func markBlockCompleted(_ timeBlock: TimeBlock) async {
+        await updateLoadingStart()
         do {
-            try dataManager.markTimeBlockCompleted(timeBlock)
-            loadTodaysBlocks() // Refresh data
+            try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.markTimeBlockCompleted(timeBlock)
+            }.value
             
-            // Success feedback
-            HapticManager.shared.success()
-            
+            await loadTodaysBlocks()
+            await MainActor.run { HapticManager.shared.success() }
         } catch {
-            errorMessage = "Failed to mark block as completed: \(error.localizedDescription)"
-            HapticManager.shared.error()
+            await MainActor.run {
+                self.errorMessage = "Failed to mark block as completed: \(error.localizedDescription)"
+                HapticManager.shared.error()
+            }
         }
-        
-        isLoading = false
+        await updateLoadingEnd()
     }
     
     /// Mark a time block as skipped
-    func markBlockSkipped(_ timeBlock: TimeBlock) {
-        isLoading = true
-        errorMessage = nil
-        
+    func markBlockSkipped(_ timeBlock: TimeBlock) async {
+        await updateLoadingStart()
         do {
-            try dataManager.markTimeBlockSkipped(timeBlock)
-            loadTodaysBlocks() // Refresh data
+            try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.markTimeBlockSkipped(timeBlock)
+            }.value
             
-            // Skip feedback
-            HapticManager.shared.lightImpact()
-            
+            await loadTodaysBlocks()
+            await MainActor.run { HapticManager.shared.lightImpact() }
         } catch {
-            errorMessage = "Failed to skip block: \(error.localizedDescription)"
-            HapticManager.shared.error()
+            await MainActor.run {
+                self.errorMessage = "Failed to skip block: \(error.localizedDescription)"
+                HapticManager.shared.error()
+            }
         }
-        
-        isLoading = false
+        await updateLoadingEnd()
     }
     
     /// Start a time block (transition to in-progress)
-    func startTimeBlock(_ timeBlock: TimeBlock) {
+    func startTimeBlock(_ timeBlock: TimeBlock) async {
         do {
-            try dataManager.startTimeBlock(timeBlock)
-            loadTodaysBlocks() // Refresh data
+            try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.startTimeBlock(timeBlock)
+            }.value
             
-            // Start feedback
-            HapticManager.shared.mediumImpact()
-            
+            await loadTodaysBlocks()
+            await MainActor.run { HapticManager.shared.mediumImpact() }
         } catch {
-            errorMessage = "Failed to start block: \(error.localizedDescription)"
-            HapticManager.shared.error()
+            await MainActor.run {
+                self.errorMessage = "Failed to start block: \(error.localizedDescription)"
+                HapticManager.shared.error()
+            }
         }
     }
     
@@ -284,33 +304,48 @@ class TodayViewModel {
         }
     }
     
+    // MARK: - Loading helpers
+    private func updateLoadingStart() async {
+        await MainActor.run {
+            self.isLoading = true
+            self.errorMessage = nil
+        }
+    }
+    
+    private func updateLoadingEnd() async {
+        await MainActor.run {
+            self.isLoading = false
+        }
+    }
+    
     // MARK: - Actions
     
     /// Reset today's progress (useful for testing or corrections)
-    func resetTodaysProgress() {
-        isLoading = true
-        errorMessage = nil
-        
+    func resetTodaysProgress() async {
+        await updateLoadingStart()
         do {
-            try dataManager.resetTimeBlocksStatus(for: Date())
-            loadTodaysBlocks() // Refresh data
+            try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.resetTimeBlocksStatus(for: Date())
+            }.value
             
-            // Success feedback
-            HapticManager.shared.success()
-            
+            await loadTodaysBlocks()
+            await MainActor.run { HapticManager.shared.success() }
         } catch {
-            errorMessage = "Failed to reset progress: \(error.localizedDescription)"
-            HapticManager.shared.error()
+            await MainActor.run {
+                self.errorMessage = "Failed to reset progress: \(error.localizedDescription)"
+                HapticManager.shared.error()
+            }
         }
-        
-        isLoading = false
+        await updateLoadingEnd()
     }
     
     /// Mark day as reviewed (for summary tracking)
-    func markDayAsReviewed() {
+    func markDayAsReviewed() async {
         do {
             dailyProgress?.markSummaryViewed()
-            try dataManager.updateDailyProgress(for: Date())
+            try await Task.detached(priority: .userInitiated) {
+                try self.dataManager.updateDailyProgress(for: Date())
+            }.value
         } catch {
             print("Error marking day as reviewed: \(error)")
         }
@@ -319,15 +354,17 @@ class TodayViewModel {
     // MARK: - Error Handling
     
     /// Clear any error messages
-    func clearError() {
-        errorMessage = nil
-        dataManager.clearError()
+    func clearError() async {
+        await MainActor.run {
+            self.errorMessage = nil
+            self.dataManager.clearError()
+        }
     }
     
     /// Retry the last failed operation
-    func retryLastOperation() {
-        clearError()
-        loadTodaysBlocks()
+    func retryLastOperation() async {
+        await clearError()
+        await loadTodaysBlocks()
     }
 }
 

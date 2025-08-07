@@ -1,6 +1,7 @@
 //
 //  HelpView.swift
 //  Routine Anchor
+//  Swift 6 Compatible Version
 //
 //  Created by Christopher Simonson on 7/21/25.
 //
@@ -9,7 +10,7 @@ import SwiftUI
 struct HelpView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var animationPhase = 0
-    @State private var particleSystem = ParticleSystem()
+    // REMOVED: @State private var particleSystem = ParticleSystem()
     @State private var searchText = ""
     @State private var selectedCategory: HelpCategory = .gettingStarted
     
@@ -20,7 +21,8 @@ struct HelpView: View {
             AnimatedMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)
-            ParticleEffectView(system: particleSystem)
+            // CHANGED: Now using self-contained ParticleEffectView
+            ParticleEffectView()
                 .allowsHitTesting(false)
             
             VStack(spacing: 0) {
@@ -48,9 +50,9 @@ struct HelpView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            particleSystem.startEmitting()
+            // REMOVED: particleSystem.startEmitting()
             withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                animationPhase += 1
+                animationPhase = 1  // CHANGED: Set to 1 instead of += 1
             }
         }
     }

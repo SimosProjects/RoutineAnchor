@@ -1,18 +1,18 @@
 //
 //  MainTabView.swift
 //  Routine Anchor - Premium Version
+//  Swift 6 Compatible
 //
 import SwiftUI
 import SwiftData
-import Combine
 
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var tabViewModel = MainTabViewModel()
+    @State private var tabViewModel = MainTabViewModel()
     @State private var selectedTab: Tab = .today
     @State private var tabBarOffset: CGFloat = 0
     @State private var showFloatingAction = false
-    @State private var cancellables = Set<AnyCancellable>()
+    @State private var deepLinkObserverTask: Task<Void, Never>?
     
     var body: some View {
         ZStack {
@@ -82,45 +82,14 @@ struct MainTabView: View {
                 .tag(Tab.settings)
             }
             .accentColor(.clear) // Remove default tint
-            .onAppear {
-                setupPremiumTabBar()
-                tabViewModel.setup(with: modelContext)
-                
-                NotificationCenter.default.addObserver(
-                    forName: .navigateToSchedule,
-                    object: nil,
-                    queue: .main
-                ) { _ in
-                    selectedTab = .schedule
-                }
-                
-                NotificationCenter.default.addObserver(
-                    forName: .navigateToToday,
-                    object: nil,
-                    queue: .main
-                ) { _ in
-                    selectedTab = .today
-                }
-                
-                NotificationCenter.default.addObserver(
-                    forName: .showTemplates,
-                    object: nil,
-                    queue: .main
-                ) { _ in
-                    selectedTab = .schedule
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        // This will trigger the template sheet in ScheduleBuilderView
-                        NotificationCenter.default.post(name: .showTemplates, object: nil)
-                    }
-                }
-                
-                // Animate floating action button
-                withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.5)) {
-                    showFloatingAction = shouldShowFloatingButton(for: selectedTab)
-                }
+            .task {
+                await setupInitialState()
             }
             .onChange(of: selectedTab) { oldValue, newValue in
                 handleEnhancedTabSelection(newValue)
+            }
+            .onDisappear {
+                deepLinkObserverTask?.cancel()
             }
             
             // Floating Action Button
@@ -140,6 +109,77 @@ struct MainTabView: View {
                     insertion: .scale(scale: 0.8).combined(with: .opacity),
                     removal: .scale(scale: 0.6).combined(with: .opacity)
                 ))
+            }
+        }
+    }
+    
+    @MainActor
+    private func setupInitialState() async {
+        setupPremiumTabBar()
+        tabViewModel.setup(with: modelContext)
+        setupNotificationObservers()
+        setupDeepLinkObserver()
+        
+        // Animate floating action button
+        withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.5)) {
+            showFloatingAction = shouldShowFloatingButton(for: selectedTab)
+        }
+    }
+    
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(
+            forName: .navigateToSchedule,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                selectedTab = .schedule
+            }
+        }
+        
+        NotificationCenter.default.addObserver(
+            forName: .navigateToToday,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                selectedTab = .today
+            }
+        }
+        
+        NotificationCenter.default.addObserver(
+            forName: .showTemplates,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                selectedTab = .schedule
+                try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
+                NotificationCenter.default.post(name: .showTemplates, object: nil)
+            }
+        }
+        
+        NotificationCenter.default.addObserver(
+            forName: .showAddTimeBlockFromTab,
+            object: nil,
+            queue: .main
+        ) { _ in
+            // This notification is handled by ScheduleBuilderView
+        }
+    }
+    
+    private func setupDeepLinkObserver() {
+        // Create a task to observe DeepLinkHandler changes
+        deepLinkObserverTask = Task { @MainActor in
+            // Poll for changes periodically (since we can't use Combine with @MainActor easily in Swift 6)
+            while !Task.isCancelled {
+                let newTab = DeepLinkHandler.shared.activeTab
+                if newTab != selectedTab {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        selectedTab = newTab
+                    }
+                }
+                try? await Task.sleep(nanoseconds: 100_000_000) // Check every 0.1 seconds
             }
         }
     }
@@ -183,7 +223,9 @@ struct MainTabView: View {
         UITabBar.appearance().layer.shadowOpacity = 0.1
     }
     
-    private func handleTabSelection(_ tab: Tab) {
+    private func handleEnhancedTabSelection(_ tab: Tab) {
+        let previousTab = selectedTab
+        
         // Haptic feedback
         HapticManager.shared.premiumSelection()
         
@@ -193,6 +235,29 @@ struct MainTabView: View {
         // Show/hide floating action button based on tab
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             showFloatingAction = shouldShowFloatingButton(for: tab)
+        }
+        
+        // Post notification for tab change to trigger data refresh
+        NotificationCenter.default.post(
+            name: .tabDidChange,
+            object: nil,
+            userInfo: [
+                "previousTab": previousTab,
+                "newTab": tab
+            ]
+        )
+        
+        // Tab-specific refresh logic
+        switch tab {
+        case .today:
+            NotificationCenter.default.post(name: .refreshTodayView, object: nil)
+        case .schedule:
+            NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
+        case .summary:
+            NotificationCenter.default.post(name: .refreshSummaryView, object: nil)
+        case .settings:
+            // Settings typically don't need refresh
+            break
         }
     }
     
@@ -215,56 +280,14 @@ struct MainTabView: View {
                 selectedTab = .schedule
             }
             // Delay showing the add sheet to allow tab transition
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            Task {
+                try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
                 NotificationCenter.default.post(name: .showAddTimeBlockFromTab, object: nil)
             }
         case .schedule:
             NotificationCenter.default.post(name: .showAddTimeBlockFromTab, object: nil)
         default:
             break
-        }
-    }
-    
-    private func handleNewTimeBlock(title: String, startTime: Date, endTime: Date, notes: String?, category: String?) {
-        // Create a new time block using the DataManager
-        guard let modelContext = try? ModelContext(ModelContainer(for: TimeBlock.self)) else {
-            print("Failed to create model context")
-            return
-        }
-        
-        let dataManager = DataManager(modelContext: modelContext)
-        
-        // Create the time block
-        let newBlock = TimeBlock(
-            title: title,
-            startTime: startTime,
-            endTime: endTime,
-            notes: notes,
-            category: category
-        )
-        
-        do {
-            // Add the time block using DataManager's addTimeBlock method
-            try dataManager.addTimeBlock(newBlock)
-            
-            // Provide haptic feedback
-            HapticManager.shared.premiumSuccess()
-            
-            // Navigate to today tab to see the new block
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                selectedTab = .today
-            }
-            
-            // Post notification to refresh views
-            NotificationCenter.default.post(
-                name: .timeBlockCreated,
-                object: nil,
-                userInfo: ["blockId": newBlock.id]
-            )
-            
-        } catch {
-            print("Failed to add time block: \(error)")
-            HapticManager.shared.premiumError()
         }
     }
 }
@@ -281,11 +304,14 @@ struct FloatingActionButton: View {
                 isPressed = true
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    isPressed = false
+            Task {
+                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+                await MainActor.run {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPressed = false
+                    }
+                    action()
                 }
-                action()
             }
         }) {
             ZStack {
@@ -337,7 +363,7 @@ struct FloatingActionButton: View {
 
 // MARK: - Tab Enum (Enhanced)
 extension MainTabView {
-    enum Tab: String, CaseIterable {
+    enum Tab: String, CaseIterable, Equatable {
         case today = "today"
         case schedule = "schedule"
         case summary = "summary"
@@ -381,110 +407,7 @@ extension MainTabView {
     }
 }
 
-extension MainTabView {
-    
-    // MARK: - Enhanced Tab Selection Handler
-    
-    private func handleEnhancedTabSelection(_ tab: Tab) {
-        let previousTab = selectedTab
-        
-        // Haptic feedback
-        HapticManager.shared.premiumSelection()
-        
-        // Update view model
-        tabViewModel.didSelectTab(tab)
-        
-        // Show/hide floating action button based on tab
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-            showFloatingAction = shouldShowFloatingButton(for: tab)
-        }
-        
-        // Post notification for tab change to trigger data refresh
-        NotificationCenter.default.post(
-            name: .tabDidChange,
-            object: nil,
-            userInfo: [
-                "previousTab": previousTab,
-                "newTab": tab
-            ]
-        )
-        
-        // Tab-specific refresh logic
-        switch tab {
-        case .today:
-            NotificationCenter.default.post(name: .refreshTodayView, object: nil)
-        case .schedule:
-            NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
-        case .summary:
-            NotificationCenter.default.post(name: .refreshSummaryView, object: nil)
-        case .settings:
-            // Settings typically don't need refresh
-            break
-        }
-    }
-    
-    // MARK: - Deep Link Integration
-    
-    private func setupDeepLinkObserver() {
-        // Observe deep link handler's active tab
-        DeepLinkHandler.shared.$activeTab
-            .receive(on: DispatchQueue.main)
-            .removeDuplicates()
-            .sink { newTab in
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                    selectedTab = newTab
-                }
-            }
-            .store(in: &cancellables)
-    }
-    
-    // MARK: - Enhanced onAppear
-    
-    private func enhancedOnAppear() {
-        setupPremiumTabBar()
-        tabViewModel.setup(with: modelContext)
-        setupDeepLinkObserver()
-        
-        // Existing notification observers
-        NotificationCenter.default.addObserver(
-            forName: .navigateToSchedule,
-            object: nil,
-            queue: .main
-        ) { _ in
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                selectedTab = .schedule
-            }
-        }
-        
-        NotificationCenter.default.addObserver(
-            forName: .showTemplates,
-            object: nil,
-            queue: .main
-        ) { _ in
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                selectedTab = .schedule
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                NotificationCenter.default.post(name: .showTemplates, object: nil)
-            }
-        }
-        
-        // Add new observer for FAB action from Today tab
-        NotificationCenter.default.addObserver(
-            forName: .showAddTimeBlockFromTab,
-            object: nil,
-            queue: .main
-        ) { _ in
-            // This notification is handled by ScheduleBuilderView
-        }
-        
-        // Animate floating action button
-        withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.5)) {
-            showFloatingAction = shouldShowFloatingButton(for: selectedTab)
-        }
-    }
-}
-
+// MARK: - Notification Names
 extension Notification.Name {
     static let tabDidChange = Notification.Name("tabDidChange")
     static let refreshTodayView = Notification.Name("refreshTodayView")
@@ -498,6 +421,6 @@ extension Notification.Name {
 // MARK: - Preview
 #Preview {
     MainTabView()
-        .modelContainer(for: []) // Empty model container since we don't need real data
-        .environment(\.colorScheme, .dark) // Optional: to match the premium theme
+        .modelContainer(for: [TimeBlock.self])
+        .environment(\.colorScheme, .dark)
 }

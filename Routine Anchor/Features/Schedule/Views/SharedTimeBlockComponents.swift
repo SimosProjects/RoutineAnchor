@@ -1,6 +1,7 @@
 //
 //  SharedTimeBlockComponents.swift
 //  Routine Anchor
+//  Swift 6 Compatible Version
 //
 //  Created by Christopher Simonson on 7/22/25.
 //
@@ -134,7 +135,7 @@ struct PremiumTimeBlockFormView<Content: View>: View {
     let content: Content
     let onDismiss: () -> Void
     
-    @State private var particleSystem = ParticleSystem()
+    // REMOVED: @State private var particleSystem = ParticleSystem()
     @State private var animationPhase = 0
     @State private var isVisible = false
     
@@ -162,7 +163,8 @@ struct PremiumTimeBlockFormView<Content: View>: View {
                 .opacity(0.3)
                 .allowsHitTesting(false)
             
-            ParticleEffectView(system: particleSystem)
+            // CHANGED: Now using self-contained ParticleEffectView
+            ParticleEffectView()
                 .allowsHitTesting(false)
             
             ScrollView(showsIndicators: false) {
@@ -179,8 +181,9 @@ struct PremiumTimeBlockFormView<Content: View>: View {
             }
         }
         .navigationBarHidden(true)
-        .onAppear {
-            startAnimations()
+        .task {
+            // CHANGED: Using .task instead of .onAppear for async work
+            await startAnimations()
         }
     }
     
@@ -259,8 +262,10 @@ struct PremiumTimeBlockFormView<Content: View>: View {
         .offset(y: isVisible ? 0 : -20)
     }
     
-    private func startAnimations() {
-        particleSystem.startEmitting()
+    // CHANGED: Now marked as @MainActor for proper async handling
+    @MainActor
+    private func startAnimations() async {
+        // REMOVED: particleSystem.startEmitting() - no longer needed
         
         withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
             animationPhase = 1

@@ -7,6 +7,7 @@
 import Foundation
 import SwiftData
 
+@MainActor
 class TimeBlockService {
     // MARK: - Singleton
     static let shared = TimeBlockService()

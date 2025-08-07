@@ -9,7 +9,6 @@ import SwiftUI
 struct PrivacyPolicyView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var animationPhase = 0
-    @State private var particleSystem = ParticleSystem()
     
     var body: some View {
         ZStack {
@@ -18,7 +17,7 @@ struct PrivacyPolicyView: View {
             AnimatedMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)
-            ParticleEffectView(system: particleSystem)
+            ParticleEffectView()
                 .allowsHitTesting(false)
             
             ScrollView {
@@ -40,9 +39,8 @@ struct PrivacyPolicyView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            particleSystem.startEmitting()
             withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                animationPhase += 1
+                animationPhase = 1
             }
         }
     }

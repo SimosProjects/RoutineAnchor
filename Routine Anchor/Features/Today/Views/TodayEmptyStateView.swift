@@ -155,26 +155,29 @@ struct PremiumTodayEmptyStateView: View {
     }
     
     private func startAnimations() {
-        // Main appearance animation
-        withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
-            appearAnimation = true
-        }
-        
-        // Floating animation
-        withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
-            floatingOffset = -10
-        }
-        
-        // Sparkle animation
-        withAnimation(.easeInOut(duration: 2).delay(0.5)) {
-            sparkleOpacity = 1
-        }
-        
-        // Pulse animation
-        withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
-            pulseScale = 1.3
+        Task { @MainActor in
+            // Main appearance animation
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
+                appearAnimation = true
+            }
+            
+            // Floating animation
+            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+                floatingOffset = -10
+            }
+            
+            // Sparkle animation
+            withAnimation(.easeInOut(duration: 2).delay(0.5)) {
+                sparkleOpacity = 1
+            }
+            
+            // Pulse animation
+            withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
+                pulseScale = 1.3
+            }
         }
     }
+
 }
 
 // MARK: - Calendar Illustration
@@ -244,10 +247,11 @@ struct CalendarIllustrationView: View {
             }
         }
         .onAppear {
-            // Staggered block animations
-            for index in 0..<4 {
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(Double(index) * 0.2 + 0.8)) {
-                    blockAnimations[index] = true
+            Task { @MainActor in
+                for index in 0..<4 {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(Double(index) * 0.2 + 0.8)) {
+                        blockAnimations[index] = true
+                    }
                 }
             }
         }
@@ -311,15 +315,16 @@ struct FloatingParticlesView: View {
     
     private func startFloatingAnimation() {
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-            for index in particles.indices {
-                withAnimation(.linear(duration: 0.1)) {
-                    particles[index].position.y -= particles[index].speed
-                    particles[index].position.x += sin(particles[index].position.y * 0.01) * 0.5
-                    
-                    // Reset particle when it goes off screen
-                    if particles[index].position.y < -50 {
-                        particles[index].position.y = UIScreen.main.bounds.height + 50
-                        particles[index].position.x = CGFloat.random(in: 0...UIScreen.main.bounds.width)
+            Task { @MainActor in
+                for index in particles.indices {
+                    withAnimation(.linear(duration: 0.1)) {
+                        particles[index].position.y -= particles[index].speed
+                        particles[index].position.x += sin(particles[index].position.y * 0.01) * 0.5
+                        
+                        if particles[index].position.y < -50 {
+                            particles[index].position.y = UIScreen.main.bounds.height + 50
+                            particles[index].position.x = CGFloat.random(in: 0...UIScreen.main.bounds.width)
+                        }
                     }
                 }
             }
@@ -413,8 +418,10 @@ struct BenefitCard: View {
         .offset(x: isVisible ? 0 : -20)
         .scaleEffect(isVisible ? 1 : 0.95)
         .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(delay)) {
-                isVisible = true
+            Task { @MainActor in
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(delay)) {
+                    isVisible = true
+                }
             }
         }
     }
@@ -435,10 +442,12 @@ struct SecondaryActionButton: View {
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    isPressed = false
+                Task { @MainActor in
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPressed = false
+                    }
+                    action()
                 }
-                action()
             }
         }) {
             HStack(spacing: 8) {

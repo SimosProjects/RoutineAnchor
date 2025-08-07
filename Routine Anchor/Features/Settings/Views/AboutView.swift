@@ -1,6 +1,7 @@
 //
 //  AboutView.swift
 //  Routine Anchor
+//  Swift 6 Compatible Version
 //
 //  Created by Christopher Simonson on 7/21/25.
 //
@@ -9,7 +10,7 @@ import SwiftUI
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var animationPhase = 0
-    @State private var particleSystem = ParticleSystem()
+    // REMOVED: @State private var particleSystem = ParticleSystem()
     @State private var showingAcknowledgments = false
     
     var body: some View {
@@ -19,7 +20,8 @@ struct AboutView: View {
             AnimatedMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)
-            ParticleEffectView(system: particleSystem)
+            // CHANGED: Now using self-contained ParticleEffectView
+            ParticleEffectView()
                 .allowsHitTesting(false)
             
             ScrollView {
@@ -50,9 +52,9 @@ struct AboutView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            particleSystem.startEmitting()
+            // REMOVED: particleSystem.startEmitting()
             withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                animationPhase += 1
+                animationPhase = 1  // CHANGED: Set to 1 instead of += 1
             }
         }
         .sheet(isPresented: $showingAcknowledgments) {
@@ -224,7 +226,6 @@ struct AboutView: View {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
     
-    // MARK: - Actions
     // MARK: - Actions
     private func writeReview() {
         HapticManager.shared.lightImpact()

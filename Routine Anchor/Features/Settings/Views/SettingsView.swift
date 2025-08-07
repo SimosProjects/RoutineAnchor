@@ -1,6 +1,7 @@
 //
 //  SettingsView.swift
 //  Routine Anchor
+//  Swift 6 Compatible Version
 //
 //  Created by Christopher Simonson on 7/21/25.
 //
@@ -14,7 +15,6 @@ struct SettingsView: View {
     // MARK: - State
     @State private var viewModel: SettingsViewModel?
     @State private var animationPhase = 0
-    @State private var particleSystem = ParticleSystem()
     
     // MARK: - Settings State
     @State private var notificationsEnabled = true
@@ -43,7 +43,7 @@ struct SettingsView: View {
             AnimatedMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)
-            ParticleEffectView(system: particleSystem)
+            ParticleEffectView()
                 .allowsHitTesting(false)
             
             ScrollView {
@@ -107,13 +107,11 @@ struct SettingsView: View {
             }
         }
         .navigationBarHidden(true)
-        .onAppear {
-            setupViewModel()
-            loadSettings()
-            particleSystem.startEmitting()
-            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                animationPhase += 1
-            }
+        .task {
+            await setupInitialState()
+        }
+        .onDisappear {
+            viewModel?.cleanup()
         }
         .onChange(of: notificationsEnabled) { _, newValue in
             viewModel?.notificationsEnabled = newValue
@@ -179,7 +177,9 @@ struct SettingsView: View {
             titleVisibility: .visible
         ) {
             Button("Delete All Data", role: .destructive) {
-                viewModel?.clearAllData()
+                Task { @MainActor in
+                    viewModel?.clearAllData()
+                }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
@@ -258,6 +258,13 @@ struct SettingsView: View {
     }
     
     // MARK: - Helper Methods
+    @MainActor
+    private func setupInitialState() async {
+        setupViewModel()
+        loadSettings()
+        startAnimations()
+    }
+    
     private func setupViewModel() {
         let dataManager = DataManager(modelContext: modelContext)
         viewModel = SettingsViewModel(dataManager: dataManager)
@@ -282,6 +289,12 @@ struct SettingsView: View {
                let reminderTime = try? JSONDecoder().decode(Date.self, from: reminderData) {
                 dailyReminderTime = reminderTime
             }
+        }
+    }
+    
+    private func startAnimations() {
+        withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+            animationPhase = 1
         }
     }
     
@@ -455,4 +468,5 @@ struct MessageBanner: View {
 // MARK: - Preview
 #Preview {
     SettingsView()
+        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
 }

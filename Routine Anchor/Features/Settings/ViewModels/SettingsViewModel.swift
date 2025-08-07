@@ -1,6 +1,7 @@
 //
 //  SettingsViewModel.swift
 //  Routine Anchor
+//  Swift 6 Compatible Version
 //
 //  Created by Christopher Simonson on 7/21/25.
 //
@@ -9,7 +10,8 @@ import SwiftData
 import UserNotifications
 
 @Observable
-class SettingsViewModel {
+@MainActor
+final class SettingsViewModel {
     // MARK: - Published Properties
     var isLoading = false
     var errorMessage: String?
@@ -68,32 +70,11 @@ class SettingsViewModel {
         }
     }
     
-    /// Schedule auto-reset at midnight
-    private func scheduleAutoReset() {
-        Task {
-            await notificationService.scheduleMidnightReset()
-        }
-        
-        // Also set up a timer to check for midnight
-        scheduleMidnightTimer()
-    }
-
-    /// Cancel auto-reset
-    private func cancelAutoReset() {
-        // Remove midnight reset notification
-        Task {
-            await MainActor.run {
-                notificationService.removeMidnightReset()
-            }
-        }
-        
-        // Cancel the timer
-        cancelMidnightTimer()
-    }
-    
     // MARK: - Private Properties
     private let dataManager: DataManager
     private let notificationService = NotificationService.shared
+    private var midnightTimer: Timer?
+    private var messageTimerTask: Task<Void, Never>?
     
     // MARK: - Initialization
     init(dataManager: DataManager) {
@@ -109,10 +90,31 @@ class SettingsViewModel {
         }
     }
     
+    // MARK: - Auto-Reset Methods
+    
+    /// Schedule auto-reset at midnight
+    private func scheduleAutoReset() {
+        Task {
+            await notificationService.scheduleMidnightReset()
+        }
+        
+        // Also set up a timer to check for midnight
+        scheduleMidnightTimer()
+    }
+    
+    /// Cancel auto-reset
+    private func cancelAutoReset() {
+        // Remove midnight reset notification
+        Task {
+            await notificationService.removeMidnightReset()
+        }
+        
+        // Cancel the timer
+        cancelMidnightTimer()
+    }
+    
     // MARK: - Midnight Timer for Auto-Reset
-
-    private var midnightTimer: Timer?
-
+    
     /// Schedule a timer to check for midnight
     private func scheduleMidnightTimer() {
         // Cancel existing timer
@@ -129,44 +131,36 @@ class SettingsViewModel {
         
         let timeInterval = nextMidnight.timeIntervalSince(now)
         
-        // Schedule timer on main queue to avoid actor isolation issues
-        DispatchQueue.main.async { [weak self] in
-            self?.midnightTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: false) { _ in
-                Task { [weak self] in
-                    await self?.performMidnightReset()
-                }
+        // Schedule timer (we're already on MainActor)
+        midnightTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: false) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.performMidnightReset()
             }
         }
     }
-
+    
     /// Cancel midnight timer
     private func cancelMidnightTimer() {
-        DispatchQueue.main.async { [weak self] in
-            self?.midnightTimer?.invalidate()
-            self?.midnightTimer = nil
-        }
+        midnightTimer?.invalidate()
+        midnightTimer = nil
     }
-
+    
     /// Perform midnight reset
     private func performMidnightReset() async {
         guard autoResetEnabled else { return }
         
-        await MainActor.run { [weak self] in
-            guard let self = self else { return }
-            
-            // Reset today's progress
-            self.resetTodaysProgress()
-            
-            // Record the reset
-            UserDefaults.standard.set(Date(), forKey: "lastAutoReset")
-            
-            // Schedule next midnight timer
-            self.scheduleMidnightTimer()
-            
-            // Show success message (will only be visible if app is open)
-            self.successMessage = "Daily routine reset successfully"
-            self.clearMessages()
-        }
+        // Reset today's progress
+        resetTodaysProgress()
+        
+        // Record the reset
+        UserDefaults.standard.set(Date(), forKey: "lastAutoReset")
+        
+        // Schedule next midnight timer
+        scheduleMidnightTimer()
+        
+        // Show success message (will only be visible if app is open)
+        successMessage = "Daily routine reset successfully"
+        clearMessages()
     }
     
     // MARK: - Notification Management (UI Actions Only)
@@ -181,26 +175,20 @@ class SettingsViewModel {
                     // Schedule notifications
                     await scheduleAllNotifications()
                     
-                    await MainActor.run {
-                        self.successMessage = "Notifications enabled successfully"
-                        HapticManager.shared.premiumSuccess()
-                    }
+                    successMessage = "Notifications enabled successfully"
+                    HapticManager.shared.premiumSuccess()
                 } else {
                     // Permission denied, revert toggle
-                    await MainActor.run {
-                        self.notificationsEnabled = false
-                        self.errorMessage = "Notification permissions were denied. You can enable them in iOS Settings."
-                        HapticManager.shared.premiumError()
-                    }
+                    notificationsEnabled = false
+                    errorMessage = "Notification permissions were denied. You can enable them in iOS Settings."
+                    HapticManager.shared.premiumError()
                 }
             } else {
                 // Disable all notifications
                 await notificationService.removeAllPendingNotifications()
                 
-                await MainActor.run {
-                    self.successMessage = "Notifications disabled"
-                    HapticManager.shared.lightImpact()
-                }
+                successMessage = "Notifications disabled"
+                HapticManager.shared.lightImpact()
             }
             
             clearMessages()
@@ -217,7 +205,7 @@ class SettingsViewModel {
     }
     
     // MARK: - Notification Re-scheduling
-
+    
     /// Re-schedule all notifications if enabled
     private func rescheduleNotificationsIfEnabled() {
         guard notificationsEnabled else { return }
@@ -249,10 +237,8 @@ class SettingsViewModel {
                 dailyReminderTime: notificationsEnabled ? dailyReminderTime : nil
             )
         } catch {
-            await MainActor.run {
-                self.errorMessage = "Failed to schedule notifications: \(error.localizedDescription)"
-                self.clearMessages()
-            }
+            errorMessage = "Failed to schedule notifications: \(error.localizedDescription)"
+            clearMessages()
         }
     }
     
@@ -264,9 +250,7 @@ class SettingsViewModel {
         // Update our state based on actual permission status
         let isEnabled = await notificationService.isNotificationsEnabled
         if notificationsEnabled != isEnabled {
-            await MainActor.run {
-                self.notificationsEnabled = isEnabled
-            }
+            notificationsEnabled = isEnabled
         }
     }
     
@@ -298,7 +282,6 @@ class SettingsViewModel {
     }
     
     /// Clear all app data (routines, progress, etc.)
-    @MainActor
     func clearAllData() {
         isLoading = true
         errorMessage = nil
@@ -328,7 +311,9 @@ class SettingsViewModel {
             clearUserPreferences()
             
             // Clear all notifications
-            notificationService.removeAllPendingNotifications()
+            Task {
+                await notificationService.removeAllPendingNotifications()
+            }
             
             HapticManager.shared.premiumSuccess()
             successMessage = "All data has been cleared"
@@ -423,7 +408,7 @@ class SettingsViewModel {
         if !calendar.isDate(lastResetDate, inSameDayAs: Date()) {
             await performMidnightReset()
         }
-
+        
         scheduleMidnightTimer()
     }
     
@@ -468,9 +453,17 @@ class SettingsViewModel {
     
     /// Clear success and error messages after delay
     private func clearMessages() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.successMessage = nil
-            self.errorMessage = nil
+        // Cancel any existing timer task
+        messageTimerTask?.cancel()
+        
+        // Create new timer task
+        messageTimerTask = Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+            
+            if !Task.isCancelled {
+                successMessage = nil
+                errorMessage = nil
+            }
         }
     }
     

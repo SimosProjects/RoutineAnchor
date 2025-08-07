@@ -3,6 +3,7 @@
 //  Routine Anchor
 //
 //  App Delegate extension to handle deep linking
+//  Swift 6 Compatible Version
 //
 
 import UIKit
@@ -54,25 +55,49 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
 // MARK: - UNUserNotificationCenterDelegate
 extension AppDelegate: UNUserNotificationCenterDelegate {
-
-    func userNotificationCenter(
+    
+    // This method is called when a notification arrives while app is in foreground
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // No need for @MainActor or Task — just call directly
+        // Simply present the notification
         completionHandler([.banner, .badge, .sound])
     }
-
+    
+    // This method is called when user interacts with a notification
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
+        // Extract only Sendable data before crossing actor boundaries
+        let actionIdentifier = response.actionIdentifier
+        
+        // Convert userInfo to a simple String dictionary for Sendability
+        var stringUserInfo: [String: String] = [:]
+        let userInfo = response.notification.request.content.userInfo
+        
+        for (key, value) in userInfo {
+            if let stringKey = key as? String,
+               let stringValue = value as? String {
+                stringUserInfo[stringKey] = stringValue
+            }
+        }
+        
+        // Create Sendable data structure
+        let notificationData = NotificationResponseData(
+            actionIdentifier: actionIdentifier,
+            userInfo: stringUserInfo
+        )
+        
+        // Call completion handler immediately - this is critical for system expectations
+        completionHandler()
+        
+        // Handle the notification on MainActor using Sendable data
         Task { @MainActor in
-            DeepLinkHandler.shared.handleNotificationResponse(response)
-            completionHandler()
+            DeepLinkHandler.shared.handleNotificationData(notificationData)
         }
     }
 }
-
