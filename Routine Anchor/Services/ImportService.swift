@@ -15,7 +15,7 @@ class ImportService {
     private init() {}
     
     // MARK: - Import Result
-    struct ImportResult {
+    struct ImportResult: Sendable {
         let timeBlocksImported: Int
         let dailyProgressImported: Int
         let errors: [ImportError]
@@ -369,7 +369,7 @@ class ImportService {
 
 // MARK: - Import Error
 
-enum ImportError: LocalizedError {
+enum ImportError: LocalizedError, Sendable {
     case unsupportedFormat(String)
     case invalidJSON(String)
     case invalidCSV(String)

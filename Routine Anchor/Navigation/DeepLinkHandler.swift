@@ -9,7 +9,7 @@
 import SwiftUI
 import UserNotifications
 
-enum DeepLink {
+enum DeepLink: Sendable {
     case showTimeBlock(blockId: UUID)
     case completeTimeBlock(blockId: UUID)
     case skipTimeBlock(blockId: UUID)
@@ -22,7 +22,7 @@ enum DeepLink {
 // Sendable wrapper for notification data
 struct NotificationResponseData: Sendable {
     let actionIdentifier: String
-    let userInfo: [String: String] // Simplified to String values only
+    let userInfo: [String: String]
 }
 
 @MainActor

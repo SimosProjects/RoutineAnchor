@@ -1,6 +1,6 @@
 //
 //  TodayView.swift
-//  Routine Anchor - Premium Version (Refactored)
+//  Routine Anchor - Premium Version (Swift 6 Compatible)
 //
 import SwiftUI
 import SwiftData
@@ -89,7 +89,9 @@ struct PremiumTodayView: View {
         }
         .alert("Error", isPresented: .constant(viewModel?.errorMessage != nil)) {
             Button("Retry") {
-                viewModel?.retryLastOperation()
+                Task {
+                    await viewModel?.retryLastOperation()
+                }
             }
             Button("Dismiss", role: .cancel) {
                 viewModel?.clearError()
@@ -107,11 +109,14 @@ struct PremiumTodayView: View {
             handleShowTimeBlock(notification)
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshTodayView)) { _ in
-            viewModel?.refreshData()
+            Task {
+                await viewModel?.refreshData()
+            }
         }
     }
     
     // MARK: - Main Content
+    @ViewBuilder
     private func mainContent(viewModel: TodayViewModel) -> some View {
         VStack(spacing: 24) {
             // Focus section
@@ -182,18 +187,18 @@ struct PremiumTodayView: View {
             viewModel = TodayViewModel(dataManager: dataManager)
         } else {
             // Refresh data when returning to the view
-            viewModel?.refreshData()
+            Task {
+                await viewModel?.refreshData()
+            }
         }
     }
     
     private func startPeriodicUpdates() {
         stopPeriodicUpdates()
-
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak viewModel] _ in
-            guard let viewModel = viewModel else { return }
-
+        
+        updateTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
             Task { @MainActor in
-                viewModel.refreshData()
+                await viewModel?.refreshData()
             }
         }
     }
@@ -202,8 +207,7 @@ struct PremiumTodayView: View {
         updateTimer?.invalidate()
         updateTimer = nil
     }
-    
-    @MainActor
+
     private func updateScrollProgress(_ offset: CGFloat, geometry: GeometryProxy) {
         let progress = min(max(offset / 100, 0), 1)
         if abs(scrollProgress - progress) > 0.01 {
@@ -220,10 +224,8 @@ struct PremiumTodayView: View {
         // Small delay for visual feedback
         try? await Task.sleep(nanoseconds: 500_000_000)
         
-        await MainActor.run {
-            viewModel?.refreshData()
-            HapticManager.shared.lightImpact()
-        }
+        await viewModel?.refreshData()
+        HapticManager.shared.lightImpact()
     }
     
     private func navigateToScheduleBuilder() {
@@ -273,7 +275,9 @@ struct PremiumTodayView: View {
             return
         }
         
-        viewModel?.markBlockCompleted(block)
+        Task {
+            await viewModel?.markBlockCompleted(block)
+        }
     }
     
     private func handleTimeBlockSkip(_ notification: Notification) {
@@ -282,7 +286,9 @@ struct PremiumTodayView: View {
             return
         }
         
-        viewModel?.markBlockSkipped(block)
+        Task {
+            await viewModel?.markBlockSkipped(block)
+        }
     }
     
     private func handleShowTimeBlock(_ notification: Notification) {
@@ -300,6 +306,8 @@ struct PremiumTodayView: View {
         highlightBlock(blockId)
     }
 }
+
+// MARK: - Preference Keys
 
 struct ScrollOffsetPreferenceKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
@@ -319,7 +327,6 @@ struct OffsetObservingView: View {
         .frame(height: 0)
     }
 }
-
 
 // MARK: - Preview
 #Preview {

@@ -6,7 +6,7 @@ import SwiftUI
 
 struct PremiumAddTimeBlockView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var formData = TimeBlockFormData()
+    @State private var formData = TimeBlockFormData()
     
     // MARK: - State
     @State private var showingValidationErrors = false
@@ -109,14 +109,29 @@ struct PremiumAddTimeBlockView: View {
                     )
                 }
                 
+                let duration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
+
                 DurationCard(
-                    minutes: formData.durationMinutes,
-                    color: formData.durationColor
+                    minutes: duration,
+                    color: color(for: duration)
                 )
             }
         }
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : 20)
+    }
+    
+    private func color(for minutes: Int) -> Color {
+        switch minutes {
+        case ..<15:
+            return .premiumError
+        case ..<30:
+            return .premiumWarning
+        case ..<60:
+            return .premiumWarning
+        default:
+            return .premiumGreen
+        }
     }
     
     private var organizationSection: some View {

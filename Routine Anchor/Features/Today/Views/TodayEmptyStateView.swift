@@ -1,6 +1,6 @@
 //
 //  TodayEmptyStateView.swift
-//  Routine Anchor
+//  Routine Anchor - Swift 6 Compatible
 //
 import SwiftUI
 
@@ -155,29 +155,26 @@ struct PremiumTodayEmptyStateView: View {
     }
     
     private func startAnimations() {
-        Task { @MainActor in
-            // Main appearance animation
-            withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
-                appearAnimation = true
-            }
-            
-            // Floating animation
-            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
-                floatingOffset = -10
-            }
-            
-            // Sparkle animation
-            withAnimation(.easeInOut(duration: 2).delay(0.5)) {
-                sparkleOpacity = 1
-            }
-            
-            // Pulse animation
-            withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
-                pulseScale = 1.3
-            }
+        // Main appearance animation
+        withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
+            appearAnimation = true
+        }
+        
+        // Floating animation
+        withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+            floatingOffset = -10
+        }
+        
+        // Sparkle animation
+        withAnimation(.easeInOut(duration: 2).delay(0.5)) {
+            sparkleOpacity = 1
+        }
+        
+        // Pulse animation
+        withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
+            pulseScale = 1.3
         }
     }
-
 }
 
 // MARK: - Calendar Illustration
@@ -247,11 +244,9 @@ struct CalendarIllustrationView: View {
             }
         }
         .onAppear {
-            Task { @MainActor in
-                for index in 0..<4 {
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(Double(index) * 0.2 + 0.8)) {
-                        blockAnimations[index] = true
-                    }
+            for index in 0..<4 {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(Double(index) * 0.2 + 0.8)) {
+                    blockAnimations[index] = true
                 }
             }
         }
@@ -287,61 +282,118 @@ struct TimeBlockPreview: View {
     }
 }
 
-// MARK: - Floating Particles
+// MARK: - Floating Particles (Swift 6 Compatible)
 struct FloatingParticlesView: View {
     @State private var particles: [FloatingParticle] = []
+    @State private var animationTick = 0
     
     var body: some View {
-        ZStack {
-            ForEach(particles) { particle in
-                Circle()
-                    .fill(particle.color.opacity(particle.opacity))
-                    .frame(width: particle.size, height: particle.size)
-                    .position(particle.position)
-                    .blur(radius: 1)
+        GeometryReader { geometry in
+            ZStack {
+                ForEach(particles) { particle in
+                    Circle()
+                        .fill(particle.color.opacity(particle.opacity))
+                        .frame(width: particle.size, height: particle.size)
+                        .position(particle.position)
+                        .blur(radius: 1)
+                }
+            }
+            .onAppear {
+                createParticles(in: geometry.size)
+                startFloatingAnimation(in: geometry.size)
+            }
+            .onChange(of: animationTick) { _, _ in
+                updateParticles(in: geometry.size)
             }
         }
-        .onAppear {
-            createParticles()
-            startFloatingAnimation()
-        }
     }
     
-    private func createParticles() {
+    private func createParticles(in size: CGSize) {
         for _ in 0..<15 {
-            particles.append(FloatingParticle())
+            particles.append(FloatingParticle(screenSize: size))
         }
     }
     
-    private func startFloatingAnimation() {
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-            Task { @MainActor in
-                for index in particles.indices {
-                    withAnimation(.linear(duration: 0.1)) {
-                        particles[index].position.y -= particles[index].speed
-                        particles[index].position.x += sin(particles[index].position.y * 0.01) * 0.5
-                        
-                        if particles[index].position.y < -50 {
-                            particles[index].position.y = UIScreen.main.bounds.height + 50
-                            particles[index].position.x = CGFloat.random(in: 0...UIScreen.main.bounds.width)
-                        }
-                    }
-                }
+    private func startFloatingAnimation(in size: CGSize) {
+        // Use SwiftUI's TimelineView for animation instead of Timer
+        withAnimation(.linear(duration: 0.1).repeatForever(autoreverses: false)) {
+            animationTick = 1
+        }
+    }
+    
+    private func updateParticles(in size: CGSize) {
+        for index in particles.indices {
+            particles[index].position.y -= particles[index].speed
+            particles[index].position.x += sin(particles[index].position.y * 0.01) * 0.5
+            
+            if particles[index].position.y < -50 {
+                particles[index].position.y = size.height + 50
+                particles[index].position.x = CGFloat.random(in: 0...size.width)
             }
         }
     }
 }
 
-struct FloatingParticle: Identifiable {
+// MARK: - Floating Particle (Sendable for Swift 6)
+struct FloatingParticle: Identifiable, Sendable {
     let id = UUID()
-    var position: CGPoint = CGPoint(
-        x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
-        y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
-    )
-    let color: Color = [Color.premiumBlue, Color.premiumPurple, Color.premiumGreen].randomElement()!
-    let size: CGFloat = CGFloat.random(in: 2...4)
-    let speed: CGFloat = CGFloat.random(in: 0.2...0.8)
-    let opacity: Double = Double.random(in: 0.3...0.7)
+    var position: CGPoint
+    let color: Color
+    let size: CGFloat
+    let speed: CGFloat
+    let opacity: Double
+    
+    init(screenSize: CGSize) {
+        self.position = CGPoint(
+            x: CGFloat.random(in: 0...screenSize.width),
+            y: CGFloat.random(in: 0...screenSize.height)
+        )
+        self.color = [Color.premiumBlue, Color.premiumPurple, Color.premiumGreen].randomElement()!
+        self.size = CGFloat.random(in: 2...4)
+        self.speed = CGFloat.random(in: 0.2...0.8)
+        self.opacity = Double.random(in: 0.3...0.7)
+    }
+}
+
+// MARK: - Alternative: Timeline-based Floating Particles
+struct TimelineFloatingParticlesView: View {
+    @State private var particles: [FloatingParticle] = []
+    
+    var body: some View {
+        GeometryReader { geometry in
+            TimelineView(.animation(minimumInterval: 0.05)) { timeline in
+                Canvas { context, size in
+                    let date = timeline.date.timeIntervalSinceReferenceDate
+                    
+                    for particle in particles {
+                        var position = particle.position
+                        position.y -= particle.speed * CGFloat(date).truncatingRemainder(dividingBy: size.height)
+                        position.x += sin(position.y * 0.01) * 0.5
+                        
+                        if position.y < -50 {
+                            position.y = size.height + 50
+                        }
+                        
+                        context.fill(
+                            Circle().path(in: CGRect(
+                                x: position.x - particle.size/2,
+                                y: position.y - particle.size/2,
+                                width: particle.size,
+                                height: particle.size
+                            )),
+                            with: .color(particle.color.opacity(particle.opacity))
+                        )
+                    }
+                }
+                .blur(radius: 1)
+            }
+            .onAppear {
+                for _ in 0..<15 {
+                    particles.append(FloatingParticle(screenSize: geometry.size))
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Benefit Card
@@ -418,10 +470,8 @@ struct BenefitCard: View {
         .offset(x: isVisible ? 0 : -20)
         .scaleEffect(isVisible ? 1 : 0.95)
         .onAppear {
-            Task { @MainActor in
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(delay)) {
-                    isVisible = true
-                }
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(delay)) {
+                isVisible = true
             }
         }
     }
@@ -442,12 +492,10 @@ struct SecondaryActionButton: View {
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                Task { @MainActor in
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        isPressed = false
-                    }
-                    action()
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    isPressed = false
                 }
+                action()
             }
         }) {
             HStack(spacing: 8) {

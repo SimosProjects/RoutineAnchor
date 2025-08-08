@@ -372,16 +372,6 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
-// MARK: - DateFormatter Extension
-
-extension DateFormatter {
-    static let exportFileDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd-HHmmss"
-        return formatter
-    }()
-}
-
 // MARK: - Preview
 
 #Preview {

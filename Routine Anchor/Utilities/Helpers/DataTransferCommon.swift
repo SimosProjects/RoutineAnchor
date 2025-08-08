@@ -3,13 +3,14 @@
 //  Routine Anchor
 //
 //  Common structures and utilities for data import/export
+//  Swift 6 Compatible with Sendable conformance
 //
 
 import Foundation
 
 // MARK: - Export/Import Formats
 
-enum DataTransferFormat: String, CaseIterable {
+enum DataTransferFormat: String, CaseIterable, Sendable {
     case json = "JSON"
     case csv = "CSV"
     case text = "Plain Text"
@@ -32,8 +33,9 @@ enum DataTransferFormat: String, CaseIterable {
 }
 
 // MARK: - Data Transfer Models
+// All structs marked as Sendable for Swift 6 compatibility
 
-struct TimeBlockExportItem: Codable {
+struct TimeBlockExportItem: Codable, Sendable {
     let id: String
     let title: String
     let startTime: Date
@@ -57,7 +59,7 @@ struct TimeBlockExportItem: Codable {
     }
 }
 
-struct DailyProgressExportItem: Codable {
+struct DailyProgressExportItem: Codable, Sendable {
     let id: String
     let date: Date
     let completionPercentage: Double
@@ -79,19 +81,19 @@ struct DailyProgressExportItem: Codable {
     }
 }
 
-struct TimeBlocksExportData: Codable {
+struct TimeBlocksExportData: Codable, Sendable {
     let exportDate: Date
     let version: String
     let timeBlocks: [TimeBlockExportItem]
 }
 
-struct DailyProgressExportData: Codable {
+struct DailyProgressExportData: Codable, Sendable {
     let exportDate: Date
     let version: String
     let dailyProgress: [DailyProgressExportItem]
 }
 
-struct CompleteExportData: Codable {
+struct CompleteExportData: Codable, Sendable {
     let exportDate: Date
     let version: String
     let timeBlocks: [TimeBlockExportItem]
@@ -99,8 +101,9 @@ struct CompleteExportData: Codable {
 }
 
 // MARK: - CSV Utilities
+// Made into an enum to be Sendable (no stored properties)
 
-struct CSVUtilities {
+enum CSVUtilities {
     /// Escape a string for CSV format
     static func escapeCSV(_ string: String) -> String {
         if string.contains("\"") || string.contains(",") || string.contains("\n") {
@@ -143,19 +146,33 @@ struct CSVUtilities {
 }
 
 // MARK: - DateFormatter Extension
+// Create computed properties instead of stored ones for thread safety
 
 extension DateFormatter {
-    static let dataTransferFormatter: DateFormatter = {
+    static var dataTransferFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         formatter.timeZone = TimeZone.current
         return formatter
-    }()
+    }
     
-    static let dataTransferDateOnlyFormatter: DateFormatter = {
+    static var dataTransferDateOnlyFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter
-    }()
+    }
+    
+    static var exportDateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.timeZone = TimeZone.current
+        return formatter
+    }
+    
+    static var exportFileDateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd-HHmmss"
+        return formatter
+    }
 }

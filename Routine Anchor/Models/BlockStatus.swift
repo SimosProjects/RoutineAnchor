@@ -8,7 +8,7 @@ import Foundation
 import SwiftUI
 
 /// Represents the current state of a time block in the user's schedule
-enum BlockStatus: String, Codable, CaseIterable {
+enum BlockStatus: String, CaseIterable, Codable, Sendable {
     case notStarted = "not_started"
     case inProgress = "in_progress"
     case completed = "completed"

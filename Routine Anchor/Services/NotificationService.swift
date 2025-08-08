@@ -4,7 +4,7 @@
 //
 //  Created by Christopher Simonson on 7/23/25.
 //
-import UserNotifications
+@preconcurrency import UserNotifications
 import SwiftUI
 
 @MainActor
@@ -79,7 +79,6 @@ class NotificationService: NSObject, ObservableObject {
     
     // MARK: - Time Block Notifications
     
-    /// Schedule notifications for multiple time blocks
     /// Schedule notifications for multiple time blocks
     func scheduleTimeBlockNotifications(for blocks: [TimeBlock]) async {
         // Remove existing time block notifications
@@ -367,35 +366,19 @@ class NotificationService: NSObject, ObservableObject {
     func updateBadgeCount(_ count: Int) async {
         let badgeCount = min(count, Constants.maxBadgeCount)
         
-        // For iOS 16+
-        if #available(iOS 16.0, *) {
-            do {
-                try await UNUserNotificationCenter.current().setBadgeCount(badgeCount)
-            } catch {
-                print("Failed to update badge count: \(error)")
-            }
-        } else {
-            // For iOS 15 and earlier
-            await MainActor.run {
-                UIApplication.shared.applicationIconBadgeNumber = badgeCount
-            }
+        do {
+            try await UNUserNotificationCenter.current().setBadgeCount(badgeCount)
+        } catch {
+            print("Failed to update badge count: \(error)")
         }
     }
     
     /// Clear app badge
     func clearBadge() async {
-        // For iOS 16+
-        if #available(iOS 16.0, *) {
-            do {
-                try await UNUserNotificationCenter.current().setBadgeCount(0)
-            } catch {
-                print("Failed to clear badge: \(error)")
-            }
-        } else {
-            // For iOS 15 and earlier
-            await MainActor.run {
-                UIApplication.shared.applicationIconBadgeNumber = 0
-            }
+        do {
+            try await UNUserNotificationCenter.current().setBadgeCount(0)
+        } catch {
+            print("Failed to clear badge: \(error)")
         }
     }
     
@@ -461,7 +444,6 @@ class NotificationService: NSObject, ObservableObject {
     
     /// Register notification categories for quick actions
     func registerNotificationCategories() {
-        // Time Block Category
         let completeAction = UNNotificationAction(
             identifier: NotificationAction.complete,
             title: "Complete",
@@ -487,7 +469,6 @@ class NotificationService: NSObject, ObservableObject {
             options: .customDismissAction
         )
         
-        // Daily Reminder Category
         let viewSummaryAction = UNNotificationAction(
             identifier: NotificationAction.viewSummary,
             title: "View Summary",
@@ -501,7 +482,6 @@ class NotificationService: NSObject, ObservableObject {
             options: []
         )
         
-        // Achievement Category
         let achievementCategory = UNNotificationCategory(
             identifier: NotificationCategory.achievement,
             actions: [],
@@ -593,84 +573,99 @@ enum NotificationError: LocalizedError {
 
 // MARK: - UNUserNotificationCenterDelegate
 extension NotificationService: UNUserNotificationCenterDelegate {
+
     /// Handle notification presentation while app is in foreground
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // Show notifications even when app is in foreground
         completionHandler([.banner, .badge, .sound])
     }
-    
+
     /// Handle notification response (user tapped on notification or action)
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
+        // Extract data before any async work
         let userInfo = response.notification.request.content.userInfo
         let actionIdentifier = response.actionIdentifier
         
-        Task { @MainActor in
-            switch actionIdentifier {
-            case NotificationAction.complete:
-                if let blockIdString = userInfo["timeBlockId"] as? String,
-                   let blockId = UUID(uuidString: blockIdString) {
-                    // Handle completion
-                    print("Complete time block: \(blockId)")
-                    // You can post a notification or call a delegate here
-                    NotificationCenter.default.post(
-                        name: .timeBlockCompleted,
-                        object: nil,
-                        userInfo: ["blockId": blockId]
-                    )
-                }
-                
-            case NotificationAction.skip:
-                if let blockIdString = userInfo["timeBlockId"] as? String,
-                   let blockId = UUID(uuidString: blockIdString) {
-                    // Handle skip
-                    print("Skip time block: \(blockId)")
-                    NotificationCenter.default.post(
-                        name: .timeBlockSkipped,
-                        object: nil,
-                        userInfo: ["blockId": blockId]
-                    )
-                }
-                
-            case NotificationAction.snooze:
-                if let blockIdString = userInfo["timeBlockId"] as? String,
-                   let title = userInfo["title"] as? String {
-                    // Reschedule for 5 minutes later
-                    await self.snoozeNotification(blockId: blockIdString, title: title)
-                }
-                
-            case NotificationAction.viewSummary:
-                // Navigate to summary view
-                print("View summary requested")
-                NotificationCenter.default.post(
-                    name: .showDailySummary,
-                    object: nil
-                )
-                
-            default:
-                // User tapped on notification itself
-                print("Notification tapped")
-                if let blockIdString = userInfo["timeBlockId"] as? String {
-                    NotificationCenter.default.post(
-                        name: .showTimeBlock,
-                        object: nil,
-                        userInfo: ["blockId": blockIdString]
-                    )
-                }
-            }
-        }
+        // Capture everything needed before hopping to MainActor
+        let blockIdString = userInfo["timeBlockId"] as? String
+        let blockId = blockIdString.flatMap(UUID.init(uuidString:))
+        let title = userInfo["title"] as? String
         
+        // IMPORTANT: Call completion handler immediately
+        // This tells the system we've received the notification
         completionHandler()
+        
+        // Now handle the notification action asynchronously
+        Task { @MainActor in
+            await handleNotificationAction(
+                actionIdentifier: actionIdentifier,
+                blockId: blockId,
+                blockIdString: blockIdString,
+                title: title
+            )
+        }
     }
     
+    /// Handle the notification action on MainActor
+    @MainActor
+    private func handleNotificationAction(
+        actionIdentifier: String,
+        blockId: UUID?,
+        blockIdString: String?,
+        title: String?
+    ) async {
+        switch actionIdentifier {
+        case NotificationAction.complete:
+            if let blockId {
+                NotificationCenter.default.post(
+                    name: .timeBlockCompleted,
+                    object: nil,
+                    userInfo: ["blockId": blockId]
+                )
+            }
+            
+        case NotificationAction.skip:
+            if let blockId {
+                NotificationCenter.default.post(
+                    name: .timeBlockSkipped,
+                    object: nil,
+                    userInfo: ["blockId": blockId]
+                )
+            }
+            
+        case NotificationAction.snooze:
+            if let blockIdString, let title {
+                // Now we can safely call MainActor methods
+                await snoozeNotification(blockId: blockIdString, title: title)
+            }
+            
+        case NotificationAction.viewSummary:
+            NotificationCenter.default.post(
+                name: .showDailySummary,
+                object: nil
+            )
+            
+        default:
+            // User tapped on notification itself
+            if let blockIdString {
+                NotificationCenter.default.post(
+                    name: .showTimeBlock,
+                    object: nil,
+                    userInfo: ["blockId": blockIdString]
+                )
+            }
+        }
+    }
+
     /// Helper to snooze a notification
+    @MainActor
     private func snoozeNotification(blockId: String, title: String) async {
         let content = UNMutableNotificationContent()
         content.title = "Time Block Starting (Snoozed)"
@@ -678,21 +673,19 @@ extension NotificationService: UNUserNotificationCenterDelegate {
         content.sound = .default
         content.categoryIdentifier = NotificationCategory.timeBlock
         content.userInfo = ["timeBlockId": blockId, "title": title]
-        
-        let trigger = UNTimeIntervalNotificationTrigger(
-            timeInterval: 300, // 5 minutes
-            repeats: false
-        )
-        
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 300, repeats: false)
+
         let request = UNNotificationRequest(
             identifier: "snooze_\(blockId)",
             content: content,
             trigger: trigger
         )
-        
+
         try? await notificationCenter.add(request)
     }
 }
+
 
 // MARK: - Notification Names
 extension Notification.Name {

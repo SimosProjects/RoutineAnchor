@@ -54,7 +54,9 @@ struct PremiumScheduleBuilderView: View {
                 }
                 .coordinateSpace(name: "scroll")
                 .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                    updateScrollProgress(value, geometry: geometry)
+                    Task { @MainActor in
+                        updateScrollProgress(value, geometry: geometry)
+                    }
                 }
             }
         }

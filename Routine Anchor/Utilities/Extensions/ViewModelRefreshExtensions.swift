@@ -18,7 +18,7 @@ extension TodayViewModel {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                self?.refreshData()
+                await self?.refreshData()
             }
         }
     }
@@ -50,7 +50,7 @@ extension DailySummaryViewModel {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                self?.refreshData()
+                await self?.refreshData()
             }
         }
     }
@@ -65,7 +65,7 @@ extension View {
             viewModel?.setupRefreshObserver()
         }
         .task {
-            viewModel?.refreshData()
+            await viewModel?.refreshData()
         }
     }
     
@@ -85,7 +85,7 @@ extension View {
             viewModel?.setupRefreshObserver()
         }
         .task {
-            viewModel?.refreshData()
+            await viewModel?.refreshData()
         }
     }
 }

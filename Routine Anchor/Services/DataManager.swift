@@ -456,7 +456,7 @@ extension DataManager {
 }
 
 // MARK: - Error Types
-enum DataManagerError: LocalizedError {
+enum DataManagerError: LocalizedError, Sendable {
     case fetchFailed(String)
     case saveFailed(String)
     case deleteFailed(String)
@@ -478,7 +478,7 @@ enum DataManagerError: LocalizedError {
 }
 
 // MARK: - Statistics Helper
-struct CompletionStatistics {
+struct CompletionStatistics: Sendable {
     let totalBlocks: Int
     let completedBlocks: Int
     let skippedBlocks: Int

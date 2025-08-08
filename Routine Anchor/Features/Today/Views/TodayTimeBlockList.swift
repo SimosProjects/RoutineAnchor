@@ -2,7 +2,7 @@
 //  TodayTimeBlocksList.swift
 //  Routine Anchor
 //
-//  Time blocks list section for Today view
+//  Time blocks list section for Today view - Swift 6 Compatible
 //
 import SwiftUI
 
@@ -92,10 +92,14 @@ struct TodayTimeBlocksList: View {
                         handleTimeBlockTap(timeBlock)
                     },
                     onComplete: {
-                        viewModel.markBlockCompleted(timeBlock)
+                        Task {
+                            await viewModel.markBlockCompleted(timeBlock)
+                        }
                     },
                     onSkip: {
-                        viewModel.markBlockSkipped(timeBlock)
+                        Task {
+                            await viewModel.markBlockSkipped(timeBlock)
+                        }
                     }
                 )
                 .id(timeBlock.id) // Important for ScrollViewReader
@@ -131,8 +135,16 @@ struct TodayTimeBlocksList: View {
                             }
                         },
                         onBlockTap: handleTimeBlockTap,
-                        onComplete: viewModel.markBlockCompleted,
-                        onSkip: viewModel.markBlockSkipped
+                        onComplete: { timeBlock in
+                            Task {
+                                await viewModel.markBlockCompleted(timeBlock)
+                            }
+                        },
+                        onSkip: { timeBlock in
+                            Task {
+                                await viewModel.markBlockSkipped(timeBlock)
+                            }
+                        }
                     )
                     .id(status)
                 }

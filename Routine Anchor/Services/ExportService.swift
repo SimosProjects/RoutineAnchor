@@ -17,6 +17,19 @@ class ExportService {
     // MARK: - Export Formats
     typealias ExportFormat = DataTransferFormat
     
+    struct ExportResult: Sendable {
+        let itemsExported: Int
+        let format: DataTransferFormat
+        let fileSize: Int64
+        let exportDate: Date
+        
+        var formattedFileSize: String {
+            let formatter = ByteCountFormatter()
+            formatter.countStyle = .binary
+            return formatter.string(fromByteCount: fileSize)
+        }
+    }
+    
     // MARK: - Export Methods
     
     /// Export all time blocks in the specified format
@@ -265,9 +278,11 @@ class ExportService {
 
 // MARK: - Export Error
 
-enum ExportError: LocalizedError {
+enum ExportError: LocalizedError, Sendable {
     case encodingFailed
     case noDataToExport
+    case fileCreationFailed(String)
+    case invalidFormat(String)
     
     var errorDescription: String? {
         switch self {
@@ -275,17 +290,10 @@ enum ExportError: LocalizedError {
             return "Failed to encode data for export"
         case .noDataToExport:
             return "No data available to export"
+        case .fileCreationFailed(let reason):
+            return "Failed to create export file: \(reason)"
+        case .invalidFormat(let format):
+            return "Invalid export format: \(format)"
         }
     }
-}
-
-// MARK: - DateFormatter Extension
-
-extension DateFormatter {
-    static let exportDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        formatter.timeZone = TimeZone.current
-        return formatter
-    }()
 }

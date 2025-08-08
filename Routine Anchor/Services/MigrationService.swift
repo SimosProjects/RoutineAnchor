@@ -6,10 +6,10 @@
 //
 
 import Foundation
-import SwiftData
+@preconcurrency import SwiftData
 
 // MARK: - Schema Versions
-enum SchemaVersion: String, CaseIterable {
+enum SchemaVersion: String, CaseIterable, Sendable {
     case v1 = "1.0.0"
     case v2 = "2.0.0"  // Example future version
     
@@ -40,9 +40,10 @@ enum RoutineAnchorMigrationPlan: SchemaMigrationPlan {
 }
 
 // MARK: - Schema V1 (Current)
+@preconcurrency
 enum SchemaV1: VersionedSchema {
     static let versionIdentifier = Schema.Version(1, 0, 0)
-
+    
     static var models: [any PersistentModel.Type] {
         [TimeBlock.self, DailyProgress.self]
     }
@@ -287,7 +288,7 @@ class MigrationService: ObservableObject {
 }
 
 // MARK: - Migration Errors
-enum MigrationError: LocalizedError {
+enum MigrationError: LocalizedError, Sendable {
     case containerCreationFailed(String)
     case migrationFailed(String)
     case backupFailed(String)
@@ -314,7 +315,7 @@ enum MigrationError: LocalizedError {
 }
 
 // MARK: - Backup Data Structures
-private struct BackupData: Codable {
+struct BackupData: Codable, Sendable {
     let version: String
     let date: Date
     let timeBlockCount: Int
@@ -323,7 +324,7 @@ private struct BackupData: Codable {
     let dailyProgress: [BackupDailyProgress]
 }
 
-private struct BackupTimeBlock: Codable {
+struct BackupTimeBlock: Codable, Sendable {
     let id: String
     let title: String
     let startTime: Date
@@ -349,7 +350,7 @@ private struct BackupTimeBlock: Codable {
     }
 }
 
-private struct BackupDailyProgress: Codable {
+struct BackupDailyProgress: Codable, Sendable {
     let id: String
     let date: Date
     let completedBlocks: Int

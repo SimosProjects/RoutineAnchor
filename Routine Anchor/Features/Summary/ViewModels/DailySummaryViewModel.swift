@@ -1,12 +1,13 @@
 //
 //  DailySummaryViewModel.swift
-//  Routine Anchor - Updated Version
+//  Routine Anchor
 //
 import SwiftUI
 import SwiftData
 import Foundation
 
 @Observable
+@MainActor
 class DailySummaryViewModel {
     // MARK: - Published Properties
     var dailyProgress: DailyProgress?
@@ -23,23 +24,24 @@ class DailySummaryViewModel {
     // MARK: - Initialization
     init(dataManager: DataManager) {
         self.dataManager = dataManager
-        loadData(for: selectedDate)
+        Task { await loadData(for: selectedDate) }
     }
     
     init(dataManager: DataManager, date: Date) {
         self.dataManager = dataManager
         self.selectedDate = date
-        loadData(for: date)
+        Task { await loadData(for: date) }
     }
     
-    deinit {
+    func cancelLoadTask() {
         loadTask?.cancel()
+        loadTask = nil
     }
     
     // MARK: - Data Loading
     
     /// Load all data for the specified date
-    func loadData(for date: Date) {
+    func loadData(for date: Date) async {
         selectedDate = date
         isLoading = true
         errorMessage = nil
@@ -47,87 +49,120 @@ class DailySummaryViewModel {
         // Cancel any existing load task
         loadTask?.cancel()
         
-        loadTask = Task { @MainActor in
-            do {
-                // Load time blocks for the selected date
-                todaysTimeBlocks = try dataManager.loadTimeBlocks(for: date)
-                
-                // Load or create daily progress
-                dailyProgress = try dataManager.loadOrCreateDailyProgress(for: date)
-                
-                // Update progress based on current time blocks
-                try dataManager.updateDailyProgress(for: date)
-                
-                // Reload progress after update
-                dailyProgress = try dataManager.loadDailyProgress(for: date)
-                
-                // Load weekly statistics
-                weeklyStats = try dataManager.getWeeklyStatistics(for: date)
-                
-                isLoading = false
-                
-            } catch {
-                errorMessage = "Failed to load daily summary: \(error.localizedDescription)"
-                print("Error loading daily summary: \(error)")
-                isLoading = false
-            }
+        do {
+            // Since DataManager is @MainActor, we can call it directly
+            let blocks = try dataManager.loadTimeBlocks(for: date)
+            let _ = try dataManager.loadOrCreateDailyProgress(for: date)
+            try dataManager.updateDailyProgress(for: date)
+            let updatedProgress = try dataManager.loadDailyProgress(for: date)
+            
+            // Create weekly stats if we have a method for it
+            let stats = try await calculateWeeklyStats(for: date)
+            
+            // Update properties directly (we're already on MainActor)
+            self.todaysTimeBlocks = blocks
+            self.dailyProgress = updatedProgress
+            self.weeklyStats = stats
+            self.isLoading = false
+            
+        } catch {
+            print("Error loading data: \(error)")
+            self.isLoading = false
+            self.errorMessage = "Failed to load data: \(error.localizedDescription)"
         }
     }
     
+    private func calculateWeeklyStats(for date: Date) async throws -> WeeklyStats? {
+        let calendar = Calendar.current
+        guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: date)?.start else {
+            return nil
+        }
+
+        var totalDays = 0
+        var completedDays = 0
+        var totalCompletion: Double = 0
+        var totalBlocks = 0
+        var totalCompleted = 0
+
+        for dayOffset in 0..<7 {
+            guard let day = calendar.date(byAdding: .day, value: dayOffset, to: weekStart),
+                  day <= Date() else { continue }
+
+            if let progress = try dataManager.loadDailyProgress(for: day) {
+                totalDays += 1
+                totalCompletion += progress.completionPercentage
+                totalBlocks += progress.totalBlocks
+                totalCompleted += progress.completedBlocks
+
+                if progress.completionPercentage >= 0.7 {
+                    completedDays += 1
+                }
+            }
+        }
+
+        guard totalDays > 0 else { return nil }
+
+        return WeeklyStats(
+            totalDays: totalDays,
+            completedDays: completedDays,
+            averageCompletion: totalCompletion / Double(totalDays),
+            totalBlocks: totalBlocks,
+            totalCompleted: totalCompleted
+        )
+    }
+
+
+    
     /// Refresh current data
-    func refreshData() {
-        loadData(for: selectedDate)
+    func refreshData() async {
+        await loadData(for: selectedDate)
     }
     
     // MARK: - Data Updates
     
     /// Save day rating and notes
-    func saveDayRatingAndNotes(rating: Int, notes: String) {
+    func saveDayRatingAndNotes(rating: Int, notes: String) async {
         guard let progress = dailyProgress else { return }
         
-        Task { @MainActor in
-            do {
-                // Update the progress object
-                if rating > 0 {
-                    progress.setDayRating(rating)
-                }
-                
-                let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimmedNotes.isEmpty {
-                    progress.setDayNotes(trimmedNotes)
-                }
-                
-                // Mark summary as viewed
-                progress.markSummaryViewed()
-                
-                // Save changes through data manager
-                try dataManager.updateDailyProgress(for: selectedDate)
-                
-                // Trigger success haptic
-                HapticManager.shared.lightImpact()
-                
-            } catch {
-                errorMessage = "Failed to save rating and notes: \(error.localizedDescription)"
-                HapticManager.shared.error()
+        do {
+            // Update the progress object
+            if rating > 0 {
+                progress.setDayRating(rating)
             }
+            
+            let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedNotes.isEmpty {
+                progress.setDayNotes(trimmedNotes)
+            }
+            
+            // Mark summary as viewed
+            progress.markSummaryViewed()
+            
+            // Save changes through data manager
+            try dataManager.updateDailyProgress(for: selectedDate)
+            
+            // Trigger success haptic
+            HapticManager.shared.lightImpact()
+            
+        } catch {
+            errorMessage = "Failed to save rating and notes: \(error.localizedDescription)"
+            HapticManager.shared.error()
         }
     }
     
     /// Update a specific time block status from summary view
-    func updateTimeBlockStatus(_ timeBlock: TimeBlock, to status: BlockStatus) {
-        Task { @MainActor in
-            do {
-                try dataManager.updateTimeBlockStatus(timeBlock, to: status)
-                
-                // Refresh data to show updated statistics
-                refreshData()
-                
-                HapticManager.shared.success()
-                
-            } catch {
-                errorMessage = "Failed to update time block: \(error.localizedDescription)"
-                HapticManager.shared.error()
-            }
+    func updateTimeBlockStatus(_ timeBlock: TimeBlock, to status: BlockStatus) async {
+        do {
+            try dataManager.updateTimeBlockStatus(timeBlock, to: status)
+            
+            // Refresh data to show updated statistics
+            await refreshData()
+            
+            HapticManager.shared.success()
+            
+        } catch {
+            errorMessage = "Failed to update time block: \(error.localizedDescription)"
+            HapticManager.shared.error()
         }
     }
     
@@ -379,15 +414,15 @@ class DailySummaryViewModel {
     // MARK: - Navigation Helpers
     
     /// Load previous day's data
-    func loadPreviousDay() {
+    func loadPreviousDay() async {
         guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) else { return }
-        loadData(for: previousDay)
+        await loadData(for: previousDay)
     }
     
     /// Load next day's data
-    func loadNextDay() {
+    func loadNextDay() async {
         guard let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) else { return }
-        loadData(for: nextDay)
+        await loadData(for: nextDay)
     }
     
     /// Check if we can navigate to next day
@@ -411,7 +446,9 @@ class DailySummaryViewModel {
     
     /// Retry last failed operation
     func retryLastOperation() {
-        clearError()
-        refreshData()
+        Task {
+            clearError()
+            await refreshData()
+        }
     }
 }

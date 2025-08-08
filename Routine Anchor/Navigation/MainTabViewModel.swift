@@ -3,34 +3,40 @@
 //  Routine Anchor
 //
 //  Created by Christopher Simonson on 7/23/25.
+//  Updated for Swift 6 Compatibility
 //
 import SwiftUI
 import SwiftData
+import Observation
 
+@Observable
 @MainActor
-class MainTabViewModel: ObservableObject {
-    @Published var activeTasks: Int = 0
-    @Published var shouldShowSummaryBadge: Bool = false
-    @Published var selectedTabProgress: Double = 0.0
-
+final class MainTabViewModel {
+    // MARK: - Observable Properties
+    var activeTasks: Int = 0
+    var shouldShowSummaryBadge: Bool = false
+    var selectedTabProgress: Double = 0.0
+    
+    // MARK: - Private Properties
     private var modelContext: ModelContext?
-
+    
+    // MARK: - Public Methods
     func setup(with context: ModelContext) {
         self.modelContext = context
         updateBadges()
     }
-
+    
     func didSelectTab(_ tab: MainTabView.Tab) {
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             selectedTabProgress = 1.0
         }
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
                 self.selectedTabProgress = 0.0
             }
         }
-
+        
         switch tab {
         case .today:
             updateBadges()
@@ -41,21 +47,22 @@ class MainTabViewModel: ObservableObject {
             break
         }
     }
-
+    
+    // MARK: - Private Methods
     private func updateBadges() {
         guard let context = modelContext else { return }
         updateActiveTasks(context: context)
         updateSummaryBadge()
     }
-
+    
     private func updateActiveTasks(context: ModelContext) {
         activeTasks = 0 // Replace with real logic
     }
-
+    
     private func updateSummaryBadge() {
         let lastViewed = UserDefaults.standard.object(forKey: "lastSummaryViewed") as? Date
         let calendar = Calendar.current
-
+        
         if let lastViewed = lastViewed {
             shouldShowSummaryBadge = !calendar.isDateInToday(lastViewed)
         } else {
@@ -63,4 +70,3 @@ class MainTabViewModel: ObservableObject {
         }
     }
 }
-

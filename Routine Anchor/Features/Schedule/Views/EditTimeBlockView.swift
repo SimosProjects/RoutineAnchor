@@ -11,7 +11,7 @@ struct PremiumEditTimeBlockView: View {
     let originalTimeBlock: TimeBlock
     
     // MARK: - Form Data
-    @StateObject private var formData: TimeBlockFormData
+    @State private var formData: TimeBlockFormData
     
     // MARK: - State
     @State private var showingValidationErrors = false
@@ -20,11 +20,11 @@ struct PremiumEditTimeBlockView: View {
     
     // MARK: - Callback
     let onSave: (TimeBlock) -> Void
-    
+
     init(timeBlock: TimeBlock, onSave: @escaping (TimeBlock) -> Void) {
         self.originalTimeBlock = timeBlock
         self.onSave = onSave
-        self._formData = StateObject(wrappedValue: TimeBlockFormData(from: timeBlock))
+        _formData = State(initialValue: TimeBlockFormData(from: timeBlock))
     }
     
     var body: some View {
@@ -218,15 +218,31 @@ struct PremiumEditTimeBlockView: View {
                     )
                 }
                 
+                let duration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
+
                 DurationCard(
-                    minutes: formData.durationMinutes,
-                    color: formData.durationColor
+                    minutes: duration,
+                    color: color(for: duration)
                 )
             }
         }
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : 20)
     }
+    
+    private func color(for minutes: Int) -> Color {
+        switch minutes {
+        case ..<15:
+            return .premiumError
+        case ..<30:
+            return .premiumWarning
+        case ..<60:
+            return .premiumWarning
+        default:
+            return .premiumGreen
+        }
+    }
+
     
     private var organizationSection: some View {
         PremiumFormSection(

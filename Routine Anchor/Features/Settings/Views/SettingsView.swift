@@ -466,7 +466,7 @@ struct MessageBanner: View {
 }
 
 // MARK: - Preview
-#Preview {
-    SettingsView()
-        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
-}
+//#Preview {
+//    SettingsView()
+//        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
+//}

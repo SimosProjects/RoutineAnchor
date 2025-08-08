@@ -573,7 +573,7 @@ extension DailyProgress {
 }
 
 // MARK: - Weekly Statistics Helper
-struct WeeklyStats {
+struct WeeklyStats: Sendable {
     let totalDays: Int
     let completedDays: Int
     let averageCompletion: Double

@@ -81,11 +81,16 @@ struct PremiumDailySummaryView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshSummaryView)) { _ in
             Task { @MainActor in
-                viewModel?.refreshData()
+                await viewModel?.refreshData()
             }
         }
         .onDisappear {
-            saveDayRatingAndNotes()
+            Task { @MainActor in
+                await saveDayRatingAndNotes()
+            }
+        }
+        .onDisappear {
+            viewModel?.cancelLoadTask()
         }
         .sheet(isPresented: $showingShareSheet) {
             if let viewModel = viewModel {
@@ -555,17 +560,17 @@ struct PremiumDailySummaryView: View {
     
     @MainActor
     private func setupInitialState() async {
-        setupViewModel()
+        await setupViewModel()
         startAnimations()
     }
     
-    private func setupViewModel() {
+    private func setupViewModel() async {
         if viewModel == nil {
             let dataManager = DataManager(modelContext: modelContext)
             viewModel = DailySummaryViewModel(dataManager: dataManager)
         } else {
             // Refresh data when returning to the view
-            viewModel?.refreshData()
+            await viewModel?.refreshData()
         }
     }
     
@@ -579,11 +584,11 @@ struct PremiumDailySummaryView: View {
         }
     }
     
-    private func saveDayRatingAndNotes() {
+    private func saveDayRatingAndNotes() async {
         guard let viewModel = viewModel else { return }
         
         if selectedRating > 0 || !dayNotes.isEmpty {
-            viewModel.saveDayRatingAndNotes(rating: selectedRating, notes: dayNotes)
+            await viewModel.saveDayRatingAndNotes(rating: selectedRating, notes: dayNotes)
             HapticManager.shared.lightImpact()
         }
     }
