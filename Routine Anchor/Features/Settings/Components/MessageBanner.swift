@@ -1,0 +1,61 @@
+//
+//  MessageBanner.swift
+//  Routine Anchor
+//
+//  Reusable message banner component
+//
+import SwiftUI
+
+struct MessageBanner: View {
+    let message: String
+    let type: MessageType
+    
+    enum MessageType {
+        case success, error
+        
+        var color: Color {
+            switch self {
+            case .success: return Color.premiumGreen
+            case .error: return Color.premiumError
+            }
+        }
+        
+        var icon: String {
+            switch self {
+            case .success: return "checkmark.circle.fill"
+            case .error: return "exclamationmark.triangle.fill"
+            }
+        }
+    }
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: type.icon)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(type.color)
+            
+            Text(message)
+                .font(TypographyConstants.Body.emphasized)
+                .foregroundStyle(Color.premiumTextPrimary)
+                .lineLimit(2)
+            
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(type.color.opacity(0.1))
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(type.color.opacity(0.3), lineWidth: 1)
+        )
+        .shadow(color: type.color.opacity(0.2), radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+    }
+}

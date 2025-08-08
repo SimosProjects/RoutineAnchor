@@ -7,6 +7,83 @@
 import SwiftUI
 import SwiftData
 
+struct SettingsSection<Content: View>: View {
+    let title: String
+    let icon: String
+    let color: Color
+    let content: Content
+    
+    @State private var isVisible = false
+    
+    init(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.icon = icon
+        self.color = color
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Section header
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(color)
+                    .frame(width: 24, height: 24)
+                
+                Text(title)
+                    .font(TypographyConstants.Headers.cardTitle)
+                    .foregroundStyle(Color.premiumTextPrimary)
+                
+                Spacer()
+            }
+            
+            // Section content
+            content
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.ultraThinMaterial)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.08),
+                                    Color.white.opacity(0.04)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            color.opacity(0.3),
+                            color.opacity(0.1)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: color.opacity(0.2), radius: 8, x: 0, y: 4)
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : 20)
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+                isVisible = true
+            }
+        }
+    }
+}
+
 struct SettingsToggle: View {
     let title: String
     let subtitle: String
@@ -40,6 +117,29 @@ struct SettingsToggle: View {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 isOn.toggle()
             }
+        }
+    }
+}
+
+// MARK: - Custom Toggle Style
+struct PremiumToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+            
+            RoundedRectangle(cornerRadius: 16)
+                .fill(configuration.isOn ? Color.premiumGreen : Color.white.opacity(0.2))
+                .frame(width: 44, height: 26)
+                .overlay(
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 22, height: 22)
+                        .offset(x: configuration.isOn ? 9 : -9)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isOn)
+                )
+                .onTapGesture {
+                    configuration.isOn.toggle()
+                }
         }
     }
 }

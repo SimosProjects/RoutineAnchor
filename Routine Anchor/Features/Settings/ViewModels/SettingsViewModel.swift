@@ -65,7 +65,7 @@ final class SettingsViewModel {
             if newValue {
                 scheduleAutoReset()
             } else {
-                cancelAutoReset()
+               cancelAutoReset()
             }
         }
     }
@@ -90,6 +90,14 @@ final class SettingsViewModel {
         }
     }
     
+    func cleanup() {
+        // Cancel any running timers or tasks
+        midnightTimer?.invalidate()
+        midnightTimer = nil
+        messageTimerTask?.cancel()
+        messageTimerTask = nil
+    }
+    
     // MARK: - Auto-Reset Methods
     
     /// Schedule auto-reset at midnight
@@ -106,7 +114,7 @@ final class SettingsViewModel {
     private func cancelAutoReset() {
         // Remove midnight reset notification
         Task {
-            await notificationService.removeMidnightReset()
+            notificationService.removeMidnightReset()
         }
         
         // Cancel the timer
