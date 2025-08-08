@@ -433,27 +433,29 @@ struct TimeBlockServiceConflictTests {
     // MARK: - Service Conflict Tests
     
     @Test("Service should detect basic conflicts")
-    func testServiceBasicConflictDetection() {
+    @MainActor
+    func testServiceBasicConflictDetection(){
         let service = TimeBlockService.shared
-        
+
         let newBlock = createBlock(title: "New Block", startHour: 10, endHour: 12)
-        
+
         let existingBlocks = [
             createBlock(title: "Morning", startHour: 8, endHour: 9),
             createBlock(title: "Conflict", startHour: 11, endHour: 13),
             createBlock(title: "Afternoon", startHour: 14, endHour: 15)
         ]
-        
+
         let conflicts = service.checkConflicts(
             for: newBlock,
             existingBlocks: existingBlocks
         )
-        
+
         #expect(conflicts.count == 1)
         #expect(conflicts.first?.title == "Conflict")
     }
     
     @Test("Debug: Service overlap detection edge case")
+    @MainActor
     func testServiceOverlapDebug() {
         let service = TimeBlockService.shared
         
@@ -504,6 +506,7 @@ struct TimeBlockServiceConflictTests {
     }
     
     @Test("Service should exclude block by ID when specified - Fixed")
+    @MainActor
     func testServiceExcludeByIdFixed() {
         let service = TimeBlockService.shared
         
@@ -553,6 +556,7 @@ struct TimeBlockServiceConflictTests {
     }
     
     @Test("Service should only exclude specified ID, not all conflicts")
+    @MainActor
     func testServiceExcludeOnlySpecifiedId() {
         let service = TimeBlockService.shared
         
@@ -593,6 +597,7 @@ struct TimeBlockServiceConflictTests {
     }
     
     @Test("Service should handle different days correctly")
+    @MainActor
     func testServiceDifferentDays() {
         let service = TimeBlockService.shared
         
@@ -620,6 +625,7 @@ struct TimeBlockServiceConflictTests {
     }
     
     @Test("Service isOverlapping method edge cases")
+    @MainActor
     func testServiceOverlappingLogic() {
         let service = TimeBlockService.shared
         
@@ -645,6 +651,7 @@ struct TimeBlockServiceConflictTests {
     }
     
     @Test("Service should handle empty existing blocks")
+    @MainActor
     func testServiceEmptyExistingBlocks() {
         let service = TimeBlockService.shared
         
@@ -659,6 +666,7 @@ struct TimeBlockServiceConflictTests {
     }
     
     @Test("Service should detect multiple conflicts")
+    @MainActor
     func testServiceMultipleConflicts() {
         let service = TimeBlockService.shared
         
@@ -691,6 +699,7 @@ struct TimeBlockServiceConflictTests {
 struct ConflictDetectionIntegrationTests {
     
     @Test("TimeBlock and TimeBlockService should agree on conflicts")
+    @MainActor
     func testModelAndServiceAgreement() {
         let service = TimeBlockService.shared
         

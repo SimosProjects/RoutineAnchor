@@ -35,7 +35,7 @@ class TestModelContainer {
 }
 
 // MARK: - DataManager CRUD Tests
-
+@MainActor
 struct DataManagerCRUDTests {
     
     // MARK: - Helper Methods
