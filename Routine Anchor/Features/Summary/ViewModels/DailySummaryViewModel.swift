@@ -406,7 +406,11 @@ class DailySummaryViewModel {
                 "averageCompletion": weeklyStats!.averageCompletion,
                 "totalDays": weeklyStats!.totalDays,
                 "completedDays": weeklyStats!.completedDays
-            ] : nil,
+            ] : nil ?? [
+                "averageCompleted": 0,
+                "totalDays": 0,
+                "completedDays": 0
+            ],
             "exportedAt": ISO8601DateFormatter().string(from: Date())
         ]
     }

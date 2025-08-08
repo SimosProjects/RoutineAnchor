@@ -196,9 +196,6 @@ class MigrationService: ObservableObject {
         }
         
         let backupURL = getBackupURL()
-        
-        // Export all data using the existing ExportService
-        let exportService = ExportService.shared
         let context = container.mainContext
         
         do {

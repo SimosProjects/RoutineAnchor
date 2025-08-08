@@ -370,7 +370,6 @@ class DataManager {
     /// Get current active time block
     func getCurrentActiveTimeBlock() throws -> TimeBlock? {
         let todaysBlocks = try loadTodaysTimeBlocks()
-        let now = Date()
         
         return todaysBlocks.first { block in
             block.isCurrentlyActive || block.status == .inProgress

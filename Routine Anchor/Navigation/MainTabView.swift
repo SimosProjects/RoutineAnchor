@@ -8,7 +8,7 @@ import SwiftData
 
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var tabViewModel = MainTabViewModel() // Changed from @StateObject to @State
+    @State private var tabViewModel = MainTabViewModel()
     @State private var selectedTab: Tab = .today
     @State private var tabBarOffset: CGFloat = 0
     @State private var showFloatingAction = false

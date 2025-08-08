@@ -193,7 +193,7 @@ final class SettingsViewModel {
                 }
             } else {
                 // Disable all notifications
-                await notificationService.removeAllPendingNotifications()
+                notificationService.removeAllPendingNotifications()
                 
                 successMessage = "Notifications disabled"
                 HapticManager.shared.lightImpact()
@@ -256,7 +256,7 @@ final class SettingsViewModel {
         await notificationService.checkPermissionStatus()
         
         // Update our state based on actual permission status
-        let isEnabled = await notificationService.isNotificationsEnabled
+        let isEnabled = notificationService.isNotificationsEnabled
         if notificationsEnabled != isEnabled {
             notificationsEnabled = isEnabled
         }
@@ -319,9 +319,7 @@ final class SettingsViewModel {
             clearUserPreferences()
             
             // Clear all notifications
-            Task {
-                await notificationService.removeAllPendingNotifications()
-            }
+            notificationService.removeAllPendingNotifications()
             
             HapticManager.shared.premiumSuccess()
             successMessage = "All data has been cleared"

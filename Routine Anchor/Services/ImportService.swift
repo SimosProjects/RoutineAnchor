@@ -291,14 +291,6 @@ class ImportService {
         progress.totalBlocks = data.totalBlocks
         progress.completedBlocks = data.completedBlocks
         progress.skippedBlocks = data.skippedBlocks
-        
-        // Calculate other values from the data if needed
-        // Note: DailyProgressExportItem might not have all fields, so we calculate what we can
-        if let completionPercentage = data.completionPercentage as? Double {
-            // completionPercentage is read-only, so we can't set it directly
-            // It's calculated from completedBlocks/totalBlocks automatically
-        }
-        
         progress.dayRating = data.dayRating
         progress.dayNotes = data.dayNotes
         

@@ -40,7 +40,6 @@ final class TodayViewModel {
             // Since DataManager should be @MainActor, we can call it directly
             // without Task.detached
             let blocks = try dataManager.loadTodaysTimeBlocks()
-            let progress = try dataManager.loadOrCreateDailyProgress(for: Date())
             try dataManager.updateDailyProgress(for: Date())
             let updatedProgress = try dataManager.loadDailyProgress(for: Date())
             

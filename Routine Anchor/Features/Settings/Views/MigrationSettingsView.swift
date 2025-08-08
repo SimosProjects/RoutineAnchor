@@ -240,10 +240,6 @@ struct MigrationSettingsView: View {
     private func exportData() {
         HapticManager.shared.mediumImpact()
         
-        // This would integrate with your existing ExportService
-        // For now, creating a simple export
-        let exportService = ExportService.shared
-        
         Task {
             do {
                 // You would fetch actual data here
