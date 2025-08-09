@@ -12,6 +12,7 @@ struct PremiumTodayView: View {
     // MARK: - State
     @State private var showingSettings = false
     @State private var showingSummary = false
+    @State private var showingQuickStats = false
     @State private var selectedTimeBlock: TimeBlock?
     @State private var showingActionSheet = false
     @State private var headerOffset: CGFloat = 0
@@ -42,7 +43,8 @@ struct PremiumTodayView: View {
                                 TodayHeaderView(
                                     viewModel: viewModel,
                                     showingSettings: $showingSettings,
-                                    showingSummary: $showingSummary
+                                    showingSummary: $showingSummary,
+                                    showingQuickStats: $showingQuickStats
                                 )
                                 .padding(.top, geometry.safeAreaInsets.top + 20)
                             }
@@ -101,6 +103,16 @@ struct PremiumTodayView: View {
             }
         } message: {
             Text(viewModel?.errorMessage ?? "")
+        }
+        .sheet(isPresented: $showingSettings) {
+            NavigationStack {
+                SettingsView()
+            }
+        }
+        .sheet(isPresented: $showingSummary) {
+            NavigationStack {
+                PremiumDailySummaryView()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .timeBlockCompleted)) { notification in
             handleTimeBlockCompletion(notification)

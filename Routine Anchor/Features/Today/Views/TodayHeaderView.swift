@@ -10,6 +10,7 @@ struct TodayHeaderView: View {
     let viewModel: TodayViewModel
     @Binding var showingSettings: Bool
     @Binding var showingSummary: Bool
+    @Binding var showingQuickStats: Bool
     
     // MARK: - State
     @State private var greetingOpacity: Double = 0
@@ -128,14 +129,14 @@ struct TodayHeaderView: View {
             .opacity(buttonsOpacity)
             .scaleEffect(buttonsOpacity)
             
-            // Quick stats button (optional)
+            // Quick stats button
             if viewModel.hasScheduledBlocks {
                 NavigationButton(
                     icon: "bolt.fill",
                     gradient: [Color.premiumWarning, Color.premiumTeal]
                 ) {
                     HapticManager.shared.lightImpact()
-                    showQuickStats()
+                    showingQuickStats = true
                 }
                 .opacity(buttonsOpacity)
                 .scaleEffect(buttonsOpacity)
@@ -161,11 +162,6 @@ struct TodayHeaderView: View {
         withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
             animationPhase = 1
         }
-    }
-    
-    private func showQuickStats() {
-        // Quick stats modal or popover
-        print("Show quick stats")
     }
     
     // MARK: - Computed Properties
