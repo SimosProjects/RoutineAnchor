@@ -84,6 +84,23 @@ struct MainTabView: View {
                 .tag(Tab.settings)
             }
             .tint(Color.premiumBlue)
+            .background(Color.clear)
+            .onAppear {
+                // Force immediate appearance update
+                UITabBar.appearance().isTranslucent = true
+                UITabBar.appearance().backgroundImage = UIImage()
+            }
+            .onAppear {
+                // Ensure the tab bar background is immediately transparent
+                let tabBarAppearance = UITabBarAppearance()
+                tabBarAppearance.configureWithTransparentBackground()
+                //tabBarAppearance.backgroundColor = UIColor.black.withAlphaComponent(0.95)
+                tabBarAppearance.backgroundColor = UIColor.clear
+                tabBarAppearance.backgroundEffect = UIBlurEffect(style: .systemMaterialDark)
+                
+                UITabBar.appearance().standardAppearance = tabBarAppearance
+                UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+            }
             .task {
                 await setupInitialState()
             }
