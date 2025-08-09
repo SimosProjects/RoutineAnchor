@@ -37,9 +37,7 @@ struct TodayView: View {
             GeometryReader { geometry in
                 ScrollViewReader { proxy in
                     ScrollView(showsIndicators: false) {
-                        LazyVStack(spacing: 0) {
-                            OffsetObservingView() // Track scroll offset
-
+                        VStack(spacing: 0) {
                             // Header section
                             TodayHeaderView(
                                 viewModel: viewModel,
@@ -60,17 +58,8 @@ struct TodayView: View {
                             }
                         }
                     }
-                    .onAppear {
-                        scrollProxy = proxy
-                    }
-                    .coordinateSpace(name: "scroll")
                     .refreshable {
                         await refreshData()
-                    }
-                    .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                        Task { @MainActor in
-                            updateScrollProgress(value, geometry: geometry)
-                        }
                     }
                 }
             }
@@ -188,14 +177,6 @@ struct TodayView: View {
     }
     
     // MARK: - Helper Methods
-
-    private func updateScrollProgress(_ offset: CGFloat, geometry: GeometryProxy) {
-        let progress = min(max(offset / 100, 0), 1)
-        if abs(scrollProgress - progress) > 0.01 {
-            scrollProgress = progress
-            headerOffset = -offset * 0.5
-        }
-    }
     
     private func refreshData() async {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
@@ -285,27 +266,6 @@ struct TodayView: View {
         
         // Highlight the block
         highlightBlock(blockId)
-    }
-}
-
-// MARK: - Preference Keys
-
-struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-    
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
-struct OffsetObservingView: View {
-    var body: some View {
-        GeometryReader { geo in
-            Color.clear
-                .preference(key: ScrollOffsetPreferenceKey.self,
-                            value: geo.frame(in: .named("scroll")).minY)
-        }
-        .frame(height: 0)
     }
 }
 

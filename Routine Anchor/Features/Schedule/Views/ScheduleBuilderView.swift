@@ -18,8 +18,6 @@ struct PremiumScheduleBuilderView: View {
     @State private var blockToDelete: TimeBlock?
     @State private var showingQuickAdd = false
     @State private var animationPhase = 0
-    @State private var headerOffset: CGFloat = 0
-    @State private var scrollProgress: CGFloat = 0
     
     var body: some View {
         ZStack {
@@ -34,30 +32,25 @@ struct PremiumScheduleBuilderView: View {
             ParticleEffectView()
                 .allowsHitTesting(false)
             
-            GeometryReader { geometry in
-                ScrollView(showsIndicators: false) {
-                    LazyVStack(spacing: 0) {
-                        // Header section
-                        headerSection
-                        
-                        // Content based on state
-                        if let viewModel = viewModel {
-                            if viewModel.hasTimeBlocks {
-                                mainContent(viewModel: viewModel)
-                            } else {
-                                emptyStateView
-                            }
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Header section
+                    headerSection
+                    
+                    // Content based on state
+                    if let viewModel = viewModel {
+                        if viewModel.hasTimeBlocks {
+                            mainContent(viewModel: viewModel)
                         } else {
-                            loadingState
+                            emptyStateView
                         }
+                    } else {
+                        loadingState
                     }
                 }
-                .coordinateSpace(name: "scroll")
-                .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                    Task { @MainActor in
-                        updateScrollProgress(value, geometry: geometry)
-                    }
-                }
+            }
+            .refreshable {
+                viewModel?.loadTimeBlocks()
             }
         }
         .navigationBarHidden(true)
@@ -138,7 +131,6 @@ struct PremiumScheduleBuilderView: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 60)
-            .offset(y: headerOffset)
         }
     }
     
@@ -393,15 +385,6 @@ struct PremiumScheduleBuilderView: View {
         } else {
             // Refresh data when returning to the view
             viewModel?.loadTimeBlocks()
-        }
-    }
-    
-    private func updateScrollProgress(_ offset: CGFloat, geometry: GeometryProxy) {
-        let progress = min(max(-offset / 100, 0), 1)
-        
-        withAnimation(.easeOut(duration: 0.1)) {
-            scrollProgress = progress
-            headerOffset = offset
         }
     }
     

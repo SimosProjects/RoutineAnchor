@@ -58,6 +58,15 @@ enum BlockStatus: String, CaseIterable, Codable, Sendable {
         }
     }
     
+    var statusEmoji: String {
+        switch self {
+        case .notStarted: return "⏰"
+        case .inProgress: return "🔄"
+        case .completed: return "✅"
+        case .skipped: return "⏭️"
+        }
+    }
+    
     /// Color associated with the status
     var color: Color {
         switch self {
