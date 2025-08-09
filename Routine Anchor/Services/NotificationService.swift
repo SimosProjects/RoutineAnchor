@@ -691,6 +691,7 @@ extension NotificationService: UNUserNotificationCenterDelegate {
 extension Notification.Name {
     static let timeBlockCompleted = Notification.Name("timeBlockCompleted")
     static let timeBlockSkipped = Notification.Name("timeBlockSkipped")
+    static let timeBlocksDidChange = Notification.Name("timeBlocksDidChange")
     static let showDailySummary = Notification.Name("showDailySummary")
     static let showTimeBlock = Notification.Name("showTimeBlock")
     static let navigateToSchedule = Notification.Name("navigateToSchedule")

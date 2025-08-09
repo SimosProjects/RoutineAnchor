@@ -84,6 +84,12 @@ class ScheduleBuilderViewModel {
             try dataManager.addTimeBlock(block)
             loadTimeBlocks() // Refresh the list
             scheduleNotifications()
+            
+            NotificationCenter.default.post(
+                name: .timeBlocksDidChange,
+                object: nil,
+                userInfo: ["action": "added", "date": block.scheduledDate]
+            )
 
             // Success feedback
             HapticManager.shared.success()

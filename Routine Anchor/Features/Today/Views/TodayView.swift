@@ -80,6 +80,9 @@ struct PremiumTodayView: View {
         .navigationBarHidden(true)
         .onAppear {
             setupViewModel()
+            Task {
+                await viewModel?.refreshData()
+            }
             startPeriodicUpdates()
             scrollToCurrentBlockIfNeeded()
         }

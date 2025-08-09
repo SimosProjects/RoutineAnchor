@@ -20,13 +20,37 @@ final class TodayViewModel {
     
     // MARK: - Private Properties
     private let dataManager: DataManager
+    private var notificationObserver: NSObjectProtocol?
     
     // MARK: - Initialization
     init(dataManager: DataManager) {
         self.dataManager = dataManager
+        setupNotificationObserver()
         
         // Load today's blocks asynchronously
         Task { await loadTodaysBlocks() }
+    }
+    
+    private func setupNotificationObserver() {
+        notificationObserver = NotificationCenter.default.addObserver(
+            forName: .timeBlocksDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self else { return }
+            
+            // Check if the change affects today's blocks
+            if let date = notification.userInfo?["date"] as? Date,
+               Calendar.current.isDateInToday(date) {
+                Task { @MainActor in
+                    await self.loadTodaysBlocks()
+                }
+            }
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Data Loading
