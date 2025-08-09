@@ -80,6 +80,7 @@ struct DataManagerCRUDTests {
     // MARK: - Create (Add) Tests
     
     @Test("Add valid time block should succeed")
+    @MainActor
     func testAddValidTimeBlock() throws {
         let (dataManager, _) = try createTestDataManager()
         
@@ -97,6 +98,7 @@ struct DataManagerCRUDTests {
     }
     
     @Test("Add invalid time block should throw validation error")
+    @MainActor
     func testAddInvalidTimeBlock() throws {
         let (dataManager, _) = try createTestDataManager()
         
@@ -113,6 +115,7 @@ struct DataManagerCRUDTests {
     }
     
     @Test("Add conflicting time block should throw conflict error")
+    @MainActor
     func testAddConflictingTimeBlock() throws {
         let (dataManager, _) = try createTestDataManager()
         
@@ -142,6 +145,7 @@ struct DataManagerCRUDTests {
     }
     
     @Test("Add multiple non-conflicting blocks should succeed")
+    @MainActor
     func testAddMultipleNonConflictingBlocks() throws {
         let (dataManager, _) = try createTestDataManager()
         

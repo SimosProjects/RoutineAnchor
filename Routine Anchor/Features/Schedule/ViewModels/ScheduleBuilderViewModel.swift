@@ -66,8 +66,13 @@ class ScheduleBuilderViewModel {
     func addTimeBlock(title: String, startTime: Date, endTime: Date, notes: String? = nil, category: String? = nil) {
         isLoading = true
         errorMessage = nil
-        
+
         do {
+            // Validate before constructing the TimeBlock
+            guard !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                throw DataManagerError.validationFailed("Title cannot be empty.")
+            }
+
             let block = TimeBlock(
                 title: title,
                 startTime: startTime,
@@ -75,14 +80,14 @@ class ScheduleBuilderViewModel {
                 notes: notes,
                 category: category
             )
-            
+
             try dataManager.addTimeBlock(block)
             loadTimeBlocks() // Refresh the list
             scheduleNotifications()
-            
+
             // Success feedback
             HapticManager.shared.success()
-            
+
         } catch DataManagerError.conflictDetected(let message) {
             errorMessage = "Time conflict: \(message)"
             HapticManager.shared.error()
@@ -93,9 +98,10 @@ class ScheduleBuilderViewModel {
             errorMessage = "Failed to add time block: \(error.localizedDescription)"
             HapticManager.shared.error()
         }
-        
+
         isLoading = false
     }
+
     
     /// Update an existing time block
     @MainActor

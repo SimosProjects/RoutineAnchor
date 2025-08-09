@@ -46,26 +46,32 @@ class DataManager {
     
     /// Load time blocks for a specific date
     func loadTimeBlocks(for date: Date) throws -> [TimeBlock] {
-        let calendar = Calendar.current
+        let calendar = Calendar(identifier: .gregorian) // avoids pulling from environment
         let startOfDay = calendar.startOfDay(for: date)
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
-        
-        let predicate = #Predicate<TimeBlock> { block in
-            block.startTime >= startOfDay && block.startTime < endOfDay
+        guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else {
+            throw DataManagerError.fetchFailed("Invalid date range")
         }
-        
+
+        // Precompute times to avoid capturing non-Sendable context
+        let start = startOfDay
+        let end = endOfDay
+
+        let predicate = #Predicate<TimeBlock> { block in
+            block.startTime >= start && block.startTime < end
+        }
+
         let descriptor = FetchDescriptor<TimeBlock>(
             predicate: predicate,
             sortBy: [SortDescriptor(\.startTime, order: .forward)]
         )
-        
+
         do {
             return try modelContext.fetch(descriptor)
         } catch {
             throw DataManagerError.fetchFailed("Failed to load time blocks for date: \(error.localizedDescription)")
         }
     }
-    
+
     /// Load today's time blocks
     func loadTodaysTimeBlocks() throws -> [TimeBlock] {
         return try loadTimeBlocks(for: Date())
@@ -214,8 +220,8 @@ class DataManager {
     /// Load daily progress for a specific date
     func loadDailyProgress(for date: Date) throws -> DailyProgress? {
         let targetDate = Calendar.current.startOfDay(for: date)
-        
-        let predicate = #Predicate<DailyProgress> { progress in
+
+        let predicate = #Predicate<DailyProgress> { [targetDate] progress in
             progress.date == targetDate
         }
         

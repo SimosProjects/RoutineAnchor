@@ -41,13 +41,15 @@ struct SettingsView: View {
             // Premium animated background
             AnimatedGradientBackground()
                 .ignoresSafeArea()
+            
             AnimatedMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)
+            
             ParticleEffectView()
                 .allowsHitTesting(false)
             
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     // Header
                     SettingsHeader(

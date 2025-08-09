@@ -8,6 +8,7 @@
 
 import SwiftUI
 import UserNotifications
+import Observation
 
 enum DeepLink: Sendable {
     case showTimeBlock(blockId: UUID)
@@ -25,14 +26,27 @@ struct NotificationResponseData: Sendable {
     let userInfo: [String: String]
 }
 
+@Observable
 @MainActor
 final class DeepLinkHandler: ObservableObject {
     static let shared = DeepLinkHandler()
     
-    @Published var pendingDeepLink: DeepLink?
-    @Published var activeTab: MainTabView.Tab = .today
+    var pendingDeepLink: DeepLink?
+    var activeTab: MainTabView.Tab = .today
+    var pendingTab: MainTabView.Tab?
     
     private init() {}
+    
+    func requestTabChange(_ tab: MainTabView.Tab) {
+        activeTab = tab
+        // Don't directly change tab, just set pending and notify
+        pendingTab = tab
+        NotificationCenter.default.post(name: .deepLinkTabChange, object: nil)
+    }
+    
+    func clearPendingTab() {
+        pendingTab = nil
+    }
     
     // MARK: - Handle Notification Response (Swift 6 Version)
     // This now accepts Sendable data instead of UNNotificationResponse
@@ -45,33 +59,33 @@ final class DeepLinkHandler: ObservableObject {
             if let blockIdString = userInfo["timeBlockId"],
                let blockId = UUID(uuidString: blockIdString) {
                 pendingDeepLink = .completeTimeBlock(blockId: blockId)
-                activeTab = .today
+                requestTabChange(.today)
             }
             
         case NotificationAction.skip:
             if let blockIdString = userInfo["timeBlockId"],
                let blockId = UUID(uuidString: blockIdString) {
                 pendingDeepLink = .skipTimeBlock(blockId: blockId)
-                activeTab = .today
+                requestTabChange(.today)
             }
             
         case NotificationAction.viewSummary:
             pendingDeepLink = .showSummary
-            activeTab = .summary
+            requestTabChange(.summary)
             
         default:
             // User tapped on notification itself
             if let blockIdString = userInfo["timeBlockId"],
                let blockId = UUID(uuidString: blockIdString) {
                 pendingDeepLink = .showTimeBlock(blockId: blockId)
-                activeTab = .today
+                requestTabChange(.today)
             }
         }
         
         // Process the deep link after a short delay to ensure UI is ready
         Task {
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-            self.processDeepLink()
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            processDeepLink()
         }
     }
     
@@ -86,25 +100,25 @@ final class DeepLinkHandler: ObservableObject {
         switch host {
         case "schedule":
             pendingDeepLink = .showSchedule
-            activeTab = .schedule
+            requestTabChange(.schedule)
             
         case "templates":
             pendingDeepLink = .showTemplates
-            activeTab = .schedule
+            requestTabChange(.schedule)
             
         case "summary":
             pendingDeepLink = .showSummary
-            activeTab = .summary
+            requestTabChange(.summary)
             
         case "settings":
             pendingDeepLink = .showSettings
-            activeTab = .settings
+            requestTabChange(.settings)
             
         case "timeblock":
             if let blockIdString = components.queryItems?.first(where: { $0.name == "id" })?.value,
                let blockId = UUID(uuidString: blockIdString) {
                 pendingDeepLink = .showTimeBlock(blockId: blockId)
-                activeTab = .today
+                requestTabChange(.today)
             }
             
         default:

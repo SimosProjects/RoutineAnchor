@@ -17,7 +17,10 @@ final class MainTabViewModel {
     var shouldShowSummaryBadge: Bool = false
     var selectedTabProgress: Double = 0.0
     
-    // MARK: - Private Properties
+    @ObservationIgnored
+    private var isProcessingTabChange = false
+    
+    @ObservationIgnored
     private var modelContext: ModelContext?
     
     // MARK: - Public Methods
@@ -27,14 +30,25 @@ final class MainTabViewModel {
     }
     
     func didSelectTab(_ tab: MainTabView.Tab) {
+        // Prevent concurrent tab changes
+        guard !isProcessingTabChange else { return }
+        isProcessingTabChange = true
+        
+        Task {
+            await processTabSelection(tab)
+            isProcessingTabChange = false
+        }
+    }
+    
+    private func processTabSelection(_ tab: MainTabView.Tab) async {
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             selectedTabProgress = 1.0
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
-                self.selectedTabProgress = 0.0
-            }
+        try? await Task.sleep(nanoseconds: 600_000_000)
+        
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
+            selectedTabProgress = 0.0
         }
         
         switch tab {
