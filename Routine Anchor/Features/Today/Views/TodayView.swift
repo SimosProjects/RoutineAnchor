@@ -1,13 +1,13 @@
 //
 //  TodayView.swift
-//  Routine Anchor - Premium Version (Swift 6 Compatible)
+//  Routine Anchor
 //
 import SwiftUI
 import SwiftData
 
-struct PremiumTodayView: View {
+struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var viewModel: TodayViewModel?
+    @Bindable var viewModel: TodayViewModel
     
     // MARK: - State
     @State private var showingSettings = false
@@ -19,12 +19,14 @@ struct PremiumTodayView: View {
     @State private var scrollProgress: CGFloat = 0
     @State private var refreshTrigger = false
     
-    // MARK: - Timer Management
-    @State private var updateTimer: Timer?
-    
     // MARK: - Scroll Support State
     @State private var scrollProxy: ScrollViewProxy?
     @State private var highlightedBlockId: UUID?
+    
+    init(modelContext: ModelContext) {
+        let dataManager = DataManager(modelContext: modelContext)
+        self.viewModel = TodayViewModel(dataManager: dataManager)
+    }
     
     var body: some View {
         ZStack {
@@ -39,28 +41,22 @@ struct PremiumTodayView: View {
                             OffsetObservingView() // Track scroll offset
 
                             // Header section
-                            if let viewModel = viewModel {
-                                TodayHeaderView(
-                                    viewModel: viewModel,
-                                    showingSettings: $showingSettings,
-                                    showingSummary: $showingSummary,
-                                    showingQuickStats: $showingQuickStats
-                                )
-                                .padding(.top, geometry.safeAreaInsets.top + 20)
-                            }
+                            TodayHeaderView(
+                                viewModel: viewModel,
+                                showingSettings: $showingSettings,
+                                showingSummary: $showingSummary,
+                                showingQuickStats: $showingQuickStats
+                            )
+                            .padding(.top, geometry.safeAreaInsets.top + 20)
 
                             // Content based on state
-                            if let viewModel = viewModel {
-                                if viewModel.hasScheduledBlocks {
-                                    mainContent(viewModel: viewModel)
-                                } else {
-                                    PremiumTodayEmptyStateView(
-                                        onCreateRoutine: navigateToScheduleBuilder,
-                                        onUseTemplate: showTemplates
-                                    )
-                                }
+                            if viewModel.hasScheduledBlocks {
+                                mainContent
                             } else {
-                                loadingState
+                                TodayEmptyStateView(
+                                    onCreateRoutine: navigateToScheduleBuilder,
+                                    onUseTemplate: showTemplates
+                                )
                             }
                         }
                     }
@@ -81,28 +77,25 @@ struct PremiumTodayView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            setupViewModel()
-            Task {
-                await viewModel?.refreshData()
+            Task { @MainActor in
+                await viewModel.refreshData()
+                viewModel.startPeriodicUpdates()
             }
-            startPeriodicUpdates()
-            scrollToCurrentBlockIfNeeded()
         }
         .onDisappear {
-            // Clean up timer when view disappears
-            stopPeriodicUpdates()
+            viewModel.stopPeriodicUpdates()
         }
-        .alert("Error", isPresented: .constant(viewModel?.errorMessage != nil)) {
+        .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("Retry") {
                 Task {
-                    await viewModel?.retryLastOperation()
+                    await viewModel.retryLastOperation()
                 }
             }
             Button("Dismiss", role: .cancel) {
-                viewModel?.clearError()
+                viewModel.clearError()
             }
         } message: {
-            Text(viewModel?.errorMessage ?? "")
+            Text(viewModel.errorMessage ?? "")
         }
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
@@ -125,14 +118,14 @@ struct PremiumTodayView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshTodayView)) { _ in
             Task {
-                await viewModel?.refreshData()
+                await viewModel.refreshData()
             }
         }
     }
     
     // MARK: - Main Content
     @ViewBuilder
-    private func mainContent(viewModel: TodayViewModel) -> some View {
+    private var mainContent: some View {
         VStack(spacing: 24) {
             // Focus section
             if let focusText = viewModel.getFocusModeText() {
@@ -156,7 +149,7 @@ struct PremiumTodayView: View {
             // Motivational section
             MotivationalCard(viewModel: viewModel)
                 .padding(.horizontal, 24)
-                .padding(.bottom, 100) // Space for tab bar
+                .padding(.bottom, 100)
         }
         .padding(.top, 32)
     }
@@ -195,33 +188,6 @@ struct PremiumTodayView: View {
     }
     
     // MARK: - Helper Methods
-    
-    private func setupViewModel() {
-        if viewModel == nil {
-            let dataManager = DataManager(modelContext: modelContext)
-            viewModel = TodayViewModel(dataManager: dataManager)
-        } else {
-            // Refresh data when returning to the view
-            Task {
-                await viewModel?.refreshData()
-            }
-        }
-    }
-    
-    private func startPeriodicUpdates() {
-        stopPeriodicUpdates()
-        
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
-            Task { @MainActor in
-                await viewModel?.refreshData()
-            }
-        }
-    }
-    
-    private func stopPeriodicUpdates() {
-        updateTimer?.invalidate()
-        updateTimer = nil
-    }
 
     private func updateScrollProgress(_ offset: CGFloat, geometry: GeometryProxy) {
         let progress = min(max(offset / 100, 0), 1)
@@ -239,7 +205,7 @@ struct PremiumTodayView: View {
         // Small delay for visual feedback
         try? await Task.sleep(nanoseconds: 500_000_000)
         
-        await viewModel?.refreshData()
+        await viewModel.refreshData()
         HapticManager.shared.lightImpact()
     }
     
@@ -256,8 +222,7 @@ struct PremiumTodayView: View {
     // MARK: - Scroll Support Methods
     
     private func scrollToCurrentBlockIfNeeded() {
-        guard let viewModel = viewModel,
-              let currentBlock = viewModel.getCurrentBlock() else {
+        guard let currentBlock = viewModel.getCurrentBlock() else {
             return
         }
         
@@ -286,29 +251,30 @@ struct PremiumTodayView: View {
     
     private func handleTimeBlockCompletion(_ notification: Notification) {
         guard let blockId = notification.userInfo?["blockId"] as? UUID,
-              let block = viewModel?.timeBlocks.first(where: { $0.id == blockId }) else {
+              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else {
             return
         }
         
-        Task {
-            await viewModel?.markBlockCompleted(block)
+        Task { @MainActor in
+            await viewModel.markBlockCompleted(block)
         }
     }
     
     private func handleTimeBlockSkip(_ notification: Notification) {
         guard let blockId = notification.userInfo?["blockId"] as? UUID,
-              let block = viewModel?.timeBlocks.first(where: { $0.id == blockId }) else {
+              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else {
             return
         }
         
-        Task {
-            await viewModel?.markBlockSkipped(block)
+        Task { @MainActor in
+            await viewModel.markBlockSkipped(block)
         }
     }
     
     private func handleShowTimeBlock(_ notification: Notification) {
         guard let blockIdString = notification.userInfo?["blockId"] as? String,
               let blockId = UUID(uuidString: blockIdString) else {
+            print("Invalid blockId in notification")
             return
         }
         
@@ -345,6 +311,7 @@ struct OffsetObservingView: View {
 
 // MARK: - Preview
 #Preview {
-    PremiumTodayView()
-        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
+    let container = try! ModelContainer(for: TimeBlock.self, DailyProgress.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    return TodayView(modelContext: container.mainContext)
+        .modelContainer(container)
 }

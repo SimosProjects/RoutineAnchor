@@ -22,9 +22,9 @@ struct MainTabView: View {
                 .ignoresSafeArea()
             
             TabView(selection: tabSelectionBinding) {
-                // Today Tab - Premium dashboard
+                // Today Tab
                 NavigationStack {
-                    PremiumTodayView()
+                    TodayView(modelContext: modelContext)
                         .background(Color.clear)
                 }
                 .tabItem {

@@ -1,10 +1,10 @@
 //
 //  TodayEmptyStateView.swift
-//  Routine Anchor - Swift 6 Compatible
+//  Routine Anchor
 //
 import SwiftUI
 
-struct PremiumTodayEmptyStateView: View {
+struct TodayEmptyStateView: View {
     let onCreateRoutine: () -> Void
     let onUseTemplate: () -> Void
     

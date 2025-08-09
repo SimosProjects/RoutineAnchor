@@ -2,7 +2,7 @@
 //  TodayTimeBlocksList.swift
 //  Routine Anchor
 //
-//  Time blocks list section for Today view - Swift 6 Compatible
+//  Time blocks list section for Today view
 //
 import SwiftUI
 
@@ -85,24 +85,24 @@ struct TodayTimeBlocksList: View {
     private var flatTimeBlocks: some View {
         LazyVStack(spacing: 12) {
             ForEach(viewModel.sortedTimeBlocks) { timeBlock in
-                PremiumTimeBlockRowView(
+                TimeBlockRowView(
                     timeBlock: timeBlock,
                     isHighlighted: highlightedBlockId == timeBlock.id,
                     onTap: {
                         handleTimeBlockTap(timeBlock)
                     },
                     onComplete: {
-                        Task {
+                        Task { @MainActor in
                             await viewModel.markBlockCompleted(timeBlock)
                         }
                     },
                     onSkip: {
-                        Task {
+                        Task { @MainActor in
                             await viewModel.markBlockSkipped(timeBlock)
                         }
                     }
                 )
-                .id(timeBlock.id) // Important for ScrollViewReader
+                .id(timeBlock.id)
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
                     removal: .move(edge: .leading).combined(with: .opacity)
@@ -212,204 +212,5 @@ struct TodayTimeBlocksList: View {
         HapticManager.shared.lightImpact()
         selectedTimeBlock = timeBlock
         showingActionSheet = true
-    }
-}
-
-// MARK: - Status Group Section
-
-struct StatusGroupSection: View {
-    let status: BlockStatus
-    let blocks: [TimeBlock]
-    let currentBlock: TimeBlock?
-    let isExpanded: Bool
-    let highlightedBlockId: UUID?
-    let onToggle: () -> Void
-    let onBlockTap: (TimeBlock) -> Void
-    let onComplete: (TimeBlock) -> Void
-    let onSkip: (TimeBlock) -> Void
-    
-    @State private var sectionAnimation = false
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            Button(action: onToggle) {
-                HStack(spacing: 16) {
-                    // Status icon
-                    Image(systemName: status.iconName)
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(status.color)
-                        .frame(width: 24, height: 24)
-                    
-                    // Title and count
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(status.displayName)
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(.white)
-                        
-                        Text("\(blocks.count) \(blocks.count == 1 ? "block" : "blocks")")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.6))
-                    }
-                    
-                    Spacer()
-                    
-                    // Expand icon
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.6))
-                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                }
-                .padding(16)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(PlainButtonStyle())
-            
-            // Expanded content
-            if isExpanded {
-                VStack(spacing: 8) {
-                    ForEach(blocks) { block in
-                        CompactTimeBlockRow(
-                            timeBlock: block,
-                            isActive: block.id == currentBlock?.id,
-                            isHighlighted: highlightedBlockId == block.id,
-                            onTap: { onBlockTap(block) },
-                            onComplete: { onComplete(block) },
-                            onSkip: { onSkip(block) }
-                        )
-                        .id(block.id) // Important for ScrollViewReader
-                        .transition(.asymmetric(
-                            insertion: .opacity.combined(with: .move(edge: .top)),
-                            removal: .opacity.combined(with: .move(edge: .top))
-                        ))
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
-            }
-        }
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.08),
-                                    Color.white.opacity(0.04)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            status.color.opacity(0.3),
-                            status.color.opacity(0.1)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
-        .shadow(color: status.color.opacity(0.2), radius: 8, x: 0, y: 4)
-        .scaleEffect(sectionAnimation ? 1 : 0.95)
-        .opacity(sectionAnimation ? 1 : 0)
-        .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
-                sectionAnimation = true
-            }
-        }
-    }
-}
-
-// MARK: - Compact Time Block Row
-
-struct CompactTimeBlockRow: View {
-    let timeBlock: TimeBlock
-    let isActive: Bool
-    let isHighlighted: Bool
-    let onTap: () -> Void
-    let onComplete: () -> Void
-    let onSkip: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                // Time
-                Text(timeBlock.startTime, style: .time)
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundStyle(isActive ? Color.premiumBlue : Color.white.opacity(0.6))
-                    .frame(width: 60, alignment: .leading)
-                
-                // Title and category
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(timeBlock.title)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                    
-                    if let category = timeBlock.category {
-                        Text(category)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.6))
-                    }
-                }
-                
-                Spacer()
-                
-                // Quick actions
-                if timeBlock.status == .notStarted || timeBlock.status == .inProgress {
-                    HStack(spacing: 4) {
-                        Button(action: {
-                            HapticManager.shared.success()
-                            onComplete()
-                        }) {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.premiumGreen)
-                                .frame(width: 32, height: 32)
-                                .background(Color.premiumGreen.opacity(0.15))
-                                .cornerRadius(8)
-                        }
-                        
-                        Button(action: {
-                            HapticManager.shared.lightImpact()
-                            onSkip()
-                        }) {
-                            Image(systemName: "forward")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.premiumWarning)
-                                .frame(width: 32, height: 32)
-                                .background(Color.premiumWarning.opacity(0.15))
-                                .cornerRadius(8)
-                        }
-                    }
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isActive ? Color.premiumBlue.opacity(0.1) : Color.white.opacity(0.05))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(
-                        isHighlighted ? Color.premiumBlue : (isActive ? Color.premiumBlue.opacity(0.3) : Color.clear),
-                        lineWidth: isHighlighted ? 2 : 1
-                    )
-            )
-            .scaleEffect(isHighlighted ? 1.02 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHighlighted)
-        }
-        .buttonStyle(PlainButtonStyle())
     }
 }

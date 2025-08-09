@@ -40,6 +40,9 @@ struct TodayHeaderView: View {
                     .padding(.horizontal, 24)
             }
         }
+        .onAppear {
+            animationPhase = 1
+        }
     }
     
     // MARK: - Navigation Bar
@@ -61,12 +64,12 @@ struct TodayHeaderView: View {
         VStack(alignment: .leading, spacing: 8) {
             // Animated greeting
             HStack(spacing: 6) {
-                Text(greetingText)
+                Text(viewModel.greetingText)
                     .font(.system(size: 16, weight: .medium, design: .rounded))
                     .foregroundStyle(Color.white.opacity(0.8))
                 
-                if isSpecialDay {
-                    Image(systemName: specialDayIcon)
+                if viewModel.isSpecialDay {
+                    Image(systemName: viewModel.specialDayIcon)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Color.premiumWarning)
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.2)
@@ -74,26 +77,34 @@ struct TodayHeaderView: View {
                 }
             }
             .opacity(greetingOpacity)
-            .offset(y: greetingOpacity < 1 ? -10 : 0)
+            .offset(y: greetingOpacity < 1 ? 10 : 0)
+            .onAppear {
+                withAnimation(.easeOut(duration: 0.8)) {
+                    greetingOpacity = 1
+                }
+                animationPhase = 1
+            }
             
             // Date with day of week
             VStack(alignment: .leading, spacing: 2) {
-                Text(currentDateText)
+                Text(viewModel.currentDateText)
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
+                    .opacity(dateOpacity)
+                    .offset(y: dateOpacity < 1 ? 10 : 0)
+                    .onAppear {
+                        withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
+                            dateOpacity = 1
+                        }
+                    }
                 
-                if let motivationalQuote = getDailyQuote() {
-                    Text(motivationalQuote)
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(Color.white.opacity(0.6))
-                        .lineLimit(1)
-                }
+                Text(viewModel.dailyQuote)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(Color.white.opacity(0.6))
+                    .lineLimit(1)
             }
             .opacity(dateOpacity)
-            .offset(y: dateOpacity < 1 ? -10 : 0)
-        }
-        .onAppear {
-            animateHeaderElements()
+            .offset(y: dateOpacity < 1 ? 10 : 0)
         }
     }
     
@@ -142,95 +153,11 @@ struct TodayHeaderView: View {
                 .scaleEffect(buttonsOpacity)
             }
         }
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func animateHeaderElements() {
-        withAnimation(.easeOut(duration: 0.6).delay(0.1)) {
-            greetingOpacity = 1
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.8).delay(0.4)) {
+                buttonsOpacity = 1
+            }
         }
-        
-        withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
-            dateOpacity = 1
-        }
-        
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.3)) {
-            buttonsOpacity = 1
-        }
-        
-        withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-            animationPhase = 1
-        }
-    }
-    
-    // MARK: - Computed Properties
-    
-    private var greetingText: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        let name = UserDefaults.standard.string(forKey: "userName") ?? ""
-        let personalizedGreeting = name.isEmpty ? "" : ", \(name)"
-        
-        switch hour {
-        case 5..<12: return "Good morning\(personalizedGreeting)"
-        case 12..<17: return "Good afternoon\(personalizedGreeting)"
-        case 17..<22: return "Good evening\(personalizedGreeting)"
-        default: return "Good night\(personalizedGreeting)"
-        }
-    }
-    
-    private var currentDateText: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMMM d"
-        return formatter.string(from: Date())
-    }
-    
-    private var isSpecialDay: Bool {
-        // Check for special occasions
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.month, .day], from: Date())
-        
-        // Examples of special days
-        if components.month == 1 && components.day == 1 { return true } // New Year
-        if components.month == 12 && components.day == 25 { return true } // Christmas
-        
-        // Check if it's Friday (weekend start)
-        let weekday = calendar.component(.weekday, from: Date())
-        if weekday == 6 { return true } // Friday
-        
-        return false
-    }
-    
-    private var specialDayIcon: String {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.month, .day], from: Date())
-        
-        if components.month == 1 && components.day == 1 { return "sparkles" }
-        if components.month == 12 && components.day == 25 { return "snowflake" }
-        
-        let weekday = calendar.component(.weekday, from: Date())
-        if weekday == 6 { return "party.popper" }
-        
-        return "star"
-    }
-    
-    private func getDailyQuote() -> String? {
-        let quotes = [
-            "Small steps lead to big changes",
-            "Consistency is the key to success",
-            "Today's effort is tomorrow's strength",
-            "Progress over perfection",
-            "One block at a time",
-            "Your routine shapes your future",
-            "Focus on what matters most"
-        ]
-        
-        // Use date as seed for consistent daily quote
-        let calendar = Calendar.current
-        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
-        let index = dayOfYear % quotes.count
-        
-        return quotes[index]
     }
 }
 
@@ -249,24 +176,6 @@ struct NotificationBadge: View {
                     isAnimating = true
                 }
             }
-    }
-}
-
-// MARK: - Enhanced Navigation Button
-extension NavigationButton {
-    struct BadgeModifier: ViewModifier {
-        let showBadge: Bool
-        
-        func body(content: Content) -> some View {
-            content.overlay(
-                showBadge ?
-                Circle()
-                    .fill(Color.premiumError)
-                    .frame(width: 8, height: 8)
-                    .offset(x: 12, y: -12)
-                : nil
-            )
-        }
     }
 }
 

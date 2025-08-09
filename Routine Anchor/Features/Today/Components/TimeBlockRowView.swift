@@ -1,10 +1,10 @@
 //
 //  TimeBlockRowView.swift
-//  Routine Anchor - Premium Version
+//  Routine Anchor
 //
 import SwiftUI
 
-struct PremiumTimeBlockRowView: View {
+struct TimeBlockRowView: View {
     let timeBlock: TimeBlock
     let isHighlighted: Bool
     let onTap: (() -> Void)?
@@ -452,7 +452,7 @@ struct CategoryBadge: View {
             .ignoresSafeArea()
         
         VStack(spacing: 16) {
-            PremiumTimeBlockRowView(
+            TimeBlockRowView(
                 timeBlock: TimeBlock(
                     title: "Morning Workout",
                     startTime: Date(),
@@ -467,7 +467,7 @@ struct CategoryBadge: View {
                 onSkip: {}
             )
             
-            PremiumTimeBlockRowView(
+            TimeBlockRowView(
                 timeBlock: {
                     let block = TimeBlock(
                         title: "Team Meeting",

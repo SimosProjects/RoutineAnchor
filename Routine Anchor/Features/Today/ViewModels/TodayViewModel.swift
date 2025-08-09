@@ -20,7 +20,10 @@ final class TodayViewModel {
     
     // MARK: - Private Properties
     private let dataManager: DataManager
-    private var notificationObserver: NSObjectProtocol?
+    
+    // MARK: - Nonisolated Properties
+    nonisolated(unsafe) private var updateTimer: Timer?
+    nonisolated(unsafe) private var notificationObserver: NSObjectProtocol?
     
     // MARK: - Initialization
     init(dataManager: DataManager) {
@@ -42,15 +45,38 @@ final class TodayViewModel {
             // Check if the change affects today's blocks
             if let date = notification.userInfo?["date"] as? Date,
                Calendar.current.isDateInToday(date) {
-                Task { @MainActor in
-                    await self.loadTodaysBlocks()
+                Task { @MainActor [weak self] in
+                    await self?.loadTodaysBlocks()
                 }
             }
         }
     }
     
     deinit {
-        NotificationCenter.default.removeObserver(self)
+        if let timer = updateTimer {
+            timer.invalidate()
+        }
+        
+        if let observer = notificationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+    
+    // MARK: - Timer Management
+
+    func startPeriodicUpdates() {
+        stopPeriodicUpdates()
+        
+        updateTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.refreshData()
+            }
+        }
+    }
+    
+    func stopPeriodicUpdates() {
+        updateTimer?.invalidate()
+        updateTimer = nil
     }
     
     // MARK: - Data Loading
@@ -73,7 +99,7 @@ final class TodayViewModel {
             self.isLoading = false
             
         } catch {
-            self.errorMessage = "Failed to load today's data: \(error.localizedDescription)"
+            self.errorMessage = "Failed to load today's blocks: \(error.localizedDescription)"
             self.isLoading = false
             print("Error loading today's blocks: \(error)")
         }
@@ -389,5 +415,74 @@ extension TodayViewModel {
         } else {
             return nil
         }
+    }
+    
+    var isSpecialDay: Bool {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.month, .day], from: Date())
+        
+        // Special occasions
+        if components.month == 1 && components.day == 1 { return true } // New Year
+        if components.month == 12 && components.day == 25 { return true } // Christmas
+        
+        // Check if it's Friday (weekend start)
+        let weekday = calendar.component(.weekday, from: Date())
+        if weekday == 6 { return true } // Friday
+        
+        return false
+    }
+    
+    /// Get icon for special days
+    var specialDayIcon: String {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.month, .day], from: Date())
+        
+        if components.month == 1 && components.day == 1 { return "sparkles" }
+        if components.month == 12 && components.day == 25 { return "snowflake" }
+        
+        let weekday = calendar.component(.weekday, from: Date())
+        if weekday == 6 { return "party.popper" }
+        
+        return "star"
+    }
+    
+    /// Get personalized greeting based on time of day
+    var greetingText: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let name = UserDefaults.standard.string(forKey: "userName") ?? ""
+        let personalizedGreeting = name.isEmpty ? "" : ", \(name)"
+        
+        switch hour {
+        case 5..<12: return "Good morning\(personalizedGreeting)"
+        case 12..<17: return "Good afternoon\(personalizedGreeting)"
+        case 17..<22: return "Good evening\(personalizedGreeting)"
+        default: return "Good night\(personalizedGreeting)"
+        }
+    }
+    
+    /// Get formatted current date
+    var currentDateText: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMMM d"
+        return formatter.string(from: Date())
+    }
+    
+    var dailyQuote: String {
+        let quotes = [
+            "Small steps lead to big changes",
+            "Consistency is the key to success",
+            "Today's effort is tomorrow's strength",
+            "Progress over perfection",
+            "One block at a time",
+            "Your routine shapes your future",
+            "Focus on what matters most"
+        ]
+        
+        // Use date as seed for consistent daily quote
+        let calendar = Calendar.current
+        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
+        let index = dayOfYear % quotes.count
+        
+        return quotes[index]
     }
 }
