@@ -52,9 +52,9 @@ struct MainTabView: View {
                 }
                 .tag(Tab.schedule)
                 
-                // Summary Tab - Premium insights
+                // Summary Tab
                 NavigationStack {
-                    PremiumDailySummaryView()
+                    DailySummaryView(modelContext: modelContext)
                         .background(Color.clear)
                 }
                 .tabItem {

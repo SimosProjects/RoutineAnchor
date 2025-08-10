@@ -22,9 +22,11 @@ class DailySummaryViewModel {
     private var loadTask: Task<Void, Never>?
     
     // MARK: - Initialization
-    init(dataManager: DataManager) {
+    init(dataManager: DataManager, loadImmediately: Bool = true) {
         self.dataManager = dataManager
-        Task { await loadData(for: selectedDate) }
+        if loadImmediately {
+            Task { await loadData(for: selectedDate) }
+        }
     }
     
     init(dataManager: DataManager, date: Date) {
@@ -34,8 +36,9 @@ class DailySummaryViewModel {
     }
     
     func cancelLoadTask() {
-        loadTask?.cancel()
+        let taskToCancel = loadTask
         loadTask = nil
+        taskToCancel?.cancel()
     }
     
     // MARK: - Data Loading
@@ -57,7 +60,7 @@ class DailySummaryViewModel {
             let updatedProgress = try dataManager.loadDailyProgress(for: date)
             
             // Create weekly stats if we have a method for it
-            let stats = try await calculateWeeklyStats(for: date)
+            let stats = await calculateWeeklyStats(for: date)
             
             // Update properties directly (we're already on MainActor)
             self.todaysTimeBlocks = blocks
@@ -72,7 +75,7 @@ class DailySummaryViewModel {
         }
     }
     
-    private func calculateWeeklyStats(for date: Date) async throws -> WeeklyStats? {
+    private func calculateWeeklyStats(for date: Date) async -> WeeklyStats? {
         let calendar = Calendar.current
         guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: date)?.start else {
             return nil
@@ -88,15 +91,20 @@ class DailySummaryViewModel {
             guard let day = calendar.date(byAdding: .day, value: dayOffset, to: weekStart),
                   day <= Date() else { continue }
 
-            if let progress = try dataManager.loadDailyProgress(for: day) {
-                totalDays += 1
-                totalCompletion += progress.completionPercentage
-                totalBlocks += progress.totalBlocks
-                totalCompleted += progress.completedBlocks
+            do {
+                if let progress = try dataManager.loadDailyProgress(for: day) {
+                    totalDays += 1
+                    totalCompletion += progress.completionPercentage
+                    totalBlocks += progress.totalBlocks
+                    totalCompleted += progress.completedBlocks
 
-                if progress.completionPercentage >= 0.7 {
-                    completedDays += 1
+                    if progress.completionPercentage >= 0.7 {
+                        completedDays += 1
+                    }
                 }
+            } catch {
+                print("Failed to calculate weekly stats: \(error)")
+                return nil
             }
         }
 
@@ -121,6 +129,7 @@ class DailySummaryViewModel {
     // MARK: - Data Updates
     
     /// Save day rating and notes
+    @MainActor
     func saveDayRatingAndNotes(rating: Int, notes: String) async {
         guard let progress = dailyProgress else { return }
         

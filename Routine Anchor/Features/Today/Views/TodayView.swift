@@ -93,7 +93,7 @@ struct TodayView: View {
         }
         .sheet(isPresented: $showingSummary) {
             NavigationStack {
-                PremiumDailySummaryView()
+                DailySummaryView(modelContext: modelContext)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .timeBlockCompleted)) { notification in

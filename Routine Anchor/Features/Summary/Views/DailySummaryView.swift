@@ -1,15 +1,14 @@
 //
-//  PremiumDailySummaryView.swift
+//  DailySummaryView.swift
 //  Routine Anchor
-//  Swift 6 Compatible Version
 //
 import SwiftUI
 import SwiftData
 
-struct PremiumDailySummaryView: View {
+struct DailySummaryView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @State private var viewModel: DailySummaryViewModel?
+    @State private var viewModel: DailySummaryViewModel
     
     // MARK: - Animation State
     @State private var animationPhase = 0
@@ -19,6 +18,12 @@ struct PremiumDailySummaryView: View {
     // MARK: - Form State
     @State private var selectedRating: Int = 0
     @State private var dayNotes = ""
+    
+    init(modelContext: ModelContext, loadImmediately: Bool = true) {
+        let dataManager = DataManager(modelContext: modelContext)
+        let viewModel = DailySummaryViewModel(dataManager: dataManager, loadImmediately: loadImmediately)
+        _viewModel = State(initialValue: viewModel)
+    }
     
     var body: some View {
         ZStack {
@@ -39,34 +44,30 @@ struct PremiumDailySummaryView: View {
                     headerSection
                     
                     // Main content
-                    if let viewModel = viewModel {
-                        if viewModel.hasData {
-                            VStack(spacing: 12) {
-                                // Progress visualization
-                                progressSection(viewModel)
-                                
-                                // Statistics cards
-                                statisticsSection(viewModel)
-                                
-                                // Task breakdown
-                                if !viewModel.sortedTimeBlocks.isEmpty {
-                                    taskBreakdownSection(viewModel)
-                                }
-                                
-                                // Performance insights
-                                insightsSection(viewModel)
-                                
-                                // Rating and reflection
-                                ratingSection(viewModel)
-                                
-                                // Actions
-                                actionSection(viewModel)
+                    if viewModel.hasData {
+                        VStack(spacing: 12) {
+                            // Progress visualization
+                            progressSection(viewModel)
+                            
+                            // Statistics cards
+                            statisticsSection(viewModel)
+                            
+                            // Task breakdown
+                            if !viewModel.sortedTimeBlocks.isEmpty {
+                                taskBreakdownSection(viewModel)
                             }
-                        } else {
-                            emptyStateView
+                            
+                            // Performance insights
+                            insightsSection(viewModel)
+                            
+                            // Rating and reflection
+                            ratingSection(viewModel)
+                            
+                            // Actions
+                            actionSection(viewModel)
                         }
                     } else {
-                        loadingView
+                        emptyStateView
                     }
                     
                     Spacer(minLength: 16)
@@ -81,21 +82,17 @@ struct PremiumDailySummaryView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshSummaryView)) { _ in
             Task { @MainActor in
-                await viewModel?.refreshData()
+                await viewModel.refreshData()
             }
         }
         .onDisappear {
             Task { @MainActor in
                 await saveDayRatingAndNotes()
+                viewModel.cancelLoadTask()
             }
-        }
-        .onDisappear {
-            viewModel?.cancelLoadTask()
         }
         .sheet(isPresented: $showingShareSheet) {
-            if let viewModel = viewModel {
-                ShareSummaryView(viewModel: viewModel)
-            }
+            ShareSummaryView(viewModel: viewModel)
         }
         .onChange(of: selectedRating) { _, newValue in
             if newValue > 0 {
@@ -184,7 +181,7 @@ struct PremiumDailySummaryView: View {
                             )
                         )
                     
-                    if let viewModel = viewModel, let progress = viewModel.dailyProgress {
+                    if let progress = viewModel.dailyProgress {
                         Text(progress.formattedDate)
                             .font(.system(size: 18, weight: .medium, design: .rounded))
                             .foregroundStyle(Color.white.opacity(0.7))
@@ -560,18 +557,8 @@ struct PremiumDailySummaryView: View {
     
     @MainActor
     private func setupInitialState() async {
-        await setupViewModel()
+        await viewModel.refreshData()
         startAnimations()
-    }
-    
-    private func setupViewModel() async {
-        if viewModel == nil {
-            let dataManager = DataManager(modelContext: modelContext)
-            viewModel = DailySummaryViewModel(dataManager: dataManager)
-        } else {
-            // Refresh data when returning to the view
-            await viewModel?.refreshData()
-        }
     }
     
     private func startAnimations() {
@@ -585,8 +572,6 @@ struct PremiumDailySummaryView: View {
     }
     
     private func saveDayRatingAndNotes() async {
-        guard let viewModel = viewModel else { return }
-        
         if selectedRating > 0 || !dayNotes.isEmpty {
             await viewModel.saveDayRatingAndNotes(rating: selectedRating, notes: dayNotes)
             HapticManager.shared.lightImpact()
@@ -647,67 +632,29 @@ struct InsightRow: View {
 
 // MARK: - Preview
 #Preview("Empty State") {
-    PremiumDailySummaryView()
-        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
+    NavigationStack {
+        DailySummaryView(
+            modelContext: ModelContext(
+                try! ModelContainer(
+                    for: TimeBlock.self,
+                    configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+                )
+            ),
+            loadImmediately: false
+        )
+    }
 }
 
-#Preview("With Data") {
-    let container = try! ModelContainer(for: TimeBlock.self, DailyProgress.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-    let context = container.mainContext
-    
-    // Create sample time blocks
-    let calendar = Calendar.current
-    let today = Date()
-    
-    let timeBlocks = [
-        TimeBlock(
-            title: "Morning Routine",
-            startTime: calendar.date(bySettingHour: 7, minute: 0, second: 0, of: today)!,
-            endTime: calendar.date(bySettingHour: 8, minute: 0, second: 0, of: today)!,
-            icon: "☕",
-            category: "Personal"
-        ),
-        TimeBlock(
-            title: "Project Work",
-            startTime: calendar.date(bySettingHour: 9, minute: 0, second: 0, of: today)!,
-            endTime: calendar.date(bySettingHour: 12, minute: 0, second: 0, of: today)!,
-            icon: "💼",
-            category: "Work"
-        ),
-        TimeBlock(
-            title: "Gym Session",
-            startTime: calendar.date(bySettingHour: 17, minute: 0, second: 0, of: today)!,
-            endTime: calendar.date(bySettingHour: 18, minute: 0, second: 0, of: today)!,
-            icon: "🏋️",
-            category: "Health"
+#Preview("With Data - Static") {
+    NavigationStack {
+        DailySummaryView(
+            modelContext: ModelContext(
+                try! ModelContainer(
+                    for: Schema([TimeBlock.self, DailyProgress.self]),
+                    configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+                )
+            ),
+            loadImmediately: false
         )
-    ]
-    
-    // Set statuses
-    timeBlocks[0].status = .completed
-    timeBlocks[1].status = .completed
-    timeBlocks[2].status = .skipped
-    
-    // Insert into context
-    for block in timeBlocks {
-        context.insert(block)
     }
-    
-    // Create daily progress
-    let progress = DailyProgress(date: today)
-    progress.totalBlocks = 3
-    progress.completedBlocks = 2
-    progress.skippedBlocks = 1
-    progress.totalPlannedMinutes = 300
-    progress.completedMinutes = 240
-    progress.dayRating = 4
-    progress.dayNotes = "Good productive day! Missed the gym but got important work done."
-    
-    context.insert(progress)
-    
-    // Save context
-    try? context.save()
-    
-    return PremiumDailySummaryView()
-        .modelContainer(container)
 }

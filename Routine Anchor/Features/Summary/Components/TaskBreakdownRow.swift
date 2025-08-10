@@ -69,10 +69,14 @@ struct TaskBreakdownRow: View {
             // Sample completed task
             TaskBreakdownRow(
                 timeBlock: {
+                    let today = Date()
+                    let startTime = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: today)!
+                    let endTime = Calendar.current.date(byAdding: .hour, value: 1, to: startTime)!
+                    
                     let block = TimeBlock(
                         title: "Morning Routine",
-                        startTime: Date(),
-                        endTime: Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date(),
+                        startTime: startTime,
+                        endTime: endTime,
                         icon: "☕",
                         category: "Personal"
                     )
@@ -84,10 +88,14 @@ struct TaskBreakdownRow: View {
             // Sample in progress task
             TaskBreakdownRow(
                 timeBlock: {
+                    let today = Date()
+                    let startTime = Calendar.current.date(bySettingHour: 10, minute: 0, second: 0, of: today)!
+                    let endTime = Calendar.current.date(byAdding: .hour, value: 3, to: startTime)!
+                    
                     let block = TimeBlock(
                         title: "Project Work",
-                        startTime: Date(),
-                        endTime: Calendar.current.date(byAdding: .hour, value: 3, to: Date()) ?? Date(),
+                        startTime: startTime,
+                        endTime: endTime,
                         icon: "💼",
                         category: "Work"
                     )
@@ -95,14 +103,18 @@ struct TaskBreakdownRow: View {
                     return block
                 }()
             )
-            
+
             // Sample skipped task
             TaskBreakdownRow(
                 timeBlock: {
+                    let today = Date()
+                    let startTime = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: today)!
+                    let endTime = Calendar.current.date(byAdding: .hour, value: 1, to: startTime)!
+                    
                     let block = TimeBlock(
                         title: "Gym Session",
-                        startTime: Date(),
-                        endTime: Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date(),
+                        startTime: startTime,
+                        endTime: endTime,
                         icon: "🏋️",
                         category: "Health"
                     )
@@ -110,6 +122,7 @@ struct TaskBreakdownRow: View {
                     return block
                 }()
             )
+
         }
         .padding()
     }
