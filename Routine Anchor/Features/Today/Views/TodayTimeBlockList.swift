@@ -87,17 +87,19 @@ struct TodayTimeBlocksList: View {
             ForEach(viewModel.sortedTimeBlocks) { timeBlock in
                 TimeBlockRowView(
                     timeBlock: timeBlock,
-                    isHighlighted: highlightedBlockId == timeBlock.id,
-                    onTap: {
-                        handleTimeBlockTap(timeBlock)
+                    showActions: true,
+                    onStart: {
+                        Task {
+                            await viewModel.startTimeBlock(timeBlock)
+                        }
                     },
                     onComplete: {
-                        Task { @MainActor in
+                        Task {
                             await viewModel.markBlockCompleted(timeBlock)
                         }
                     },
                     onSkip: {
-                        Task { @MainActor in
+                        Task {
                             await viewModel.markBlockSkipped(timeBlock)
                         }
                     }

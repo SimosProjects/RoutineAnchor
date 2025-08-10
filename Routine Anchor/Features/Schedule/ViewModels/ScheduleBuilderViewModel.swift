@@ -7,6 +7,23 @@
 import SwiftUI
 import SwiftData
 
+enum ScheduleBuilderError: LocalizedError {
+    case conflictingTimeBlock
+    case invalidTimeRange
+    case emptyTitle
+    
+    var errorDescription: String? {
+        switch self {
+        case .conflictingTimeBlock:
+            return "This time slot conflicts with an existing block"
+        case .invalidTimeRange:
+            return "End time must be after start time"
+        case .emptyTitle:
+            return "Title cannot be empty"
+        }
+    }
+}
+
 @Observable
 @MainActor
 class ScheduleBuilderViewModel {
@@ -45,6 +62,7 @@ class ScheduleBuilderViewModel {
     }
     
     /// Load time blocks for a specific date
+    @MainActor
     func loadTimeBlocks(for date: Date) {
         isLoading = true
         errorMessage = nil
@@ -69,8 +87,26 @@ class ScheduleBuilderViewModel {
 
         do {
             // Validate before constructing the TimeBlock
-            guard !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                throw DataManagerError.validationFailed("Title cannot be empty.")
+            let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedTitle.isEmpty else {
+                throw ScheduleBuilderError.emptyTitle
+            }
+            
+            // Validate time range
+            guard endTime > startTime else {
+                throw ScheduleBuilderError.invalidTimeRange
+            }
+            
+            // Check for conflicts with existing blocks
+            let hasConflict = timeBlocks.contains { existing in
+                return timeBlocksOverlap(
+                    start1: existing.startTime, end1: existing.endTime,
+                    start2: startTime, end2: endTime
+                )
+            }
+            
+            if hasConflict {
+                throw ScheduleBuilderError.conflictingTimeBlock
             }
 
             let block = TimeBlock(
@@ -82,7 +118,7 @@ class ScheduleBuilderViewModel {
             )
 
             try dataManager.addTimeBlock(block)
-            loadTimeBlocks() // Refresh the list
+            loadTimeBlocks()
             scheduleNotifications()
             
             NotificationCenter.default.post(
@@ -94,20 +130,25 @@ class ScheduleBuilderViewModel {
             // Success feedback
             HapticManager.shared.success()
 
-        } catch DataManagerError.conflictDetected(let message) {
-            errorMessage = "Time conflict: \(message)"
-            HapticManager.shared.error()
-        } catch DataManagerError.validationFailed(let message) {
-            errorMessage = "Invalid time block: \(message)"
-            HapticManager.shared.error()
+        } catch let error as ScheduleBuilderError {
+            errorMessage = error.localizedDescription
+            print("Validation error: \(error)")
         } catch {
-            errorMessage = "Failed to add time block: \(error.localizedDescription)"
-            HapticManager.shared.error()
+            errorMessage = "Failed to save time block: \(error.localizedDescription)"
+            print("Error adding time block: \(error)")
         }
 
         isLoading = false
     }
-
+    
+    private func timeBlocksOverlap(start1: Date, end1: Date, start2: Date, end2: Date) -> Bool {
+        // Check if blocks are on the same day first
+        let calendar = Calendar.current
+        guard calendar.isDate(start1, inSameDayAs: start2) else { return false }
+        
+        // Check for overlap
+        return start1 < end2 && start2 < end1
+    }
     
     /// Update an existing time block
     @MainActor
@@ -116,13 +157,39 @@ class ScheduleBuilderViewModel {
         errorMessage = nil
         
         do {
+            // Validate title
+            let trimmedTitle = block.title.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedTitle.isEmpty else {
+                throw ScheduleBuilderError.emptyTitle
+            }
+            
+            // Validate time range
+            guard block.endTime > block.startTime else {
+                throw ScheduleBuilderError.invalidTimeRange
+            }
+            
+            // Check for conflicts (excluding self)
+            let hasConflict = timeBlocks.contains { existing in
+                return existing.id != block.id && timeBlocksOverlap(
+                    start1: existing.startTime, end1: existing.endTime,
+                    start2: block.startTime, end2: block.endTime
+                )
+            }
+            
+            if hasConflict {
+                throw ScheduleBuilderError.conflictingTimeBlock
+            }
+            
             try dataManager.updateTimeBlock(block)
-            loadTimeBlocks() // Refresh the list
+            loadTimeBlocks()
             scheduleNotifications()
             
             // Success feedback
             HapticManager.shared.success()
             
+        } catch let error as ScheduleBuilderError {
+            errorMessage = error.localizedDescription
+            HapticManager.shared.error()
         } catch DataManagerError.conflictDetected(let message) {
             errorMessage = "Time conflict: \(message)"
             HapticManager.shared.error()
@@ -265,11 +332,11 @@ class ScheduleBuilderViewModel {
         var errors: [String] = []
         
         if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errors.append("Title cannot be empty")
+            errors.append(ScheduleBuilderError.emptyTitle.localizedDescription)
         }
         
         if startTime >= endTime {
-            errors.append("Start time must be before end time")
+            errors.append(ScheduleBuilderError.invalidTimeRange.localizedDescription)
         }
         
         let durationMinutes = Int(endTime.timeIntervalSince(startTime) / 60)
@@ -282,7 +349,7 @@ class ScheduleBuilderViewModel {
         }
         
         if wouldConflict(startTime: startTime, endTime: endTime) {
-            errors.append("Time conflicts with existing blocks")
+            errors.append(ScheduleBuilderError.conflictingTimeBlock.localizedDescription)
         }
         
         return errors
@@ -345,30 +412,46 @@ class ScheduleBuilderViewModel {
 
 // MARK: - Convenience Methods
 extension ScheduleBuilderViewModel {
-    /// Quick add methods for common time blocks
-    
-    // MARK: - Quick Templates
-    @MainActor
-    func addMorningRoutine() {
+
+    private func createTimeBlockForTemplate(
+        title: String,
+        hour: Int,
+        minute: Int = 0,
+        duration: Int,
+        notes: String? = nil,
+        category: String? = nil
+    ) {
         let calendar = Calendar.current
         let now = Date()
         var targetDate = now
         
-        // If it's already past 8 AM, schedule for tomorrow
-        if let todayMorning = calendar.date(bySettingHour: 8, minute: 0, second: 0, of: now),
-           now > todayMorning {
+        // If it's already past the specified time, schedule for tomorrow
+        if let todayTime = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: now),
+           now > todayTime {
             targetDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
         }
         
-        guard let startTime = calendar.date(bySettingHour: 7, minute: 0, second: 0, of: targetDate),
-              let endTime = calendar.date(bySettingHour: 8, minute: 0, second: 0, of: targetDate) else {
+        guard let startTime = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: targetDate),
+              let endTime = calendar.date(byAdding: .minute, value: duration, to: startTime) else {
             return
         }
         
         addTimeBlock(
-            title: "Morning Routine",
+            title: title,
             startTime: startTime,
             endTime: endTime,
+            notes: notes,
+            category: category
+        )
+    }
+    
+    // MARK: - Quick Templates
+    @MainActor
+    func addMorningRoutine() {
+        createTimeBlockForTemplate(
+            title: "Morning Routine",
+            hour: 7,
+            duration: 60,
             notes: "Exercise, shower, breakfast",
             category: "Personal"
         )
@@ -376,25 +459,10 @@ extension ScheduleBuilderViewModel {
 
     @MainActor
     func addWorkBlock() {
-        let calendar = Calendar.current
-        let now = Date()
-        var targetDate = now
-        
-        // If it's already past 12 PM, schedule for tomorrow
-        if let todayNoon = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now),
-           now > todayNoon {
-            targetDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
-        }
-        
-        guard let startTime = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: targetDate),
-              let endTime = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: targetDate) else {
-            return
-        }
-        
-        addTimeBlock(
+        createTimeBlockForTemplate(
             title: "Deep Work Session",
-            startTime: startTime,
-            endTime: endTime,
+            hour: 9,
+            duration: 180,
             notes: "Focus time - no distractions",
             category: "Work"
         )
@@ -402,25 +470,10 @@ extension ScheduleBuilderViewModel {
 
     @MainActor
     func addBreak() {
-        let calendar = Calendar.current
-        let now = Date()
-        var targetDate = now
-        
-        // If it's already past 1 PM, schedule for tomorrow
-        if let todayLunch = calendar.date(bySettingHour: 13, minute: 0, second: 0, of: now),
-           now > todayLunch {
-            targetDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
-        }
-        
-        guard let startTime = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: targetDate),
-              let endTime = calendar.date(bySettingHour: 13, minute: 0, second: 0, of: targetDate) else {
-            return
-        }
-        
-        addTimeBlock(
+        createTimeBlockForTemplate(
             title: "Lunch Break",
-            startTime: startTime,
-            endTime: endTime,
+            hour: 12,
+            duration: 60,
             notes: "Rest and recharge",
             category: "Personal"
         )

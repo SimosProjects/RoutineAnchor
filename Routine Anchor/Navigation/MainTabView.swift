@@ -37,9 +37,9 @@ struct MainTabView: View {
                 }
                 .tag(Tab.today)
                 
-                // Schedule Tab - Premium builder
+                // Schedule Tab
                 NavigationStack {
-                    PremiumScheduleBuilderView()
+                    ScheduleBuilderView()
                         .background(Color.clear)
                 }
                 .tabItem {

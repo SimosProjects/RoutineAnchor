@@ -694,6 +694,7 @@ extension Notification.Name {
     static let timeBlocksDidChange = Notification.Name("timeBlocksDidChange")
     static let showDailySummary = Notification.Name("showDailySummary")
     static let showTimeBlock = Notification.Name("showTimeBlock")
+    static let showAddTimeBlock = Notification.Name("showAddTimeBlock")
     static let navigateToSchedule = Notification.Name("navigateToSchedule")
     static let navigateToSummary = Notification.Name("navigateToSummary")
     static let showTemplates = Notification.Name("showTemplates")

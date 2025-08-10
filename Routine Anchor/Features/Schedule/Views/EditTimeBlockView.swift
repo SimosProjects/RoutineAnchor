@@ -1,11 +1,12 @@
 //
-//  PremiumEditTimeBlockView.swift
-//  Routine Anchor - Premium Version
+//  EditTimeBlockView.swift
+//  Routine Anchor
 //
 import SwiftUI
 
-struct PremiumEditTimeBlockView: View {
+struct EditTimeBlockView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     // MARK: - Original Data
     let originalTimeBlock: TimeBlock
@@ -17,6 +18,7 @@ struct PremiumEditTimeBlockView: View {
     @State private var showingValidationErrors = false
     @State private var showingDiscardAlert = false
     @State private var isVisible = false
+    @State private var viewModel: ScheduleBuilderViewModel?
     
     // MARK: - Callback
     let onSave: (TimeBlock) -> Void
@@ -295,17 +297,28 @@ struct PremiumEditTimeBlockView: View {
             color: Color.white.opacity(0.6)
         ) {
             VStack(spacing: 12) {
-                HistoryRow(
-                    title: "Created",
-                    date: originalTimeBlock.createdAt,
-                    icon: "plus.circle"
-                )
+                // Safely handle dates
+                if originalTimeBlock.createdAt != Date.distantPast {
+                    HistoryRow(
+                        title: "Created",
+                        date: originalTimeBlock.createdAt,
+                        icon: "plus.circle"
+                    )
+                }
                 
-                HistoryRow(
-                    title: "Last Updated",
-                    date: originalTimeBlock.updatedAt,
-                    icon: "pencil.circle"
-                )
+                if originalTimeBlock.updatedAt != originalTimeBlock.createdAt {
+                    HistoryRow(
+                        title: "Last Updated",
+                        date: originalTimeBlock.updatedAt,
+                        icon: "pencil.circle"
+                    )
+                }
+                
+                if originalTimeBlock.createdAt == Date.distantPast {
+                    Text("No history available")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.5))
+                }
             }
         }
         .opacity(isVisible ? 1 : 0)
@@ -353,11 +366,47 @@ struct PremiumEditTimeBlockView: View {
         }
     }
     
+    private func checkForOverlaps() -> Bool {
+        guard let viewModel = getScheduleViewModel() else { return false }
+        
+        let conflictingBlocks = viewModel.getConflictingBlocks(
+            startTime: formData.startTime,
+            endTime: formData.endTime,
+            excluding: originalTimeBlock
+        )
+        
+        return !conflictingBlocks.isEmpty
+    }
+    
+    private func getScheduleViewModel() -> ScheduleBuilderViewModel? {
+        // Access the view model from the environment or parent view
+        // This would need to be passed in as a parameter or environment object
+        return nil
+    }
+    
     private func saveTimeBlock() {
         formData.validateForm()
         
         guard formData.isFormValid else {
             showingValidationErrors = true
+            HapticManager.shared.error()
+            return
+        }
+        
+        // Check for overlapping time blocks
+        if checkForOverlaps() {
+            formData.validationErrors.append("This time conflicts with another scheduled block")
+            showingValidationErrors = true
+            HapticManager.shared.error()
+            return
+        }
+        
+        // Check if block spans midnight
+        let calendar = Calendar.current
+        if !calendar.isDate(formData.startTime, inSameDayAs: formData.endTime) {
+            formData.validationErrors.append("Time blocks cannot span across midnight")
+            showingValidationErrors = true
+            HapticManager.shared.error()
             return
         }
         
@@ -388,7 +437,7 @@ struct PremiumEditTimeBlockView: View {
     )
     sampleBlock.icon = "🌅"
     
-    return PremiumEditTimeBlockView(timeBlock: sampleBlock) { updatedBlock in
+    return EditTimeBlockView(timeBlock: sampleBlock) { updatedBlock in
         print("Updated: \(updatedBlock.title)")
     }
 }

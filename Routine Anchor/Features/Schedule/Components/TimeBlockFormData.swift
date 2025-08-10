@@ -70,18 +70,28 @@ final class TimeBlockFormData {
         validationErrors.removeAll()
         
         // Title validation
-        if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedTitle.isEmpty {
             validationErrors.append("Title is required")
         }
         
-        // Time validation
-        if endTime <= startTime {
+        // Get calendar with current timezone
+        let calendar = Calendar.current
+        
+        // Time validation with timezone awareness
+        let startComponents = calendar.dateComponents(in: calendar.timeZone, from: startTime)
+        let endComponents = calendar.dateComponents(in: calendar.timeZone, from: endTime)
+        
+        // Check if spans multiple days
+        if !calendar.isDate(startTime, inSameDayAs: endTime) {
+            validationErrors.append("Time blocks cannot span multiple days")
+        } else if endTime <= startTime {
             validationErrors.append("End time must be after start time")
         }
         
         // Duration validation (minimum 5 minutes)
         let duration = endTime.timeIntervalSince(startTime) / 60
-        if duration < 5 {
+        if duration > 0 && duration < 5 {
             validationErrors.append("Time block must be at least 5 minutes long")
         }
         
@@ -95,12 +105,21 @@ final class TimeBlockFormData {
     
     // MARK: - Change Detection Methods
     func checkForChanges() {
-        hasChanges = (title != originalTitle ||
-                     startTime != originalStartTime ||
-                     endTime != originalEndTime ||
-                     notes != originalNotes ||
-                     category != originalCategory ||
-                     selectedIcon != originalIcon)
+        // Normalize dates for comparison (ignore seconds/subseconds)
+        let calendar = Calendar.current
+        let normalizedStartTime = calendar.dateInterval(of: .minute, for: startTime)?.start ?? startTime
+        let normalizedEndTime = calendar.dateInterval(of: .minute, for: endTime)?.start ?? endTime
+        let normalizedOriginalStart = calendar.dateInterval(of: .minute, for: originalStartTime)?.start ?? originalStartTime
+        let normalizedOriginalEnd = calendar.dateInterval(of: .minute, for: originalEndTime)?.start ?? originalEndTime
+        
+        hasChanges = (
+            sanitizeString(title) != sanitizeString(originalTitle) ||
+            normalizedStartTime != normalizedOriginalStart ||
+            normalizedEndTime != normalizedOriginalEnd ||
+            sanitizeString(notes) != sanitizeString(originalNotes) ||
+            sanitizeString(category) != sanitizeString(originalCategory) ||
+            selectedIcon != originalIcon
+        )
     }
     
     // MARK: - Duration Methods
@@ -108,16 +127,22 @@ final class TimeBlockFormData {
         endTime = Calendar.current.date(byAdding: .minute, value: minutes, to: startTime) ?? startTime
     }
     
+    private func sanitizeString(_ input: String) -> String {
+        return input
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+    }
+    
     // MARK: - Data Preparation Methods
     func prepareForSave() -> (title: String, notes: String?, category: String?) {
-        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedCategory = category.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sanitizedTitle = sanitizeString(title)
+        let sanitizedNotes = sanitizeString(notes)
+        let sanitizedCategory = sanitizeString(category)
         
         return (
-            title: trimmedTitle,
-            notes: trimmedNotes.isEmpty ? nil : trimmedNotes,
-            category: trimmedCategory.isEmpty ? nil : trimmedCategory
+            title: sanitizedTitle,
+            notes: sanitizedNotes.isEmpty ? nil : sanitizedNotes,
+            category: sanitizedCategory.isEmpty ? nil : sanitizedCategory
         )
     }
 }
