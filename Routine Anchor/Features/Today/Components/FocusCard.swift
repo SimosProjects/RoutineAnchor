@@ -42,7 +42,7 @@ struct FocusCard: View {
                     Spacer()
                     
                     // Time indicator
-                    if let currentBlock = currentBlock,
+                    if currentBlock != nil,
                        let remainingTime = viewModel.remainingTimeForCurrentBlock() {
                         TimeIndicator(
                             timeText: remainingTime,

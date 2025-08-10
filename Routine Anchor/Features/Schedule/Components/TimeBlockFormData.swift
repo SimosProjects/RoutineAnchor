@@ -78,10 +78,6 @@ final class TimeBlockFormData {
         // Get calendar with current timezone
         let calendar = Calendar.current
         
-        // Time validation with timezone awareness
-        let startComponents = calendar.dateComponents(in: calendar.timeZone, from: startTime)
-        let endComponents = calendar.dateComponents(in: calendar.timeZone, from: endTime)
-        
         // Check if spans multiple days
         if !calendar.isDate(startTime, inSameDayAs: endTime) {
             validationErrors.append("Time blocks cannot span multiple days")
