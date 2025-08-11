@@ -65,6 +65,9 @@ struct SupportInfoSection: View {
                         onRateApp()
                         
                         // Reset after delay
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            animateRating = false
+                        }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                             withAnimation {
                                 showThankYou = false
@@ -72,7 +75,7 @@ struct SupportInfoSection: View {
                         }
                     }
                 )
-                .scaleEffect(animateRating ? 1.05 : 1.0)
+                .scaleEffect(animateRating ? 1.1 : 1.0)
                 .animation(.spring(response: 0.5, dampingFraction: 0.6), value: animateRating)
                 .onChange(of: animateRating) { _, newValue in
                     if newValue {

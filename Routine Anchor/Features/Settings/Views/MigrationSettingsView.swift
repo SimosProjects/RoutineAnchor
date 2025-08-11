@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct MigrationSettingsView: View {
-    @EnvironmentObject var migrationService: MigrationService
     @Environment(\.dismiss) private var dismiss
     
     // MARK: - State
@@ -16,6 +15,7 @@ struct MigrationSettingsView: View {
     @State private var showingBackupInfo = false
     @State private var showingExportSheet = false
     @State private var exportedData: String?
+    private let migrationService = MigrationService.shared
     
     var body: some View {
         NavigationStack {
@@ -361,4 +361,14 @@ struct BackupInfoSheet: View {
         .padding(20)
         .glassMorphism()
     }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

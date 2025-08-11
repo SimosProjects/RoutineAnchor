@@ -76,18 +76,28 @@ struct DataManagementSection: View {
                     color: Color.premiumError,
                     action: {
                         HapticManager.shared.warning()
+                        showingDeleteConfirmation = true
+                    }
+                )
+                .scaleEffect(deleteButtonScale)
+                .confirmationDialog(
+                    "Delete All Data",
+                    isPresented: $showingDeleteConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button("Delete Everything", role: .destructive) {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             deleteButtonScale = 0.95
                         }
-                        showingDeleteConfirmation = true
-                        
+                        onDeleteAllData()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                             deleteButtonScale = 1.0
                         }
                     }
-                )
-                .scaleEffect(deleteButtonScale)
-                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: deleteButtonScale)
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("This will permanently delete all your routines, time blocks, and progress data. This action cannot be undone.")
+                }
             }
         }
         .confirmationDialog(
@@ -107,45 +117,31 @@ struct DataManagementSection: View {
     
     // MARK: - Data Storage Info
     private var dataStorageInfo: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "lock.shield.fill")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.premiumPurple)
-                
-                Text("Your Data is Secure")
-                    .font(.system(size: 13, weight: .semibold))
+        HStack(spacing: 12) {
+            Image(systemName: "internaldrive")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color.premiumBlue.opacity(0.8))
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Local Storage Only")
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Color.premiumTextPrimary)
+                
+                Text("All data is stored securely on your device")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(Color.premiumTextSecondary)
             }
             
-            VStack(alignment: .leading, spacing: 8) {
-                DataPoint(
-                    icon: "iphone",
-                    text: "All data stored locally on device",
-                    color: Color.premiumBlue
-                )
-                
-                DataPoint(
-                    icon: "wifi.slash",
-                    text: "No cloud sync or external servers",
-                    color: Color.premiumGreen
-                )
-                
-                DataPoint(
-                    icon: "person.crop.circle.badge.xmark",
-                    text: "We never collect personal data",
-                    color: Color.premiumPurple
-                )
-            }
+            Spacer()
         }
-        .padding(16)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.premiumPurple.opacity(0.1))
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.premiumBlue.opacity(0.1))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.premiumPurple.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.premiumBlue.opacity(0.2), lineWidth: 1)
         )
     }
 }

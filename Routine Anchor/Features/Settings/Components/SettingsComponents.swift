@@ -112,12 +112,6 @@ struct SettingsToggle: View {
             Toggle("", isOn: $isOn)
                 .toggleStyle(PremiumToggleStyle())
         }
-        .onTapGesture {
-            HapticManager.shared.lightImpact()
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                isOn.toggle()
-            }
-        }
     }
 }
 
@@ -134,7 +128,7 @@ struct PremiumToggleStyle: ToggleStyle {
                     Circle()
                         .fill(.white)
                         .frame(width: 22, height: 22)
-                        .offset(x: configuration.isOn ? 9 : -9)
+                        .offset(x: configuration.isOn ? 9 : -9)  // Single offset calculation
                         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isOn)
                 )
                 .onTapGesture {

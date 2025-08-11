@@ -60,7 +60,7 @@ struct AppPreferencesSection: View {
                         showingResetConfirmation = true
                     }
                 )
-                .scaleEffect(animateReset ? 0.98 : 1.0)
+                .scaleEffect(animateReset ? 1.05 : 1.0)
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: animateReset)
                 
                 // Additional preferences info
@@ -78,7 +78,8 @@ struct AppPreferencesSection: View {
                 }
                 onResetProgress()
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                // Reset animation after delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     animateReset = false
                 }
             }

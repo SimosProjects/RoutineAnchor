@@ -4,7 +4,6 @@
 //
 //  Import data view for Settings
 //
-
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
@@ -51,7 +50,7 @@ struct ImportDataView: View {
                 allowedContentTypes: [.json, .commaSeparatedText],
                 allowsMultipleSelection: false
             ) { result in
-                handleFileSelection(result)
+                handleFileImport(result: result)
             }
             .alert("Import Complete", isPresented: $showingSuccessAlert, presenting: importResult) { result in
                 Button("OK") {
@@ -70,6 +69,7 @@ struct ImportDataView: View {
                 Text(errorMessage ?? "")
             }
         }
+        
     }
     
     // MARK: - Header Section
@@ -206,7 +206,7 @@ struct ImportDataView: View {
                     .foregroundStyle(Color.white.opacity(0.9))
             }
             
-            Text("• Imported time blocks will be added to your existing schedule\n• Duplicate entries will be skipped automatically\n• Make sure the file was exported from Routine Anchor")
+            Text("• Imported time blocks will be added to your existing schedule\n• Duplicate entries will be skipped automatically\n• Make sure the file is in a supported format (JSON or CSV)")
                 .font(.system(size: 12, weight: .regular))
                 .foregroundStyle(Color.white.opacity(0.6))
                 .lineSpacing(2)
@@ -224,45 +224,50 @@ struct ImportDataView: View {
     
     // MARK: - Helper Methods
     
-    private func handleFileSelection(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            guard let fileURL = urls.first else { return }
-            performImport(from: fileURL)
-        case .failure(let error):
-            errorMessage = "Failed to select file: \(error.localizedDescription)"
-        }
-    }
-    
-    private func performImport(from fileURL: URL) {
-        isImporting = true
-        
-        Task {
+    private func handleFileImport(result: Result<[URL], Error>) {
+        Task { @MainActor in
             do {
-                let result = try await importService.importData(
+                let urls = try result.get()
+                guard let fileURL = urls.first else {
+                    errorMessage = "No file selected"
+                    return
+                }
+                
+                isImporting = true
+                
+                // Use the existing importService.importData method
+                let importResult = try await importService.importData(
                     from: fileURL,
                     modelContext: modelContext
                 )
                 
-                await MainActor.run {
-                    isImporting = false
-                    importResult = result
-                    
-                    if result.isSuccess {
-                        HapticManager.shared.premiumSuccess()
-                        showingSuccessAlert = true
-                    } else if !result.errors.isEmpty {
-                        HapticManager.shared.premiumError()
-                        errorMessage = result.errors.first?.localizedDescription ?? "Import failed"
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    isImporting = false
-                    errorMessage = error.localizedDescription
+                self.importResult = importResult
+                
+                if importResult.isSuccess {
+                    HapticManager.shared.premiumSuccess()
+                    showingSuccessAlert = true
+                } else if !importResult.errors.isEmpty {
                     HapticManager.shared.premiumError()
+                    // Show all errors, not just the first one
+                    errorMessage = importResult.errors
+                        .map { $0.localizedDescription }
+                        .joined(separator: "\n")
+                } else {
+                    // No data imported and no errors means empty file
+                    errorMessage = "No valid data found in the file"
                 }
+                
+            } catch let error as ImportError {
+                // Handle specific import errors
+                errorMessage = error.localizedDescription
+                HapticManager.shared.premiumError()
+            } catch {
+                // Handle general errors (file access, etc.)
+                errorMessage = "Failed to import: \(error.localizedDescription)"
+                HapticManager.shared.premiumError()
             }
+            
+            isImporting = false
         }
     }
 }

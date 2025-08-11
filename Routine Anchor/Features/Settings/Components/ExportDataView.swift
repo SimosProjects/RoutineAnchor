@@ -267,11 +267,22 @@ struct ExportDataView: View {
         }
     }
     
+    private func fileExtensionForFormat(_ format: ExportService.ExportFormat) -> String {
+        switch format {
+        case .json:
+            return "json"
+        case .csv:
+            return "csv"
+        case .text:
+            return "txt"
+        }
+    }
+    
     private func performExport() {
         isExporting = true
         HapticManager.shared.lightImpact()
         
-        Task {
+        Task { @MainActor in
             do {
                 let exportData: Data
                 
@@ -298,24 +309,22 @@ struct ExportDataView: View {
                 }
                 
                 // Create file
-                let fileName = "routine-anchor-export-\(DateFormatter.exportFileDateFormatter.string(from: Date())).\(selectedFormat.fileExtension)"
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd-HHmmss"
+                let fileName = "routine-anchor-export-\(dateFormatter.string(from: Date())).\(fileExtensionForFormat(selectedFormat))"
                 let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
                 
                 try exportData.write(to: tempURL)
                 
-                await MainActor.run {
-                    self.exportedFileURL = tempURL
-                    self.isExporting = false
-                    self.showingShareSheet = true
-                    HapticManager.shared.success()
-                }
+                self.exportedFileURL = tempURL
+                self.isExporting = false
+                self.showingShareSheet = true
+                HapticManager.shared.premiumSuccess()
                 
             } catch {
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                    self.isExporting = false
-                    HapticManager.shared.error()
-                }
+                self.errorMessage = error.localizedDescription
+                self.isExporting = false
+                HapticManager.shared.premiumError()
             }
         }
     }
@@ -358,18 +367,6 @@ struct ToggleOption: View {
                 .fill(Color.white.opacity(0.08))
         )
     }
-}
-
-// MARK: - Share Sheet
-
-struct ShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Preview
