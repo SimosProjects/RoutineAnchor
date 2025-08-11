@@ -90,35 +90,44 @@ final class SettingsViewModel {
         }
     }
     
+    /// Clean up resources when view disappears
     func cleanup() {
-        // Cancel any running timers or tasks
-        midnightTimer?.invalidate()
-        midnightTimer = nil
+        // Cancel any pending message timer
         messageTimerTask?.cancel()
         messageTimerTask = nil
+        
+        // Invalidate midnight timer
+        midnightTimer?.invalidate()
+        midnightTimer = nil
     }
     
     // MARK: - Auto-Reset Methods
     
     /// Schedule auto-reset at midnight
     private func scheduleAutoReset() {
-        Task {
-            await notificationService.scheduleMidnightReset()
-        }
+        // Cancel existing timer first
+        midnightTimer?.invalidate()
         
-        // Also set up a timer to check for midnight
-        scheduleMidnightTimer()
+        // Calculate time until midnight
+        let calendar = Calendar.current
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: Date())!
+        let midnight = calendar.startOfDay(for: tomorrow)
+        let timeInterval = midnight.timeIntervalSince(Date())
+        
+        // Schedule timer
+        midnightTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: false) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.checkForMidnightReset()
+                // Reschedule for next midnight
+                self?.scheduleAutoReset()
+            }
+        }
     }
     
     /// Cancel auto-reset
     private func cancelAutoReset() {
-        // Remove midnight reset notification
-        Task {
-            notificationService.removeMidnightReset()
-        }
-        
-        // Cancel the timer
-        cancelMidnightTimer()
+        midnightTimer?.invalidate()
+        midnightTimer = nil
     }
     
     // MARK: - Midnight Timer for Auto-Reset
@@ -459,16 +468,15 @@ final class SettingsViewModel {
     
     /// Clear success and error messages after delay
     private func clearMessages() {
-        // Cancel any existing timer task
+        // Cancel existing timer task
         messageTimerTask?.cancel()
         
-        // Create new timer task
-        messageTimerTask = Task {
+        messageTimerTask = Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
             
             if !Task.isCancelled {
-                successMessage = nil
-                errorMessage = nil
+                self?.successMessage = nil
+                self?.errorMessage = nil
             }
         }
     }

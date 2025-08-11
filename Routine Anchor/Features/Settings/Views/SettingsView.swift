@@ -15,6 +15,7 @@ struct SettingsView: View {
     // MARK: - State
     @State private var viewModel: SettingsViewModel?
     @State private var animationPhase = 0
+    @State private var animationTask: Task<Void, Never>?
     
     // MARK: - Settings State
     @State private var notificationsEnabled = true
@@ -117,6 +118,8 @@ struct SettingsView: View {
         }
         .onDisappear {
             viewModel?.cleanup()
+            animationTask?.cancel()
+            animationTask = nil
         }
         .onChange(of: notificationsEnabled) { _, newValue in
             viewModel?.notificationsEnabled = newValue
@@ -205,38 +208,43 @@ struct SettingsView: View {
         startAnimations()
     }
     
+    @MainActor
     private func setupViewModel() async {
-        if viewModel == nil {
-            let dataManager = DataManager(modelContext: modelContext)
-            viewModel = SettingsViewModel(dataManager: dataManager)
+        guard viewModel == nil else { return }
+        
+        let dataManager = DataManager(modelContext: modelContext)
+        let newViewModel = SettingsViewModel(dataManager: dataManager)
+        
+        // Ensure ViewModel is properly initialized
+        viewModel = newViewModel
+        
+        // Verify critical properties are accessible
+        guard viewModel != nil else {
+            print("Error: SettingsViewModel initialization failed")
+            return
         }
     }
     
     private func loadSettings() {
-        // Load settings from viewModel if available, otherwise use defaults
-        if let viewModel = viewModel {
-            notificationsEnabled = viewModel.notificationsEnabled
-            notificationSound = viewModel.notificationSound
-            hapticsEnabled = viewModel.hapticsEnabled
-            autoResetEnabled = viewModel.autoResetEnabled
-            dailyReminderTime = viewModel.dailyReminderTime
-        } else {
-            // Fallback to UserDefaults
-            notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
-            notificationSound = UserDefaults.standard.string(forKey: "notificationSound") ?? "Default"
-            hapticsEnabled = HapticManager.shared.isHapticsEnabled
-            autoResetEnabled = UserDefaults.standard.bool(forKey: "autoResetEnabled")
-            
-            if let reminderData = UserDefaults.standard.object(forKey: "dailyReminderTime") as? Data,
-               let reminderTime = try? JSONDecoder().decode(Date.self, from: reminderData) {
-                dailyReminderTime = reminderTime
-            }
-        }
+        // Load settings from viewModel only - remove UserDefaults fallback
+        guard let viewModel = viewModel else { return }
+        
+        notificationsEnabled = viewModel.notificationsEnabled
+        notificationSound = viewModel.notificationSound
+        hapticsEnabled = viewModel.hapticsEnabled
+        autoResetEnabled = viewModel.autoResetEnabled
+        dailyReminderTime = viewModel.dailyReminderTime
     }
     
     private func startAnimations() {
-        withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-            animationPhase = 1
+        animationTask?.cancel()
+        animationTask = Task { @MainActor in
+            while !Task.isCancelled {
+                withAnimation(.easeInOut(duration: 2)) {
+                    animationPhase = animationPhase == 0 ? 1 : 0
+                }
+                try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+            }
         }
     }
     
