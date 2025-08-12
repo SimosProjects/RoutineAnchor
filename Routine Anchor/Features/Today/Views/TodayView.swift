@@ -8,6 +8,8 @@ import SwiftData
 struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var viewModel: TodayViewModel
+    @State private var refreshTask: Task<Void, Never>?
+    @State private var animationTask: Task<Void, Never>?
     
     // MARK: - State
     @State private var showingSettings = false
@@ -90,11 +92,15 @@ struct TodayView: View {
             NavigationStack {
                 SettingsView()
             }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingSummary) {
             NavigationStack {
                 DailySummaryView(modelContext: modelContext)
             }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .onReceive(NotificationCenter.default.publisher(for: .timeBlockCompleted)) { notification in
             handleTimeBlockCompletion(notification)

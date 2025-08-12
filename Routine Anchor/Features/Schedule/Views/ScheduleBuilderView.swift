@@ -9,6 +9,7 @@ struct ScheduleBuilderView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: ScheduleBuilderViewModel?
+    @State private var animationTask: Task<Void, Never>?
     
     // MARK: - State
     @State private var showingAddBlock = false
@@ -53,15 +54,21 @@ struct ScheduleBuilderView: View {
                 viewModel?.loadTimeBlocks()
             }
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             setupViewModel()
-            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                animationPhase = 1
+            animationTask = Task { @MainActor in
+                while !Task.isCancelled {
+                    withAnimation(.easeInOut(duration: 2)) {
+                        animationPhase = 1
+                    }
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                }
             }
         }
         .onDisappear {
-            // Clean up animation
+            animationTask?.cancel()
+            animationTask = nil
             animationPhase = 0
         }
         .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlockFromTab)) { _ in
@@ -80,12 +87,16 @@ struct ScheduleBuilderView: View {
                     category: category
                 )
             }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingEditBlock) {
             if let block = selectedBlock {
                 EditTimeBlockView(timeBlock: block) { updatedBlock in
                     viewModel?.updateTimeBlock(updatedBlock)
                 }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlock)) { _ in

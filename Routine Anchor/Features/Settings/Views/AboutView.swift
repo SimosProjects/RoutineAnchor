@@ -10,7 +10,7 @@ import SwiftUI
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var animationPhase = 0
-    // REMOVED: @State private var particleSystem = ParticleSystem()
+    @State private var animationTask: Task<Void, Never>?
     @State private var showingAcknowledgments = false
     
     var body: some View {
@@ -50,15 +50,25 @@ struct AboutView: View {
                 .padding(.top, 20)
             }
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
-            // REMOVED: particleSystem.startEmitting()
-            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                animationPhase = 1  // CHANGED: Set to 1 instead of += 1
+            animationTask = Task { @MainActor in
+                while !Task.isCancelled {
+                    withAnimation(.easeInOut(duration: 2)) {
+                        animationPhase = 1
+                    }
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                }
             }
+        }
+        .onDisappear() {
+            animationTask?.cancel()
+            animationTask = nil
         }
         .sheet(isPresented: $showingAcknowledgments) {
             AcknowledgmentsView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
     

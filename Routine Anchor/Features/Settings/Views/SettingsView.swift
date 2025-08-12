@@ -112,12 +112,11 @@ struct SettingsView: View {
                 .padding(.top, 20)
             }
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .task {
             await setupInitialState()
         }
         .onDisappear {
-            viewModel?.cleanup()
             animationTask?.cancel()
             animationTask = nil
         }
@@ -137,19 +136,37 @@ struct SettingsView: View {
             viewModel?.autoResetEnabled = newValue
         }
         .sheet(isPresented: $showingPrivacyPolicy) {
-            PrivacyPolicyView()
+            NavigationStack {
+                PrivacyPolicyView()
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingAbout) {
-            AboutView()
+            NavigationStack {
+                AboutView()
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingHelp) {
-            HelpView()
+            NavigationStack {
+                HelpView()
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingExportData) {
             ExportDataView()
+                .modelContainer(modelContext.container)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingImportView) {
             ImportDataView()
+                .modelContainer(modelContext.container)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .overlay(alignment: .top) {
             // Success/Error message overlay
@@ -243,12 +260,11 @@ struct SettingsView: View {
                 withAnimation(.easeInOut(duration: 2)) {
                     animationPhase = animationPhase == 0 ? 1 : 0
                 }
-                try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
             }
         }
     }
     
-    // Remove the old update functions since they're now handled by the viewModel
     private func rateApp() {
         viewModel?.rateApp()
     }

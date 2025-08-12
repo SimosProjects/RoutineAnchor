@@ -10,18 +10,17 @@ import SwiftUI
 struct HelpView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var animationPhase = 0
-    // REMOVED: @State private var particleSystem = ParticleSystem()
     @State private var searchText = ""
+    @State private var animationTask: Task<Void, Never>?
     @State private var selectedCategory: HelpCategory = .gettingStarted
     
     var body: some View {
         ZStack {
-            // Premium animated background
             AnimatedGradientBackground()
             AnimatedMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)
-            // CHANGED: Now using self-contained ParticleEffectView
+
             ParticleEffectView()
                 .allowsHitTesting(false)
             
@@ -48,12 +47,20 @@ struct HelpView: View {
                 .background(Color.clear)
             }
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
-            // REMOVED: particleSystem.startEmitting()
-            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                animationPhase = 1  // CHANGED: Set to 1 instead of += 1
-            }
+            animationTask = Task { @MainActor in
+                 while !Task.isCancelled {
+                     withAnimation(.easeInOut(duration: 2)) {
+                         animationPhase = 1
+                     }
+                     try? await Task.sleep(nanoseconds: 2_000_000_000)
+                 }
+             }
+        }
+        .onDisappear {
+            animationTask?.cancel()
+            animationTask = nil
         }
     }
     
