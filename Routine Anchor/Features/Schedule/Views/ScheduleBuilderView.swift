@@ -9,7 +9,6 @@ struct ScheduleBuilderView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: ScheduleBuilderViewModel?
-    @State private var animationTask: Task<Void, Never>?
     
     // MARK: - State
     @State private var showingAddBlock = false
@@ -18,19 +17,40 @@ struct ScheduleBuilderView: View {
     @State private var showingDeleteConfirmation = false
     @State private var blockToDelete: TimeBlock?
     @State private var showingQuickAdd = false
-    @State private var animationPhase = 0
     
     var body: some View {
         ZStack {
-            // Premium animated background
-            AnimatedGradientBackground()
+            // Premium animated background - Made static to prevent scroll issues
+            LinearGradient(
+                colors: [
+                    Color(red: 0.05, green: 0.05, blue: 0.15),
+                    Color(red: 0.08, green: 0.05, blue: 0.2),
+                    Color(red: 0.05, green: 0.08, blue: 0.25)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            .overlay(
+                RadialGradient(
+                    colors: [
+                        Color(red: 0.2, green: 0.3, blue: 0.8).opacity(0.3),
+                        Color.clear
+                    ],
+                    center: .top,
+                    startRadius: 100,
+                    endRadius: 400
+                )
                 .ignoresSafeArea()
+            )
             
-            AnimatedMeshBackground()
+            // Static mesh background
+            StaticMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)
             
-            ParticleEffectView()
+            // Static particles
+            StaticParticles()
                 .allowsHitTesting(false)
             
             ScrollView(showsIndicators: false) {
@@ -57,25 +77,15 @@ struct ScheduleBuilderView: View {
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             setupViewModel()
-            animationTask = Task { @MainActor in
-                while !Task.isCancelled {
-                    withAnimation(.easeInOut(duration: 2)) {
-                        animationPhase = 1
-                    }
-                    try? await Task.sleep(nanoseconds: 2_000_000_000)
-                }
-            }
-        }
-        .onDisappear {
-            animationTask?.cancel()
-            animationTask = nil
-            animationPhase = 0
         }
         .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlockFromTab)) { _ in
             showingAddBlock = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshScheduleView)) { _ in
             viewModel?.loadTimeBlocks()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlock)) { _ in
+            showingAddBlock = true
         }
         .sheet(isPresented: $showingAddBlock) {
             PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
@@ -99,13 +109,6 @@ struct ScheduleBuilderView: View {
                 .presentationDragIndicator(.visible)
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlock)) { _ in
-            showingAddBlock = true
-        }
-        .onDisappear {
-            // Clean up notifications if needed
-            NotificationCenter.default.removeObserver(self)
-        }
         .confirmationDialog(
             "Delete Time Block",
             isPresented: $showingDeleteConfirmation,
@@ -121,9 +124,6 @@ struct ScheduleBuilderView: View {
         }
         .actionSheet(isPresented: $showingQuickAdd) {
             quickAddActionSheet
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlock)) { _ in
-            showingAddBlock = true
         }
     }
     
@@ -191,12 +191,11 @@ struct ScheduleBuilderView: View {
             }
             .padding(.horizontal, 24)
             
-            // Time blocks list
-            LazyVStack(spacing: 12) {
+            // Time blocks list - Using custom non-animated rows
+            VStack(spacing: 12) {
                 ForEach(viewModel.sortedTimeBlocks) { timeBlock in
-                    TimeBlockRowView(
+                    SimpleTimeBlockRow(
                         timeBlock: timeBlock,
-                        showActions: true,
                         onEdit: {
                             selectedBlock = timeBlock
                             showingEditBlock = true
@@ -206,10 +205,6 @@ struct ScheduleBuilderView: View {
                             showingDeleteConfirmation = true
                         }
                     )
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    ))
                 }
             }
             .padding(.horizontal, 24)
@@ -259,40 +254,31 @@ struct ScheduleBuilderView: View {
             
             // Illustration
             ZStack {
-                // Floating particles
-                FloatingParticlesView()
-                    .opacity(0.6)
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color.premiumBlue.opacity(0.4),
+                                Color.premiumPurple.opacity(0.2),
+                                Color.clear
+                            ],
+                            center: .center,
+                            startRadius: 50,
+                            endRadius: 150
+                        )
+                    )
+                    .frame(width: 200, height: 200)
+                    .blur(radius: 30)
                 
-                // Main illustration
-                VStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                RadialGradient(
-                                    colors: [
-                                        Color.premiumBlue.opacity(0.4),
-                                        Color.premiumPurple.opacity(0.2),
-                                        Color.clear
-                                    ],
-                                    center: .center,
-                                    startRadius: 50,
-                                    endRadius: 150
-                                )
-                            )
-                            .frame(width: 200, height: 200)
-                            .blur(radius: 30)
-                        
-                        Image(systemName: "plus.circle")
-                            .font(.system(size: 80, weight: .thin))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.premiumBlue, Color.premiumPurple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
-                }
+                Image(systemName: "plus.circle")
+                    .font(.system(size: 80, weight: .thin))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
             }
             .frame(height: 200)
             
@@ -349,22 +335,9 @@ struct ScheduleBuilderView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            // Loading animation
-            ZStack {
-                ForEach(0..<3) { index in
-                    Circle()
-                        .fill(Color.premiumPurple.opacity(0.3))
-                        .frame(width: 12, height: 12)
-                        .scaleEffect(animationPhase == 0 ? 0.8 : 1.2)
-                        .animation(
-                            .easeInOut(duration: 0.8)
-                            .repeatForever(autoreverses: true)
-                            .delay(Double(index) * 0.2),
-                            value: animationPhase
-                        )
-                        .offset(x: CGFloat(index - 1) * 20)
-                }
-            }
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: Color.premiumBlue))
+                .scaleEffect(1.5)
             
             Text("Setting up your schedule...")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
@@ -412,6 +385,160 @@ struct ScheduleBuilderView: View {
         viewModel?.saveRoutine()
         HapticManager.shared.premiumSuccess()
         dismiss()
+    }
+}
+
+// MARK: - Simple Time Block Row (No Animations)
+struct SimpleTimeBlockRow: View {
+    let timeBlock: TimeBlock
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+    
+    @State private var isPressed = false
+    
+    private var accentColors: [Color] {
+        switch timeBlock.status {
+        case .notStarted:
+            return [Color.premiumPurple, Color.premiumBlue]
+        case .inProgress:
+            return [Color.premiumBlue, Color.premiumTeal]
+        case .completed:
+            return [Color.premiumGreen, Color.premiumTeal]
+        case .skipped:
+            return [Color.premiumError, Color.premiumWarning]
+        }
+    }
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            // Left accent bar
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: accentColors,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 5)
+            
+            HStack(spacing: 16) {
+                // Time badge
+                VStack(spacing: 2) {
+                    Text(timeBlock.startTime.formatted(date: .omitted, time: .shortened))
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    Text(timeBlock.formattedDuration)
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .foregroundStyle(Color.white.opacity(0.6))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white.opacity(0.1))
+                )
+                
+                // Title and notes
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(timeBlock.title)
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    if let notes = timeBlock.notes, !notes.isEmpty {
+                        Text(notes)
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundStyle(Color.white.opacity(0.6))
+                            .lineLimit(1)
+                    }
+                }
+                
+                Spacer()
+                
+                // Action buttons
+                HStack(spacing: 8) {
+                    Button(action: onEdit) {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Color.premiumBlue)
+                            .frame(width: 32, height: 32)
+                            .background(Color.premiumBlue.opacity(0.15))
+                            .cornerRadius(8)
+                    }
+                    
+                    Button(action: onDelete) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Color.premiumError)
+                            .frame(width: 32, height: 32)
+                            .background(Color.premiumError.opacity(0.15))
+                            .cornerRadius(8)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+        )
+        .scaleEffect(isPressed ? 0.97 : 1.0)
+        .onTapGesture {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                isPressed = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    isPressed = false
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Static Background Components
+
+struct StaticMeshBackground: View {
+    var body: some View {
+        Canvas { context, size in
+            let gridSize = 30
+            let dotSize: CGFloat = 2
+            
+            for x in stride(from: 0, to: Int(size.width), by: gridSize) {
+                for y in stride(from: 0, to: Int(size.height), by: gridSize) {
+                    let xPos = CGFloat(x)
+                    let yPos = CGFloat(y)
+                    
+                    context.fill(
+                        Path(ellipseIn: CGRect(x: xPos - dotSize/2, y: yPos - dotSize/2, width: dotSize, height: dotSize)),
+                        with: .color(.white.opacity(0.05))
+                    )
+                }
+            }
+        }
+    }
+}
+
+struct StaticParticles: View {
+    var body: some View {
+        GeometryReader { geometry in
+            ForEach(0..<10, id: \.self) { index in
+                Circle()
+                    .fill(Color.blue.opacity(0.1))
+                    .frame(width: 4, height: 4)
+                    .position(
+                        x: CGFloat(20 + index * 40).truncatingRemainder(dividingBy: geometry.size.width),
+                        y: CGFloat(30 + index * 60).truncatingRemainder(dividingBy: geometry.size.height)
+                    )
+                    .blur(radius: 1)
+            }
+        }
     }
 }
 
