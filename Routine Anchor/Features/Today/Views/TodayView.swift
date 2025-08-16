@@ -8,10 +8,12 @@ import SwiftData
 struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var viewModel: TodayViewModel
+    @State private var dataManager: DataManager
     @State private var refreshTask: Task<Void, Never>?
     @State private var animationTask: Task<Void, Never>?
     
     // MARK: - State
+    @State private var showingAddBlock = false
     @State private var showingSettings = false
     @State private var showingSummary = false
     @State private var showingQuickStats = false
@@ -27,6 +29,7 @@ struct TodayView: View {
     
     init(modelContext: ModelContext) {
         let dataManager = DataManager(modelContext: modelContext)
+        self.dataManager = dataManager
         self.viewModel = TodayViewModel(dataManager: dataManager)
     }
     
@@ -101,6 +104,44 @@ struct TodayView: View {
             }
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingAddBlock) {
+            PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
+                // Create the time block directly using modelContext
+                let newBlock = TimeBlock(
+                    title: title,
+                    startTime: startTime,
+                    endTime: endTime,
+                    notes: notes,
+                    category: category
+                )
+                
+                do {
+                    try dataManager.createTimeBlock(newBlock)
+                    
+                    // The notification observer in viewModel will automatically refresh
+                    HapticManager.shared.success()
+                } catch {
+                    print("Failed to save time block: \(error)")
+                    HapticManager.shared.error()
+                }
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingQuickStats) {
+            NavigationStack {
+                QuickStatsView(viewModel: viewModel)
+            }
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+        }
+        // SINGLE onReceive for showAddTimeBlockFromTab
+        .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlockFromTab)) { _ in
+            showingAddBlock = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showQuickStats)) { _ in
+            showingQuickStats = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .timeBlockCompleted)) { notification in
             handleTimeBlockCompletion(notification)

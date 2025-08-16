@@ -19,6 +19,11 @@ struct RoutineAnchorApp: App {
     // MARK: - App Delegate
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
+    init() {
+        // Handle UI test reset flags
+        handleUITestReset()
+    }
+    
     // MARK: - Body
     var body: some Scene {
         WindowGroup {
@@ -55,6 +60,94 @@ struct RoutineAnchorApp: App {
                 }
             }
         }
+    }
+    
+    // MARK: - UI Test Support
+    
+    /// Handle UI test launch arguments and environment variables
+    private func handleUITestReset() {
+        #if DEBUG
+        // Check if we're in UI test mode
+        let isUITesting = ProcessInfo.processInfo.arguments.contains("--uitesting") ||
+                         ProcessInfo.processInfo.environment["UITEST_MODE"] == "1"
+        
+        guard isUITesting else { return }
+        
+        print("🧪 UI Test Mode Detected")
+        
+        // Check for reset flags
+        let shouldResetOnboarding = ProcessInfo.processInfo.arguments.contains("--reset-onboarding") ||
+                                   ProcessInfo.processInfo.environment["RESET_ONBOARDING"] == "1"
+        
+        let shouldResetState = ProcessInfo.processInfo.arguments.contains("--reset-state") ||
+                              ProcessInfo.processInfo.environment["CLEAR_USER_DEFAULTS"] == "1"
+        
+        if shouldResetOnboarding || shouldResetState {
+            resetOnboardingState()
+        }
+        
+        if shouldResetState {
+            clearAllUserDefaults()
+            clearSwiftDataIfNeeded()
+        }
+        
+        // Disable animations for UI tests
+        if ProcessInfo.processInfo.arguments.contains("--disable-animations") ||
+           ProcessInfo.processInfo.environment["DISABLE_ANIMATIONS"] == "1" {
+            UIView.setAnimationsEnabled(false)
+            print("✅ UI Test: Animations disabled")
+        }
+        #endif
+    }
+    
+    /// Reset onboarding-related UserDefaults
+    private func resetOnboardingState() {
+        #if DEBUG
+        UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+        UserDefaults.standard.removeObject(forKey: "onboardingCompletedAt")
+        UserDefaults.standard.removeObject(forKey: "notificationsEnabled")
+        UserDefaults.standard.removeObject(forKey: "notificationSound")
+        UserDefaults.standard.removeObject(forKey: "hapticsEnabled")
+        UserDefaults.standard.removeObject(forKey: "autoResetEnabled")
+        UserDefaults.standard.removeObject(forKey: "dailyReminderTime")
+        UserDefaults.standard.synchronize()
+        
+        print("✅ UI Test: Onboarding state reset")
+        #endif
+    }
+    
+    /// Clear all UserDefaults (for complete reset)
+    private func clearAllUserDefaults() {
+        #if DEBUG
+        if let bundleIdentifier = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleIdentifier)
+        }
+        
+        // Also clear standard UserDefaults
+        let defaults = UserDefaults.standard
+        let dictionary = defaults.dictionaryRepresentation()
+        dictionary.keys.forEach { key in
+            defaults.removeObject(forKey: key)
+        }
+        
+        defaults.synchronize()
+        print("✅ UI Test: All UserDefaults cleared")
+        #endif
+    }
+    
+    /// Clear SwiftData store if needed
+    private func clearSwiftDataIfNeeded() {
+        #if DEBUG
+        // Get the URL for the SwiftData store
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory,
+                                                  in: .userDomainMask).first!
+        let storeURL = appSupport.appendingPathComponent("default.store")
+        
+        // Remove the store file if it exists
+        try? FileManager.default.removeItem(at: storeURL)
+        
+        print("✅ UI Test: SwiftData store cleared")
+        #endif
     }
     
     // MARK: - Initialization

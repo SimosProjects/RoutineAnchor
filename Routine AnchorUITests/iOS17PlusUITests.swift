@@ -172,8 +172,6 @@ final class iOS17PlusUITests: XCTestCase {
         // Test new spring animation with bounce parameter
         let progressCard = app.otherElements["ProgressOverviewCard"]
         if progressCard.exists {
-            let initialFrame = progressCard.frame
-            
             // Trigger animation via pull to refresh
             app.scrollViews.firstMatch.swipeDown()
             
@@ -327,9 +325,6 @@ final class iOS17PlusUITests: XCTestCase {
         // This tests that scroll position is maintained during orientation changes
         
         if scrollView.exists {
-            // Get initial state
-            let initialFrame = scrollView.frame
-            
             // Perform a scroll action
             scrollView.swipeUp()
             Thread.sleep(forTimeInterval: 0.5)
@@ -348,8 +343,6 @@ final class iOS17PlusUITests: XCTestCase {
             }
             
             if let reference = referenceElement {
-                let initialPosition = reference.frame
-                
                 // Rotate device to landscape
                 XCUIDevice.shared.orientation = .landscapeLeft
                 Thread.sleep(forTimeInterval: 1)

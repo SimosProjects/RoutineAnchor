@@ -286,9 +286,9 @@ struct MainTabView: View {
     
     private func shouldShowFloatingButton(for tab: Tab) -> Bool {
         switch tab {
-        case .today, .schedule:
-            return true
-        case .summary, .settings:
+        case .today:
+            return true  // Only show on Today tab
+        case .schedule, .summary, .settings:
             return false
         }
     }

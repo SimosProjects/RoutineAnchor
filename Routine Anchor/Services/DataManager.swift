@@ -158,6 +158,18 @@ class DataManager {
         }
     }
     
+    func createTimeBlock(_ timeBlock: TimeBlock) throws {
+        // Use the existing addTimeBlock method which has validation
+        try addTimeBlock(timeBlock)
+        
+        // Post notification for observers
+        NotificationCenter.default.post(
+            name: .timeBlocksDidChange,
+            object: nil,
+            userInfo: ["date": timeBlock.startTime]
+        )
+    }
+    
     /// Update an existing time block
     func updateTimeBlock(_ timeBlock: TimeBlock) throws {
         guard timeBlock.isValid else {

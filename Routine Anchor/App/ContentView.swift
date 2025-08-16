@@ -26,11 +26,56 @@ struct ContentView: View {
     }
     
     private func checkFirstLaunch() {
+        // Handle UI test state if needed
+        #if DEBUG
+        handleUITestState()
+        #endif
+        
+        // Check if onboarding has been completed
         let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         showOnboarding = !hasCompletedOnboarding
+        
+        #if DEBUG
+        // Log the state for debugging
+        print("📱 ContentView - Onboarding completed: \(hasCompletedOnboarding), showing: \(showOnboarding)")
+        #endif
     }
+    
+    #if DEBUG
+    /// Handle UI test specific state checks
+    private func handleUITestState() {
+        // Check if we're in UI test mode
+        let isUITesting = ProcessInfo.processInfo.arguments.contains("--uitesting") ||
+                         ProcessInfo.processInfo.environment["UITEST_MODE"] == "1"
+        
+        guard isUITesting else { return }
+        
+        // Check if we should force onboarding to show
+        let shouldResetOnboarding = ProcessInfo.processInfo.arguments.contains("--reset-onboarding") ||
+                                   ProcessInfo.processInfo.environment["RESET_ONBOARDING"] == "1"
+        
+        if shouldResetOnboarding {
+            // Double-check that the reset happened
+            let hasCompleted = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+            if hasCompleted {
+                // Force reset if it didn't happen in App init
+                UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
+                UserDefaults.standard.synchronize()
+                print("⚠️ UI Test: Force resetting onboarding in ContentView")
+            } else {
+                print("✅ UI Test: Onboarding already reset")
+            }
+        }
+        
+        // Log current state for debugging
+        print("🧪 UI Test Mode Active")
+        print("   - Reset Onboarding: \(shouldResetOnboarding)")
+        print("   - Current hasCompletedOnboarding: \(UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"))")
+    }
+    #endif
 }
 
 #Preview {
     ContentView()
+        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
 }

@@ -147,10 +147,15 @@ struct TodayHeaderView: View {
                     gradient: [Color.premiumWarning, Color.premiumTeal]
                 ) {
                     HapticManager.shared.lightImpact()
-                    showingQuickStats = true
+                    // Post notification to show quick stats
+                    NotificationCenter.default.post(
+                        name: .showQuickStats,
+                        object: nil
+                    )
                 }
                 .opacity(buttonsOpacity)
                 .scaleEffect(buttonsOpacity)
+                .transition(.scale.combined(with: .opacity))
             }
         }
         .onAppear {

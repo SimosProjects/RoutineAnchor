@@ -63,7 +63,8 @@ struct TodayFloatingElements: View {
                 FloatingActionButtons(
                     viewModel: viewModel,
                     onQuickAdd: {
-                        // Navigate to quick add
+                        // This will post the notification that TodayView listens for
+                        NotificationCenter.default.post(name: .showAddTimeBlockFromTab, object: nil)
                     },
                     onStartNext: {
                         viewModel.startNextBlock()

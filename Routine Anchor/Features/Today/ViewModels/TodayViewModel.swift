@@ -213,6 +213,18 @@ final class TodayViewModel {
         return timeBlocks.filter { $0.status == .inProgress }.count
     }
     
+    var remainingBlocksCount: Int {
+        return timeBlocks.filter { block in
+            block.status == .notStarted || block.status == .inProgress
+        }.count
+    }
+    
+    var completionPercentage: Int {
+        guard !timeBlocks.isEmpty else { return 0 }
+        let completed = timeBlocks.filter { $0.status == .completed }.count
+        return Int((Double(completed) / Double(timeBlocks.count)) * 100)
+    }
+    
     var upcomingBlocksCount: Int {
         return timeBlocks.filter { $0.status == .notStarted }.count
     }
