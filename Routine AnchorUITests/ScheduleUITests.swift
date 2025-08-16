@@ -50,9 +50,8 @@ final class ScheduleUITests: XCTestCase {
         
         // Check for empty state or existing blocks
         let emptyStateTexts = [
-            "No time blocks scheduled",
-            "Start building your routine",
-            "Add your first time block"
+            "Design your perfect routine",
+            "Add Your First Block"
         ]
         
         let hasEmptyState = emptyStateTexts.contains { text in
@@ -68,7 +67,7 @@ final class ScheduleUITests: XCTestCase {
         navigateToSchedule(app: app)
         
         // Look for Add Time Block button
-        let addButton = app.buttons["Add Time Block"]
+        let addButton = app.buttons["Add Your First Block"]
         XCTAssertTrue(addButton.waitForExistence(timeout: TestConfig.defaultTimeout),
                      "Add Time Block button should be visible")
     }
@@ -79,7 +78,7 @@ final class ScheduleUITests: XCTestCase {
         navigateToSchedule(app: app)
         
         // Tap Add Time Block button
-        let addButton = app.buttons["Add Time Block"]
+        let addButton = app.buttons["Add Your First Block"]
         XCTAssertTrue(addButton.waitForExistence(timeout: TestConfig.defaultTimeout))
         addButton.tap()
         
@@ -108,7 +107,7 @@ final class ScheduleUITests: XCTestCase {
         navigateToSchedule(app: app)
         
         // Open add sheet
-        app.buttons["Add Time Block"].tap()
+        app.buttons["Add Your First Block"].tap()
         Thread.sleep(forTimeInterval: TestConfig.animationDelay)
         
         // Fill all fields
@@ -137,7 +136,7 @@ final class ScheduleUITests: XCTestCase {
         navigateToSchedule(app: app)
         
         // Open add sheet
-        app.buttons["Add Time Block"].tap()
+        app.buttons["Add Your First Block"].tap()
         Thread.sleep(forTimeInterval: TestConfig.animationDelay)
         
         // Look for Quick Duration section
@@ -542,7 +541,7 @@ final class ScheduleUITests: XCTestCase {
     
     func testCreateBlockWithMinimumDuration() {
         navigateToSchedule(app: app)
-        app.buttons["Add Time Block"].tap()
+        app.buttons["Add Your First Block"].tap()
         Thread.sleep(forTimeInterval: TestConfig.animationDelay)
         
         // Try to set very short duration (e.g., 5 minutes)
