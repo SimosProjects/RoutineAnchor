@@ -1,6 +1,6 @@
 //
 //  PremiumAddTimeBlockView.swift
-//  Routine Anchor - Premium Version (Refactored with Shared Components)
+//  Routine Anchor - Premium Version (Improved Duration Selection)
 //
 import SwiftUI
 
@@ -11,6 +11,7 @@ struct PremiumAddTimeBlockView: View {
     // MARK: - State
     @State private var showingValidationErrors = false
     @State private var isVisible = false
+    @State private var selectedDuration: Int? = nil // Track selected duration
     
     // MARK: - Callback
     let onSave: (String, Date, Date, String?, String?) -> Void
@@ -26,17 +27,14 @@ struct PremiumAddTimeBlockView: View {
                 // Basic Information Section
                 basicInfoSection
                 
-                // Time Section
-                timeSection
+                // Time Section with Quick Duration integrated
+                timeAndDurationSection
                 
                 // Organization Section
                 organizationSection
                 
                 // Icon Section
                 iconSection
-                
-                // Quick Duration Section
-                quickDurationSection
                 
                 // Action Buttons
                 actionButtons
@@ -50,8 +48,26 @@ struct PremiumAddTimeBlockView: View {
             }
         }
         .onChange(of: formData.title) { _, _ in formData.validateForm() }
-        .onChange(of: formData.startTime) { _, _ in formData.validateForm() }
-        .onChange(of: formData.endTime) { _, _ in formData.validateForm() }
+        .onChange(of: formData.startTime) { _, _ in
+            formData.validateForm()
+            // Clear selected duration if times were manually changed
+            if selectedDuration != nil {
+                let currentDuration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
+                if currentDuration != selectedDuration {
+                    selectedDuration = nil
+                }
+            }
+        }
+        .onChange(of: formData.endTime) { _, _ in
+            formData.validateForm()
+            // Clear selected duration if times were manually changed
+            if selectedDuration != nil {
+                let currentDuration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
+                if currentDuration != selectedDuration {
+                    selectedDuration = nil
+                }
+            }
+        }
         .alert("Invalid Time Block", isPresented: $showingValidationErrors) {
             Button("OK") {}
         } message: {
@@ -88,13 +104,14 @@ struct PremiumAddTimeBlockView: View {
         .offset(x: isVisible ? 0 : -20)
     }
     
-    private var timeSection: some View {
+    private var timeAndDurationSection: some View {
         PremiumFormSection(
             title: "Schedule",
             icon: "clock",
             color: Color.premiumGreen
         ) {
-            VStack(spacing: 16) {
+            VStack(spacing: 20) {
+                // Time pickers
                 HStack(spacing: 16) {
                     PremiumTimePicker(
                         title: "Start",
@@ -109,8 +126,30 @@ struct PremiumAddTimeBlockView: View {
                     )
                 }
                 
+                // Quick duration selector - RIGHT UNDER TIME PICKERS
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "timer")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Color.premiumWarning)
+                        
+                        Text("Quick Duration")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.8))
+                    }
+                    
+                    QuickDurationSelector(
+                        selectedDuration: $selectedDuration,
+                        onSelect: { minutes in
+                            selectedDuration = minutes
+                            formData.setDuration(minutes: minutes)
+                            HapticManager.shared.premiumSelection()
+                        }
+                    )
+                }
+                
+                // Duration display card
                 let duration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
-
                 DurationCard(
                     minutes: duration,
                     color: color(for: duration)
@@ -162,20 +201,6 @@ struct PremiumAddTimeBlockView: View {
         }
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : -20)
-    }
-    
-    private var quickDurationSection: some View {
-        PremiumFormSection(
-            title: "Quick Duration",
-            icon: "timer",
-            color: Color.premiumWarning
-        ) {
-            QuickDurationSelector { minutes in
-                formData.setDuration(minutes: minutes)
-            }
-        }
-        .opacity(isVisible ? 1 : 0)
-        .offset(x: isVisible ? 0 : 20)
     }
     
     private var actionButtons: some View {

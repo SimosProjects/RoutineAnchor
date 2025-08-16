@@ -16,6 +16,7 @@ struct PremiumButton: View {
     
     enum ButtonStyle {
         case primary, gradient
+        case secondary
     }
     
     var body: some View {

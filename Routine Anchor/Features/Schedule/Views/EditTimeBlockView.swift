@@ -6,47 +6,40 @@ import SwiftUI
 
 struct EditTimeBlockView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
-    
-    // MARK: - Original Data
-    let originalTimeBlock: TimeBlock
-    
-    // MARK: - Form Data
     @State private var formData: TimeBlockFormData
-    
-    // MARK: - State
     @State private var showingValidationErrors = false
-    @State private var showingDiscardAlert = false
     @State private var isVisible = false
-    @State private var viewModel: ScheduleBuilderViewModel?
+    @State private var showingDiscardConfirmation = false
+    @State private var selectedDuration: Int? = nil // Track selected duration
     
-    // MARK: - Callback
+    // MARK: - Properties
+    let originalTimeBlock: TimeBlock
     let onSave: (TimeBlock) -> Void
-
+    
     init(timeBlock: TimeBlock, onSave: @escaping (TimeBlock) -> Void) {
         self.originalTimeBlock = timeBlock
         self.onSave = onSave
-        _formData = State(initialValue: TimeBlockFormData(from: timeBlock))
+        self._formData = State(initialValue: TimeBlockFormData(from: timeBlock))
     }
     
     var body: some View {
         PremiumTimeBlockFormView(
             title: "Edit Time Block",
             icon: "pencil.circle",
-            subtitle: "Refine your schedule",
+            subtitle: "Update your schedule",
             onDismiss: handleDismiss
         ) {
             VStack(spacing: 24) {
-                // Status section (if block has been started)
-                if originalTimeBlock.status != .notStarted {
-                    statusSection
+                // Status indicator if active
+                if originalTimeBlock.status == .inProgress {
+                    activeBlockWarning
                 }
                 
                 // Basic Information Section
                 basicInfoSection
                 
-                // Time Section
-                timeSection
+                // Time Section with Quick Duration integrated
+                timeAndDurationSection
                 
                 // Organization Section
                 organizationSection
@@ -54,13 +47,8 @@ struct EditTimeBlockView: View {
                 // Icon Section
                 iconSection
                 
-                // Quick Duration Section (only if not in progress)
-                if originalTimeBlock.status != .inProgress {
-                    quickDurationSection
-                }
-                
-                // History Section (if block has history)
-                if originalTimeBlock.status != .notStarted {
+                // History Section (if applicable)
+                if originalTimeBlock.createdAt != Date.distantPast {
                     historySection
                 }
                 
@@ -72,21 +60,41 @@ struct EditTimeBlockView: View {
             formData.validateForm()
             formData.checkForChanges()
             
+            // Calculate initial duration to see if it matches a preset
+            let duration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
+            if [15, 30, 45, 60, 90, 120].contains(duration) {
+                selectedDuration = duration
+            }
+            
             withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.3)) {
                 isVisible = true
             }
         }
         .onChange(of: formData.title) { _, _ in
-            formData.checkForChanges()
             formData.validateForm()
+            formData.checkForChanges()
         }
         .onChange(of: formData.startTime) { _, _ in
-            formData.checkForChanges()
             formData.validateForm()
+            formData.checkForChanges()
+            // Clear selected duration if times were manually changed
+            if selectedDuration != nil {
+                let currentDuration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
+                if currentDuration != selectedDuration {
+                    selectedDuration = nil
+                }
+            }
         }
         .onChange(of: formData.endTime) { _, _ in
-            formData.checkForChanges()
             formData.validateForm()
+            formData.checkForChanges()
+            // Clear selected duration if times were manually changed
+            if selectedDuration != nil {
+                let currentDuration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
+                if currentDuration != selectedDuration {
+                    selectedDuration = nil
+                }
+            }
         }
         .onChange(of: formData.notes) { _, _ in formData.checkForChanges() }
         .onChange(of: formData.category) { _, _ in formData.checkForChanges() }
@@ -96,60 +104,53 @@ struct EditTimeBlockView: View {
         } message: {
             Text(formData.validationErrors.joined(separator: "\n"))
         }
-        .alert("Discard Changes?", isPresented: $showingDiscardAlert) {
+        .confirmationDialog(
+            "Discard Changes?",
+            isPresented: $showingDiscardConfirmation,
+            titleVisibility: .visible
+        ) {
             Button("Discard", role: .destructive) {
                 dismiss()
             }
-            Button("Keep Editing", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
             Text("You have unsaved changes. Are you sure you want to discard them?")
         }
     }
     
-    // MARK: - Status Section
-    private var statusSection: some View {
-        PremiumFormSection(
-            title: "Current Status",
-            icon: originalTimeBlock.status.iconName,
-            color: statusColor
-        ) {
-            HStack(spacing: 16) {
-                // Status indicator
-                ZStack {
-                    Circle()
-                        .fill(statusColor.opacity(0.2))
-                        .frame(width: 48, height: 48)
-                    
-                    Image(systemName: originalTimeBlock.status.iconName)
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(statusColor)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(originalTimeBlock.status.displayName)
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white)
-                    
-                    if originalTimeBlock.status == .inProgress,
-                       let remainingMinutes = originalTimeBlock.remainingMinutes {
-                        Text("\(remainingMinutes) minutes remaining")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.premiumWarning)
-                    } else {
-                        Text("Status cannot be changed here")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.6))
-                    }
-                }
-                
-                Spacer()
-            }
-        }
-        .opacity(isVisible ? 1 : 0)
-        .offset(y: isVisible ? 0 : 20)
-    }
-    
     // MARK: - Form Sections
+    
+    private var activeBlockWarning: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "clock.badge.exclamationmark")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(Color.premiumBlue)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Currently Active")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+                
+                Text("This time block is in progress")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.white.opacity(0.7))
+            }
+            
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.premiumBlue.opacity(0.15))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.premiumBlue.opacity(0.3), lineWidth: 1)
+        )
+        .padding(.horizontal, 24)
+        .opacity(isVisible ? 1 : 0)
+        .offset(y: isVisible ? 0 : -20)
+    }
     
     private var basicInfoSection: some View {
         PremiumFormSection(
@@ -178,13 +179,13 @@ struct EditTimeBlockView: View {
         .offset(x: isVisible ? 0 : -20)
     }
     
-    private var timeSection: some View {
+    private var timeAndDurationSection: some View {
         PremiumFormSection(
             title: "Schedule",
             icon: "clock",
             color: Color.premiumGreen
         ) {
-            VStack(spacing: 16) {
+            VStack(spacing: 20) {
                 if originalTimeBlock.status == .inProgress {
                     // Warning for active blocks
                     HStack(spacing: 12) {
@@ -205,6 +206,7 @@ struct EditTimeBlockView: View {
                     )
                 }
                 
+                // Time pickers
                 HStack(spacing: 16) {
                     PremiumTimePicker(
                         title: "Start",
@@ -220,8 +222,30 @@ struct EditTimeBlockView: View {
                     )
                 }
                 
+                // Quick duration selector - RIGHT UNDER TIME PICKERS
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "timer")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Color.premiumWarning)
+                        
+                        Text("Quick Duration")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.8))
+                    }
+                    
+                    QuickDurationSelector(
+                        selectedDuration: $selectedDuration,
+                        onSelect: { minutes in
+                            selectedDuration = minutes
+                            formData.setDuration(minutes: minutes)
+                            HapticManager.shared.premiumSelection()
+                        }
+                    )
+                }
+                
+                // Duration display card
                 let duration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
-
                 DurationCard(
                     minutes: duration,
                     color: color(for: duration)
@@ -244,7 +268,6 @@ struct EditTimeBlockView: View {
             return .premiumGreen
         }
     }
-
     
     private var organizationSection: some View {
         PremiumFormSection(
@@ -274,20 +297,6 @@ struct EditTimeBlockView: View {
         }
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : -20)
-    }
-    
-    private var quickDurationSection: some View {
-        PremiumFormSection(
-            title: "Quick Duration",
-            icon: "timer",
-            color: Color.premiumWarning
-        ) {
-            QuickDurationSelector { minutes in
-                formData.setDuration(minutes: minutes)
-            }
-        }
-        .opacity(isVisible ? 1 : 0)
-        .offset(x: isVisible ? 0 : 20)
     }
     
     private var historySection: some View {
@@ -328,16 +337,16 @@ struct EditTimeBlockView: View {
     private var actionButtons: some View {
         VStack(spacing: 16) {
             PremiumButton(
-                title: formData.hasChanges ? "Save Changes" : "No Changes Made",
-                style: .gradient,
-                action: saveTimeBlock
+                title: formData.hasChanges ? "Save Changes" : "No Changes",
+                style: formData.hasChanges ? .gradient : .secondary,
+                action: saveChanges
             )
             .disabled(!formData.isFormValid || !formData.hasChanges)
-            .opacity((formData.isFormValid && formData.hasChanges) ? 1.0 : 0.6)
+            .opacity(formData.isFormValid && formData.hasChanges ? 1.0 : 0.6)
             
             SecondaryActionButton(
-                title: formData.hasChanges ? "Discard Changes" : "Close",
-                icon: formData.hasChanges ? "trash" : "xmark",
+                title: "Cancel",
+                icon: "xmark",
                 action: handleDismiss
             )
         }
@@ -345,81 +354,37 @@ struct EditTimeBlockView: View {
         .offset(y: isVisible ? 0 : 20)
     }
     
-    // MARK: - Computed Properties
-    
-    private var statusColor: Color {
-        switch originalTimeBlock.status {
-        case .completed: return Color.premiumGreen
-        case .inProgress: return Color.premiumBlue
-        case .notStarted: return Color.premiumPurple
-        case .skipped: return Color.premiumError
-        }
-    }
-    
     // MARK: - Actions
     
     private func handleDismiss() {
         if formData.hasChanges {
-            showingDiscardAlert = true
+            showingDiscardConfirmation = true
         } else {
             dismiss()
         }
     }
     
-    private func checkForOverlaps() -> Bool {
-        guard let viewModel = getScheduleViewModel() else { return false }
-        
-        let conflictingBlocks = viewModel.getConflictingBlocks(
-            startTime: formData.startTime,
-            endTime: formData.endTime,
-            excluding: originalTimeBlock
-        )
-        
-        return !conflictingBlocks.isEmpty
-    }
-    
-    private func getScheduleViewModel() -> ScheduleBuilderViewModel? {
-        // Access the view model from the environment or parent view
-        // This would need to be passed in as a parameter or environment object
-        return nil
-    }
-    
-    private func saveTimeBlock() {
+    private func saveChanges() {
         formData.validateForm()
         
         guard formData.isFormValid else {
             showingValidationErrors = true
-            HapticManager.shared.error()
             return
         }
         
-        // Check for overlapping time blocks
-        if checkForOverlaps() {
-            formData.validationErrors.append("This time conflicts with another scheduled block")
-            showingValidationErrors = true
-            HapticManager.shared.error()
-            return
-        }
+        // Create updated time block
+        let updatedBlock = originalTimeBlock
         
-        // Check if block spans midnight
-        let calendar = Calendar.current
-        if !calendar.isDate(formData.startTime, inSameDayAs: formData.endTime) {
-            formData.validationErrors.append("Time blocks cannot span across midnight")
-            showingValidationErrors = true
-            HapticManager.shared.error()
-            return
-        }
-        
-        // Update the time block with new values
         let (title, notes, category) = formData.prepareForSave()
+        updatedBlock.title = title
+        updatedBlock.startTime = formData.startTime
+        updatedBlock.endTime = formData.endTime
+        updatedBlock.notes = notes
+        updatedBlock.category = category
+        updatedBlock.icon = formData.selectedIcon.isEmpty ? nil : formData.selectedIcon
+        updatedBlock.updatedAt = Date()
         
-        originalTimeBlock.title = title
-        originalTimeBlock.startTime = formData.startTime
-        originalTimeBlock.endTime = formData.endTime
-        originalTimeBlock.notes = notes
-        originalTimeBlock.category = category
-        
-        onSave(originalTimeBlock)
+        onSave(updatedBlock)
         
         HapticManager.shared.premiumSuccess()
         dismiss()
@@ -431,11 +396,10 @@ struct EditTimeBlockView: View {
     let sampleBlock = TimeBlock(
         title: "Morning Routine",
         startTime: Date(),
-        endTime: Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date(),
-        notes: "Start the day right",
+        endTime: Date().addingTimeInterval(3600),
+        notes: "Exercise, shower, breakfast",
         category: "Personal"
     )
-    sampleBlock.icon = "🌅"
     
     return EditTimeBlockView(timeBlock: sampleBlock) { updatedBlock in
         print("Updated: \(updatedBlock.title)")

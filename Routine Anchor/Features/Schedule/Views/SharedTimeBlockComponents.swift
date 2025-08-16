@@ -77,6 +77,7 @@ struct IconSelector: View {
 
 // MARK: - Shared Quick Duration Selector Component
 struct QuickDurationSelector: View {
+    @Binding var selectedDuration: Int?
     let onSelect: (Int) -> Void
     
     private let durations = [15, 30, 45, 60, 90, 120]
@@ -84,7 +85,10 @@ struct QuickDurationSelector: View {
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
             ForEach(durations, id: \.self) { minutes in
-                DurationChip(minutes: minutes) {
+                DurationChip(
+                    minutes: minutes,
+                    isSelected: selectedDuration == minutes
+                ) {
                     onSelect(minutes)
                 }
             }
