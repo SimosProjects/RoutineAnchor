@@ -710,4 +710,5 @@ extension Notification.Name {
     static let navigateToToday = Notification.Name("navigateToToday")
     static let showTemplatesInSchedule = Notification.Name("showTemplatesInSchedule")
     static let showQuickStats = Notification.Name("showQuickStats")
+    static let saveTimeBlock = Notification.Name("saveTimeBlock")
 }

@@ -11,6 +11,7 @@ struct MainTabView: View {
     @State private var selectedTab: Tab = .today
     @State private var tabBarOffset: CGFloat = 0
     @State private var showFloatingAction = false
+    @State private var showingAddTimeBlock = false
     
     // Track if we're programmatically changing tabs to prevent loops
     @State private var isInternalTabChange = false
@@ -115,6 +116,33 @@ struct MainTabView: View {
             
             // Premium floating action button - contextual
             floatingActionButton
+        }
+        .sheet(isPresented: $showingAddTimeBlock) {
+            PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
+                // Create and save the time block directly
+                let newBlock = TimeBlock(
+                    title: title,
+                    startTime: startTime,
+                    endTime: endTime,
+                    notes: notes,
+                    category: category
+                )
+                
+                modelContext.insert(newBlock)
+                
+                do {
+                    try modelContext.save()
+                    HapticManager.shared.success()
+                    
+                    // Trigger refresh of TodayView
+                    NotificationCenter.default.post(name: .refreshTodayView, object: nil)
+                } catch {
+                    print("Failed to save time block: \(error)")
+                    HapticManager.shared.error()
+                }
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
     }
     
@@ -303,9 +331,9 @@ struct MainTabView: View {
         HapticManager.shared.mediumImpact()
         
         switch selectedTab {
-        case .today, .schedule:
-            // Show quick add time block sheet
-            NotificationCenter.default.post(name: .showAddTimeBlockFromTab, object: nil)
+        case .today:
+            // Present sheet directly instead of posting notification
+            showingAddTimeBlock = true
         default:
             break
         }

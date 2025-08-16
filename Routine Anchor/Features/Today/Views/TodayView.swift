@@ -13,7 +13,7 @@ struct TodayView: View {
     @State private var animationTask: Task<Void, Never>?
     
     // MARK: - State
-    @State private var showingAddBlock = false
+    @State private var isAboutToShowSheet = false
     @State private var showingSettings = false
     @State private var showingSummary = false
     @State private var showingQuickStats = false
@@ -22,6 +22,8 @@ struct TodayView: View {
     @State private var headerOffset: CGFloat = 0
     @State private var scrollProgress: CGFloat = 0
     @State private var refreshTrigger = false
+    @State private var justNavigatedToView = false
+    @State private var viewIsActive = false
     
     // MARK: - Scroll Support State
     @State private var scrollProxy: ScrollViewProxy?
@@ -71,12 +73,23 @@ struct TodayView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
+            // Clear all sheet states
+            showingSettings = false
+            showingSummary = false
+            showingQuickStats = false
+            
+            // Mark view as active after a delay to ensure hierarchy is ready
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                viewIsActive = true
+            }
+            
             Task { @MainActor in
                 await viewModel.refreshData()
                 viewModel.startPeriodicUpdates()
             }
         }
         .onDisappear {
+            viewIsActive = false
             viewModel.stopPeriodicUpdates()
         }
         .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
@@ -105,40 +118,12 @@ struct TodayView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
-        .sheet(isPresented: $showingAddBlock) {
-            PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
-                // Create the time block directly using modelContext
-                let newBlock = TimeBlock(
-                    title: title,
-                    startTime: startTime,
-                    endTime: endTime,
-                    notes: notes,
-                    category: category
-                )
-                
-                do {
-                    try dataManager.createTimeBlock(newBlock)
-                    
-                    // The notification observer in viewModel will automatically refresh
-                    HapticManager.shared.success()
-                } catch {
-                    print("Failed to save time block: \(error)")
-                    HapticManager.shared.error()
-                }
-            }
-            .presentationDetents([.large])
-            .presentationDragIndicator(.visible)
-        }
         .sheet(isPresented: $showingQuickStats) {
             NavigationStack {
                 QuickStatsView(viewModel: viewModel)
             }
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
-        }
-        // SINGLE onReceive for showAddTimeBlockFromTab
-        .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlockFromTab)) { _ in
-            showingAddBlock = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .showQuickStats)) { _ in
             showingQuickStats = true
@@ -153,6 +138,10 @@ struct TodayView: View {
             handleShowTimeBlock(notification)
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshTodayView)) { _ in
+            guard !isAboutToShowSheet && !justNavigatedToView else {
+                return
+            }
+            
             Task {
                 await viewModel.refreshData()
             }
