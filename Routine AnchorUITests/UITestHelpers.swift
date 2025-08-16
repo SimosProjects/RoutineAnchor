@@ -166,6 +166,68 @@ extension XCUIApplication {
         }
     }
     
+    func dismissKeyboard() {
+        // Try toolbar Done button first
+        if self.toolbars.buttons["Done"].exists {
+            self.toolbars.buttons["Done"].tap()
+        } else if self.keyboards.buttons["return"].exists {
+            self.keyboards.buttons["return"].tap()
+        } else if self.buttons["Done"].exists && self.buttons["Done"].isHittable {
+            self.buttons["Done"].tap()
+        } else {
+            // Tap outside keyboard
+            self.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+        }
+        
+        Thread.sleep(forTimeInterval: 0.3)
+    }
+    
+    func fillTimeBlockForm(app: XCUIApplication, title: String,
+                                   notes: String = "",
+                                   selectCategory: Bool = false,
+                                   selectIcon: Bool = false) {
+        // Fill title
+        if let titleField = app.textFields.firstMatch.exists ? app.textFields.firstMatch :
+           app.textFields["Title"].exists ? app.textFields["Title"] : nil {
+            titleField.tap()
+            titleField.typeText(title)
+            app.dismissKeyboard()  // Changed from dismissKeyboard(app: app)
+        }
+        
+        // Fill notes if provided
+        if !notes.isEmpty {
+            if let notesField = app.textViews.firstMatch.exists ? app.textViews.firstMatch :
+               app.textFields["Notes"].exists ? app.textFields["Notes"] : nil {
+                notesField.tap()
+                notesField.typeText(notes)
+                app.dismissKeyboard()  // Changed from dismissKeyboard(app: app)
+            }
+        }
+        
+        // Select category if requested
+        if selectCategory {
+            let categories = ["Work", "Personal", "Health", "Learning", "Social"]
+            for category in categories {
+                if app.buttons[category].exists {
+                    app.buttons[category].tap()
+                    break
+                }
+            }
+        }
+        
+        // Select icon if requested
+        if selectIcon {
+            // Scroll to find icon selector if needed
+            app.scrollViews.firstMatch.swipeUp()
+            
+            // Tap first available icon
+            let icons = app.buttons.matching(NSPredicate(format: "identifier CONTAINS 'icon' OR label CONTAINS '📝' OR label CONTAINS '💼'"))
+            if icons.count > 0 {
+                icons.element(boundBy: 0).tap()
+            }
+        }
+    }
+    
     /// Pull to refresh on current view
     func pullToRefresh() {
         let scrollView = scrollViews.firstMatch
@@ -181,7 +243,53 @@ extension XCUIApplication {
             table.swipeDown()
         }
         
-        Thread.sleep(forTimeInterval: 1) // Wait for refresh
+        Thread.sleep(forTimeInterval: 1)
+    }
+    
+    func adjustTimeIfPossible(app: XCUIApplication) {
+        // Try to adjust start or end time
+        let timePickers = app.datePickers
+        if timePickers.count > 0 {
+            timePickers.firstMatch.tap()
+            
+            // Adjust time using picker wheels if available
+            if app.pickerWheels.count > 0 {
+                app.pickerWheels.element(boundBy: 0).adjust(toPickerWheelValue: "10")
+                if app.buttons["Done"].exists {
+                    app.buttons["Done"].tap()
+                }
+            }
+        }
+    }
+    
+    func saveTimeBlock(app: XCUIApplication) {
+        let saveButtons = [
+            "Create Time Block",
+            "Save",
+            "Add",
+            "Done",
+            "Save Changes"
+        ]
+        
+        for buttonName in saveButtons {
+            if app.buttons[buttonName].exists && app.buttons[buttonName].isEnabled {
+                app.buttons[buttonName].tap()
+                break
+            }
+        }
+    }
+    
+    func dismissSheet(app: XCUIApplication) {
+        if app.buttons["Cancel"].exists {
+            app.buttons["Cancel"].tap()
+        } else if app.buttons["Close"].exists {
+            app.buttons["Close"].tap()
+        } else if app.navigationBars.buttons.firstMatch.exists {
+            app.navigationBars.buttons.firstMatch.tap()
+        } else {
+            app.swipeDown()
+        }
+        Thread.sleep(forTimeInterval: TestConfig.animationDelay)
     }
 }
 
@@ -445,7 +553,7 @@ extension XCTestCase {
             titleField.typeText("UI Test Block \(Int.random(in: 1...100))")
             
             // Dismiss keyboard
-            dismissKeyboard(app: app)
+            app.dismissKeyboard()
             
             Thread.sleep(forTimeInterval: TestConfig.animationDelay)
             
@@ -488,7 +596,7 @@ extension XCTestCase {
     /// Helper to save a time block form
     func saveTimeBlock(app: XCUIApplication) {
         // Dismiss keyboard first
-        dismissKeyboard(app: app)
+        app.dismissKeyboard()
         
         Thread.sleep(forTimeInterval: 0.3)
         
@@ -508,23 +616,6 @@ extension XCTestCase {
         
         // If no save found, try to dismiss
         app.dismissAnyPresentedViews()
-    }
-    
-    /// Dismiss keyboard helper
-    func dismissKeyboard(app: XCUIApplication) {
-        // Try toolbar Done button first
-        if app.toolbars.buttons["Done"].exists {
-            app.toolbars.buttons["Done"].tap()
-        } else if app.keyboards.buttons["return"].exists {
-            app.keyboards.buttons["return"].tap()
-        } else if app.buttons["Done"].exists && app.buttons["Done"].isHittable {
-            app.buttons["Done"].tap()
-        } else {
-            // Tap outside keyboard
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
-        }
-        
-        Thread.sleep(forTimeInterval: 0.3)
     }
 }
 
@@ -720,6 +811,21 @@ extension XCUIElement {
     var hasGoodContrast: Bool {
         // This would need actual color analysis in a real implementation
         return true
+    }
+    
+    func clearAndEnterText(text: String) {
+        guard self.exists else { return }
+        
+        self.tap()
+        
+        // Select all and delete
+        if let stringValue = self.value as? String {
+            let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue,
+                                    count: stringValue.count)
+            self.typeText(deleteString)
+        }
+        
+        self.typeText(text)
     }
 }
 

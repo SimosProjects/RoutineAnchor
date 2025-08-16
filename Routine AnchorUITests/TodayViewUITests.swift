@@ -343,7 +343,7 @@ final class TodayViewUITests: XCTestCase {
                     titleField.tap()
                     titleField.typeText("Test from Today \(Int.random(in: 1...100))")
                     
-                    dismissKeyboard(app: app)
+                    app.dismissKeyboard()
                     Thread.sleep(forTimeInterval: 0.5)
                     
                     // Save the block
