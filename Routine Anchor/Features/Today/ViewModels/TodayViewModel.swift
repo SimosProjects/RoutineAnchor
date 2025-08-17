@@ -105,7 +105,7 @@ final class TodayViewModel {
         }
     }
     
-    /// Refresh data and update time-based statuses
+    /* Refresh data and update time-based statuses
     func refreshData() async {
         do {
             try dataManager.updateTimeBlocksBasedOnCurrentTime()
@@ -113,6 +113,35 @@ final class TodayViewModel {
         } catch {
             self.errorMessage = "Failed to refresh data: \(error.localizedDescription)"
         }
+    }*/
+    
+    func refreshData() async {
+        print("🔄 TodayViewModel.refreshData() starting...")
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            print("🔄 Loading today's time blocks...")
+            timeBlocks = try dataManager.loadTodaysTimeBlocks()
+            print("🔄 Loaded \(timeBlocks.count) time blocks")
+            
+            for block in timeBlocks {
+                print("🔄 Block '\(block.title)' status: \(block.status.rawValue)")
+            }
+            
+            print("🔄 Updating daily progress...")
+            try dataManager.updateDailyProgress(for: Date())
+            dailyProgress = try dataManager.loadDailyProgress(for: Date())
+            print("🔄 ✅ Daily progress updated")
+            
+        } catch {
+            print("🔄 ❌ TodayViewModel refresh failed: \(error)")
+            errorMessage = "Failed to refresh data: \(error.localizedDescription)"
+        }
+        
+        isLoading = false
+        print("🔄 ✅ TodayViewModel.refreshData() completed")
     }
     
     // MARK: - Time Block Actions

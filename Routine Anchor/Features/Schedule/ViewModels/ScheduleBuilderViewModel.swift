@@ -61,6 +61,72 @@ class ScheduleBuilderViewModel {
         isLoading = false
     }
     
+    /// Reset today's progress back to not started
+    @MainActor
+    func resetTodaysProgress() {
+        print("🔄 ===== RESET PROCESS STARTING =====")
+        
+        // Debug: Show current state before reset
+        print("🔄 Current timeBlocks count: \(timeBlocks.count)")
+        for block in timeBlocks {
+            print("🔄 Block '\(block.title)' status: \(block.status.rawValue)")
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            print("🔄 Calling dataManager.resetTimeBlocksStatus(for: Date())")
+            try dataManager.resetTimeBlocksStatus(for: Date())
+            print("🔄 ✅ resetTimeBlocksStatus completed successfully")
+            
+            // Force a save to ensure persistence
+            print("🔄 Forcing data save...")
+            try dataManager.save()
+            print("🔄 ✅ Data save completed")
+            
+            print("🔄 Reloading time blocks...")
+            loadTimeBlocks()
+            print("🔄 ✅ loadTimeBlocks completed")
+            
+            // Debug: Show state after reset
+            print("🔄 After reset - timeBlocks count: \(timeBlocks.count)")
+            for block in timeBlocks {
+                print("🔄 Block '\(block.title)' status: \(block.status.rawValue)")
+            }
+            
+            print("🔄 Scheduling notifications...")
+            scheduleNotifications()
+            print("🔄 ✅ Notifications scheduled")
+            
+            // Force refresh of TodayView by posting notification
+            print("🔄 Posting refreshTodayView notification...")
+            NotificationCenter.default.post(name: .refreshTodayView, object: nil)
+            print("🔄 ✅ Notification posted")
+            
+            // Also post a general data change notification
+            print("🔄 Posting timeBlocksDidChange notification...")
+            NotificationCenter.default.post(
+                name: .timeBlocksDidChange,
+                object: nil,
+                userInfo: ["action": "reset", "date": Date()]
+            )
+            print("🔄 ✅ timeBlocksDidChange notification posted")
+            
+            HapticManager.shared.success()
+            print("🔄 ✅ SUCCESS: Reset completed successfully")
+            
+        } catch {
+            print("🔄 ❌ ERROR: Reset failed with error: \(error)")
+            print("🔄 ❌ Error details: \(error.localizedDescription)")
+            errorMessage = "Failed to reset today's progress: \(error.localizedDescription)"
+            HapticManager.shared.error()
+        }
+        
+        isLoading = false
+        print("🔄 ===== RESET PROCESS COMPLETED =====")
+    }
+    
     /// Load time blocks for a specific date
     @MainActor
     func loadTimeBlocks(for date: Date) {

@@ -329,15 +329,18 @@ class DataManager {
         let timeBlocks = try loadTimeBlocks(for: date)
         
         for block in timeBlocks {
-            if block.status.canTransition {
-                block.updateStatus(to: .notStarted)
-            }
+            // FORCE reset by directly setting status (bypass canTransition check)
+            print("🔄 Resetting block '\(block.title)' from \(block.status.rawValue) to notStarted")
+            block.status = .notStarted
+            block.updatedAt = Date()
         }
         
         do {
             try save()
             try updateDailyProgress(for: date)
+            print("🔄 ✅ Status reset and data saved successfully")
         } catch {
+            print("🔄 ❌ Save failed: \(error)")
             throw DataManagerError.saveFailed("Failed to reset time blocks: \(error.localizedDescription)")
         }
     }
@@ -427,7 +430,7 @@ class DataManager {
     // MARK: - Core Data Operations
     
     /// Save changes to the persistent store
-    private func save() throws {
+    func save() throws {
         do {
             try modelContext.save()
         } catch {

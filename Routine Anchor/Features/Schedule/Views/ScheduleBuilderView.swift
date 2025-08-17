@@ -17,6 +17,7 @@ struct ScheduleBuilderView: View {
     @State private var showingDeleteConfirmation = false
     @State private var blockToDelete: TimeBlock?
     @State private var showingQuickAdd = false
+    @State private var showingResetConfirmation = false
     
     var body: some View {
         ZStack {
@@ -87,6 +88,18 @@ struct ScheduleBuilderView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlock)) { _ in
             showingAddBlock = true
         }
+        .confirmationDialog(
+            "Reset Today's Progress",
+            isPresented: $showingResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Reset Progress", role: .destructive) {
+                viewModel?.resetTodaysProgress()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will reset all time blocks back to 'Not Started' for today. This action cannot be undone.")
+        }
         .sheet(isPresented: $showingAddBlock) {
             PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
                 viewModel?.addTimeBlock(
@@ -108,19 +121,6 @@ struct ScheduleBuilderView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }
-        }
-        .confirmationDialog(
-            "Delete Time Block",
-            isPresented: $showingDeleteConfirmation,
-            titleVisibility: .visible,
-            presenting: blockToDelete
-        ) { block in
-            Button("Delete", role: .destructive) {
-                viewModel?.deleteTimeBlock(block)
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: { block in
-            Text("Are you sure you want to delete '\(block.title)'?")
         }
         .actionSheet(isPresented: $showingQuickAdd) {
             quickAddActionSheet
@@ -178,16 +178,22 @@ struct ScheduleBuilderView: View {
                 
                 Spacer()
                 
-                Button("Reset All") {
-                    HapticManager.shared.premiumImpact()
-                    viewModel.resetRoutineStatus()
+                Button(action: {
+                    HapticManager.shared.lightImpact()
+                    showingResetConfirmation = true
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.system(size: 12, weight: .medium))
+                        Text("Reset All")
+                            .font(.system(size: 14, weight: .medium))
+                    }
+                    .foregroundStyle(Color.premiumError)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.premiumError.opacity(0.15))
+                    .cornerRadius(8)
                 }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.premiumError)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.premiumError.opacity(0.15))
-                .cornerRadius(8)
             }
             .padding(.horizontal, 24)
             
@@ -409,6 +415,24 @@ struct SimpleTimeBlockRow: View {
         }
     }
     
+    private var statusIcon: String {
+        switch timeBlock.status {
+        case .notStarted: return "clock"
+        case .inProgress: return "play.fill"
+        case .completed: return "checkmark"
+        case .skipped: return "forward.fill"
+        }
+    }
+    
+    private var statusColor: Color {
+        switch timeBlock.status {
+        case .notStarted: return .white.opacity(0.6)
+        case .inProgress: return .premiumBlue
+        case .completed: return .premiumGreen
+        case .skipped: return .premiumWarning
+        }
+    }
+    
     var body: some View {
         HStack(spacing: 0) {
             // Left accent bar
@@ -455,6 +479,14 @@ struct SimpleTimeBlockRow: View {
                 }
                 
                 Spacer()
+                
+                // Status Indicator
+                Image(systemName: statusIcon)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(statusColor)
+                    .frame(width: 24, height: 24)
+                    .background(statusColor.opacity(0.15))
+                    .cornerRadius(6)
                 
                 // Action buttons
                 HStack(spacing: 8) {
