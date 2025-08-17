@@ -17,6 +17,12 @@ final class SettingsViewModel {
     var errorMessage: String?
     var successMessage: String?
     
+    // MARK: - Private Properties
+    private let dataManager: DataManager
+    private let notificationService = NotificationService.shared
+    private var midnightTimer: Timer?
+    private var messageTimerTask: Task<Void, Never>?
+    
     // MARK: - Settings State (UI Only)
     var notificationsEnabled: Bool {
         get { UserDefaults.standard.bool(forKey: "notificationsEnabled") }
@@ -70,11 +76,15 @@ final class SettingsViewModel {
         }
     }
     
-    // MARK: - Private Properties
-    private let dataManager: DataManager
-    private let notificationService = NotificationService.shared
-    private var midnightTimer: Timer?
-    private var messageTimerTask: Task<Void, Never>?
+    var autoResetBehavior: AutoResetBehavior {
+        get {
+            let rawValue = UserDefaults.standard.string(forKey: "autoResetBehavior") ?? "statusOnly"
+            return AutoResetBehavior(rawValue: rawValue) ?? .statusOnly
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "autoResetBehavior")
+        }
+    }
     
     // MARK: - Initialization
     init(dataManager: DataManager) {
@@ -166,8 +176,15 @@ final class SettingsViewModel {
     private func performMidnightReset() async {
         guard autoResetEnabled else { return }
         
-        // Reset today's progress
-        resetTodaysProgress()
+        switch autoResetBehavior {
+        case .statusOnly:
+            resetTodaysProgress()
+            successMessage = "Daily routine reset successfully"
+            
+        case .clearSchedule:
+            clearTodaysSchedule()
+            successMessage = "Today's schedule cleared for fresh start"
+        }
         
         // Record the reset
         UserDefaults.standard.set(Date(), forKey: "lastAutoReset")
@@ -175,8 +192,6 @@ final class SettingsViewModel {
         // Schedule next midnight timer
         scheduleMidnightTimer()
         
-        // Show success message (will only be visible if app is open)
-        successMessage = "Daily routine reset successfully"
         clearMessages()
     }
     
@@ -273,7 +288,7 @@ final class SettingsViewModel {
     
     // MARK: - Data Management
     
-    /// Reset today's progress back to not started
+    /// Reset today's progress back to not started (keeps blocks, resets status)
     func resetTodaysProgress() {
         isLoading = true
         errorMessage = nil
@@ -289,8 +304,38 @@ final class SettingsViewModel {
             HapticManager.shared.premiumSuccess()
             successMessage = "Today's progress has been reset"
             
+            // Notify other views to refresh
+            NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
+            NotificationCenter.default.post(name: .refreshTodayView, object: nil)
+            
         } catch {
             errorMessage = "Failed to reset today's progress: \(error.localizedDescription)"
+            HapticManager.shared.premiumError()
+        }
+        
+        isLoading = false
+        clearMessages()
+    }
+    
+    func clearTodaysSchedule() {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            try dataManager.deleteAllTimeBlocks(for: Date())
+            
+            // Also clear today's daily progress since no blocks exist
+            try dataManager.clearDailyProgress(for: Date())
+            
+            HapticManager.shared.premiumSuccess()
+            successMessage = "Today's schedule has been cleared"
+            
+            // Notify other views to refresh
+            NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
+            NotificationCenter.default.post(name: .refreshTodayView, object: nil)
+            
+        } catch {
+            errorMessage = "Failed to clear today's schedule: \(error.localizedDescription)"
             HapticManager.shared.premiumError()
         }
         
@@ -535,6 +580,29 @@ final class SettingsViewModel {
         } else {
             errorMessage = "No email client configured"
             clearMessages()
+        }
+    }
+}
+
+enum AutoResetBehavior: String, CaseIterable {
+    case statusOnly = "statusOnly"
+    case clearSchedule = "clearSchedule"
+    
+    var displayName: String {
+        switch self {
+        case .statusOnly:
+            return "Reset Progress Only"
+        case .clearSchedule:
+            return "Clear Entire Schedule"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .statusOnly:
+            return "Keep your time blocks, reset status to 'Not Started'"
+        case .clearSchedule:
+            return "Delete all time blocks for a completely fresh start"
         }
     }
 }

@@ -50,15 +50,66 @@ final class ScheduleUITests: XCTestCase {
     // MARK: - Empty State Tests
     
     func testEmptyStateDisplay() {
+        // First, navigate to Schedule view
         app.navigateToSchedule()
         Thread.sleep(forTimeInterval: TestConfig.animationDelay)
         
-        // Check for empty state elements from your ScheduleBuilderView
-        let hasEmptyStateContent = app.staticTexts["Build Your Perfect Day"].exists ||
-                                  app.staticTexts["Schedule Builder"].exists ||
-                                  app.cells.count > 0
+        // Clear any existing blocks to ensure we're testing true empty state
+        // Note: Reset All only resets status, not blocks themselves, so we need to actually delete blocks
+        deleteAllTimeBlocks() // This should delete blocks, not just reset status
+        Thread.sleep(forTimeInterval: TestConfig.animationDelay)
         
-        XCTAssertTrue(hasEmptyStateContent, "Should show either empty state or existing time blocks")
+        // Now verify we're in empty state
+        let cellCount = app.cells.count
+        print("Cell count after clearing: \(cellCount)")
+        
+        // Check for empty state content based on actual UI structure
+        let hasEmptyStateTitle = app.staticTexts["Build Your Perfect Day"].exists
+        let hasScheduleBuilderTitle = app.staticTexts["Schedule Builder"].exists
+        let hasAddTimeBlockButton = app.buttons["Add Time Block"].exists
+        let hasNoResetButton = !app.buttons["Reset All"].exists // Should NOT exist when NO blocks exist
+        let hasEmptyStateDescription = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Create time blocks to structure'")).count > 0
+        
+        print("Empty state indicators - Title: \(hasEmptyStateTitle), Builder: \(hasScheduleBuilderTitle), Add Button: \(hasAddTimeBlockButton), No Reset: \(hasNoResetButton), Description: \(hasEmptyStateDescription)")
+        
+        // Verify empty state conditions
+        XCTAssertEqual(cellCount, 0, "Should have zero time blocks in empty state")
+        XCTAssertTrue(hasEmptyStateTitle, "Should show 'Build Your Perfect Day' title in empty state")
+        XCTAssertTrue(hasAddTimeBlockButton, "Should show 'Add Time Block' button when empty")
+        XCTAssertTrue(hasNoResetButton, "Should NOT show 'Reset All' button when NO blocks exist")
+        
+        // Optional: Check for empty state illustration (plus.circle icon)
+        let hasEmptyStateIcon = app.images.matching(NSPredicate(format: "label CONTAINS 'plus.circle'")).count > 0
+        print("Empty state icon present: \(hasEmptyStateIcon)")
+    }
+
+    // Add this test to verify the opposite state (when blocks exist)
+    func testScheduleViewWithBlocks() {
+        app.navigateToSchedule()
+        Thread.sleep(forTimeInterval: TestConfig.animationDelay)
+        
+        // Ensure we have at least one block
+        if app.cells.count == 0 {
+            let blockCreated = createTimeBlockReliably()
+            XCTAssertTrue(blockCreated, "Should be able to create a test block")
+            Thread.sleep(forTimeInterval: TestConfig.animationDelay)
+        }
+        
+        let cellCount = app.cells.count
+        print("Cell count with blocks: \(cellCount)")
+        
+        // Check for non-empty state elements
+        let hasResetButton = app.buttons["Reset All"].exists
+        let hasAddTimeBlockButton = app.buttons["Add Time Block"].exists
+        let hasNoEmptyStateTitle = !app.staticTexts["Build Your Perfect Day"].exists // Should be hidden when blocks exist
+        
+        print("Non-empty state indicators - Reset: \(hasResetButton), Add Block: \(hasAddTimeBlockButton), No Empty Title: \(hasNoEmptyStateTitle)")
+        
+        // Verify non-empty state conditions
+        XCTAssertGreaterThan(cellCount, 0, "Should have at least one time block")
+        XCTAssertTrue(hasResetButton, "Should show 'Reset All' button when blocks exist")
+        XCTAssertTrue(hasAddTimeBlockButton, "Should show 'Add Time Block' button when blocks exist")
+        XCTAssertTrue(hasNoEmptyStateTitle, "Should NOT show empty state title when blocks exist")
     }
     
     func testAddButtonVisibility() {
@@ -750,6 +801,111 @@ final class ScheduleUITests: XCTestCase {
         let timeBlockTitles = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Test Block' OR label CONTAINS 'UI Test Block' OR label CONTAINS 'Block'"))
         return timeBlockTitles.count
     }
+    
+    // Helper method to clear all blocks (add this to your test class)
+    private func clearAllTimeBlocks() {
+        let resetButton = app.buttons["Reset All"]
+        
+        if resetButton.exists {
+            print("Clearing existing blocks...")
+            resetButton.tap()
+            Thread.sleep(forTimeInterval: 1.0)
+            
+            // Handle confirmation dialog
+            if waitForConfirmationDialog() {
+                confirmResetDialog()
+                Thread.sleep(forTimeInterval: 1.5)
+                print("Blocks cleared via Reset All")
+            }
+        } else {
+            print("No blocks to clear (Reset All button not present)")
+        }
+    }
+    
+    // Helper method to actually delete all blocks (not just reset status)
+    private func deleteAllTimeBlocks() {
+        // Navigate to Settings to use the delete function
+        app.navigateToSettings()
+        Thread.sleep(forTimeInterval: TestConfig.animationDelay)
+        
+        let deleteButton = app.buttons["Delete All Data"]
+        if deleteButton.exists {
+            print("Deleting all blocks via Settings...")
+            deleteButton.tap()
+            Thread.sleep(forTimeInterval: 1.0)
+            
+            // Confirm deletion
+            let confirmButtons = ["Delete", "Confirm", "Yes"]
+            for buttonText in confirmButtons {
+                let button = app.buttons[buttonText]
+                if button.exists {
+                    print("Confirming deletion with button: \(buttonText)")
+                    button.tap()
+                    Thread.sleep(forTimeInterval: 1.5)
+                    break
+                }
+            }
+            
+            // Navigate back to Schedule
+            app.navigateToSchedule()
+            Thread.sleep(forTimeInterval: TestConfig.animationDelay)
+            print("Blocks deleted via Settings")
+        } else {
+            print("No delete button found in Settings - blocks may already be empty")
+            app.navigateToSchedule()
+            Thread.sleep(forTimeInterval: TestConfig.animationDelay)
+        }
+    }
+
+    // Helper method for status reset (keeps blocks but resets their status)
+    private func resetAllBlockStatus() {
+        let resetButton = app.buttons["Reset All"]
+        
+        if resetButton.exists {
+            print("Resetting block status...")
+            resetButton.tap()
+            Thread.sleep(forTimeInterval: 1.0)
+            
+            // Handle confirmation dialog
+            if waitForConfirmationDialog() {
+                confirmResetDialog()
+                Thread.sleep(forTimeInterval: 1.5)
+                print("Block status reset via Reset All")
+            }
+        } else {
+            print("No Reset All button present")
+        }
+    }
+    
+    // Helper method to wait for confirmation dialog
+    private func waitForConfirmationDialog() -> Bool {
+        return app.sheets.firstMatch.waitForExistence(timeout: 3.0) ||
+               app.alerts.firstMatch.waitForExistence(timeout: 3.0) ||
+               app.buttons["Yes, Reset All"].waitForExistence(timeout: 3.0) ||
+               app.buttons["Confirm"].waitForExistence(timeout: 3.0)
+    }
+
+    // Helper method to confirm the reset dialog
+    private func confirmResetDialog() -> Bool {
+        let confirmButtons = [
+            "Yes, Reset All",
+            "Confirm",
+            "Reset",
+            "OK"
+        ]
+        
+        for buttonText in confirmButtons {
+            let button = app.buttons[buttonText]
+            if button.exists {
+                print("Confirming reset with button: \(buttonText)")
+                button.tap()
+                return true
+            }
+        }
+        
+        print("No confirmation button found")
+        return false
+    }
 
     private func createTimeBlockReliably() -> Bool {
         print("=== Creating Time Block Reliably (Fixed) ===")
@@ -1015,48 +1171,5 @@ final class ScheduleUITests: XCTestCase {
         let appStable = app.staticTexts["Schedule Builder"].isHittable
         
         return stillInSchedule && appStable
-    }
-
-    private func waitForConfirmationDialog() -> Bool {
-        let timeout: TimeInterval = 3.0
-        let startTime = Date()
-        
-        while Date().timeIntervalSince(startTime) < timeout {
-            let dialogExists = app.staticTexts["Reset Today's Progress"].exists ||
-                              app.staticTexts["Reset Progress"].exists ||
-                              app.alerts.firstMatch.exists ||
-                              app.buttons["Reset Progress"].exists
-            
-            if dialogExists {
-                print("Confirmation dialog found")
-                return true
-            }
-            
-            Thread.sleep(forTimeInterval: 0.2)
-        }
-        
-        print("Confirmation dialog not found within timeout")
-        return false
-    }
-
-    private func confirmResetDialog() -> Bool {
-        if app.buttons["Reset Progress"].exists && app.buttons["Reset Progress"].isHittable {
-            print("Confirming via 'Reset Progress' button")
-            app.buttons["Reset Progress"].tap()
-            return true
-        }
-        
-        if app.alerts.firstMatch.exists {
-            let alert = app.alerts.firstMatch
-            let buttons = alert.buttons
-            if buttons.count > 0 {
-                print("Confirming via alert button")
-                buttons.element(boundBy: 0).tap()
-                return true
-            }
-        }
-        
-        print("Could not find confirmation button")
-        return false
     }
 }

@@ -13,7 +13,9 @@ struct AppPreferencesSection: View {
     
     // MARK: - State
     @State private var showingResetConfirmation = false
+    @State private var showingClearTodayConfirmation = false
     @State private var animateReset = false
+    @State private var animateClear = false
     
     var body: some View {
         SettingsSection(
@@ -49,19 +51,18 @@ struct AppPreferencesSection: View {
                     .frame(height: 1)
                     .padding(.vertical, 4)
                 
-                // Reset today's progress button
                 SettingsButton(
-                    title: "Reset Today's Progress",
-                    subtitle: "Start today over",
-                    icon: "arrow.counterclockwise",
-                    color: Color.premiumWarning,
+                    title: "Clear Today's Schedule",
+                    subtitle: "Delete all time blocks for today",
+                    icon: "trash.fill",
+                    color: .premiumError,
                     action: {
-                        HapticManager.shared.warning()
-                        showingResetConfirmation = true
+                        HapticManager.shared.lightImpact()
+                        showingClearTodayConfirmation = true
                     }
                 )
-                .scaleEffect(animateReset ? 1.05 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: animateReset)
+                .scaleEffect(animateClear ? 1.05 : 1.0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: animateClear)
                 
                 // Additional preferences info
                 preferencesInfoSection

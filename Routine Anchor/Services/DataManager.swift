@@ -355,6 +355,32 @@ class DataManager {
         }
     }
     
+    /// Clear daily progress for a specific date
+    func clearDailyProgress(for date: Date) throws {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        
+        let predicate = #Predicate<DailyProgress> { progress in
+            progress.date == startOfDay
+        }
+        
+        let descriptor = FetchDescriptor<DailyProgress>(predicate: predicate)
+        
+        do {
+            let progressRecords = try modelContext.fetch(descriptor)
+            
+            for record in progressRecords {
+                modelContext.delete(record)
+            }
+            
+            try save()
+            print("✅ Daily progress cleared for \(startOfDay)")
+            
+        } catch {
+            throw DataManagerError.deleteFailed("Failed to clear daily progress: \(error.localizedDescription)")
+        }
+    }
+    
     // MARK: - Statistics and Analytics
     
     /// Get completion statistics for a date range

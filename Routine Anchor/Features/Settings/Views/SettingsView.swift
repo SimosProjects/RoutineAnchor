@@ -23,6 +23,10 @@ struct SettingsView: View {
     @State private var notificationSound = "Default"
     @State private var hapticsEnabled = true
     @State private var autoResetEnabled = true
+    @State private var showingClearTodayConfirmation = false
+    @State private var animateClear = false
+    @State private var showingResetConfirmation = false
+    @State private var animateReset = false
     
     // MARK: - Sheet States
     @State private var showingPrivacyPolicy = false
@@ -30,7 +34,6 @@ struct SettingsView: View {
     @State private var showingHelp = false
     @State private var showingExportData = false
     @State private var showingImportView = false
-    @State private var showingResetConfirmation = false
     @State private var showingDeleteAllConfirmation = false
     
     // MARK: - UI State
@@ -185,16 +188,24 @@ struct SettingsView: View {
             }
         }
         .confirmationDialog(
-            "Reset Today's Progress",
-            isPresented: $showingResetConfirmation,
+            "Clear Today's Schedule",
+            isPresented: $showingClearTodayConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Reset Progress", role: .destructive) {
-                viewModel?.resetTodaysProgress()
+            Button("Clear Schedule", role: .destructive) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    animateClear = true
+                }
+                viewModel?.clearTodaysSchedule()
+                
+                // Reset animation after delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    animateClear = false
+                }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This will reset all time blocks back to 'Not Started' for today. This action cannot be undone.")
+            Text("This will permanently delete all time blocks for today. This will give you a completely fresh start for the day. This action cannot be undone.")
         }
         .confirmationDialog(
             "Delete All Data",
