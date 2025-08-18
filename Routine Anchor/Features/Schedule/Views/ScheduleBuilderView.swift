@@ -100,6 +100,23 @@ struct ScheduleBuilderView: View {
         } message: {
             Text("This will reset all time blocks back to 'Not Started' for today. This action cannot be undone.")
         }
+        .confirmationDialog(
+            "Delete Time Block",
+            isPresented: $showingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let block = blockToDelete {
+                    viewModel?.deleteTimeBlock(block)
+                    blockToDelete = nil
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                blockToDelete = nil
+            }
+        } message: {
+            Text("Are you sure you want to delete this time block?")
+        }
         .sheet(isPresented: $showingAddBlock) {
             PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
                 viewModel?.addTimeBlock(

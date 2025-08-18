@@ -74,6 +74,9 @@ struct SettingsView: View {
                         autoResetEnabled: $autoResetEnabled,
                         onResetProgress: {
                             showingResetConfirmation = true
+                        },
+                        onClearTodaysSchedule: {
+                            viewModel?.clearTodaysSchedule()
                         }
                     )
                     

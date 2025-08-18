@@ -167,19 +167,16 @@ extension XCUIApplication {
     }
     
     func dismissKeyboard() {
-        // Try toolbar Done button first
-        if self.toolbars.buttons["Done"].exists {
-            self.toolbars.buttons["Done"].tap()
-        } else if self.keyboards.buttons["return"].exists {
-            self.keyboards.buttons["return"].tap()
-        } else if self.buttons["Done"].exists && self.buttons["Done"].isHittable {
-            self.buttons["Done"].tap()
-        } else {
-            // Tap outside keyboard
-            self.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+        if keyboards.count > 0 {
+            if buttons["Done"].exists {
+                buttons["Done"].tap()
+            } else if buttons["Return"].exists {
+                buttons["Return"].tap()
+            } else {
+                let coordinate = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+                coordinate.tap()
+            }
         }
-        
-        Thread.sleep(forTimeInterval: 0.3)
     }
     
     func fillTimeBlockForm(app: XCUIApplication, title: String,
@@ -366,41 +363,32 @@ extension XCUIElement {
     func scrollToElement() {
         guard exists else { return }
         
-        let app = XCUIApplication()
-        let scrollViews = [app.scrollViews.firstMatch,
-                          app.collectionViews.firstMatch,
-                          app.tables.firstMatch]
-        
-        // Find the containing scroll view
-        var containingScrollView: XCUIElement?
-        for scrollView in scrollViews where scrollView.exists {
-            containingScrollView = scrollView
-            break
-        }
-        
-        guard let scrollView = containingScrollView else { return }
-        
-        // Try to scroll to element
         var attempts = 0
         let maxAttempts = 10
         
         while !isHittable && attempts < maxAttempts {
-            // Determine scroll direction based on element position
-            if frame.minY > scrollView.frame.maxY {
-                scrollView.swipeUp()
-            } else if frame.maxY < scrollView.frame.minY {
-                scrollView.swipeDown()
-            } else {
-                // Element might be horizontally out of view
-                if frame.minX > scrollView.frame.maxX {
-                    scrollView.swipeLeft()
-                } else if frame.maxX < scrollView.frame.minX {
-                    scrollView.swipeRight()
+            attempts += 1
+            
+            // Try different scroll directions and amounts
+            let app = XCUIApplication()
+            let scrollViews = app.scrollViews
+            
+            if scrollViews.count > 0 {
+                let mainScrollView = scrollViews.firstMatch
+                if mainScrollView.exists {
+                    if attempts % 2 == 0 {
+                        mainScrollView.swipeUp()
+                    } else {
+                        mainScrollView.swipeDown()
+                    }
                 }
             }
             
             Thread.sleep(forTimeInterval: 0.3)
-            attempts += 1
+        }
+        
+        if !isHittable {
+            print(NSError(domain: "ScrollError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not scroll element to visible"]))
         }
     }
 }
@@ -817,14 +805,7 @@ extension XCUIElement {
         guard self.exists else { return }
         
         self.tap()
-        
-        // Select all and delete
-        if let stringValue = self.value as? String {
-            let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue,
-                                    count: stringValue.count)
-            self.typeText(deleteString)
-        }
-        
+        self.doubleTap()
         self.typeText(text)
     }
 }
