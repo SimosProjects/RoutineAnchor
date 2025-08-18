@@ -802,11 +802,20 @@ extension XCUIElement {
     }
     
     func clearAndEnterText(text: String) {
-        guard self.exists else { return }
+        guard exists else { return }
         
-        self.tap()
-        self.doubleTap()
-        self.typeText(text)
+        tap()
+        Thread.sleep(forTimeInterval: 0.3)
+        
+        // Clear existing text
+        if let currentValue = value as? String, !currentValue.isEmpty {
+            // Select all and delete
+            let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: currentValue.count)
+            typeText(deleteString)
+        }
+        
+        // Enter new text
+        typeText(text)
     }
 }
 

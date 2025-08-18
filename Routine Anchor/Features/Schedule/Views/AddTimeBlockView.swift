@@ -3,6 +3,7 @@
 //  Routine Anchor - Premium Version (Improved Duration Selection)
 //
 import SwiftUI
+import Foundation
 
 struct PremiumAddTimeBlockView: View {
     @Environment(\.dismiss) private var dismiss
@@ -11,10 +12,18 @@ struct PremiumAddTimeBlockView: View {
     // MARK: - State
     @State private var showingValidationErrors = false
     @State private var isVisible = false
-    @State private var selectedDuration: Int? = nil // Track selected duration
+    @State private var selectedDuration: Int? = nil
     
-    // MARK: - Callback
+    let existingTimeBlocks: [TimeBlock]
     let onSave: (String, Date, Date, String?, String?) -> Void
+    
+    init(
+        existingTimeBlocks: [TimeBlock] = [],
+        onSave: @escaping (String, Date, Date, String?, String?) -> Void
+    ) {
+        self.existingTimeBlocks = existingTimeBlocks
+        self.onSave = onSave
+    }
     
     var body: some View {
         PremiumTimeBlockFormView(
@@ -24,6 +33,10 @@ struct PremiumAddTimeBlockView: View {
             onDismiss: { dismiss() }
         ) {
             VStack(spacing: 24) {
+                if !formData.getConflictingBlocks().isEmpty {
+                    conflictWarningView
+                }
+                
                 // Basic Information Section
                 basicInfoSection
                 
@@ -41,6 +54,8 @@ struct PremiumAddTimeBlockView: View {
             }
         }
         .onAppear {
+            formData.setExistingTimeBlocks(existingTimeBlocks)
+            formData.setToNextAvailableSlot()
             formData.validateForm()
             
             withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.3)) {
@@ -72,6 +87,94 @@ struct PremiumAddTimeBlockView: View {
             Button("OK") {}
         } message: {
             Text(formData.validationErrors.joined(separator: "\n"))
+        }
+    }
+    
+    // MARK: - Conflict Warning
+    
+    @ViewBuilder
+    private var conflictWarningView: some View {
+        let conflicts = formData.getConflictingBlocks()
+        
+        if !conflicts.isEmpty {
+            VStack(spacing: 12) {
+                // Main warning content
+                HStack(spacing: 12) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(Color.premiumWarning)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Time Conflict")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.premiumTextPrimary) // White text
+                        
+                        if conflicts.count == 1 {
+                            Text("Overlaps with '\(conflicts.first!.title)'")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(Color.premiumTextSecondary) // 70% opacity white
+                        } else {
+                            Text("Overlaps with \(conflicts.count) time blocks")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(Color.premiumTextSecondary)
+                        }
+                    }
+                    
+                    Spacer()
+                }
+                
+                // Fix button with premium styling
+                Button(action: {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                        formData.setToNextAvailableSlot()
+                    }
+                    HapticManager.shared.lightImpact()
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.system(size: 13, weight: .medium))
+                        Text("Find Next Available Time")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .foregroundStyle(Color.premiumBlue)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.white.opacity(0.1))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.premiumBlue.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.cardBackground) // Your app's card background
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.premiumWarning.opacity(0.6),
+                                        Color.premiumWarning.opacity(0.2)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1.5
+                            )
+                    )
+            )
+            .shadow(color: Color.premiumWarning.opacity(0.2), radius: 8, x: 0, y: 4)
+            .padding(.horizontal, 24)
+            .transition(.asymmetric(
+                insertion: .scale(scale: 0.95).combined(with: .opacity),
+                removal: .scale(scale: 0.9).combined(with: .opacity)
+            ))
         }
     }
     
@@ -239,6 +342,50 @@ struct PremiumAddTimeBlockView: View {
         
         HapticManager.shared.premiumSuccess()
         dismiss()
+    }
+}
+
+extension TimeBlockFormData {
+    /// Find the next available time slot that doesn't conflict
+    func findNextAvailableTimeSlot(duration: TimeInterval = 3600) -> (start: Date, end: Date)? {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // Start from the next hour
+        let startOfNextHour = calendar.dateInterval(of: .hour, for: now)?.end ?? now
+        var candidateStart = startOfNextHour
+        
+        // Try up to 24 hours ahead
+        for _ in 0..<24 {
+            let candidateEnd = candidateStart.addingTimeInterval(duration)
+            
+            // Create test block
+            let testBlock = TimeBlock(
+                title: "Test",
+                startTime: candidateStart,
+                endTime: candidateEnd
+            )
+            
+            // Check if this slot is free
+            let conflicts = testBlock.conflictsWith(existingTimeBlocks)
+            if conflicts.isEmpty {
+                return (start: candidateStart, end: candidateEnd)
+            }
+            
+            // Move to next hour
+            candidateStart = calendar.date(byAdding: .hour, value: 1, to: candidateStart) ?? candidateStart
+        }
+        
+        return nil // No available slot found in next 24 hours
+    }
+    
+    /// Set the form to the next available time slot
+    func setToNextAvailableSlot() {
+        if let nextSlot = findNextAvailableTimeSlot() {
+            self.startTime = nextSlot.start
+            self.endTime = nextSlot.end
+            validateForm()
+        }
     }
 }
 

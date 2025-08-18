@@ -118,7 +118,9 @@ struct ScheduleBuilderView: View {
             Text("Are you sure you want to delete this time block?")
         }
         .sheet(isPresented: $showingAddBlock) {
-            PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
+            PremiumAddTimeBlockView(
+                existingTimeBlocks: viewModel!.timeBlocks
+            ) { title, startTime, endTime, notes, category in
                 viewModel?.addTimeBlock(
                     title: title,
                     startTime: startTime,
@@ -132,7 +134,7 @@ struct ScheduleBuilderView: View {
         }
         .sheet(isPresented: $showingEditBlock) {
             if let block = selectedBlock {
-                EditTimeBlockView(timeBlock: block) { updatedBlock in
+                EditTimeBlockView(timeBlock: block, existingTimeBlocks: viewModel!.timeBlocks) { updatedBlock in
                     viewModel?.updateTimeBlock(updatedBlock)
                 }
                 .presentationDetents([.large])

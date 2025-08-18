@@ -21,6 +21,8 @@ final class TimeBlockFormData {
     var validationErrors: [String] = []
     var isFormValid = false
     var hasChanges = false
+    var excludedTimeBlockId: UUID? = nil
+    var existingTimeBlocks: [TimeBlock] = []
     
     // MARK: - Constants
     let categories = ["Work", "Personal", "Health", "Learning", "Social", "Other"]
@@ -96,7 +98,43 @@ final class TimeBlockFormData {
             validationErrors.append("Time block cannot be longer than 24 hours")
         }
         
+        // NEW: Conflict validation
+        validateConflicts()
+        
         isFormValid = validationErrors.isEmpty
+    }
+    
+    /// Check for time conflicts with existing blocks
+    private func validateConflicts() {
+        let testBlock = TimeBlock(
+            title: "Test",
+            startTime: startTime,
+            endTime: endTime
+        )
+        
+        // Filter out the block being edited (if any)
+        let blocksToCheck = existingTimeBlocks.filter { block in
+            if let excludedId = excludedTimeBlockId {
+                return block.id != excludedId
+            }
+            return true
+        }
+        
+        // Find conflicts
+        let conflicts = testBlock.conflictsWith(blocksToCheck)
+        
+        if !conflicts.isEmpty {
+            if conflicts.count == 1 {
+                let conflictingBlock = conflicts.first!
+                let formatter = DateFormatter()
+                formatter.dateFormat = "h:mm a"
+                let conflictTime = "\(formatter.string(from: conflictingBlock.startTime)) - \(formatter.string(from: conflictingBlock.endTime))"
+                
+                validationErrors.append("This time overlaps with '\(conflictingBlock.title)' (\(conflictTime))")
+            } else {
+                validationErrors.append("This time overlaps with \(conflicts.count) existing time blocks")
+            }
+        }
     }
     
     // MARK: - Change Detection Methods
@@ -140,5 +178,28 @@ final class TimeBlockFormData {
             notes: sanitizedNotes.isEmpty ? nil : sanitizedNotes,
             category: sanitizedCategory.isEmpty ? nil : sanitizedCategory
         )
+    }
+    
+    func setExistingTimeBlocks(_ blocks: [TimeBlock], excluding excludedId: UUID? = nil) {
+        self.existingTimeBlocks = blocks
+        self.excludedTimeBlockId = excludedId
+        validateForm() // Re-validate when blocks change
+    }
+    
+    func getConflictingBlocks() -> [TimeBlock] {
+        let testBlock = TimeBlock(
+            title: "Test",
+            startTime: startTime,
+            endTime: endTime
+        )
+        
+        let blocksToCheck = existingTimeBlocks.filter { block in
+            if let excludedId = excludedTimeBlockId {
+                return block.id != excludedId
+            }
+            return true
+        }
+        
+        return testBlock.conflictsWith(blocksToCheck)
     }
 }

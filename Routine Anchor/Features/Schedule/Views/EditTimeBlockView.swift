@@ -10,14 +10,20 @@ struct EditTimeBlockView: View {
     @State private var showingValidationErrors = false
     @State private var isVisible = false
     @State private var showingDiscardConfirmation = false
-    @State private var selectedDuration: Int? = nil // Track selected duration
+    @State private var selectedDuration: Int? = nil
     
     // MARK: - Properties
     let originalTimeBlock: TimeBlock
+    let existingTimeBlocks: [TimeBlock]
     let onSave: (TimeBlock) -> Void
     
-    init(timeBlock: TimeBlock, onSave: @escaping (TimeBlock) -> Void) {
+    init(
+        timeBlock: TimeBlock,
+        existingTimeBlocks: [TimeBlock],
+        onSave: @escaping (TimeBlock) -> Void
+    ) {
         self.originalTimeBlock = timeBlock
+        self.existingTimeBlocks = existingTimeBlocks
         self.onSave = onSave
         self._formData = State(initialValue: TimeBlockFormData(from: timeBlock))
     }
@@ -57,6 +63,10 @@ struct EditTimeBlockView: View {
             }
         }
         .onAppear {
+            formData.setExistingTimeBlocks(
+                existingTimeBlocks,
+                excluding: originalTimeBlock.id
+            )
             formData.validateForm()
             formData.checkForChanges()
             
@@ -401,7 +411,64 @@ struct EditTimeBlockView: View {
         category: "Personal"
     )
     
-    return EditTimeBlockView(timeBlock: sampleBlock) { updatedBlock in
+    // Create some sample existing blocks to test conflict detection
+    let existingBlocks = [
+        TimeBlock(
+            title: "Early Meeting",
+            startTime: Date().addingTimeInterval(-1800), // 30 min before
+            endTime: Date().addingTimeInterval(-600)     // 10 min before
+        ),
+        TimeBlock(
+            title: "Lunch Break",
+            startTime: Date().addingTimeInterval(7200),  // 2 hours after
+            endTime: Date().addingTimeInterval(10800)    // 3 hours after
+        ),
+        TimeBlock(
+            title: "Conflicting Block",
+            startTime: Date().addingTimeInterval(1800),  // 30 min after (overlaps!)
+            endTime: Date().addingTimeInterval(5400)     // 90 min after
+        )
+    ]
+    
+    return EditTimeBlockView(
+        timeBlock: sampleBlock,
+        existingTimeBlocks: existingBlocks // ← Add this parameter!
+    ) { updatedBlock in
         print("Updated: \(updatedBlock.title)")
+    }
+}
+
+// Alternative: Simple preview without conflicts
+#Preview("No Conflicts") {
+    let sampleBlock = TimeBlock(
+        title: "Morning Routine",
+        startTime: Date(),
+        endTime: Date().addingTimeInterval(3600),
+        notes: "Exercise, shower, breakfast",
+        category: "Personal"
+    )
+    
+    return EditTimeBlockView(
+        timeBlock: sampleBlock,
+        existingTimeBlocks: [] // ← Empty array = no conflicts
+    ) { updatedBlock in
+        print("Updated: \(updatedBlock.title)")
+    }
+}
+
+// Preview for AddTimeBlockView too:
+#Preview("Add Time Block") {
+    let existingBlocks = [
+        TimeBlock(
+            title: "Existing Block",
+            startTime: Date().addingTimeInterval(3600),
+            endTime: Date().addingTimeInterval(7200)
+        )
+    ]
+    
+    PremiumAddTimeBlockView(
+        existingTimeBlocks: existingBlocks // ← Add this parameter!
+    ) { title, startTime, endTime, notes, category in
+        print("Saving: \(title) from \(startTime) to \(endTime)")
     }
 }

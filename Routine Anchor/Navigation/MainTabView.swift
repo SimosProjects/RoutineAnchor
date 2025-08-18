@@ -12,6 +12,7 @@ struct MainTabView: View {
     @State private var tabBarOffset: CGFloat = 0
     @State private var showFloatingAction = false
     @State private var showingAddTimeBlock = false
+    @State private var existingTimeBlocks: [TimeBlock] = []
     
     // Track if we're programmatically changing tabs to prevent loops
     @State private var isInternalTabChange = false
@@ -118,7 +119,9 @@ struct MainTabView: View {
             floatingActionButton
         }
         .sheet(isPresented: $showingAddTimeBlock) {
-            PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
+            PremiumAddTimeBlockView (
+                existingTimeBlocks: existingTimeBlocks
+            ) { title, startTime, endTime, notes, category in
                 // Create and save the time block directly
                 let newBlock = TimeBlock(
                     title: title,
@@ -143,6 +146,38 @@ struct MainTabView: View {
             }
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+            // Load existing time blocks when view appears
+            loadExistingTimeBlocks()
+        }
+        .onChange(of: selectedTab) { _, _ in
+            // Reload blocks when tab changes (in case user is switching between days)
+            loadExistingTimeBlocks()
+        }
+    }
+    
+    // MARK: - Helper Methods for TimeBlock Management
+    
+    private func loadExistingTimeBlocks() {
+        // Get today's date for filtering
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today) ?? today
+        
+        // Create fetch descriptor for today's time blocks
+        let descriptor = FetchDescriptor<TimeBlock>(
+            predicate: #Predicate<TimeBlock> { timeBlock in
+                timeBlock.startTime >= today && timeBlock.startTime < tomorrow
+            },
+            sortBy: [SortDescriptor(\.startTime)]
+        )
+        
+        do {
+            existingTimeBlocks = try modelContext.fetch(descriptor)
+        } catch {
+            print("Failed to fetch existing time blocks: \(error)")
+            existingTimeBlocks = []
         }
     }
     
@@ -332,6 +367,8 @@ struct MainTabView: View {
         
         switch selectedTab {
         case .today:
+            // Load latest time blocks before showing the form
+            loadExistingTimeBlocks()
             // Present sheet directly instead of posting notification
             showingAddTimeBlock = true
         default:
