@@ -56,7 +56,7 @@ class ImportService {
     }
     
     /// Import JSON data
-    private func importJSON(_ data: Data, modelContext: ModelContext) async throws -> ImportResult {
+    func importJSON(_ data: Data, modelContext: ModelContext) async throws -> ImportResult {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         
@@ -129,7 +129,7 @@ class ImportService {
     }
     
     /// Import CSV data
-    private func importCSV(_ data: Data, modelContext: ModelContext) async throws -> ImportResult {
+    func importCSV(_ data: Data, modelContext: ModelContext) async throws -> ImportResult {
         guard let csvString = String(data: data, encoding: .utf8) else {
             throw ImportError.invalidCSV("Unable to read CSV data")
         }
