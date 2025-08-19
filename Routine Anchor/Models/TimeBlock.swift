@@ -257,19 +257,25 @@ extension TimeBlock {
 
 // MARK: - Validation
 extension TimeBlock {
-    /// Whether this time block has valid time constraints
+    /// Whether this time block passes all validation checks
     var isValid: Bool {
         return validationErrors.isEmpty
     }
     
-    /// Validation errors for this time block
+    /// All validation errors for this time block
     var validationErrors: [String] {
         var errors: [String] = []
         
+        // Title validation
         if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             errors.append("Title cannot be empty")
         }
         
+        if title.count > 100 {
+            errors.append("Title cannot exceed 100 characters")
+        }
+        
+        // Time validation
         if startTime >= endTime {
             errors.append("Start time must be before end time")
         }
@@ -280,6 +286,16 @@ extension TimeBlock {
         
         if durationMinutes > 24 * 60 {
             errors.append("Duration cannot exceed 24 hours")
+        }
+        
+        // Notes validation
+        if let notes = notes, notes.count > 500 {
+            errors.append("Notes cannot exceed 500 characters")
+        }
+        
+        // Category validation
+        if let category = category, category.count > 50 {
+            errors.append("Category cannot exceed 50 characters")
         }
         
         return errors
