@@ -10,6 +10,7 @@ import SwiftUI
 
 /// Core data management service for handling all SwiftData operations
 @Observable
+@MainActor
 class DataManager {
     // MARK: - Properties
     

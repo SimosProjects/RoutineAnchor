@@ -17,7 +17,7 @@ class DailyProgress {
     @Attribute(.unique) var id: UUID
     
     /// Date this progress record represents (stored as start of day)
-    @Attribute(.unique) var date: Date
+    var date: Date
     
     /// Total number of time blocks scheduled for this day
     var totalBlocks: Int

@@ -66,9 +66,8 @@ final class TodayViewModel {
 
     func startPeriodicUpdates() {
         stopPeriodicUpdates()
-        
         updateTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
+            Task { @MainActor in
                 await self?.refreshData()
             }
         }

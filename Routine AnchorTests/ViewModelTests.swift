@@ -13,6 +13,7 @@ final class ViewModelTests: XCTestCase {
     
     var container: ModelContainer!
     
+    // In your test setup
     override func setUp() {
         super.setUp()
         
@@ -36,13 +37,16 @@ final class ViewModelTests: XCTestCase {
     @MainActor
     func testTodayViewModelBasicInitialization() throws {
         let dataManager = DataManager(modelContext: container.mainContext)
-        let viewModel = TodayViewModel(dataManager: dataManager)
         
-        // Test basic properties exist and have expected initial values
-        XCTAssertNotNil(viewModel)
-        XCTAssertFalse(viewModel.isLoading)
-        XCTAssertTrue(viewModel.timeBlocks.isEmpty)
-        XCTAssertNil(viewModel.errorMessage)
+        // Prevent async loading during test
+        autoreleasepool {
+            let viewModel = TodayViewModel(dataManager: dataManager)
+            
+            XCTAssertNotNil(viewModel)
+            XCTAssertFalse(viewModel.isLoading)
+            XCTAssertTrue(viewModel.timeBlocks.isEmpty)
+            XCTAssertNil(viewModel.errorMessage)
+        }
     }
     
     @MainActor
