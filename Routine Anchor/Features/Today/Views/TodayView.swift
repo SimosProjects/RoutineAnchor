@@ -62,6 +62,11 @@ struct TodayView: View {
                                     onUseTemplate: showTemplates
                                 )
                             }
+                            
+                            Spacer()
+                            
+                            // Ad banner for free users
+                            StyledAdBanner()
                         }
                     }
                     .refreshable {

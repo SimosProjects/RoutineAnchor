@@ -12,6 +12,7 @@ struct RoutineAnchorApp: App {
     // MARK: - Properties
     @StateObject private var migrationService = MigrationService.shared
     @StateObject private var authManager = AuthenticationManager()
+    @StateObject private var adManager = AdManager()
     @State private var premiumManager = PremiumManager()
     @State private var modelContainer: ModelContainer?
     @State private var showMigrationView = false
@@ -36,6 +37,7 @@ struct RoutineAnchorApp: App {
                         .environmentObject(migrationService)
                         .premiumEnvironment(premiumManager)
                         .environmentObject(authManager)
+                        .environmentObject(adManager)
                         .overlay {
                             if showMigrationView {
                                 MigrationProgressView()

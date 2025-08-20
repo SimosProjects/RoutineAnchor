@@ -72,6 +72,8 @@ struct DailySummaryView: View {
                     }
                     
                     Spacer(minLength: 16)
+                    
+                    StyledAdBanner()
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 16)
@@ -85,6 +87,12 @@ struct DailySummaryView: View {
             PremiumUpgradeView(premiumManager: premiumManager)
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshSummaryView)) { _ in
+            Task { @MainActor in
+                await viewModel.refreshData()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            // Refetch data when app becomes active (after ads)
             Task { @MainActor in
                 await viewModel.refreshData()
             }

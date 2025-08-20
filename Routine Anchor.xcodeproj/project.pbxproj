@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		249447542E55DAB200931D35 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 249447532E55DAB200931D35 /* GoogleMobileAds */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		24F94D6E2E2BE0E60001A468 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +33,22 @@
 		24F94D772E2BE0E60001A468 /* Routine AnchorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Routine AnchorUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		249447562E55DCF000931D35 /* Exceptions for "Routine Anchor" folder in "Routine Anchor" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Routine-Anchor-Info.plist",
+			);
+			target = 24F94D5C2E2BE0E50001A468 /* Routine Anchor */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		24F94D5F2E2BE0E50001A468 /* Routine Anchor */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				249447562E55DCF000931D35 /* Exceptions for "Routine Anchor" folder in "Routine Anchor" target */,
+			);
 			path = "Routine Anchor";
 			sourceTree = "<group>";
 		};
@@ -52,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				249447542E55DAB200931D35 /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +130,7 @@
 			);
 			name = "Routine Anchor";
 			packageProductDependencies = (
+				249447532E55DAB200931D35 /* GoogleMobileAds */,
 			);
 			productName = "Routine Anchor";
 			productReference = 24F94D5D2E2BE0E50001A468 /* Routine Anchor.app */;
@@ -195,6 +214,9 @@
 			);
 			mainGroup = 24F94D542E2BE0E50001A468;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				249447522E55DAB200931D35 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 24F94D5E2E2BE0E50001A468 /* Products */;
 			projectDirPath = "";
@@ -399,6 +421,7 @@
 				DEVELOPMENT_TEAM = VHBQ755ZF8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Routine-Anchor-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -428,6 +451,7 @@
 				DEVELOPMENT_TEAM = VHBQ755ZF8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Routine-Anchor-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -554,6 +578,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		249447522E55DAB200931D35 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		249447532E55DAB200931D35 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 249447522E55DAB200931D35 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 24F94D552E2BE0E50001A468 /* Project object */;
 }
