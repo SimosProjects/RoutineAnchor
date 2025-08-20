@@ -96,6 +96,11 @@ class AuthenticationManager: ObservableObject {
         UserDefaults.standard.set(productUpdates, forKey: "emailPref_productUpdates")
         UserDefaults.standard.set(courses, forKey: "emailPref_courses")
         
+        print("📧 Email preferences updated:")
+        print("   Marketing: \(marketing)")
+        print("   Product Updates: \(productUpdates)")
+        print("   Courses: \(courses)")
+        
         // TODO: Update Firebase when implemented
         print("Firebase Implementation needed for email preferences update")
     }

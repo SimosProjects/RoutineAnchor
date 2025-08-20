@@ -15,6 +15,7 @@ struct SettingsView: View {
     
     // MARK: - State
     @State private var viewModel: SettingsViewModel?
+    @State private var showingEmailPreferences = false
     @State private var animationPhase = 0
     @State private var animationTask: Task<Void, Never>?
     
@@ -184,6 +185,14 @@ struct SettingsView: View {
                 .modelContainer(modelContext.container)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingEmailPreferences) {
+            NavigationStack {
+                EmailPreferencesView()
+                    .environmentObject(authManager)
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .overlay(alignment: .top) {
             // Success/Error message overlay
@@ -402,15 +411,27 @@ struct SettingsView: View {
     // MARK: - Account Section
     private var accountSection: some View {
         VStack(spacing: 16) {
-            HStack {
-                Text("Account")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+            VStack(spacing: 16) {
+                // Title inside the box (like other sections)
+                HStack {
+                    Text("Account")
+                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                    // Add a verified badge for visual balance
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Color.anchorGreen)
+                        
+                        Text("Verified")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color.anchorGreen)
+                    }
+                }
                 
-                Spacer()
-            }
-            
-            VStack(spacing: 12) {
                 // Email display
                 HStack {
                     Image(systemName: "envelope")
@@ -418,7 +439,7 @@ struct SettingsView: View {
                         .foregroundStyle(Color.anchorBlue)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Email")
+                        Text("Email Address")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.white.opacity(0.7))
                         
@@ -430,26 +451,70 @@ struct SettingsView: View {
                     Spacer()
                 }
                 
+                // Divider for visual separation
+                Rectangle()
+                    .fill(Color.white.opacity(0.1))
+                    .frame(height: 1)
+                
                 // Email preferences button
-                Button("Email Preferences") {
-                    // TODO: Show email preferences sheet
-                    print("Need to show email preferences sheet")
+                HStack {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color.anchorBlue)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Email Preferences")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(.white)
+                        
+                        Text("Manage notification settings")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.5))
                 }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.anchorBlue)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .onTapGesture {
+                    showingEmailPreferences = true
+                }
             }
-            .padding(16)
+            .padding(20)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 20)
                     .fill(.ultraThinMaterial)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.05),
+                                        Color.white.opacity(0.02)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.2),
+                                        Color.white.opacity(0.05)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
                     )
             )
         }
-        .padding(.horizontal, 20)
     }
     
     #if DEBUG
@@ -483,6 +548,27 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             
+            VStack(alignment: .leading, spacing: 4) {
+                Text("AUTH DEBUG:")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.yellow)
+                
+                Text("isEmailCaptured: \(authManager.isEmailCaptured)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.white)
+                
+                Text("userEmail: \(authManager.userEmail ?? "nil")")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.white)
+                
+                Text("shouldShowEmailCapture: \(authManager.shouldShowEmailCapture)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.white)
+            }
+            .padding(8)
+            .background(Color.black.opacity(0.5))
+            .cornerRadius(8)
+            
             HStack {
                 Text("Status: \(premiumManager?.userIsPremium == true ? "PREMIUM ✅" : "FREE ❌")")
                     .font(.caption)
@@ -511,6 +597,13 @@ struct SettingsView: View {
 
 // MARK: - Preview
 #Preview {
-    SettingsView()
-        .modelContainer(for: [TimeBlock.self, DailyProgress.self], inMemory: true)
+    // Create a mock AuthenticationManager with email captured
+    let mockAuthManager = AuthenticationManager()
+    mockAuthManager.userEmail = "preview@example.com"
+    mockAuthManager.isEmailCaptured = true
+    
+    return SettingsView()
+        .modelContainer(for: [TimeBlock.self, DailyProgress.self, RoutineTemplate.self], inMemory: true)
+        .environment(\.premiumManager, PremiumManager())
+        .environmentObject(mockAuthManager)
 }
