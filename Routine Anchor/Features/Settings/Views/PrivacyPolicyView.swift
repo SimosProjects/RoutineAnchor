@@ -96,9 +96,16 @@ struct PrivacyPolicyView: View {
         VStack(spacing: 20) {
             PrivacySection(
                 icon: "iphone",
-                title: "Local Storage Only",
-                content: "All your routine data is stored locally on your device. We never collect, transmit, or store your personal information on external servers.",
+                title: "Local Storage First",
+                content: "Your routine data is stored locally on your device by default. We only collect email addresses when you voluntarily provide them for updates and courses.",
                 color: Color.anchorGreen
+            )
+            
+            PrivacySection(
+                icon: "envelope",
+                title: "Optional Email Collection",
+                content: "We may ask for your email to send productivity tips, app updates, and information about our app development courses. This is completely optional and you can unsubscribe anytime.",
+                color: Color.anchorBlue
             )
             
             PrivacySection(
@@ -110,22 +117,22 @@ struct PrivacyPolicyView: View {
             
             PrivacySection(
                 icon: "lock.shield",
-                title: "No Data Collection",
-                content: "Routine Anchor does not collect analytics, usage data, or any personal information. Your productivity data remains completely private.",
+                title: "Minimal Data Collection",
+                content: "When you provide your email, we store it securely and only use it for the purposes you agreed to. Your routine data remains private and local to your device.",
                 color: Color.anchorPurple
             )
             
             PrivacySection(
                 icon: "externaldrive",
-                title: "No Third Parties",
-                content: "We don't share data with third parties because we don't collect it in the first place. Your information never leaves your device.",
+                title: "No Third Party Sharing",
+                content: "We don't share your email or any personal information with third parties for marketing purposes. Your data is used only to provide you with the services you requested.",
                 color: Color.anchorTeal
             )
             
             PrivacySection(
                 icon: "trash",
                 title: "Data Deletion",
-                content: "You can delete all your data at any time from the Settings screen. When you delete the app, all data is permanently removed.",
+                content: "You can delete your email from our records at any time through the Settings screen. When you delete the app, all local data is permanently removed.",
                 color: Color.anchorWarning
             )
         }

@@ -10,7 +10,8 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.premiumManager) private var premiumManager 
+    @Environment(\.premiumManager) private var premiumManager
+    @EnvironmentObject private var authManager: AuthenticationManager
     @State private var showOnboarding = true
     
     var body: some View {
@@ -20,6 +21,7 @@ struct ContentView: View {
             } else {
                 MainTabViewPremium()
                     .environment(DataManager(modelContext: modelContext))
+                    .environmentObject(authManager)
             }
         }
         .onAppear {
@@ -80,9 +82,12 @@ struct ContentView: View {
 // MARK: - Premium-Enabled Main Tab View
 struct MainTabViewPremium: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.premiumManager) private var premiumManager // This is now optional
+    @Environment(\.premiumManager) private var premiumManager
+    @EnvironmentObject private var authManager: AuthenticationManager
+    @State private var showingEmailCapture = false
     @State private var selectedTab = 0
     @State private var showingPremiumUpgrade = false
+    @State private var manualShowSheet = false
     
     // Use fallback if premiumManager is nil
     private var safePremiumManager: PremiumManager {
@@ -121,6 +126,7 @@ struct MainTabViewPremium: View {
                 
                 // Settings Tab
                 SettingsView()
+                    .environmentObject(authManager)
                     .tabItem {
                         Image(systemName: selectedTab == 3 ? "gearshape.fill" : "gearshape")
                         Text("Settings")
@@ -143,6 +149,30 @@ struct MainTabViewPremium: View {
             }
         }
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showingPremiumUpgrade)
+        .sheet(isPresented: $showingEmailCapture) {
+            EmailCaptureView { email in
+                authManager.captureEmail(email)
+            }
+        }
+        .onAppear {
+            checkForEmailCapture()
+        }
+        .onReceive(authManager.$shouldShowEmailCapture) { shouldShow in
+            if shouldShow {
+                showingEmailCapture = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ForceShowEmailCapture"))) { _ in
+            showingEmailCapture = true
+        }
+    }
+    
+    // MARK: - Email Capture
+    private func checkForEmailCapture() {
+        // Check after a short delay to let the UI settle
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            authManager.checkShouldShowEmailCapture()
+        }
     }
     
     // MARK: - Analytics Tab with Premium Gating

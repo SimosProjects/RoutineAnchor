@@ -11,6 +11,7 @@ import SwiftData
 struct RoutineAnchorApp: App {
     // MARK: - Properties
     @StateObject private var migrationService = MigrationService.shared
+    @StateObject private var authManager = AuthenticationManager()
     @State private var premiumManager = PremiumManager()
     @State private var modelContainer: ModelContainer?
     @State private var showMigrationView = false
@@ -34,6 +35,7 @@ struct RoutineAnchorApp: App {
                         .modelContainer(container)
                         .environmentObject(migrationService)
                         .premiumEnvironment(premiumManager)
+                        .environmentObject(authManager)
                         .overlay {
                             if showMigrationView {
                                 MigrationProgressView()

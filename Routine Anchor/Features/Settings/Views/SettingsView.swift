@@ -1,7 +1,6 @@
 //
 //  SettingsView.swift
 //  Routine Anchor
-//  Swift 6 Compatible Version
 //
 //  Created by Christopher Simonson on 7/21/25.
 //
@@ -12,6 +11,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.premiumManager) private var premiumManager
+    @EnvironmentObject private var authManager: AuthenticationManager
     
     // MARK: - State
     @State private var viewModel: SettingsViewModel?
@@ -62,6 +62,11 @@ struct SettingsView: View {
                     )
                     
                     premiumStatusSection
+                    
+                    // Account section
+                    if authManager.isEmailCaptured {
+                        accountSection
+                    }
                     
                     // Settings sections
                     NotificationSettingsSection(
@@ -394,6 +399,59 @@ struct SettingsView: View {
         )
     }
     
+    // MARK: - Account Section
+    private var accountSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Account")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Spacer()
+            }
+            
+            VStack(spacing: 12) {
+                // Email display
+                HStack {
+                    Image(systemName: "envelope")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color.anchorBlue)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Email")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.7))
+                        
+                        Text(authManager.userEmail ?? "No email")
+                            .font(.system(size: 16))
+                            .foregroundStyle(.white)
+                    }
+                    
+                    Spacer()
+                }
+                
+                // Email preferences button
+                Button("Email Preferences") {
+                    // TODO: Show email preferences sheet
+                    print("Need to show email preferences sheet")
+                }
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color.anchorBlue)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+            )
+        }
+        .padding(.horizontal, 20)
+    }
+    
     #if DEBUG
     private var simpleDebugSection: some View {
         VStack(spacing: 12) {
@@ -414,6 +472,15 @@ struct SettingsView: View {
                 .background(Color.red)
                 .foregroundStyle(.white)
                 .cornerRadius(6)
+            }
+            
+            VStack(spacing: 8) {
+                Button("Reset Email Capture") {
+                    authManager.resetForTesting()
+                }
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.red)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             
             HStack {

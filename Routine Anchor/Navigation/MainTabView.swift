@@ -7,12 +7,14 @@ import SwiftData
 
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var authManager: AuthenticationManager
     @State private var tabViewModel = MainTabViewModel()
     @State private var selectedTab: Tab = .today
     @State private var tabBarOffset: CGFloat = 0
     @State private var showFloatingAction = false
     @State private var showingAddTimeBlock = false
     @State private var existingTimeBlocks: [TimeBlock] = []
+    @State private var showingEmailCapture = false
     
     // Track if we're programmatically changing tabs to prevent loops
     @State private var isInternalTabChange = false
@@ -145,6 +147,19 @@ struct MainTabView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $showingEmailCapture) {
+            EmailCaptureView { email in
+                authManager.captureEmail(email)
+            }
+        }
+        .onAppear {
+            checkForEmailCapture()
+        }
+        .onChange(of: authManager.shouldShowEmailCapture) { _, shouldShow in
+            if shouldShow {
+                showingEmailCapture = true
+            }
+        }
         .onAppear {
             // Load existing time blocks when view appears
             loadExistingTimeBlocks()
@@ -176,6 +191,16 @@ struct MainTabView: View {
         } catch {
             print("Failed to fetch existing time blocks: \(error)")
             existingTimeBlocks = []
+        }
+    }
+    
+    // MARK: - Email Capture
+    
+    private func checkForEmailCapture() {
+        print("Check for Email Capture invoked")
+        // Check after a short delay to let the UI settle
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            authManager.checkShouldShowEmailCapture()
         }
     }
     
