@@ -1,12 +1,12 @@
 //
-//  PremiumFormSection.swift
+//  FormSection.swift
 //  Routine Anchor
 //
 //  Created by Christopher Simonson on 7/23/25.
 //
 import SwiftUI
 
-struct PremiumFormSection<Content: View>: View {
+struct FormSection<Content: View>: View {
     let title: String
     let icon: String
     let color: Color

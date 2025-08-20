@@ -1,7 +1,9 @@
-// COMPREHENSIVE ScheduleUITests.swift - REVAMPED & FIXED
-// Complete test coverage for ScheduleBuilderView functionality
-// Based on actual codebase: ScheduleBuilderView, PremiumAddTimeBlockView, SimpleTimeBlockRow
-
+//
+//  ScheduleUITests.swift
+//  Routine Anchor
+//
+//  Tests for Schedule View UI
+//
 import XCTest
 
 final class ScheduleUITests: XCTestCase {

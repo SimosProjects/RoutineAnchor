@@ -29,7 +29,7 @@ struct EditTimeBlockView: View {
     }
     
     var body: some View {
-        PremiumTimeBlockFormView(
+        TimeBlockFormView(
             title: "Edit Time Block",
             icon: "pencil.circle",
             subtitle: "Update your schedule",
@@ -134,7 +134,7 @@ struct EditTimeBlockView: View {
         HStack(spacing: 12) {
             Image(systemName: "clock.badge.exclamationmark")
                 .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(Color.premiumBlue)
+                .foregroundStyle(Color.anchorBlue)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("Currently Active")
@@ -151,11 +151,11 @@ struct EditTimeBlockView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.premiumBlue.opacity(0.15))
+                .fill(Color.anchorBlue.opacity(0.15))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.premiumBlue.opacity(0.3), lineWidth: 1)
+                .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
         )
         .padding(.horizontal, 24)
         .opacity(isVisible ? 1 : 0)
@@ -163,20 +163,20 @@ struct EditTimeBlockView: View {
     }
     
     private var basicInfoSection: some View {
-        PremiumFormSection(
+        FormSection(
             title: "Basic Information",
             icon: "doc.text",
-            color: Color.premiumBlue
+            color: Color.anchorBlue
         ) {
             VStack(spacing: 16) {
-                PremiumTextField(
+                DesignedTextField(
                     title: "Title",
                     text: $formData.title,
                     placeholder: "What will you be doing?",
                     icon: "textformat"
                 )
                 
-                PremiumTextField(
+                DesignedTextField(
                     title: "Notes",
                     text: $formData.notes,
                     placeholder: "Add details or reminders (optional)",
@@ -190,10 +190,10 @@ struct EditTimeBlockView: View {
     }
     
     private var timeAndDurationSection: some View {
-        PremiumFormSection(
+        FormSection(
             title: "Schedule",
             icon: "clock",
-            color: Color.premiumGreen
+            color: Color.anchorGreen
         ) {
             VStack(spacing: 20) {
                 if originalTimeBlock.status == .inProgress {
@@ -201,31 +201,31 @@ struct EditTimeBlockView: View {
                     HStack(spacing: 12) {
                         Image(systemName: "exclamationmark.triangle")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(Color.premiumWarning)
+                            .foregroundStyle(Color.anchorWarning)
                         
                         Text("Start time cannot be changed for active blocks")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.premiumWarning)
+                            .foregroundStyle(Color.anchorWarning)
                         
                         Spacer()
                     }
                     .padding(12)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.premiumWarning.opacity(0.15))
+                            .fill(Color.anchorWarning.opacity(0.15))
                     )
                 }
                 
                 // Time pickers
                 HStack(spacing: 16) {
-                    PremiumTimePicker(
+                    TimePicker(
                         title: "Start",
                         selection: $formData.startTime,
                         icon: "play.circle",
                         isDisabled: originalTimeBlock.status == .inProgress
                     )
                     
-                    PremiumTimePicker(
+                    TimePicker(
                         title: "End",
                         selection: $formData.endTime,
                         icon: "stop.circle"
@@ -237,7 +237,7 @@ struct EditTimeBlockView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "timer")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.premiumWarning)
+                            .foregroundStyle(Color.anchorWarning)
                         
                         Text("Quick Duration")
                             .font(.system(size: 14, weight: .semibold))
@@ -249,7 +249,7 @@ struct EditTimeBlockView: View {
                         onSelect: { minutes in
                             selectedDuration = minutes
                             formData.setDuration(minutes: minutes)
-                            HapticManager.shared.premiumSelection()
+                            HapticManager.shared.anchorSelection()
                         }
                     )
                 }
@@ -269,21 +269,21 @@ struct EditTimeBlockView: View {
     private func color(for minutes: Int) -> Color {
         switch minutes {
         case ..<15:
-            return .premiumError
+            return .anchorError
         case ..<30:
-            return .premiumWarning
+            return .anchorWarning
         case ..<60:
-            return .premiumWarning
+            return .anchorWarning
         default:
-            return .premiumGreen
+            return .anchorGreen
         }
     }
     
     private var organizationSection: some View {
-        PremiumFormSection(
+        FormSection(
             title: "Organization",
             icon: "folder",
-            color: Color.premiumPurple
+            color: Color.anchorPurple
         ) {
             CategorySelector(
                 categories: formData.categories,
@@ -295,10 +295,10 @@ struct EditTimeBlockView: View {
     }
     
     private var iconSection: some View {
-        PremiumFormSection(
+        FormSection(
             title: "Icon",
             icon: "face.smiling",
-            color: Color.premiumTeal
+            color: Color.anchorTeal
         ) {
             IconSelector(
                 icons: formData.icons,
@@ -310,7 +310,7 @@ struct EditTimeBlockView: View {
     }
     
     private var historySection: some View {
-        PremiumFormSection(
+        FormSection(
             title: "History",
             icon: "clock.arrow.circlepath",
             color: Color.white.opacity(0.6)
@@ -346,7 +346,7 @@ struct EditTimeBlockView: View {
     
     private var actionButtons: some View {
         VStack(spacing: 16) {
-            PremiumButton(
+            DesignedButton(
                 title: formData.hasChanges ? "Save Changes" : "No Changes",
                 style: formData.hasChanges ? .gradient : .secondary,
                 action: saveChanges
@@ -396,7 +396,7 @@ struct EditTimeBlockView: View {
         
         onSave(updatedBlock)
         
-        HapticManager.shared.premiumSuccess()
+        HapticManager.shared.anchorSuccess()
         dismiss()
     }
 }
@@ -466,8 +466,8 @@ struct EditTimeBlockView: View {
         )
     ]
     
-    PremiumAddTimeBlockView(
-        existingTimeBlocks: existingBlocks // ← Add this parameter!
+    AddTimeBlockView(
+        existingTimeBlocks: existingBlocks
     ) { title, startTime, endTime, notes, category in
         print("Saving: \(title) from \(startTime) to \(endTime)")
     }

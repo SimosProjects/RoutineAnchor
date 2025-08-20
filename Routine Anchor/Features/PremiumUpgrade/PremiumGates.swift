@@ -23,7 +23,7 @@ struct PremiumGateView: View {
                 
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.premiumWarning)
+                    .foregroundStyle(Color.anchorWarning)
                     .offset(x: 20, y: -20)
             }
             
@@ -40,7 +40,7 @@ struct PremiumGateView: View {
                     .lineLimit(3)
             }
             
-            PremiumButton(
+            DesignedButton(
                 title: "Upgrade to Premium",
                 style: .gradient,
                 action: onUpgrade
@@ -75,7 +75,7 @@ struct TimeBlockLimitGate: View {
                 }
                 
                 ProgressView(value: Double(currentCount), total: Double(limit))
-                    .progressViewStyle(LinearProgressViewStyle(tint: Color.premiumWarning))
+                    .progressViewStyle(LinearProgressViewStyle(tint: Color.anchorWarning))
                     .scaleEffect(y: 2)
             }
             
@@ -94,12 +94,41 @@ struct AnalyticsGate: View {
     let onUpgrade: () -> Void
     
     var body: some View {
-        PremiumGateView(
-            feature: "Advanced Analytics",
-            description: "Unlock detailed insights, productivity trends, and personalized recommendations to optimize your routine.",
-            icon: "chart.line.uptrend.xyaxis",
-            onUpgrade: onUpgrade
-        )
+        VStack(spacing: 20) {
+            // Icon and crown
+            ZStack {
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundStyle(.white.opacity(0.3))
+                
+                Image(systemName: "crown.fill")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color.anchorWarning)
+                    .offset(x: 20, y: -20)
+            }
+            
+            VStack(spacing: 12) {
+                Text("Advanced Analytics")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                
+                Text("Unlock detailed insights, productivity trends, and personalized recommendations to optimize your routine.")
+                    .font(.system(size: 16))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+            }
+            
+            DesignedButton(
+                title: "Upgrade to Premium",
+                style: .gradient,
+                action: onUpgrade
+            )
+        }
+        .padding(24)
+        .glassMorphism(cornerRadius: 20)
+        .padding(.horizontal)
     }
 }
 
@@ -164,7 +193,7 @@ struct PremiumBadge: View {
             Capsule()
                 .fill(
                     LinearGradient(
-                        colors: [Color.premiumWarning, Color.premiumGreen],
+                        colors: [Color.anchorWarning, Color.anchorGreen],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -191,7 +220,7 @@ struct PremiumFeatureCard: View {
                     if isLocked {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.premiumWarning)
+                            .foregroundStyle(Color.anchorWarning)
                             .offset(x: 12, y: -12)
                     }
                 }
@@ -215,14 +244,14 @@ struct PremiumFeatureCard: View {
                     .fill(
                         isLocked
                         ? Color.white.opacity(0.05)
-                        : Color.premiumBlue.opacity(0.1)
+                        : Color.anchorBlue.opacity(0.1)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(
                                 isLocked
                                 ? Color.white.opacity(0.1)
-                                : Color.premiumBlue.opacity(0.3),
+                                : Color.anchorBlue.opacity(0.3),
                                 lineWidth: 1
                             )
                     )
@@ -244,7 +273,7 @@ struct PremiumMiniPrompt: View {
         HStack(spacing: 12) {
             Image(systemName: "crown.fill")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.premiumWarning)
+                .foregroundStyle(Color.anchorWarning)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -260,7 +289,7 @@ struct PremiumMiniPrompt: View {
             
             Button("Upgrade") {
                 onUpgrade()
-                HapticManager.shared.premiumSelection()
+                HapticManager.shared.anchorSelection()
             }
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(.white)
@@ -268,16 +297,16 @@ struct PremiumMiniPrompt: View {
             .padding(.vertical, 6)
             .background(
                 Capsule()
-                    .fill(Color.premiumBlue)
+                    .fill(Color.anchorBlue)
             )
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.premiumBlue.opacity(0.1))
+                .fill(Color.anchorBlue.opacity(0.1))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.premiumBlue.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
                 )
         )
     }

@@ -1,12 +1,12 @@
 //
-//  PremiumTextField.swift
+//  AnchorTextField.swift
 //  Routine Anchor
 //
 //  Created by Christopher Simonson on 7/23/25.
 //
 import SwiftUI
 
-struct PremiumTextField: View {
+struct DesignedTextField: View {
     let title: String
     @Binding var text: String
     let placeholder: String
@@ -26,7 +26,7 @@ struct PremiumTextField: View {
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.premiumBlue)
+                    .foregroundStyle(Color.anchorBlue)
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))

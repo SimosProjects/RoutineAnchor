@@ -18,7 +18,7 @@ struct DataManagementSection: View {
         SettingsSection(
             title: "Data & Privacy",
             icon: "shield.checkered",
-            color: Color.premiumPurple
+            color: Color.anchorPurple
         ) {
             VStack(spacing: 16) {
                 // Export data button
@@ -26,7 +26,7 @@ struct DataManagementSection: View {
                     title: "Export My Data",
                     subtitle: "Download your routine data",
                     icon: "square.and.arrow.up",
-                    color: Color.premiumBlue,
+                    color: Color.anchorBlue,
                     action: {
                         HapticManager.shared.lightImpact()
                         onExportData()
@@ -38,7 +38,7 @@ struct DataManagementSection: View {
                     title: "Import Data",
                     subtitle: "Restore from backup file",
                     icon: "square.and.arrow.down",
-                    color: Color.premiumGreen,
+                    color: Color.anchorGreen,
                     action: {
                         HapticManager.shared.lightImpact()
                         onImportData()
@@ -50,7 +50,7 @@ struct DataManagementSection: View {
                     title: "Privacy Policy",
                     subtitle: "How we protect your data",
                     icon: "hand.raised",
-                    color: Color.premiumGreen,
+                    color: Color.anchorGreen,
                     action: {
                         HapticManager.shared.lightImpact()
                         onShowPrivacyPolicy()
@@ -66,16 +66,16 @@ struct DataManagementSection: View {
                     .frame(height: 1)
                     .padding(.vertical, 4)
                 
-                // Clear Today's Schedule button (for UI testing compatibility)
+                // Clear Today's Schedule button
                 SettingsButton(
                     title: "Clear Today's Schedule",
                     subtitle: "Delete all time blocks for today",
                     icon: "calendar.badge.minus",
-                    color: Color.premiumWarning,
+                    color: Color.anchorWarning,
                     action: {
                         HapticManager.shared.warning()
                         // This could call a different method that only clears today
-                        onDeleteAllData() // For now, use the same action
+                        onDeleteAllData()
                     }
                 )
                 .accessibilityIdentifier("ClearTodaysScheduleButton")
@@ -85,7 +85,7 @@ struct DataManagementSection: View {
                     title: "Delete All Data",
                     subtitle: "Permanently remove everything",
                     icon: "trash",
-                    color: Color.premiumError,
+                    color: Color.anchorError,
                     action: {
                         HapticManager.shared.warning()
                         showingDeleteConfirmation = true
@@ -101,7 +101,7 @@ struct DataManagementSection: View {
             titleVisibility: .visible
         ) {
             Button("Delete All Data", role: .destructive) {
-                HapticManager.shared.premiumError()
+                HapticManager.shared.anchorError()
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     deleteButtonScale = 0.95
                 }
@@ -121,16 +121,16 @@ struct DataManagementSection: View {
         HStack(spacing: 12) {
             Image(systemName: "internaldrive")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.premiumBlue.opacity(0.8))
+                .foregroundStyle(Color.anchorBlue.opacity(0.8))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("Local Storage Only")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                 
                 Text("All data is stored securely on your device")
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
             }
             
             Spacer()
@@ -138,11 +138,11 @@ struct DataManagementSection: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.premiumBlue.opacity(0.1))
+                .fill(Color.anchorBlue.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.premiumBlue.opacity(0.2), lineWidth: 1)
+                .stroke(Color.anchorBlue.opacity(0.2), lineWidth: 1)
         )
     }
 }

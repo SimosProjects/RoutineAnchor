@@ -22,7 +22,7 @@ struct AppPreferencesSection: View {
         SettingsSection(
             title: "Preferences",
             icon: "slider.horizontal.3",
-            color: Color.premiumGreen
+            color: Color.anchorGreen
         ) {
             VStack(spacing: 16) {
                 // Haptic feedback toggle
@@ -34,7 +34,7 @@ struct AppPreferencesSection: View {
                 )
                 .onChange(of: hapticsEnabled) { _, newValue in
                     if newValue {
-                        HapticManager.shared.premiumImpact()
+                        HapticManager.shared.impact()
                     }
                 }
                 
@@ -56,7 +56,7 @@ struct AppPreferencesSection: View {
                     title: "Clear Today's Schedule",
                     subtitle: "Delete all time blocks for today",
                     icon: "trash.fill",
-                    color: .premiumError,
+                    color: .anchorError,
                     action: {
                         HapticManager.shared.lightImpact()
                         showingClearTodayConfirmation = true
@@ -118,17 +118,17 @@ struct AppPreferencesSection: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "hand.tap")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.premiumGreen.opacity(0.8))
+                    .foregroundStyle(Color.anchorGreen.opacity(0.8))
                     .frame(width: 16, height: 16)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Haptic Feedback")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.premiumTextPrimary)
+                        .foregroundStyle(Color.anchorTextPrimary)
                     
                     Text("Provides tactile feedback for buttons and actions")
                         .font(.system(size: 10, weight: .regular))
-                        .foregroundStyle(Color.premiumTextSecondary)
+                        .foregroundStyle(Color.anchorTextSecondary)
                 }
                 
                 Spacer()
@@ -138,17 +138,17 @@ struct AppPreferencesSection: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "moon.stars")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.premiumPurple.opacity(0.8))
+                    .foregroundStyle(Color.anchorPurple.opacity(0.8))
                     .frame(width: 16, height: 16)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Midnight Reset")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.premiumTextPrimary)
+                        .foregroundStyle(Color.anchorTextPrimary)
                     
                     Text("Automatically clears progress at 12:00 AM daily")
                         .font(.system(size: 10, weight: .regular))
-                        .foregroundStyle(Color.premiumTextSecondary)
+                        .foregroundStyle(Color.anchorTextSecondary)
                 }
                 
                 Spacer()

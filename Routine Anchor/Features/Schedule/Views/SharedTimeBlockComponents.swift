@@ -38,11 +38,11 @@ struct CategorySelector: View {
     
     private func categoryColor(for category: String) -> Color {
         switch category.lowercased() {
-        case "work": return Color.premiumBlue
-        case "personal": return Color.premiumPurple
-        case "health": return Color.premiumGreen
-        case "learning": return Color.premiumTeal
-        case "social": return Color.premiumWarning
+        case "work": return Color.anchorBlue
+        case "personal": return Color.anchorPurple
+        case "health": return Color.anchorGreen
+        case "learning": return Color.anchorTeal
+        case "social": return Color.anchorWarning
         default: return Color.white.opacity(0.6)
         }
     }
@@ -132,7 +132,7 @@ struct HistoryRow: View {
 }
 
 // MARK: - Shared Base Form View
-struct PremiumTimeBlockFormView<Content: View>: View {
+struct TimeBlockFormView<Content: View>: View {
     let title: String
     let icon: String
     let subtitle: String
@@ -159,7 +159,7 @@ struct PremiumTimeBlockFormView<Content: View>: View {
     
     var body: some View {
         ZStack {
-            // Premium animated background
+            // Animated background
             AnimatedGradientBackground()
                 .ignoresSafeArea()
             
@@ -167,7 +167,6 @@ struct PremiumTimeBlockFormView<Content: View>: View {
                 .opacity(0.3)
                 .allowsHitTesting(false)
             
-            // CHANGED: Now using self-contained ParticleEffectView
             ParticleEffectView()
                 .allowsHitTesting(false)
             
@@ -219,8 +218,8 @@ struct PremiumTimeBlockFormView<Content: View>: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    Color.premiumBlue.opacity(0.4),
-                                    Color.premiumPurple.opacity(0.2),
+                                    Color.anchorBlue.opacity(0.4),
+                                    Color.anchorPurple.opacity(0.2),
                                     Color.clear
                                 ],
                                 center: .center,
@@ -236,13 +235,13 @@ struct PremiumTimeBlockFormView<Content: View>: View {
                         .font(.system(size: 48, weight: .light))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.premiumBlue, Color.premiumPurple],
+                                colors: [Color.anchorBlue, Color.anchorPurple],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.1)
-                        .shadow(color: Color.premiumBlue.opacity(0.4), radius: 20, x: 0, y: 10)
+                        .shadow(color: Color.anchorBlue.opacity(0.4), radius: 20, x: 0, y: 10)
                 }
                 
                 VStack(spacing: 8) {
@@ -250,7 +249,7 @@ struct PremiumTimeBlockFormView<Content: View>: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.premiumBlue, Color.premiumPurple],
+                                colors: [Color.anchorBlue, Color.anchorPurple],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )

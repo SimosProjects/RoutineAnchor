@@ -20,7 +20,7 @@ struct CompactTimeBlockRow: View {
                 // Time
                 Text(timeBlock.startTime, style: .time)
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundStyle(isActive ? Color.premiumBlue : Color.white.opacity(0.7))
+                    .foregroundStyle(isActive ? Color.anchorBlue : Color.white.opacity(0.7))
                     .frame(width: 60, alignment: .leading)
                 
                 // Icon and title
@@ -52,18 +52,18 @@ struct CompactTimeBlockRow: View {
                         Button(action: onComplete) {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(Color.premiumGreen)
+                                .foregroundStyle(Color.anchorGreen)
                                 .frame(width: 28, height: 28)
-                                .background(Color.premiumGreen.opacity(0.15))
+                                .background(Color.anchorGreen.opacity(0.15))
                                 .cornerRadius(6)
                         }
                         
                         Button(action: onSkip) {
                             Image(systemName: "forward.fill")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(Color.premiumWarning)
+                                .foregroundStyle(Color.anchorWarning)
                                 .frame(width: 28, height: 28)
-                                .background(Color.premiumWarning.opacity(0.15))
+                                .background(Color.anchorWarning.opacity(0.15))
                                 .cornerRadius(6)
                         }
                     }
@@ -73,12 +73,12 @@ struct CompactTimeBlockRow: View {
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(isActive ? Color.premiumBlue.opacity(0.1) : Color.white.opacity(0.05))
+                    .fill(isActive ? Color.anchorBlue.opacity(0.1) : Color.white.opacity(0.05))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(
-                        isHighlighted ? Color.premiumBlue : Color.clear,
+                        isHighlighted ? Color.anchorBlue : Color.clear,
                         lineWidth: isHighlighted ? 2 : 0
                     )
             )
@@ -100,9 +100,9 @@ struct CompactTimeBlockRow: View {
     private var statusColor: Color {
         switch timeBlock.status {
         case .notStarted: return .white.opacity(0.6)
-        case .inProgress: return .premiumBlue
-        case .completed: return .premiumGreen
-        case .skipped: return .premiumWarning
+        case .inProgress: return .anchorBlue
+        case .completed: return .anchorGreen
+        case .skipped: return .anchorWarning
         }
     }
 }

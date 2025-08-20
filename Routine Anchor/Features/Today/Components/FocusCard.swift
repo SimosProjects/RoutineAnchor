@@ -21,13 +21,13 @@ struct FocusCard: View {
             // Focus icon with pulse
             ZStack {
                 Circle()
-                    .fill(Color.premiumBlue.opacity(0.2))
+                    .fill(Color.anchorBlue.opacity(0.2))
                     .frame(width: 50, height: 50)
                     .scaleEffect(pulseScale)
                 
                 Image(systemName: "target")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.premiumBlue)
+                    .foregroundStyle(Color.anchorBlue)
             }
             
             // Focus content
@@ -65,7 +65,7 @@ struct FocusCard: View {
                 if let currentBlock = currentBlock, currentBlock.isCurrentlyActive {
                     ProgressBar(
                         progress: currentBlock.currentProgress,
-                        color: Color.premiumBlue,
+                        color: Color.anchorBlue,
                         animated: true
                     )
                 }
@@ -78,8 +78,8 @@ struct FocusCard: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            Color.premiumBlue.opacity(0.4),
-                            Color.premiumBlue.opacity(0.1)
+                            Color.anchorBlue.opacity(0.4),
+                            Color.anchorBlue.opacity(0.1)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -103,18 +103,18 @@ struct TimeIndicator: View {
     var body: some View {
         HStack(spacing: 4) {
             Circle()
-                .fill(isActive ? Color.premiumGreen : Color.premiumBlue)
+                .fill(isActive ? Color.anchorGreen : Color.anchorBlue)
                 .frame(width: 6, height: 6)
             
             Text(timeText)
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundStyle(isActive ? Color.premiumGreen : Color.premiumBlue)
+                .foregroundStyle(isActive ? Color.anchorGreen : Color.anchorBlue)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill((isActive ? Color.premiumGreen : Color.premiumBlue).opacity(0.15))
+                .fill((isActive ? Color.anchorGreen : Color.anchorBlue).opacity(0.15))
         )
     }
 }

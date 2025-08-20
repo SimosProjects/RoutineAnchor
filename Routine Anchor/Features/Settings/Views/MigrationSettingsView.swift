@@ -53,7 +53,7 @@ struct MigrationSettingsView: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(.premiumBlue)
+                    .foregroundColor(.anchorBlue)
                 }
             }
         }
@@ -78,7 +78,7 @@ struct MigrationSettingsView: View {
                 .font(.system(size: 50))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [Color.premiumBlue, Color.premiumPurple],
+                        colors: [Color.anchorBlue, Color.anchorPurple],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -113,10 +113,10 @@ struct MigrationSettingsView: View {
                 
                 Text(migrationService.currentSchemaVersion.rawValue)
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundColor(.premiumGreen)
+                    .foregroundColor(.anchorGreen)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 4)
-                    .background(Color.premiumGreen.opacity(0.2))
+                    .background(Color.anchorGreen.opacity(0.2))
                     .cornerRadius(6)
             }
             
@@ -146,7 +146,7 @@ struct MigrationSettingsView: View {
                         .foregroundColor(.white.opacity(0.5))
                 }
             }
-            .tint(Color.premiumBlue)
+            .tint(Color.anchorBlue)
             .onChange(of: backupEnabled) { _, newValue in
                 migrationService.setBackupEnabled(newValue)
                 HapticManager.shared.lightImpact()
@@ -160,7 +160,7 @@ struct MigrationSettingsView: View {
                     Text("Learn More About Backups")
                 }
                 .font(.system(size: 12))
-                .foregroundColor(.premiumBlue)
+                .foregroundColor(.anchorBlue)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -189,7 +189,7 @@ struct MigrationSettingsView: View {
                 .padding()
                 .background(
                     LinearGradient(
-                        colors: [Color.premiumBlue, Color.premiumPurple],
+                        colors: [Color.anchorBlue, Color.anchorPurple],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -222,12 +222,12 @@ struct MigrationSettingsView: View {
             
             HStack {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.premiumGreen)
+                    .foregroundColor(.anchorGreen)
                     .font(.system(size: 12))
                 
                 Text("All migrations completed successfully")
                     .font(.system(size: 12))
-                    .foregroundColor(.premiumGreen)
+                    .foregroundColor(.anchorGreen)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -279,7 +279,7 @@ struct BackupInfoSheet: View {
                                 .font(.system(size: 50))
                                 .foregroundStyle(
                                     LinearGradient(
-                                        colors: [Color.premiumBlue, Color.premiumPurple],
+                                        colors: [Color.anchorBlue, Color.anchorPurple],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -333,7 +333,7 @@ struct BackupInfoSheet: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(.premiumBlue)
+                    .foregroundColor(.anchorBlue)
                 }
             }
         }
@@ -343,7 +343,7 @@ struct BackupInfoSheet: View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 24))
-                .foregroundColor(.premiumBlue)
+                .foregroundColor(.anchorBlue)
                 .frame(width: 30)
             
             VStack(alignment: .leading, spacing: 8) {

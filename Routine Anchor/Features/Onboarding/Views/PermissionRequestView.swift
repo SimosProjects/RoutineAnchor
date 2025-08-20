@@ -7,8 +7,8 @@
 import SwiftUI
 import UserNotifications
 
-// MARK: - Premium Permission View
-struct PremiumPermissionView: View {
+// MARK: - Permission View
+struct PermissionView: View {
     let onAllow: () -> Void
     let onSkip: () -> Void
     @State private var appearAnimation = false
@@ -104,7 +104,7 @@ struct PremiumPermissionView: View {
                     
                     // Actions
                     VStack(spacing: 16) {
-                        PremiumButton(
+                        DesignedButton(
                             title: "Enable Smart Reminders",
                             action: {
                                 HapticManager.shared.mediumImpact()

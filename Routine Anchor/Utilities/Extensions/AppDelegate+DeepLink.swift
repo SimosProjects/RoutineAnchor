@@ -3,9 +3,7 @@
 //  Routine Anchor
 //
 //  App Delegate extension to handle deep linking
-//  Swift 6 Compatible Version
 //
-
 import UIKit
 import UserNotifications
 

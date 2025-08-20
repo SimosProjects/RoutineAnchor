@@ -72,7 +72,7 @@ struct StatCard: View {
                 title: "Completed",
                 value: "8",
                 subtitle: "blocks",
-                color: Color.premiumGreen,
+                color: Color.anchorGreen,
                 icon: "checkmark.circle.fill"
             )
             
@@ -80,7 +80,7 @@ struct StatCard: View {
                 title: "Time",
                 value: "5h 30m",
                 subtitle: "tracked",
-                color: Color.premiumBlue,
+                color: Color.anchorBlue,
                 icon: "clock.fill"
             )
             
@@ -88,7 +88,7 @@ struct StatCard: View {
                 title: "Skipped",
                 value: "2",
                 subtitle: "blocks",
-                color: Color.premiumWarning,
+                color: Color.anchorWarning,
                 icon: "forward.circle.fill"
             )
         }

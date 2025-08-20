@@ -26,7 +26,7 @@ struct ShareSummaryView: View {
                             .font(.system(size: 48, weight: .light))
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [Color.premiumBlue, Color.premiumPurple],
+                                    colors: [Color.anchorBlue, Color.anchorPurple],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -55,11 +55,11 @@ struct ShareSummaryView: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "checkmark.circle.fill")
                                         .font(.system(size: 12))
-                                        .foregroundStyle(Color.premiumGreen)
+                                        .foregroundStyle(Color.anchorGreen)
                                     
                                     Text("Copied!")
                                         .font(.system(size: 12, weight: .medium))
-                                        .foregroundStyle(Color.premiumGreen)
+                                        .foregroundStyle(Color.anchorGreen)
                                 }
                                 .transition(.scale.combined(with: .opacity))
                             }
@@ -91,7 +91,7 @@ struct ShareSummaryView: View {
                     
                     // Action buttons
                     VStack(spacing: 16) {
-                        PremiumButton(
+                        DesignedButton(
                             title: "Share Progress",
                             style: .gradient,
                             action: shareProgress
@@ -116,7 +116,7 @@ struct ShareSummaryView: View {
                         dismiss()
                     }
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.premiumBlue)
+                    .foregroundStyle(Color.anchorBlue)
                 }
             }
         }
@@ -136,7 +136,7 @@ struct ShareSummaryView: View {
             isSharing = false
         }
         
-        HapticManager.shared.premiumImpact()
+        HapticManager.shared.impact()
         
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
@@ -147,7 +147,7 @@ struct ShareSummaryView: View {
     private func copyToClipboard() {
         UIPasteboard.general.string = viewModel.generateShareableText()
         
-        HapticManager.shared.premiumSuccess()
+        HapticManager.shared.anchorSuccess()
         
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
             showCopiedMessage = true

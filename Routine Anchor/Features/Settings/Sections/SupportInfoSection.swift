@@ -20,7 +20,7 @@ struct SupportInfoSection: View {
         SettingsSection(
             title: "Support & Info",
             icon: "questionmark.circle",
-            color: Color.premiumTeal
+            color: Color.anchorTeal
         ) {
             VStack(spacing: 16) {
                 // Help & FAQ button
@@ -28,7 +28,7 @@ struct SupportInfoSection: View {
                     title: "Help & FAQ",
                     subtitle: "Get answers to common questions",
                     icon: "questionmark.circle",
-                    color: Color.premiumBlue,
+                    color: Color.anchorBlue,
                     action: {
                         HapticManager.shared.lightImpact()
                         onShowHelp()
@@ -40,7 +40,7 @@ struct SupportInfoSection: View {
                     title: "About Routine Anchor",
                     subtitle: "App info and acknowledgments",
                     icon: "info.circle",
-                    color: Color.premiumPurple,
+                    color: Color.anchorPurple,
                     action: {
                         HapticManager.shared.lightImpact()
                         onShowAbout()
@@ -55,9 +55,9 @@ struct SupportInfoSection: View {
                     title: "Rate the App",
                     subtitle: showThankYou ? "Thank you! ❤️" : "Support development",
                     icon: "star",
-                    color: Color.premiumWarning,
+                    color: Color.anchorWarning,
                     action: {
-                        HapticManager.shared.premiumSuccess()
+                        HapticManager.shared.anchorSuccess()
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
                             animateRating = true
                             showThankYou = true
@@ -90,7 +90,7 @@ struct SupportInfoSection: View {
                     title: "Contact Support",
                     subtitle: "Get help from our team",
                     icon: "envelope",
-                    color: Color.premiumGreen,
+                    color: Color.anchorGreen,
                     action: {
                         HapticManager.shared.lightImpact()
                         onContactSupport()
@@ -112,7 +112,7 @@ struct SupportInfoSection: View {
             
             Text("SUPPORT")
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(Color.premiumTextSecondary)
+                .foregroundStyle(Color.anchorTextSecondary)
                 .tracking(1)
             
             Rectangle()
@@ -128,11 +128,11 @@ struct SupportInfoSection: View {
             HStack(spacing: 8) {
                 Image(systemName: "lightbulb")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.premiumWarning)
+                    .foregroundStyle(Color.anchorWarning)
                 
                 Text("Quick Tips")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
             }
             
             VStack(alignment: .leading, spacing: 8) {
@@ -155,11 +155,11 @@ struct SupportInfoSection: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.premiumTeal.opacity(0.1))
+                .fill(Color.anchorTeal.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.premiumTeal.opacity(0.2), lineWidth: 1)
+                .stroke(Color.anchorTeal.opacity(0.2), lineWidth: 1)
         )
     }
 }
@@ -173,16 +173,16 @@ struct SupportingInfoQuickTip: View {
         HStack(alignment: .top, spacing: 8) {
             Text(number)
                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.premiumTeal)
+                .foregroundStyle(Color.anchorTeal)
                 .frame(width: 16, height: 16)
                 .background(
                     Circle()
-                        .fill(Color.premiumTeal.opacity(0.2))
+                        .fill(Color.anchorTeal.opacity(0.2))
                 )
             
             Text(text)
                 .font(.system(size: 11, weight: .regular))
-                .foregroundStyle(Color.premiumTextSecondary)
+                .foregroundStyle(Color.anchorTextSecondary)
                 .lineLimit(2)
             
             Spacer()

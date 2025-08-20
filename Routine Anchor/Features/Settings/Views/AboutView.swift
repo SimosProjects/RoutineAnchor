@@ -1,7 +1,6 @@
 //
 //  AboutView.swift
 //  Routine Anchor
-//  Swift 6 Compatible Version
 //
 //  Created by Christopher Simonson on 7/21/25.
 //
@@ -15,7 +14,6 @@ struct AboutView: View {
     
     var body: some View {
         ZStack {
-            // Premium animated background
             AnimatedGradientBackground()
             AnimatedMeshBackground()
                 .opacity(0.3)
@@ -99,14 +97,14 @@ struct AboutView: View {
                     RoundedRectangle(cornerRadius: 20)
                         .fill(
                             LinearGradient(
-                                colors: [Color.premiumBlue, Color.premiumPurple],
+                                colors: [Color.anchorBlue, Color.anchorPurple],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .frame(width: 80, height: 80)
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.05)
-                        .shadow(color: Color.premiumBlue.opacity(0.4), radius: 20, x: 0, y: 10)
+                        .shadow(color: Color.anchorBlue.opacity(0.4), radius: 20, x: 0, y: 10)
                     
                     Image(systemName: "clock.badge.checkmark")
                         .font(.system(size: 32, weight: .medium))
@@ -117,15 +115,15 @@ struct AboutView: View {
                 VStack(spacing: 8) {
                     Text("Routine Anchor")
                         .font(TypographyConstants.Headers.welcome)
-                        .foregroundStyle(Color.premiumTextPrimary)
+                        .foregroundStyle(Color.anchorTextPrimary)
                     
                     Text("Version \(appVersion)")
                         .font(TypographyConstants.Body.secondary)
-                        .foregroundStyle(Color.premiumTextSecondary)
+                        .foregroundStyle(Color.anchorTextSecondary)
                     
                     Text("Time-Blocked Productivity")
                         .font(TypographyConstants.Body.description)
-                        .foregroundStyle(Color.premiumTextSecondary)
+                        .foregroundStyle(Color.anchorTextSecondary)
                 }
             }
         }
@@ -137,7 +135,7 @@ struct AboutView: View {
             icon: "info.circle",
             title: "About Routine Anchor",
             content: "Routine Anchor helps you build consistent daily routines through time-blocking. Create structured schedules, track your progress, and develop productive habits that stick.",
-            color: Color.premiumBlue
+            color: Color.anchorBlue
         )
     }
     
@@ -147,7 +145,7 @@ struct AboutView: View {
             icon: "target",
             title: "Our Mission",
             content: "We believe everyone deserves to live intentionally. Routine Anchor empowers you to take control of your time, build meaningful habits, and create a life aligned with your values.",
-            color: Color.premiumGreen
+            color: Color.anchorGreen
         )
     }
     
@@ -156,7 +154,7 @@ struct AboutView: View {
         VStack(spacing: 16) {
             Text("What Makes Us Different")
                 .font(TypographyConstants.Headers.cardTitle)
-                .foregroundStyle(Color.premiumTextPrimary)
+                .foregroundStyle(Color.anchorTextPrimary)
             
             VStack(spacing: 12) {
                 FeatureRow(icon: "lock.shield", title: "Privacy First", description: "All data stays on your device")
@@ -175,7 +173,7 @@ struct AboutView: View {
             icon: "person.circle",
             title: "Made with ❤️",
             content: "Routine Anchor is crafted by Christopher Simonson, an indie developer passionate about productivity and beautiful software. Built with SwiftUI for iOS.",
-            color: Color.premiumPurple
+            color: Color.anchorPurple
         )
     }
     
@@ -214,18 +212,18 @@ struct AboutView: View {
                 .frame(height: 48)
                 .background(
                     LinearGradient(
-                        colors: [Color.premiumBlue, Color.premiumPurple],
+                        colors: [Color.anchorBlue, Color.anchorPurple],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(12)
-                .shadow(color: Color.premiumBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.anchorBlue.opacity(0.3), radius: 8, x: 0, y: 4)
             }
             
             Text("© 2025 Simo's Media & Tech, LLC. All rights reserved.")
                 .font(TypographyConstants.UI.caption)
-                .foregroundStyle(Color.premiumTextTertiary)
+                .foregroundStyle(Color.anchorTextTertiary)
                 .multilineTextAlignment(.center)
                 .padding(.top, 8)
         }
@@ -286,14 +284,14 @@ struct InfoCard: View {
                 
                 Text(title)
                     .font(TypographyConstants.Headers.cardTitle)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                 
                 Spacer()
             }
             
             Text(content)
                 .font(TypographyConstants.Body.secondary)
-                .foregroundStyle(Color.premiumTextSecondary)
+                .foregroundStyle(Color.anchorTextSecondary)
                 .lineSpacing(2)
         }
         .padding(20)
@@ -317,16 +315,16 @@ struct ActionButton: View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(Color.premiumBlue)
+                .foregroundStyle(Color.anchorBlue)
             
             VStack(spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                 
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
             }
         }
         .frame(maxWidth: .infinity)
@@ -350,7 +348,7 @@ struct AcknowledgmentsView: View {
                 Section {
                     Text("Routine Anchor is built with the help of amazing open source libraries and tools.")
                         .font(TypographyConstants.Body.secondary)
-                        .foregroundStyle(Color.premiumTextSecondary)
+                        .foregroundStyle(Color.anchorTextSecondary)
                         .listRowBackground(Color.clear)
                 }
                 
@@ -381,7 +379,7 @@ struct AcknowledgmentRow: View {
                 .font(TypographyConstants.Body.emphasized)
             Text(description)
                 .font(TypographyConstants.UI.caption)
-                .foregroundStyle(Color.premiumTextSecondary)
+                .foregroundStyle(Color.anchorTextSecondary)
         }
         .padding(.vertical, 2)
     }

@@ -11,6 +11,7 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.premiumManager) private var premiumManager
     
     // MARK: - State
     @State private var viewModel: SettingsViewModel?
@@ -42,7 +43,6 @@ struct SettingsView: View {
     
     var body: some View {
         ZStack {
-            // Premium animated background
             AnimatedGradientBackground()
                 .ignoresSafeArea()
             
@@ -60,6 +60,8 @@ struct SettingsView: View {
                         onDismiss: { dismiss() },
                         animationPhase: $animationPhase
                     )
+                    
+                    premiumStatusSection
                     
                     // Settings sections
                     NotificationSettingsSection(
@@ -79,6 +81,10 @@ struct SettingsView: View {
                             viewModel?.clearTodaysSchedule()
                         }
                     )
+                    
+                    #if DEBUG
+                    simpleDebugSection
+                    #endif
                     
                     SupportInfoSection(
                         onShowHelp: {
@@ -286,6 +292,154 @@ struct SettingsView: View {
     private func contactSupport() {
         viewModel?.contactSupport()
     }
+    
+    // MARK: - Premium Status Section
+    private var premiumStatusSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Premium")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Spacer()
+                
+                if premiumManager?.hasPremiumAccess == true {
+                    PremiumBadge()
+                }
+            }
+            
+            if premiumManager?.hasPremiumAccess == true {
+                // Premium user content
+                VStack(spacing: 12) {
+                    HStack {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(Color.anchorWarning)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Premium Active")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white)
+                            
+                            Text("Thank you for supporting Routine Anchor!")
+                                .font(.system(size: 14))
+                                .foregroundStyle(.white.opacity(0.7))
+                        }
+                        
+                        Spacer()
+                    }
+                    
+                    Button("Manage Subscription") {
+                        if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.anchorBlue)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else {
+                // Free user content
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "star.circle")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(Color.anchorBlue)
+                        
+                        Text("Upgrade to Premium")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.white)
+                        
+                        Spacer()
+                    }
+                    
+                    Text("Unlock unlimited time blocks, advanced analytics, and premium themes")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.05),
+                                    Color.white.opacity(0.02)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.2),
+                                    Color.white.opacity(0.05)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+        )
+    }
+    
+    #if DEBUG
+    private var simpleDebugSection: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("🧪 Debug")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                
+                Spacer()
+                
+                Button("Toggle Premium") {
+                    premiumManager?.toggleDebugPremium()
+                    HapticManager.shared.lightImpact()
+                }
+                .font(.caption)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.red)
+                .foregroundStyle(.white)
+                .cornerRadius(6)
+            }
+            
+            HStack {
+                Text("Status: \(premiumManager?.userIsPremium == true ? "PREMIUM ✅" : "FREE ❌")")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.7))
+                
+                Spacer()
+                
+                Button("1H Premium") {
+                    premiumManager?.grantTemporaryPremium(duration: 3600)
+                    HapticManager.shared.lightImpact()
+                }
+                .font(.caption)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.blue)
+                .foregroundStyle(.white)
+                .cornerRadius(6)
+            }
+        }
+        .padding()
+        .background(Color.red.opacity(0.2))
+        .cornerRadius(12)
+    }
+    #endif
 }
 
 // MARK: - Preview

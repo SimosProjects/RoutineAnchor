@@ -44,7 +44,7 @@ struct TodayFloatingElements: View {
                             title: "Up Next",
                             subtitle: nextBlock.title,
                             timeText: timeUntil,
-                            color: Color.premiumBlue
+                            color: Color.anchorBlue
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     } else if let currentBlock = viewModel.getCurrentBlock(),
@@ -53,7 +53,7 @@ struct TodayFloatingElements: View {
                             title: "Current",
                             subtitle: currentBlock.title,
                             timeText: remainingTime,
-                            color: Color.premiumGreen
+                            color: Color.anchorGreen
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
@@ -132,7 +132,7 @@ struct FloatingActionButtons: View {
                     if viewModel.getNextUpcomingBlock() != nil {
                         MiniFloatingButton(
                             icon: "play.circle",
-                            color: Color.premiumGreen,
+                            color: Color.anchorGreen,
                             action: onStartNext
                         )
                         .transition(.scale.combined(with: .opacity))
@@ -142,7 +142,7 @@ struct FloatingActionButtons: View {
                     if viewModel.hasScheduledBlocks {
                         MiniFloatingButton(
                             icon: "chart.pie",
-                            color: Color.premiumPurple,
+                            color: Color.anchorPurple,
                             action: {
                                 // Show quick stats
                             }
@@ -180,7 +180,7 @@ struct MainFloatingButton: View {
     
     var body: some View {
         Button(action: {
-            HapticManager.shared.premiumImpact()
+            HapticManager.shared.impact()
             
             if isExpanded {
                 primaryAction()
@@ -195,7 +195,7 @@ struct MainFloatingButton: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.premiumBlue.opacity(0.3), Color.premiumPurple.opacity(0.2)],
+                            colors: [Color.anchorBlue.opacity(0.3), Color.anchorPurple.opacity(0.2)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -208,7 +208,7 @@ struct MainFloatingButton: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            colors: [Color.anchorBlue, Color.anchorPurple],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -221,7 +221,7 @@ struct MainFloatingButton: View {
                             .rotationEffect(.degrees(isExpanded ? 45 : 0))
                     )
                     .shadow(
-                        color: Color.premiumBlue.opacity(0.4),
+                        color: Color.anchorBlue.opacity(0.4),
                         radius: 12,
                         x: 0,
                         y: 6
@@ -231,7 +231,7 @@ struct MainFloatingButton: View {
         }
         .onLongPressGesture(minimumDuration: 0.5) {
             // Long press for quick add
-            HapticManager.shared.premiumSuccess()
+            HapticManager.shared.anchorSuccess()
             primaryAction()
         }
         .onAppear {

@@ -174,7 +174,7 @@ class TemplateManager {
         try modelContext.save()
         
         loadTemplates()
-        HapticManager.shared.premiumSuccess()
+        HapticManager.shared.anchorSuccess()
     }
     
     func deleteTemplate(_ template: RoutineTemplate) throws {

@@ -1,11 +1,11 @@
 //
-//  PremiumAddTimeBlockView.swift
-//  Routine Anchor - Premium Version (Improved Duration Selection)
+//  AddTimeBlockView.swift
+//  Routine Anchor
 //
 import SwiftUI
 import Foundation
 
-struct PremiumAddTimeBlockView: View {
+struct AddTimeBlockView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var formData = TimeBlockFormData()
     
@@ -26,7 +26,7 @@ struct PremiumAddTimeBlockView: View {
     }
     
     var body: some View {
-        PremiumTimeBlockFormView(
+        TimeBlockFormView(
             title: "New Time Block",
             icon: "plus.circle",
             subtitle: "Add structure to your day",
@@ -102,28 +102,27 @@ struct PremiumAddTimeBlockView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(Color.premiumWarning)
+                        .foregroundStyle(Color.anchorWarning)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Time Conflict")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(Color.premiumTextPrimary) // White text
+                            .foregroundStyle(Color.anchorTextPrimary)
                         
                         if conflicts.count == 1 {
                             Text("Overlaps with '\(conflicts.first!.title)'")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.premiumTextSecondary) // 70% opacity white
+                                .foregroundStyle(Color.anchorTextSecondary)
                         } else {
                             Text("Overlaps with \(conflicts.count) time blocks")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.premiumTextSecondary)
+                                .foregroundStyle(Color.anchorTextSecondary)
                         }
                     }
                     
                     Spacer()
                 }
                 
-                // Fix button with premium styling
                 Button(action: {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                         formData.setToNextAvailableSlot()
@@ -136,7 +135,7 @@ struct PremiumAddTimeBlockView: View {
                         Text("Find Next Available Time")
                             .font(.system(size: 14, weight: .semibold))
                     }
-                    .foregroundStyle(Color.premiumBlue)
+                    .foregroundStyle(Color.anchorBlue)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(
@@ -144,7 +143,7 @@ struct PremiumAddTimeBlockView: View {
                             .fill(Color.white.opacity(0.1))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.premiumBlue.opacity(0.3), lineWidth: 1)
+                                    .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
                             )
                     )
                 }
@@ -159,8 +158,8 @@ struct PremiumAddTimeBlockView: View {
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.premiumWarning.opacity(0.6),
-                                        Color.premiumWarning.opacity(0.2)
+                                        Color.anchorWarning.opacity(0.6),
+                                        Color.anchorWarning.opacity(0.2)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -169,7 +168,7 @@ struct PremiumAddTimeBlockView: View {
                             )
                     )
             )
-            .shadow(color: Color.premiumWarning.opacity(0.2), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.anchorWarning.opacity(0.2), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 24)
             .transition(.asymmetric(
                 insertion: .scale(scale: 0.95).combined(with: .opacity),
@@ -181,20 +180,20 @@ struct PremiumAddTimeBlockView: View {
     // MARK: - Form Sections
     
     private var basicInfoSection: some View {
-        PremiumFormSection(
+        FormSection(
             title: "Basic Information",
             icon: "doc.text",
-            color: Color.premiumBlue
+            color: Color.anchorBlue
         ) {
             VStack(spacing: 16) {
-                PremiumTextField(
+                DesignedTextField(
                     title: "Title",
                     text: $formData.title,
                     placeholder: "What will you be doing?",
                     icon: "textformat"
                 )
                 
-                PremiumTextField(
+                DesignedTextField(
                     title: "Notes",
                     text: $formData.notes,
                     placeholder: "Add details or reminders (optional)",
@@ -208,21 +207,21 @@ struct PremiumAddTimeBlockView: View {
     }
     
     private var timeAndDurationSection: some View {
-        PremiumFormSection(
+        FormSection(
             title: "Schedule",
             icon: "clock",
-            color: Color.premiumGreen
+            color: Color.anchorGreen
         ) {
             VStack(spacing: 20) {
                 // Time pickers
                 HStack(spacing: 16) {
-                    PremiumTimePicker(
+                    TimePicker(
                         title: "Start",
                         selection: $formData.startTime,
                         icon: "play.circle"
                     )
                     
-                    PremiumTimePicker(
+                    TimePicker(
                         title: "End",
                         selection: $formData.endTime,
                         icon: "stop.circle"
@@ -234,7 +233,7 @@ struct PremiumAddTimeBlockView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "timer")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.premiumWarning)
+                            .foregroundStyle(Color.anchorWarning)
                         
                         Text("Quick Duration")
                             .font(.system(size: 14, weight: .semibold))
@@ -246,7 +245,7 @@ struct PremiumAddTimeBlockView: View {
                         onSelect: { minutes in
                             selectedDuration = minutes
                             formData.setDuration(minutes: minutes)
-                            HapticManager.shared.premiumSelection()
+                            HapticManager.shared.anchorSelection()
                         }
                     )
                 }
@@ -266,21 +265,21 @@ struct PremiumAddTimeBlockView: View {
     private func color(for minutes: Int) -> Color {
         switch minutes {
         case ..<15:
-            return .premiumError
+            return .anchorError
         case ..<30:
-            return .premiumWarning
+            return .anchorWarning
         case ..<60:
-            return .premiumWarning
+            return .anchorWarning
         default:
-            return .premiumGreen
+            return .anchorGreen
         }
     }
     
     private var organizationSection: some View {
-        PremiumFormSection(
+        FormSection(
             title: "Organization",
             icon: "folder",
-            color: Color.premiumPurple
+            color: Color.anchorPurple
         ) {
             CategorySelector(
                 categories: formData.categories,
@@ -292,10 +291,10 @@ struct PremiumAddTimeBlockView: View {
     }
     
     private var iconSection: some View {
-        PremiumFormSection(
+        FormSection(
             title: "Icon",
             icon: "face.smiling",
-            color: Color.premiumTeal
+            color: Color.anchorTeal
         ) {
             IconSelector(
                 icons: formData.icons,
@@ -308,7 +307,7 @@ struct PremiumAddTimeBlockView: View {
     
     private var actionButtons: some View {
         VStack(spacing: 16) {
-            PremiumButton(
+            DesignedButton(
                 title: "Create Time Block",
                 style: .gradient,
                 action: saveTimeBlock
@@ -340,7 +339,7 @@ struct PremiumAddTimeBlockView: View {
         
         onSave(title, formData.startTime, formData.endTime, notes, category)
         
-        HapticManager.shared.premiumSuccess()
+        HapticManager.shared.anchorSuccess()
         dismiss()
     }
 }
@@ -391,7 +390,7 @@ extension TimeBlockFormData {
 
 // MARK: - Preview
 #Preview {
-    PremiumAddTimeBlockView { title, startTime, endTime, notes, category in
+    AddTimeBlockView { title, startTime, endTime, notes, category in
         print("Saving: \(title) from \(startTime) to \(endTime)")
     }
 }

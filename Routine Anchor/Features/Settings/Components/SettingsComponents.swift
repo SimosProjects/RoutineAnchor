@@ -33,7 +33,7 @@ struct SettingsSection<Content: View>: View {
                 
                 Text(title)
                     .font(TypographyConstants.Headers.cardTitle)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                 
                 Spacer()
             }
@@ -94,35 +94,35 @@ struct SettingsToggle: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.premiumBlue)
+                .foregroundStyle(Color.anchorBlue)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                 
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
             }
             
             Spacer()
             
             Toggle("", isOn: $isOn)
-                .toggleStyle(PremiumToggleStyle())
+                .toggleStyle(DesignedToggleStyle())
         }
     }
 }
 
 // MARK: - Custom Toggle Style
-struct PremiumToggleStyle: ToggleStyle {
+struct DesignedToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack {
             configuration.label
             
             RoundedRectangle(cornerRadius: 16)
-                .fill(configuration.isOn ? Color.premiumGreen : Color.white.opacity(0.2))
+                .fill(configuration.isOn ? Color.anchorGreen : Color.white.opacity(0.2))
                 .frame(width: 44, height: 26)
                 .overlay(
                     Circle()
@@ -159,18 +159,18 @@ struct SettingsButton: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(TypographyConstants.Body.emphasized)
-                        .foregroundStyle(Color.premiumTextPrimary)
+                        .foregroundStyle(Color.anchorTextPrimary)
                     
                     Text(subtitle)
                         .font(TypographyConstants.UI.caption)
-                        .foregroundStyle(Color.premiumTextSecondary)
+                        .foregroundStyle(Color.anchorTextSecondary)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
             }
         }
         .buttonStyle(PlainButtonStyle())
@@ -187,17 +187,17 @@ struct SettingsDatePicker: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.premiumBlue)
+                .foregroundStyle(Color.anchorBlue)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                 
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
             }
             
             Spacer()
@@ -205,7 +205,7 @@ struct SettingsDatePicker: View {
             DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
                 .labelsHidden()
                 .datePickerStyle(.compact)
-                .accentColor(Color.premiumBlue)
+                .accentColor(Color.anchorBlue)
         }
     }
 }
@@ -221,17 +221,17 @@ struct SettingsPicker: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.premiumBlue)
+                .foregroundStyle(Color.anchorBlue)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                 
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
             }
             
             Spacer()
@@ -242,7 +242,7 @@ struct SettingsPicker: View {
                 }
             }
             .pickerStyle(.menu)
-            .accentColor(Color.premiumBlue)
+            .accentColor(Color.anchorBlue)
         }
     }
 }

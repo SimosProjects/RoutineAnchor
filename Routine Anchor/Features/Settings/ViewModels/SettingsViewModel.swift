@@ -208,12 +208,12 @@ final class SettingsViewModel {
                     await scheduleAllNotifications()
                     
                     successMessage = "Notifications enabled successfully"
-                    HapticManager.shared.premiumSuccess()
+                    HapticManager.shared.anchorSuccess()
                 } else {
                     // Permission denied, revert toggle
                     notificationsEnabled = false
                     errorMessage = "Notification permissions were denied. You can enable them in iOS Settings."
-                    HapticManager.shared.premiumError()
+                    HapticManager.shared.anchorError()
                 }
             } else {
                 // Disable all notifications
@@ -301,7 +301,7 @@ final class SettingsViewModel {
                 await scheduleAllNotifications()
             }
             
-            HapticManager.shared.premiumSuccess()
+            HapticManager.shared.anchorSuccess()
             successMessage = "Today's progress has been reset"
             
             // Notify other views to refresh
@@ -310,7 +310,7 @@ final class SettingsViewModel {
             
         } catch {
             errorMessage = "Failed to reset today's progress: \(error.localizedDescription)"
-            HapticManager.shared.premiumError()
+            HapticManager.shared.anchorError()
         }
         
         isLoading = false
@@ -327,7 +327,7 @@ final class SettingsViewModel {
             // Also clear today's daily progress since no blocks exist
             try dataManager.clearDailyProgress(for: Date())
             
-            HapticManager.shared.premiumSuccess()
+            HapticManager.shared.anchorSuccess()
             successMessage = "Today's schedule has been cleared"
             
             // Notify other views to refresh
@@ -336,7 +336,7 @@ final class SettingsViewModel {
             
         } catch {
             errorMessage = "Failed to clear today's schedule: \(error.localizedDescription)"
-            HapticManager.shared.premiumError()
+            HapticManager.shared.anchorError()
         }
         
         isLoading = false
@@ -375,12 +375,12 @@ final class SettingsViewModel {
             // Clear all notifications
             notificationService.removeAllPendingNotifications()
             
-            HapticManager.shared.premiumSuccess()
+            HapticManager.shared.anchorSuccess()
             successMessage = "All data has been cleared"
             
         } catch {
             errorMessage = "Failed to clear all data: \(error.localizedDescription)"
-            HapticManager.shared.premiumError()
+            HapticManager.shared.anchorError()
         }
         
         isLoading = false
@@ -650,7 +650,7 @@ extension SettingsViewModel {
                 try dataManager.addTimeBlock(block)
             }
             
-            HapticManager.shared.premiumSuccess()
+            HapticManager.shared.anchorSuccess()
             successMessage = "Sample data added successfully"
             
             // Schedule notifications for new blocks
@@ -660,7 +660,7 @@ extension SettingsViewModel {
             
         } catch {
             errorMessage = "Failed to add sample data: \(error.localizedDescription)"
-            HapticManager.shared.premiumError()
+            HapticManager.shared.anchorError()
         }
         
         isLoading = false

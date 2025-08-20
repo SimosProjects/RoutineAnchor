@@ -34,7 +34,7 @@ struct SettingsHeader: View {
                     .font(.system(size: 48, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            colors: [Color.anchorBlue, Color.anchorPurple],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -44,11 +44,11 @@ struct SettingsHeader: View {
 
                 Text("Settings")
                     .font(TypographyConstants.Headers.welcome)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
 
                 Text("Customize your experience")
                     .font(TypographyConstants.Body.secondary)
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
             }
         }
     }

@@ -22,16 +22,16 @@ struct OnboardingFlow: View {
 
                 VStack(spacing: 0) {
                     TabView(selection: $viewModel.currentStep) {
-                        PremiumWelcomeView(onContinue: viewModel.nextStep)
+                        WelcomeView(onContinue: viewModel.nextStep)
                             .tag(OnboardingViewModel.OnboardingStep.welcome)
 
-                        PremiumPermissionView(
+                        PermissionView(
                             onAllow: viewModel.requestNotificationPermission,
                             onSkip: viewModel.skipPermissions
                         )
                         .tag(OnboardingViewModel.OnboardingStep.permissions)
 
-                        PremiumSetupCompleteView(onFinish: completeOnboarding)
+                        SetupCompleteView(onFinish: completeOnboarding)
                             .tag(OnboardingViewModel.OnboardingStep.setup)
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))

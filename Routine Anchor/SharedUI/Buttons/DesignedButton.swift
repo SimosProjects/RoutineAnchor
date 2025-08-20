@@ -1,5 +1,5 @@
 //
-//  PremiumButton.swift
+//  DesignedButton.swift
 //  Routine Anchor
 //
 //  Created by Christopher Simonson on 7/20/25.
@@ -7,7 +7,7 @@
 import SwiftUI
 import UserNotifications
 
-struct PremiumButton: View {
+struct DesignedButton: View {
     let title: String
     var style: ButtonStyle = .primary
     let action: () -> Void

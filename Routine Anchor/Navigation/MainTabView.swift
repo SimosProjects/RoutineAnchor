@@ -19,7 +19,6 @@ struct MainTabView: View {
     
     var body: some View {
         ZStack {
-            // Premium background
             AnimatedGradientBackground()
                 .ignoresSafeArea()
             
@@ -85,7 +84,7 @@ struct MainTabView: View {
                 }
                 .tag(Tab.settings)
             }
-            .tint(Color.premiumBlue)
+            .tint(Color.anchorBlue)
             .background(Color.clear)
             .onAppear {
                 // Force immediate appearance update
@@ -115,11 +114,10 @@ struct MainTabView: View {
                 await monitorNavigationNotifications()
             }
             
-            // Premium floating action button - contextual
             floatingActionButton
         }
         .sheet(isPresented: $showingAddTimeBlock) {
-            PremiumAddTimeBlockView (
+            AddTimeBlockView (
                 existingTimeBlocks: existingTimeBlocks
             ) { title, startTime, endTime, notes, category in
                 // Create and save the time block directly
@@ -211,7 +209,7 @@ struct MainTabView: View {
                 HStack {
                     Spacer()
                     
-                    PremiumFloatingActionButton(
+                    FloatingActionButton(
                         tab: selectedTab,
                         action: floatingActionTapped
                     )
@@ -233,7 +231,7 @@ struct MainTabView: View {
     
     @MainActor
     private func setupInitialState() async {
-        setupPremiumTabBar()
+        setupTabBar()
         tabViewModel.setup(with: modelContext)
         
         // Animate floating action button
@@ -318,7 +316,7 @@ struct MainTabView: View {
     
     // MARK: - UI Configuration
     
-    private func setupPremiumTabBar() {
+    private func setupTabBar() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = UIColor.black.withAlphaComponent(0.95)
@@ -335,9 +333,9 @@ struct MainTabView: View {
             .font: UIFont.systemFont(ofSize: 11, weight: .medium)
         ]
         
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.premiumBlue)
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.anchorBlue)
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-            .foregroundColor: UIColor(Color.premiumBlue),
+            .foregroundColor: UIColor(Color.anchorBlue),
             .font: UIFont.systemFont(ofSize: 11, weight: .semibold)
         ]
         
@@ -396,8 +394,8 @@ struct MainTabView: View {
     }
 }
 
-// MARK: - Premium Floating Action Button Component
-struct PremiumFloatingActionButton: View {
+// MARK: - Floating Action Button Component
+struct FloatingActionButton: View {
     let tab: MainTabView.Tab
     let action: () -> Void
     
@@ -510,10 +508,10 @@ extension MainTabView {
         
         var gradientColors: [Color] {
             switch self {
-            case .today: return [Color.premiumBlue, Color.premiumTeal]
-            case .schedule: return [Color.premiumPurple, Color.premiumBlue]
-            case .summary: return [Color.premiumGreen, Color.premiumTeal]
-            case .settings: return [Color.premiumTextSecondary, Color.premiumTextTertiary]
+            case .today: return [Color.anchorBlue, Color.anchorTeal]
+            case .schedule: return [Color.anchorPurple, Color.anchorBlue]
+            case .summary: return [Color.anchorGreen, Color.anchorTeal]
+            case .settings: return [Color.anchorTextSecondary, Color.anchorTextTertiary]
             }
         }
     }

@@ -3,12 +3,11 @@
 //  Routine Anchor
 //
 //  Created by Christopher Simonson on 7/21/25.
-//  Swift 6 Compatible Version
 //
 import UIKit
 import SwiftUI
 
-/// Manages haptic feedback throughout the app with premium patterns
+/// Manages haptic feedback throughout the app with patterns
 @MainActor
 final class HapticManager: Sendable {
     static let shared = HapticManager()
@@ -82,21 +81,20 @@ final class HapticManager: Sendable {
         notificationGenerator.notificationOccurred(.error)
     }
     
-    // MARK: - Premium Patterns
+    // MARK: - Patterns
     
-    /// Premium impact with custom intensity - for elevated experiences
-    func premiumImpact() {
+    /// Impact with custom intensity - for elevated experiences
+    func impact() {
         guard isHapticsEnabled else { return }
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred(intensity: 0.8)
     }
     
-    /// Premium success - double tap for emphasis
-    func premiumSuccess() {
+    /// Success - double tap for emphasis
+    func anchorSuccess() {
         guard isHapticsEnabled else { return }
         notificationGenerator.notificationOccurred(.success)
         
-        // Add a second subtle tap for premium feel
         Task {
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
             await MainActor.run {
@@ -105,8 +103,8 @@ final class HapticManager: Sendable {
         }
     }
     
-    /// Premium selection - enhanced selection feedback
-    func premiumSelection() {
+    /// Selection - enhanced selection feedback
+    func anchorSelection() {
         guard isHapticsEnabled else { return }
         selectionGenerator.selectionChanged()
         
@@ -119,8 +117,8 @@ final class HapticManager: Sendable {
         }
     }
     
-    /// Premium error - more pronounced error feedback
-    func premiumError() {
+    /// Error - more pronounced error feedback
+    func anchorError() {
         guard isHapticsEnabled else { return }
         notificationGenerator.notificationOccurred(.error)
         
@@ -311,7 +309,6 @@ final class HapticManager: Sendable {
 
 // MARK: - Convenience Extensions
 extension HapticManager {
-    
     /// Quick access methods with shorter names for common actions
     func tap() { lightImpact() }
     func select() { selection() }
@@ -334,7 +331,7 @@ extension View {
                 case .success: HapticManager.shared.success()
                 case .warning: HapticManager.shared.warning()
                 case .error: HapticManager.shared.error()
-                case .premium: HapticManager.shared.premiumImpact()
+                case .normal: HapticManager.shared.impact()
                 }
             }
         }
@@ -352,7 +349,7 @@ extension View {
                 case .success: HapticManager.shared.success()
                 case .warning: HapticManager.shared.warning()
                 case .error: HapticManager.shared.error()
-                case .premium: HapticManager.shared.premiumImpact()
+                case .normal: HapticManager.shared.impact()
                 }
             }
         }
@@ -360,5 +357,5 @@ extension View {
 }
 
 enum HapticStyle: Sendable {
-    case light, medium, heavy, selection, success, warning, error, premium
+    case light, medium, heavy, selection, success, warning, error, normal
 }

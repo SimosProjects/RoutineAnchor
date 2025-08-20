@@ -91,7 +91,7 @@ struct HelpView: View {
                         Text("Support")
                             .font(.system(size: 14, weight: .medium))
                     }
-                    .foregroundStyle(Color.premiumBlue)
+                    .foregroundStyle(Color.anchorBlue)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Color.white.opacity(0.15))
@@ -104,7 +104,7 @@ struct HelpView: View {
                     .font(.system(size: 48, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            colors: [Color.anchorBlue, Color.anchorPurple],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -114,12 +114,12 @@ struct HelpView: View {
                 
                 Text("Help & Support")
                     .font(TypographyConstants.Headers.welcome)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                     .multilineTextAlignment(.center)
                 
                 Text("Find answers and get the most out of Routine Anchor")
                     .font(TypographyConstants.Body.secondary)
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
                     .multilineTextAlignment(.center)
             }
         }
@@ -132,18 +132,18 @@ struct HelpView: View {
         HStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.premiumTextSecondary)
+                .foregroundStyle(Color.anchorTextSecondary)
             
             TextField("Search help topics...", text: $searchText)
                 .font(TypographyConstants.Body.primary)
-                .foregroundStyle(Color.premiumTextPrimary)
+                .foregroundStyle(Color.anchorTextPrimary)
                 .textFieldStyle(PlainTextFieldStyle())
             
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.premiumTextSecondary)
+                        .foregroundStyle(Color.anchorTextSecondary)
                 }
             }
         }
@@ -225,7 +225,7 @@ struct HelpCategoryChip: View {
                 Text(category.title)
                     .font(.system(size: 14, weight: .medium))
             }
-            .foregroundStyle(isSelected ? .white : Color.premiumTextSecondary)
+            .foregroundStyle(isSelected ? .white : Color.anchorTextSecondary)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
@@ -278,12 +278,12 @@ enum HelpCategory: CaseIterable {
     
     var color: Color {
         switch self {
-        case .all: return Color.premiumBlue
-        case .gettingStarted: return Color.premiumGreen
-        case .timeBlocks: return Color.premiumPurple
-        case .notifications: return Color.premiumWarning
-        case .settings: return Color.premiumTeal
-        case .troubleshooting: return Color.premiumError
+        case .all: return Color.anchorBlue
+        case .gettingStarted: return Color.anchorGreen
+        case .timeBlocks: return Color.anchorPurple
+        case .notifications: return Color.anchorWarning
+        case .settings: return Color.anchorTeal
+        case .troubleshooting: return Color.anchorError
         }
     }
 }
@@ -418,14 +418,14 @@ struct HelpItemView: View {
                     
                     Text(item.title)
                         .font(TypographyConstants.Headers.cardTitle)
-                        .foregroundStyle(Color.premiumTextPrimary)
+                        .foregroundStyle(Color.anchorTextPrimary)
                         .multilineTextAlignment(.leading)
                     
                     Spacer()
                     
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.premiumTextSecondary)
+                        .foregroundStyle(Color.anchorTextSecondary)
                         .rotationEffect(.degrees(isExpanded ? 0 : 0))
                 }
                 .padding(16)
@@ -440,7 +440,7 @@ struct HelpItemView: View {
                     
                     Text(item.content)
                         .font(TypographyConstants.Body.secondary)
-                        .foregroundStyle(Color.premiumTextSecondary)
+                        .foregroundStyle(Color.anchorTextSecondary)
                         .lineSpacing(2)
                         .padding(.horizontal, 16)
                         .padding(.bottom, 16)

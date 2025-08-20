@@ -81,7 +81,7 @@ final class OnboardingUITests: XCTestCase {
             return
         }
         
-        // The app shows a premium welcome view with "Begin Your Journey" button
+        // The app shows a welcome view
         let beginButton = app.buttons["Begin Your Journey"]
         XCTAssertTrue(beginButton.exists, "Begin Your Journey button should be visible")
     }

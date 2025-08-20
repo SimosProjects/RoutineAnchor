@@ -2,9 +2,8 @@
 //  RoutineAnchorApp.swift
 //  Routine Anchor
 //
-//  Main application entry point with migration support
+//  Main application entry point with migration support and premium integration
 //
-
 import SwiftUI
 import SwiftData
 
@@ -12,6 +11,7 @@ import SwiftData
 struct RoutineAnchorApp: App {
     // MARK: - Properties
     @StateObject private var migrationService = MigrationService.shared
+    @State private var premiumManager = PremiumManager()
     @State private var modelContainer: ModelContainer?
     @State private var showMigrationView = false
     @State private var initializationError: Error?
@@ -29,10 +29,11 @@ struct RoutineAnchorApp: App {
         WindowGroup {
             Group {
                 if let container = modelContainer {
-                    // Main app content
+                    // Main app content with premium manager
                     ContentView()
                         .modelContainer(container)
                         .environmentObject(migrationService)
+                        .premiumEnvironment(premiumManager)
                         .overlay {
                             if showMigrationView {
                                 MigrationProgressView()
@@ -110,6 +111,9 @@ struct RoutineAnchorApp: App {
         UserDefaults.standard.removeObject(forKey: "hapticsEnabled")
         UserDefaults.standard.removeObject(forKey: "autoResetEnabled")
         UserDefaults.standard.removeObject(forKey: "dailyReminderTime")
+        // PREMIUM RESET
+        UserDefaults.standard.removeObject(forKey: "userIsPremium")
+        UserDefaults.standard.removeObject(forKey: "temporaryPremiumUntil")
         UserDefaults.standard.synchronize()
         
         print("✅ UI Test: Onboarding state reset")
@@ -175,7 +179,7 @@ struct RoutineAnchorApp: App {
     }
 }
 
-// MARK: - Migration Progress View
+// MARK: - Migration Progress View (unchanged)
 struct MigrationProgressView: View {
     @EnvironmentObject var migrationService: MigrationService
     @State private var animationProgress: Double = 0
@@ -193,7 +197,7 @@ struct MigrationProgressView: View {
                     .font(.system(size: 60))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            colors: [Color.anchorBlue, Color.anchorPurple],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -220,7 +224,7 @@ struct MigrationProgressView: View {
                 VStack(spacing: 8) {
                     ProgressView(value: migrationService.migrationProgress)
                         .progressViewStyle(LinearProgressViewStyle())
-                        .tint(Color.premiumBlue)
+                        .tint(Color.anchorBlue)
                         .scaleEffect(y: 2)
                     
                     Text("\(Int(migrationService.migrationProgress * 100))%")
@@ -285,7 +289,7 @@ struct MigrationProgressView: View {
     }
 }
 
-// MARK: - App Loading View
+// MARK: - App Loading View (unchanged)
 struct AppLoadingView: View {
     @State private var pulseScale: CGFloat = 1.0
     @State private var rotationDegrees: Double = 0
@@ -302,7 +306,7 @@ struct AppLoadingView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [Color.premiumBlue, Color.premiumPurple],
+                                colors: [Color.anchorBlue, Color.anchorPurple],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -346,7 +350,7 @@ struct AppLoadingView: View {
     }
 }
 
-// MARK: - Data Error View
+// MARK: - Data Error View (unchanged)
 struct DataErrorView: View {
     let error: Error
     let retry: () -> Void
@@ -383,7 +387,7 @@ struct DataErrorView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.premiumBlue)
+                            .background(Color.anchorBlue)
                             .cornerRadius(12)
                     }
                     

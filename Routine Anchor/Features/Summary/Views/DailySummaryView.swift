@@ -8,7 +8,9 @@ import SwiftData
 struct DailySummaryView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(PremiumManager.self) private var premiumManager
     @State private var viewModel: DailySummaryViewModel
+    @State private var showingPremiumUpgrade = false
     
     // MARK: - Animation State
     @State private var animationPhase = 0
@@ -27,7 +29,6 @@ struct DailySummaryView: View {
     
     var body: some View {
         ZStack {
-            // Premium animated background
             AnimatedGradientBackground()
                 .ignoresSafeArea()
             
@@ -58,7 +59,7 @@ struct DailySummaryView: View {
                             }
                             
                             // Performance insights
-                            insightsSection(viewModel)
+                            premiumGatedInsightsSection(viewModel)
                             
                             // Rating and reflection
                             ratingSection(viewModel)
@@ -79,6 +80,9 @@ struct DailySummaryView: View {
         .navigationBarHidden(true)
         .task {
             await setupInitialState()
+        }
+        .sheet(isPresented: $showingPremiumUpgrade) {
+            PremiumUpgradeView(premiumManager: premiumManager)
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshSummaryView)) { _ in
             Task { @MainActor in
@@ -125,15 +129,15 @@ struct DailySummaryView: View {
                 Button(action: { showingShareSheet = true }) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.premiumBlue)
+                        .foregroundStyle(Color.anchorBlue)
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
-                                .fill(Color.premiumBlue.opacity(0.15))
+                                .fill(Color.anchorBlue.opacity(0.15))
                         )
                         .overlay(
                             Circle()
-                                .stroke(Color.premiumBlue.opacity(0.3), lineWidth: 1)
+                                .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
                         )
                 }
             }
@@ -145,8 +149,8 @@ struct DailySummaryView: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    Color.premiumGreen.opacity(0.4),
-                                    Color.premiumTeal.opacity(0.2),
+                                    Color.anchorGreen.opacity(0.4),
+                                    Color.anchorTeal.opacity(0.2),
                                     Color.clear
                                 ],
                                 center: .center,
@@ -162,7 +166,7 @@ struct DailySummaryView: View {
                         .font(.system(size: 40, weight: .light))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.premiumGreen, Color.premiumTeal],
+                                colors: [Color.anchorGreen, Color.anchorTeal],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -175,7 +179,7 @@ struct DailySummaryView: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.premiumGreen, Color.premiumTeal],
+                                colors: [Color.anchorGreen, Color.anchorTeal],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -281,7 +285,7 @@ struct DailySummaryView: View {
                     title: "Completed",
                     value: "\(progress.completedBlocks)",
                     subtitle: progress.completedBlocks == 1 ? "block" : "blocks",
-                    color: Color.premiumGreen,
+                    color: Color.anchorGreen,
                     icon: "checkmark.circle.fill"
                 )
                 
@@ -289,7 +293,7 @@ struct DailySummaryView: View {
                     title: "Time",
                     value: formatTime(progress.completedMinutes),
                     subtitle: "tracked",
-                    color: Color.premiumBlue,
+                    color: Color.anchorBlue,
                     icon: "clock.fill"
                 )
                 
@@ -297,7 +301,7 @@ struct DailySummaryView: View {
                     title: "Skipped",
                     value: "\(progress.skippedBlocks)",
                     subtitle: progress.skippedBlocks == 1 ? "block" : "blocks",
-                    color: Color.premiumWarning,
+                    color: Color.anchorWarning,
                     icon: "forward.circle.fill"
                 )
             }
@@ -310,7 +314,7 @@ struct DailySummaryView: View {
             HStack {
                 Image(systemName: "list.bullet.circle")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.premiumPurple)
+                    .foregroundStyle(Color.anchorPurple)
                 
                 Text("Task Breakdown")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -335,12 +339,146 @@ struct DailySummaryView: View {
     }
     
     // MARK: - Insights Section
-    private func insightsSection(_ viewModel: DailySummaryViewModel) -> some View {
+    private func premiumGatedInsightsSection(_ viewModel: DailySummaryViewModel) -> some View {
         VStack(spacing: 16) {
             HStack {
                 Image(systemName: "lightbulb.circle")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.premiumWarning)
+                    .foregroundStyle(Color.anchorWarning)
+                
+                Text("Insights & Suggestions")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Spacer()
+                
+                // Show premium badge if user has premium
+                if premiumManager.canAccessAdvancedAnalytics {
+                    PremiumBadge()
+                }
+            }
+            
+            if premiumManager.canAccessAdvancedAnalytics {
+                // FULL INSIGHTS FOR PREMIUM USERS
+                VStack(spacing: 12) {
+                    ForEach(Array(viewModel.getPersonalizedInsights().enumerated()), id: \.offset) { index, insight in
+                        InsightRow(text: insight, delay: Double(index) * 0.1)
+                    }
+                    
+                    // Show improvement suggestions for premium users
+                    let suggestions = viewModel.getImprovementSuggestions()
+                    if !suggestions.isEmpty {
+                        Divider()
+                            .background(.white.opacity(0.2))
+                            .padding(.vertical, 8)
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "brain.head.profile")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(Color.anchorTeal)
+                                
+                                Text("AI Suggestions")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.white)
+                            }
+                            
+                            ForEach(Array(suggestions.enumerated()), id: \.offset) { index, suggestion in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Text("•")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundStyle(Color.anchorTeal)
+                                    
+                                    Text(suggestion)
+                                        .font(.system(size: 14))
+                                        .foregroundStyle(.white.opacity(0.8))
+                                        .lineLimit(nil)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // LIMITED INSIGHTS FOR FREE USERS
+                VStack(spacing: 16) {
+                    // Show one basic insight
+                    let basicInsight = generateBasicInsight(viewModel)
+                    InsightRow(text: basicInsight, delay: 0.1)
+                    
+                    // Premium upgrade prompt
+                    PremiumMiniPrompt(
+                        title: "Unlock Advanced Insights",
+                        subtitle: "Get AI-powered recommendations and detailed analysis"
+                    ) {
+                        showingPremiumUpgrade = true
+                        HapticManager.shared.anchorSelection()
+                    }
+                    
+                    // Show what premium users get
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: 12))
+                                .foregroundStyle(Color.anchorWarning)
+                            
+                            Text("Premium insights include:")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(.white.opacity(0.8))
+                        }
+                        
+                        let features = [
+                            "🎯 Personalized productivity patterns",
+                            "⏰ Time-of-day performance analysis",
+                            "📊 Category-based recommendations",
+                            "📈 Weekly progress trends",
+                            "🧠 AI-powered improvement suggestions"
+                        ]
+                        
+                        ForEach(features, id: \.self) { feature in
+                            HStack(spacing: 8) {
+                                Text(feature)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.white.opacity(0.6))
+                                
+                                Spacer()
+                            }
+                            .padding(.leading, 8)
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+            }
+        }
+        .padding(20)
+        .glassMorphism(cornerRadius: 20)
+        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+    }
+    
+    private func generateBasicInsight(_ viewModel: DailySummaryViewModel) -> String {
+        guard let progress = viewModel.dailyProgress else {
+            return "⭐ Create your first time block to start tracking progress!"
+        }
+        
+        let completionRate = progress.completionPercentage
+        
+        if completionRate >= 0.8 {
+            return "🎉 Excellent work! You're crushing your goals today with \(Int(completionRate * 100))% completion."
+        } else if completionRate >= 0.6 {
+            return "💪 Good progress! You're \(Int(completionRate * 100))% through your planned tasks."
+        } else if completionRate >= 0.3 {
+            return "📈 Building momentum! Every completed task is progress toward your goals."
+        } else if progress.totalBlocks > 0 {
+            return "🌱 Every journey starts with a single step. Keep going!"
+        } else {
+            return "⭐ Ready to start? Create your first time block to begin tracking progress!"
+        }
+    }
+    /*private func insightsSection(_ viewModel: DailySummaryViewModel) -> some View {
+        VStack(spacing: 16) {
+            HStack {
+                Image(systemName: "lightbulb.circle")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(Color.anchorWarning)
                 
                 Text("Insights & Suggestions")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -358,7 +496,7 @@ struct DailySummaryView: View {
         .padding(20)
         .glassMorphism(cornerRadius: 20)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-    }
+    }*/
     
     // MARK: - Rating Section
     private func ratingSection(_ viewModel: DailySummaryViewModel) -> some View {
@@ -366,7 +504,7 @@ struct DailySummaryView: View {
             HStack {
                 Image(systemName: "star.circle")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.premiumWarning)
+                    .foregroundStyle(Color.anchorWarning)
                 
                 Text("Rate Your Day")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -380,14 +518,14 @@ struct DailySummaryView: View {
                 ForEach(1...5, id: \.self) { rating in
                     Button(action: {
                         selectedRating = rating
-                        HapticManager.shared.premiumSelection()
+                        HapticManager.shared.anchorSelection()
                     }) {
                         Image(systemName: selectedRating >= rating ? "star.fill" : "star")
                             .font(.system(size: 32, weight: .medium))
                             .foregroundStyle(
                                 selectedRating >= rating ?
                                 LinearGradient(
-                                    colors: [Color.premiumWarning, Color.premiumWarning.opacity(0.8)],
+                                    colors: [Color.anchorWarning, Color.anchorWarning.opacity(0.8)],
                                     startPoint: .top,
                                     endPoint: .bottom
                                 ) :
@@ -408,7 +546,7 @@ struct DailySummaryView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "note.text")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.premiumTeal)
+                        .foregroundStyle(Color.anchorTeal)
                     
                     Text("Reflection")
                         .font(.system(size: 14, weight: .semibold))
@@ -447,11 +585,11 @@ struct DailySummaryView: View {
             if viewModel.isDayComplete {
                 Text("🎉 Congratulations on completing your day!")
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.premiumGreen)
+                    .foregroundStyle(Color.anchorGreen)
                     .multilineTextAlignment(.center)
             }
             
-            PremiumButton(
+            DesignedButton(
                 title: "Plan Tomorrow",
                 style: .gradient,
                 action: planTomorrow
@@ -476,8 +614,8 @@ struct DailySummaryView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.premiumGreen.opacity(0.3),
-                                Color.premiumTeal.opacity(0.1),
+                                Color.anchorGreen.opacity(0.3),
+                                Color.anchorTeal.opacity(0.1),
                                 Color.clear
                             ],
                             center: .center,
@@ -492,12 +630,12 @@ struct DailySummaryView: View {
                     .font(.system(size: 80, weight: .thin))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.premiumGreen, Color.premiumTeal],
+                            colors: [Color.anchorGreen, Color.anchorTeal],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .premiumFloat()
+                    .floatModifier()
             }
             
             VStack(spacing: 16) {
@@ -513,7 +651,7 @@ struct DailySummaryView: View {
             
             Spacer()
             
-            PremiumButton(
+            DesignedButton(
                 title: "Start Your Day",
                 action: {
                     // Navigate to Today tab
@@ -532,7 +670,7 @@ struct DailySummaryView: View {
             ZStack {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(Color.premiumGreen.opacity(0.3))
+                        .fill(Color.anchorGreen.opacity(0.3))
                         .frame(width: 12, height: 12)
                         .scaleEffect(animationPhase == 0 ? 0.8 : 1.2)
                         .animation(
@@ -579,7 +717,7 @@ struct DailySummaryView: View {
     }
     
     private func planTomorrow() {
-        HapticManager.shared.premiumImpact()
+        HapticManager.shared.impact()
         // Navigate to schedule builder for tomorrow
         dismiss()
     }
@@ -609,7 +747,7 @@ struct InsightRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Circle()
-                .fill(Color.premiumWarning.opacity(0.3))
+                .fill(Color.anchorWarning.opacity(0.3))
                 .frame(width: 6, height: 6)
                 .offset(y: 6)
             

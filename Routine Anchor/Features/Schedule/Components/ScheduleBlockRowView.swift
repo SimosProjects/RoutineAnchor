@@ -81,18 +81,18 @@ struct ScheduleBlockRowView: View {
                 Button(action: onEdit) {
                     Image(systemName: "pencil")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.premiumBlue)
+                        .foregroundStyle(Color.anchorBlue)
                         .frame(width: 36, height: 36)
-                        .background(Color.premiumBlue.opacity(0.15))
+                        .background(Color.anchorBlue.opacity(0.15))
                         .cornerRadius(10)
                 }
                 
                 Button(action: onDelete) {
                     Image(systemName: "trash")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.premiumError)
+                        .foregroundStyle(Color.anchorError)
                         .frame(width: 36, height: 36)
-                        .background(Color.premiumError.opacity(0.15))
+                        .background(Color.anchorError.opacity(0.15))
                         .cornerRadius(10)
                 }
             }
@@ -143,9 +143,9 @@ struct ScheduleBlockRowView: View {
     private var statusColor: Color {
         switch timeBlock.status {
         case .notStarted: return Color.white.opacity(0.6)
-        case .inProgress: return Color.premiumBlue
-        case .completed: return Color.premiumGreen
-        case .skipped: return Color.premiumWarning
+        case .inProgress: return Color.anchorBlue
+        case .completed: return Color.anchorGreen
+        case .skipped: return Color.anchorWarning
         }
     }
 }

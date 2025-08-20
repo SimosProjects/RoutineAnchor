@@ -69,12 +69,12 @@ struct PremiumUpgradeView: View {
                 .font(.system(size: 60, weight: .medium))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [Color.premiumWarning, Color.premiumGreen],
+                        colors: [Color.anchorWarning, Color.anchorGreen],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
-                .premiumFloat(amplitude: 8, duration: 3)
+                .floatModifier(amplitude: 8, duration: 3)
                 .scaleEffect(1.0 + sin(animationPhase * .pi * 2) * 0.05)
             
             VStack(spacing: 12) {
@@ -145,7 +145,7 @@ struct PremiumUpgradeView: View {
                         isRecommended: true
                     ) {
                         selectedProduct = yearlyProduct
-                        HapticManager.shared.premiumSelection()
+                        HapticManager.shared.anchorSelection()
                     }
                 }
                 
@@ -157,7 +157,7 @@ struct PremiumUpgradeView: View {
                         isRecommended: false
                     ) {
                         selectedProduct = monthlyProduct
-                        HapticManager.shared.premiumSelection()
+                        HapticManager.shared.anchorSelection()
                     }
                 }
             }
@@ -168,7 +168,7 @@ struct PremiumUpgradeView: View {
     private var purchaseSection: some View {
         VStack(spacing: 16) {
             if let selectedProduct = selectedProduct {
-                PremiumButton(
+                DesignedButton(
                     title: "Start Premium - \(selectedProduct.displayPrice)",
                     style: .gradient,
                     action: {
@@ -226,9 +226,19 @@ struct PremiumUpgradeView: View {
             
             // Terms and privacy
             HStack(spacing: 4) {
-                Button("Terms") { /* Open terms */ }
+                Button("Terms") {
+                    // TODO: Open terms URL
+                    if let url = URL(string: "https://routineanchor.com/terms") {
+                        UIApplication.shared.open(url)
+                    }
+                }
                 Text("•")
-                Button("Privacy") { /* Open privacy */ }
+                Button("Privacy") {
+                    // TODO: Open privacy URL
+                    if let url = URL(string: "https://routineanchor.com/privacy") {
+                        UIApplication.shared.open(url)
+                    }
+                }
             }
             .font(.system(size: 12))
             .foregroundStyle(.white.opacity(0.5))
@@ -292,17 +302,17 @@ struct PremiumFeatureRow: View {
     private var featureColor: Color {
         switch feature {
         case .unlimitedTimeBlocks:
-            return .premiumBlue
+            return .anchorBlue
         case .advancedAnalytics:
-            return .premiumPurple
+            return .anchorPurple
         case .premiumThemes:
-            return .premiumGreen
+            return .anchorGreen
         case .unlimitedTemplates:
-            return .premiumTeal
+            return .anchorTeal
         case .widgets:
-            return .premiumWarning
+            return .anchorWarning
         default:
-            return .premiumBlue
+            return .anchorBlue
         }
     }
 }
@@ -329,7 +339,7 @@ struct PremiumPricingCard: View {
                             .padding(.vertical, 4)
                             .background(
                                 Capsule()
-                                    .fill(Color.premiumGreen)
+                                    .fill(Color.anchorGreen)
                             )
                         Spacer()
                     }
@@ -342,7 +352,7 @@ struct PremiumPricingCard: View {
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(.white)
                         
-                        if let savings = savings {
+                        if let savings = savings, !savings.isEmpty {
                             Text("Save \(savings)")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundStyle(.green)
@@ -359,7 +369,9 @@ struct PremiumPricingCard: View {
                 // Per month calculation for yearly
                 if product.id.contains("yearly") {
                     HStack {
-                        Text("Just \(String(format: "%.2f", product.price / 12)) per month")
+                        // Fixed: Convert Decimal to Double properly
+                        let monthlyEquivalent = NSDecimalNumber(decimal: product.price).doubleValue / 12.0
+                        Text("Just $\(String(format: "%.2f", monthlyEquivalent)) per month")
                             .font(.system(size: 14))
                             .foregroundStyle(.white.opacity(0.7))
                         Spacer()
@@ -370,14 +382,14 @@ struct PremiumPricingCard: View {
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
-                        isSelected ? Color.premiumBlue : Color.white.opacity(0.2),
+                        isSelected ? Color.anchorBlue : Color.white.opacity(0.2),
                         lineWidth: isSelected ? 2 : 1
                     )
                     .background(
                         RoundedRectangle(cornerRadius: 16)
                             .fill(
                                 isSelected
-                                ? Color.premiumBlue.opacity(0.1)
+                                ? Color.anchorBlue.opacity(0.1)
                                 : Color.white.opacity(0.05)
                             )
                     )

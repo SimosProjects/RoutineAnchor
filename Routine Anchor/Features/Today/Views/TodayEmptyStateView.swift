@@ -32,8 +32,8 @@ struct TodayEmptyStateView: View {
                                 .fill(
                                     RadialGradient(
                                         colors: [
-                                            Color.premiumBlue.opacity(0.4),
-                                            Color.premiumPurple.opacity(0.2),
+                                            Color.anchorBlue.opacity(0.4),
+                                            Color.anchorPurple.opacity(0.2),
                                             Color.clear
                                         ],
                                         center: .center,
@@ -62,7 +62,7 @@ struct TodayEmptyStateView: View {
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
                                 .foregroundStyle(
                                     LinearGradient(
-                                        colors: [Color.premiumBlue, Color.premiumPurple],
+                                        colors: [Color.anchorBlue, Color.anchorPurple],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -86,7 +86,7 @@ struct TodayEmptyStateView: View {
                                 icon: "brain.head.profile",
                                 title: "Focused Mind",
                                 description: "Clear time boundaries eliminate decision fatigue",
-                                color: Color.premiumBlue,
+                                color: Color.anchorBlue,
                                 delay: 0.2
                             )
                             
@@ -94,7 +94,7 @@ struct TodayEmptyStateView: View {
                                 icon: "chart.line.uptrend.xyaxis",
                                 title: "Visible Progress",
                                 description: "Watch your consistency build momentum",
-                                color: Color.premiumGreen,
+                                color: Color.anchorGreen,
                                 delay: 0.3
                             )
                             
@@ -102,7 +102,7 @@ struct TodayEmptyStateView: View {
                                 icon: "heart.fill",
                                 title: "Balanced Life",
                                 description: "Protect time for what matters most",
-                                color: Color.premiumPurple,
+                                color: Color.anchorPurple,
                                 delay: 0.4
                             )
                         }
@@ -113,11 +113,11 @@ struct TodayEmptyStateView: View {
                     
                     // Action buttons
                     VStack(spacing: 16) {
-                        PremiumButton(
+                        DesignedButton(
                             title: "Create My First Routine",
                             style: .gradient,
                             action: {
-                                HapticManager.shared.premiumSuccess()
+                                HapticManager.shared.anchorSuccess()
                                 onCreateRoutine()
                             }
                         )
@@ -126,7 +126,7 @@ struct TodayEmptyStateView: View {
                             title: "Browse Templates",
                             icon: "sparkles",
                             action: {
-                                HapticManager.shared.premiumImpact()
+                                HapticManager.shared.impact()
                                 onUseTemplate()
                             }
                         )
@@ -222,7 +222,7 @@ struct CalendarIllustrationView: View {
                 HStack(spacing: 8) {
                     ForEach(0..<3) { _ in
                         Circle()
-                            .fill(Color.premiumBlue.opacity(0.6))
+                            .fill(Color.anchorBlue.opacity(0.6))
                             .frame(width: 6, height: 6)
                     }
                 }
@@ -253,10 +253,10 @@ struct CalendarIllustrationView: View {
     }
     
     private let blockColors: [Color] = [
-        Color.premiumBlue,
-        Color.premiumGreen,
-        Color.premiumPurple,
-        Color.premiumTeal
+        Color.anchorBlue,
+        Color.anchorGreen,
+        Color.anchorPurple,
+        Color.anchorTeal
     ]
     
     private let blockWidths: [CGFloat] = [80, 60, 90, 70]
@@ -348,7 +348,7 @@ struct FloatingParticle: Identifiable, Sendable {
             x: CGFloat.random(in: 0...screenSize.width),
             y: CGFloat.random(in: 0...screenSize.height)
         )
-        self.color = [Color.premiumBlue, Color.premiumPurple, Color.premiumGreen].randomElement()!
+        self.color = [Color.anchorBlue, Color.anchorPurple, Color.anchorGreen].randomElement()!
         self.size = CGFloat.random(in: 2...4)
         self.speed = CGFloat.random(in: 0.2...0.8)
         self.opacity = Double.random(in: 0.3...0.7)

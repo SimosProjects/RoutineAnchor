@@ -12,7 +12,6 @@ struct PrivacyPolicyView: View {
     
     var body: some View {
         ZStack {
-            // Premium animated background
             AnimatedGradientBackground()
             AnimatedMeshBackground()
                 .opacity(0.3)
@@ -71,7 +70,7 @@ struct PrivacyPolicyView: View {
                     .font(.system(size: 48, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            colors: [Color.anchorBlue, Color.anchorPurple],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -81,12 +80,12 @@ struct PrivacyPolicyView: View {
                 
                 Text("Privacy Policy")
                     .font(TypographyConstants.Headers.welcome)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                     .multilineTextAlignment(.center)
                 
                 Text("Your privacy is our priority")
                     .font(TypographyConstants.Body.secondary)
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
                     .multilineTextAlignment(.center)
             }
         }
@@ -99,35 +98,35 @@ struct PrivacyPolicyView: View {
                 icon: "iphone",
                 title: "Local Storage Only",
                 content: "All your routine data is stored locally on your device. We never collect, transmit, or store your personal information on external servers.",
-                color: Color.premiumGreen
+                color: Color.anchorGreen
             )
             
             PrivacySection(
                 icon: "bell.badge",
                 title: "Notification Permissions",
                 content: "We only request notification permissions to send you helpful reminders about your time blocks. You can disable these at any time in Settings.",
-                color: Color.premiumBlue
+                color: Color.anchorBlue
             )
             
             PrivacySection(
                 icon: "lock.shield",
                 title: "No Data Collection",
                 content: "Routine Anchor does not collect analytics, usage data, or any personal information. Your productivity data remains completely private.",
-                color: Color.premiumPurple
+                color: Color.anchorPurple
             )
             
             PrivacySection(
                 icon: "externaldrive",
                 title: "No Third Parties",
                 content: "We don't share data with third parties because we don't collect it in the first place. Your information never leaves your device.",
-                color: Color.premiumTeal
+                color: Color.anchorTeal
             )
             
             PrivacySection(
                 icon: "trash",
                 title: "Data Deletion",
                 content: "You can delete all your data at any time from the Settings screen. When you delete the app, all data is permanently removed.",
-                color: Color.premiumWarning
+                color: Color.anchorWarning
             )
         }
     }
@@ -137,11 +136,11 @@ struct PrivacyPolicyView: View {
         VStack(spacing: 16) {
             Text("Questions About Privacy?")
                 .font(TypographyConstants.Headers.cardTitle)
-                .foregroundStyle(Color.premiumTextPrimary)
+                .foregroundStyle(Color.anchorTextPrimary)
             
             Text("If you have any questions about this privacy policy or how we handle your data, please contact us.")
                 .font(TypographyConstants.Body.secondary)
-                .foregroundStyle(Color.premiumTextSecondary)
+                .foregroundStyle(Color.anchorTextSecondary)
                 .multilineTextAlignment(.center)
             
             Button(action: contactSupport) {
@@ -158,13 +157,13 @@ struct PrivacyPolicyView: View {
                 .frame(height: 48)
                 .background(
                     LinearGradient(
-                        colors: [Color.premiumBlue, Color.premiumPurple],
+                        colors: [Color.anchorBlue, Color.anchorPurple],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(12)
-                .shadow(color: Color.premiumBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.anchorBlue.opacity(0.3), radius: 8, x: 0, y: 4)
             }
             .padding(.horizontal, 20)
         }
@@ -208,11 +207,11 @@ struct PrivacySection: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .font(TypographyConstants.Headers.cardTitle)
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
                 
                 Text(content)
                     .font(TypographyConstants.Body.secondary)
-                    .foregroundStyle(Color.premiumTextSecondary)
+                    .foregroundStyle(Color.anchorTextSecondary)
                     .lineSpacing(2)
             }
         }

@@ -51,7 +51,6 @@ struct TimeBlockRowView: View {
                 
                 Spacer(minLength: 8)
                 
-                // Action buttons with premium feel
                 if showActions {
                     actionButtons
                 }
@@ -283,7 +282,7 @@ struct TimeBlockRowView: View {
                 Capsule()
                     .fill(
                         LinearGradient(
-                            colors: [Color.premiumBlue, Color.premiumBlue.opacity(0.6)],
+                            colors: [Color.anchorBlue, Color.anchorBlue.opacity(0.6)],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -322,7 +321,7 @@ struct TimeBlockRowView: View {
             if let onStart = onStart {
                 TimeBlockActionButton(
                     icon: "play.fill",
-                    color: .premiumGreen,
+                    color: .anchorGreen,
                     action: onStart,
                     isLarge: true
                 )
@@ -332,7 +331,7 @@ struct TimeBlockRowView: View {
                 if let onComplete = onComplete {
                     TimeBlockActionButton(
                         icon: "checkmark.circle.fill",
-                        color: .premiumGreen,
+                        color: .anchorGreen,
                         action: onComplete,
                         isLarge: true
                     )
@@ -340,7 +339,7 @@ struct TimeBlockRowView: View {
                 if let onSkip = onSkip {
                     TimeBlockActionButton(
                         icon: "forward.fill",
-                        color: .premiumWarning,
+                        color: .anchorWarning,
                         action: onSkip
                     )
                 }
@@ -351,8 +350,8 @@ struct TimeBlockRowView: View {
                 .foregroundStyle(
                     LinearGradient(
                         colors: timeBlock.status == .completed
-                            ? [Color.premiumGreen, Color.premiumGreen.opacity(0.7)]
-                            : [Color.premiumWarning, Color.premiumWarning.opacity(0.7)],
+                            ? [Color.anchorGreen, Color.anchorGreen.opacity(0.7)]
+                            : [Color.anchorWarning, Color.anchorWarning.opacity(0.7)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -365,7 +364,7 @@ struct TimeBlockRowView: View {
         if let onEdit = onEdit {
             TimeBlockActionButton(
                 icon: "pencil.circle",
-                color: .premiumBlue,
+                color: .anchorBlue,
                 action: onEdit
             )
         }
@@ -373,7 +372,7 @@ struct TimeBlockRowView: View {
         if let onDelete = onDelete {
             TimeBlockActionButton(
                 icon: "trash.circle",
-                color: .premiumError,
+                color: .anchorError,
                 action: onDelete
             )
         }
@@ -426,9 +425,9 @@ struct TimeBlockRowView: View {
     private var statusColor: Color {
         switch timeBlock.status {
         case .notStarted: return Color.white.opacity(0.7)
-        case .inProgress: return Color.premiumBlue
-        case .completed: return Color.premiumGreen
-        case .skipped: return Color.premiumWarning
+        case .inProgress: return Color.anchorBlue
+        case .completed: return Color.anchorGreen
+        case .skipped: return Color.anchorWarning
         }
     }
     
@@ -440,20 +439,20 @@ struct TimeBlockRowView: View {
                 Color(red: 118/255, green: 75/255,  blue: 162/255)  // #764ba2
             ]
         case .inProgress:
-            return [Color.premiumBlue, Color.premiumBlue.opacity(0.6)]
+            return [Color.anchorBlue, Color.anchorBlue.opacity(0.6)]
         case .completed:
-            return [Color.premiumGreen, Color.premiumGreen.opacity(0.6)]
+            return [Color.anchorGreen, Color.anchorGreen.opacity(0.6)]
         case .skipped:
-            return [Color.premiumWarning, Color.premiumWarning.opacity(0.6)]
+            return [Color.anchorWarning, Color.anchorWarning.opacity(0.6)]
         }
     }
     
     private var categoryColor: Color {
         switch timeBlock.category?.lowercased() {
-        case "work": return Color.premiumBlue
-        case "personal": return Color.premiumPurple
-        case "health": return Color.premiumGreen
-        case "learning": return Color.premiumTeal
+        case "work": return Color.anchorBlue
+        case "personal": return Color.anchorPurple
+        case "health": return Color.anchorGreen
+        case "learning": return Color.anchorTeal
         default: return Color.white.opacity(0.6)
         }
     }

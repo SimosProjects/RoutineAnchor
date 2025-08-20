@@ -15,8 +15,8 @@ struct MessageBanner: View {
         
         var color: Color {
             switch self {
-            case .success: return Color.premiumGreen
-            case .error: return Color.premiumError
+            case .success: return Color.anchorGreen
+            case .error: return Color.anchorError
             }
         }
         
@@ -36,7 +36,7 @@ struct MessageBanner: View {
             
             Text(message)
                 .font(TypographyConstants.Body.emphasized)
-                .foregroundStyle(Color.premiumTextPrimary)
+                .foregroundStyle(Color.anchorTextPrimary)
                 .lineLimit(2)
             
             Spacer()

@@ -7,8 +7,8 @@
 import SwiftUI
 import UserNotifications
 
-// MARK: - Premium Setup Complete View
-struct PremiumSetupCompleteView: View {
+// MARK: - Setup Complete View
+struct SetupCompleteView: View {
     let onFinish: () -> Void
     @State private var appearAnimation = false
     @State private var confettiAnimation = false
@@ -106,7 +106,7 @@ struct PremiumSetupCompleteView: View {
                     
                     // Final CTA
                     VStack(spacing: 20) {
-                        PremiumButton(
+                        DesignedButton(
                             title: "Create My First Routine",
                             style: .gradient,
                             action: {

@@ -1,12 +1,12 @@
 //
-//  PremiumTimePicker.swift
+//  TimePicker.swift
 //  Routine Anchor
 //
 //  Created by Christopher Simonson on 7/23/25.
 //
 import SwiftUI
 
-struct PremiumTimePicker: View {
+struct TimePicker: View {
     let title: String
     @Binding var selection: Date
     let icon: String
@@ -24,7 +24,7 @@ struct PremiumTimePicker: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(isDisabled ? Color.white.opacity(0.4) : Color.premiumGreen)
+                    .foregroundStyle(isDisabled ? Color.white.opacity(0.4) : Color.anchorGreen)
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
@@ -34,7 +34,7 @@ struct PremiumTimePicker: View {
             DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
                 .datePickerStyle(.compact)
                 .labelsHidden()
-                .accentColor(Color.premiumGreen)
+                .accentColor(Color.anchorGreen)
                 .colorScheme(.dark)
                 .disabled(isDisabled)
                 .opacity(isDisabled ? 0.6 : 1.0)

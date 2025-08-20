@@ -175,7 +175,7 @@ extension PrimaryButton {
 
 // MARK: - Convenience Initializers
 extension PrimaryButton {
-    // Standard primary button
+    // Standard designed button
     init(
         _ title: String,
         action: @escaping () -> Void
@@ -184,7 +184,7 @@ extension PrimaryButton {
         self.action = action
     }
     
-    // Primary button with loading state
+    // Button with loading state
     init(
         _ title: String,
         isLoading: Bool,
@@ -195,7 +195,7 @@ extension PrimaryButton {
         self.isLoading = isLoading
     }
     
-    // Primary button with enabled state
+    // Button with enabled state
     init(
         _ title: String,
         isEnabled: Bool,
@@ -206,7 +206,7 @@ extension PrimaryButton {
         self.isEnabled = isEnabled
     }
     
-    // Compact primary button (not full width)
+    // Compact button (not full width)
     init(
         _ title: String,
         compact: Bool,
@@ -252,7 +252,7 @@ extension PrimaryButton {
 }
 
 // MARK: - Previews
-#Preview("Primary Button States") {
+#Preview("Designed Button States") {
     VStack(spacing: 20) {
         Group {
             // Standard states

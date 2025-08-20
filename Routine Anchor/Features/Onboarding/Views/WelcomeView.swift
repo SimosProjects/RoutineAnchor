@@ -7,8 +7,8 @@
 import SwiftUI
 import UserNotifications
 
-// MARK: - Premium Welcome View
-struct PremiumWelcomeView: View {
+// MARK: - Welcome View
+struct WelcomeView: View {
     let onContinue: () -> Void
     @State private var appearAnimation = false
     @State private var floatingAnimation = false
@@ -135,7 +135,7 @@ struct PremiumWelcomeView: View {
 
                     // CTA section
                     VStack(spacing: 24) {
-                        PremiumButton(
+                        DesignedButton(
                             title: "Begin Your Journey",
                             action: {
                                 HapticManager.shared.mediumImpact()

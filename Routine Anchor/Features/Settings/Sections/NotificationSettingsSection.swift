@@ -19,7 +19,7 @@ struct NotificationSettingsSection: View {
         SettingsSection(
             title: "Notifications",
             icon: "bell",
-            color: Color.premiumBlue
+            color: Color.anchorBlue
         ) {
             VStack(spacing: 16) {
                 // Master notification toggle
@@ -73,26 +73,26 @@ struct NotificationSettingsSection: View {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.premiumBlue.opacity(0.8))
+                    .foregroundStyle(Color.anchorBlue.opacity(0.8))
                 
                 Text("Notification Timing")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.premiumTextPrimary)
+                    .foregroundStyle(Color.anchorTextPrimary)
             }
             
             Text("Time blocks notify 2 minutes before they start. Daily reminders help you review progress and plan ahead.")
                 .font(.system(size: 12, weight: .regular))
-                .foregroundStyle(Color.premiumTextSecondary)
+                .foregroundStyle(Color.anchorTextSecondary)
                 .lineSpacing(2)
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.premiumBlue.opacity(0.1))
+                .fill(Color.anchorBlue.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.premiumBlue.opacity(0.2), lineWidth: 1)
+                .stroke(Color.anchorBlue.opacity(0.2), lineWidth: 1)
         )
     }
 }

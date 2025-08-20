@@ -11,15 +11,15 @@ struct AppVersionView: View {
         VStack(spacing: 8) {
             Text("Routine Anchor")
                 .font(TypographyConstants.Body.emphasized)
-                .foregroundStyle(Color.premiumTextPrimary)
+                .foregroundStyle(Color.anchorTextPrimary)
 
             Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
                 .font(TypographyConstants.UI.caption)
-                .foregroundStyle(Color.premiumTextSecondary)
+                .foregroundStyle(Color.anchorTextSecondary)
 
             Text("© 2025 Simo's Media & Tech, LLC.")
                 .font(TypographyConstants.UI.caption)
-                .foregroundStyle(Color.premiumTextTertiary)
+                .foregroundStyle(Color.anchorTextTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(20)

@@ -73,11 +73,11 @@ class PremiumManager {
                 userIsPremium = true
                 savePremiumStatus(true)
                 await transaction.finish()
-                HapticManager.shared.premiumSuccess()
+                HapticManager.shared.anchorSuccess()
                 print("✅ Purchase successful: \(product.displayName)")
                 
             case .unverified:
-                throw PremiumError.verificationFailed
+                throw anchorError.verificationFailed
             }
             
         case .userCancelled:
@@ -89,7 +89,7 @@ class PremiumManager {
             break
             
         @unknown default:
-            throw PremiumError.unknownResult
+            throw anchorError.unknownResult
         }
     }
     
@@ -190,7 +190,7 @@ class PremiumManager {
     func grantTemporaryPremium(duration: TimeInterval = 24 * 60 * 60) {
         temporaryPremiumUntil = Date().addingTimeInterval(duration)
         UserDefaults.standard.set(temporaryPremiumUntil, forKey: "temporaryPremiumUntil")
-        HapticManager.shared.premiumSuccess()
+        HapticManager.shared.anchorSuccess()
     }
     
     // MARK: - Pricing Information
@@ -212,7 +212,9 @@ class PremiumManager {
         let savings = monthlyPrice - yearlyMonthlyEquivalent
         let percentage = (savings / monthlyPrice) * 100
         
-        return "\(Int(percentage))% off"
+        // Convert Decimal to Double first, then to Int
+        let percentageDouble = NSDecimalNumber(decimal: percentage).doubleValue
+        return "\(Int(percentageDouble.rounded()))% off"
     }
     
     // MARK: - Error Handling
@@ -222,7 +224,7 @@ class PremiumManager {
 }
 
 // MARK: - Premium Errors
-enum PremiumError: Error, LocalizedError {
+enum anchorError: Error, LocalizedError {
     case verificationFailed
     case unknownResult
     case productNotFound
@@ -319,3 +321,111 @@ extension PremiumManager {
         return hasPremiumAccess
     }
 }
+
+extension PremiumManager {
+    #if DEBUG
+    /// Enable premium for testing (debug only)
+    func enableDebugPremium() {
+        userIsPremium = true
+        savePremiumStatus(true)
+        print("🔓 Debug: Premium enabled for testing")
+    }
+    
+    /// Disable premium for testing (debug only)
+    func disableDebugPremium() {
+        userIsPremium = false
+        savePremiumStatus(false)
+        // Clear temporary premium too
+        temporaryPremiumUntil = nil
+        UserDefaults.standard.removeObject(forKey: "temporaryPremiumUntil")
+        print("🔒 Debug: Premium disabled for testing")
+    }
+    
+    /// Toggle premium status for testing
+    func toggleDebugPremium() {
+        if userIsPremium {
+            disableDebugPremium()
+        } else {
+            enableDebugPremium()
+        }
+    }
+    #endif
+}
+
+// MARK: - Debug Settings View
+#if DEBUG
+struct DebugPremiumView: View {
+    @Environment(\.premiumManager) private var premiumManager
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("🧪 Debug Premium Controls")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(.white)
+            
+            VStack(spacing: 12) {
+                HStack {
+                    Text("Premium Status:")
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                    Text(premiumManager?.userIsPremium == true ? "PREMIUM" : "FREE")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(premiumManager?.userIsPremium == true ? .green : .red)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(0.1))
+                        )
+                }
+                
+                Button(action: {
+                    premiumManager?.toggleDebugPremium()
+                }) {
+                    HStack {
+                        Image(systemName: premiumManager?.userIsPremium == true ? "lock.open" : "lock")
+                        Text(premiumManager?.userIsPremium == true ? "Disable Premium" : "Enable Premium")
+                    }
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(premiumManager?.userIsPremium == true ? Color.red : Color.green)
+                    )
+                }
+                
+                Button(action: {
+                    premiumManager?.grantTemporaryPremium(duration: 60 * 60) // 1 hour
+                }) {
+                    HStack {
+                        Image(systemName: "clock")
+                        Text("Grant 1 Hour Premium")
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 40)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.blue)
+                    )
+                }
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.black.opacity(0.3))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                )
+        )
+        .padding()
+    }
+}
+#endif

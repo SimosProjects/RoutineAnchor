@@ -18,7 +18,7 @@ struct QuickStatsView: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            colors: [Color.anchorBlue, Color.anchorPurple],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -44,7 +44,7 @@ struct QuickStatsView: View {
                     title: "Total Blocks",
                     value: "\(viewModel.timeBlocks.count)",
                     subtitle: "blocks",
-                    color: .premiumBlue,
+                    color: .anchorBlue,
                     icon: "square.stack"
                 )
                 
@@ -52,7 +52,7 @@ struct QuickStatsView: View {
                     title: "Completed",
                     value: "\(viewModel.completedBlocksCount)",
                     subtitle: "blocks",
-                    color: .premiumGreen,
+                    color: .anchorGreen,
                     icon: "checkmark.circle"
                 )
                 
@@ -60,7 +60,7 @@ struct QuickStatsView: View {
                     title: "Progress",
                     value: "\(viewModel.progressPercentage)%",
                     subtitle: "blocks",
-                    color: .premiumPurple,
+                    color: .anchorPurple,
                     icon: "chart.pie"
                 )
                 
@@ -68,7 +68,7 @@ struct QuickStatsView: View {
                     title: "Remaining",
                     value: "\(viewModel.upcomingBlocksCount)",
                     subtitle: "blocks",
-                    color: .premiumTeal,
+                    color: .anchorTeal,
                     icon: "clock"
                 )
             }
@@ -88,7 +88,7 @@ struct QuickStatsView: View {
                     if let remaining = viewModel.remainingTimeForCurrentBlock() {
                         Text(remaining)
                             .font(.system(size: 14))
-                            .foregroundStyle(Color.premiumGreen)
+                            .foregroundStyle(Color.anchorGreen)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

@@ -35,7 +35,7 @@ struct DurationChip: View {
         }) {
             Text(displayText)
                 .font(.system(size: 14, weight: isSelected ? .bold : .semibold))
-                .foregroundStyle(isSelected ? .white : Color.premiumWarning)
+                .foregroundStyle(isSelected ? .white : Color.anchorWarning)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(
@@ -43,12 +43,12 @@ struct DurationChip: View {
                         .fill(
                             isSelected
                                 ? LinearGradient(
-                                    colors: [Color.premiumWarning, Color.premiumWarning.opacity(0.8)],
+                                    colors: [Color.anchorWarning, Color.anchorWarning.opacity(0.8)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                   )
                                 : LinearGradient(
-                                    colors: [Color.premiumWarning.opacity(0.15)],
+                                    colors: [Color.anchorWarning.opacity(0.15)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                   )
@@ -57,12 +57,12 @@ struct DurationChip: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(
-                            isSelected ? Color.premiumWarning : Color.premiumWarning.opacity(0.3),
+                            isSelected ? Color.anchorWarning : Color.anchorWarning.opacity(0.3),
                             lineWidth: isSelected ? 2 : 1
                         )
                 )
                 .shadow(
-                    color: isSelected ? Color.premiumWarning.opacity(0.3) : Color.clear,
+                    color: isSelected ? Color.anchorWarning.opacity(0.3) : Color.clear,
                     radius: 8,
                     x: 0,
                     y: 4

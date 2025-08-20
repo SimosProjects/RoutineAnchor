@@ -1,13 +1,13 @@
 //
-//  PremiumFloat.swift
+//  FloatModifier.swift
 //  Routine Anchor
 //
-//  Premium floating animation modifier for smooth up/down movement
+//  Floating animation modifier for smooth up/down movement
 //
 import SwiftUI
 
-// MARK: - Premium Float Modifier
-struct PremiumFloat: ViewModifier {
+// MARK: - Float Modifier
+struct FloatModifier: ViewModifier {
     @State private var isFloating = false
     let amplitude: CGFloat
     let duration: Double
@@ -42,12 +42,12 @@ extension View {
     ///   - duration: The time for one complete cycle in seconds (default: 3)
     ///   - delay: Initial delay before animation starts (default: 0)
     /// - Returns: A view with floating animation applied
-    func premiumFloat(
+    func floatModifier(
         amplitude: CGFloat = 10,
         duration: Double = 3,
         delay: Double = 0
     ) -> some View {
-        modifier(PremiumFloat(
+        modifier(FloatModifier(
             amplitude: amplitude,
             duration: duration,
             delay: delay
@@ -59,17 +59,17 @@ extension View {
 extension View {
     /// Gentle floating animation for subtle movement
     func gentleFloat() -> some View {
-        premiumFloat(amplitude: 5, duration: 4)
+        floatModifier(amplitude: 5, duration: 4)
     }
     
     /// Prominent floating animation for attention-grabbing elements
     func prominentFloat() -> some View {
-        premiumFloat(amplitude: 15, duration: 2.5)
+        floatModifier(amplitude: 15, duration: 2.5)
     }
     
     /// Slow floating animation for background elements
     func slowFloat() -> some View {
-        premiumFloat(amplitude: 8, duration: 6)
+        floatModifier(amplitude: 8, duration: 6)
     }
     
     /// Floating animation with random parameters for multiple elements
@@ -78,7 +78,7 @@ extension View {
         let duration = Double.random(in: 2.5...4.5)
         let delay = Double.random(in: 0...0.5)
         
-        return premiumFloat(
+        return floatModifier(
             amplitude: amplitude,
             duration: duration,
             delay: delay
@@ -87,7 +87,7 @@ extension View {
 }
 
 // MARK: - Preview
-#Preview("Premium Float Examples") {
+#Preview("Float Modifier Examples") {
     ZStack {
         AnimatedGradientBackground()
             .ignoresSafeArea()
@@ -96,28 +96,28 @@ extension View {
             // Basic float
             Image(systemName: "star.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(Color.premiumWarning)
-                .premiumFloat()
+                .foregroundStyle(Color.anchorWarning)
+                .floatModifier()
             
             // Gentle float
             Image(systemName: "heart.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(Color.premiumError)
+                .foregroundStyle(Color.anchorError)
                 .gentleFloat()
             
             // Prominent float
             Image(systemName: "bolt.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(Color.premiumBlue)
+                .foregroundStyle(Color.anchorBlue)
                 .prominentFloat()
             
             // Multiple elements with different delays
             HStack(spacing: 20) {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(Color.premiumPurple)
+                        .fill(Color.anchorPurple)
                         .frame(width: 30, height: 30)
-                        .premiumFloat(
+                        .floatModifier(
                             amplitude: 10,
                             duration: 3,
                             delay: Double(index) * 0.3

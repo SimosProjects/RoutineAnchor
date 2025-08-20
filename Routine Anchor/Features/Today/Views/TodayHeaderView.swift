@@ -71,7 +71,7 @@ struct TodayHeaderView: View {
                 if viewModel.isSpecialDay {
                     Image(systemName: viewModel.specialDayIcon)
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.premiumWarning)
+                        .foregroundStyle(Color.anchorWarning)
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.2)
                         .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animationPhase)
                 }
@@ -114,9 +114,9 @@ struct TodayHeaderView: View {
             // Summary button (with badge if needed)
             NavigationButton(
                 icon: viewModel.shouldShowSummary ? "chart.pie.fill" : "chart.pie",
-                gradient: [Color.premiumGreen, Color.premiumTeal]
+                gradient: [Color.anchorGreen, Color.anchorTeal]
             ) {
-                HapticManager.shared.premiumImpact()
+                HapticManager.shared.impact()
                 showingSummary = true
             }
             .overlay(
@@ -132,7 +132,7 @@ struct TodayHeaderView: View {
             // Settings button
             NavigationButton(
                 icon: "gearshape.fill",
-                gradient: [Color.premiumPurple, Color.premiumBlue]
+                gradient: [Color.anchorPurple, Color.anchorBlue]
             ) {
                 HapticManager.shared.lightImpact()
                 showingSettings = true
@@ -144,7 +144,7 @@ struct TodayHeaderView: View {
             if viewModel.hasScheduledBlocks {
                 NavigationButton(
                     icon: "bolt.fill",
-                    gradient: [Color.premiumWarning, Color.premiumTeal]
+                    gradient: [Color.anchorWarning, Color.anchorTeal]
                 ) {
                     HapticManager.shared.lightImpact()
                     // Post notification to show quick stats
@@ -172,7 +172,7 @@ struct NotificationBadge: View {
     
     var body: some View {
         Circle()
-            .fill(Color.premiumError)
+            .fill(Color.anchorError)
             .frame(width: 8, height: 8)
             .scaleEffect(isAnimating ? 1.2 : 1.0)
             .opacity(isAnimating ? 0.8 : 1.0)
@@ -226,21 +226,21 @@ struct StreakIndicator: View {
         HStack(spacing: 4) {
             Image(systemName: "flame.fill")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.premiumWarning)
+                .foregroundStyle(Color.anchorWarning)
             
             Text("\(streakCount)")
                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.premiumWarning)
+                .foregroundStyle(Color.anchorWarning)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill(Color.premiumWarning.opacity(0.15))
+                .fill(Color.anchorWarning.opacity(0.15))
         )
         .overlay(
             Capsule()
-                .stroke(Color.premiumWarning.opacity(0.3), lineWidth: 1)
+                .stroke(Color.anchorWarning.opacity(0.3), lineWidth: 1)
         )
     }
 }

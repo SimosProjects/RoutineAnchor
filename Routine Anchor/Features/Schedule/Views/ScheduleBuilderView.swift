@@ -1,6 +1,6 @@
 //
 //  ScheduleBuilderView.swift
-//  Routine Anchor - Premium Version
+//  Routine Anchor
 //
 import SwiftUI
 import SwiftData
@@ -21,7 +21,6 @@ struct ScheduleBuilderView: View {
     
     var body: some View {
         ZStack {
-            // Premium animated background - Made static to prevent scroll issues
             LinearGradient(
                 colors: [
                     Color(red: 0.05, green: 0.05, blue: 0.15),
@@ -118,7 +117,7 @@ struct ScheduleBuilderView: View {
             Text("Are you sure you want to delete this time block?")
         }
         .sheet(isPresented: $showingAddBlock) {
-            PremiumAddTimeBlockView(
+            AddTimeBlockView(
                 existingTimeBlocks: viewModel!.timeBlocks
             ) { title, startTime, endTime, notes, category in
                 viewModel?.addTimeBlock(
@@ -155,7 +154,7 @@ struct ScheduleBuilderView: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.premiumPurple, Color.premiumBlue],
+                                colors: [Color.anchorPurple, Color.anchorBlue],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -207,10 +206,10 @@ struct ScheduleBuilderView: View {
                         Text("Reset All")
                             .font(.system(size: 14, weight: .medium))
                     }
-                    .foregroundStyle(Color.premiumError)
+                    .foregroundStyle(Color.anchorError)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.premiumError.opacity(0.15))
+                    .background(Color.anchorError.opacity(0.15))
                     .cornerRadius(8)
                 }
             }
@@ -239,11 +238,11 @@ struct ScheduleBuilderView: View {
     // MARK: - Action Buttons Section
     private func actionButtonsSection(viewModel: ScheduleBuilderViewModel) -> some View {
         VStack(spacing: 16) {
-            PremiumButton(
+            DesignedButton(
                 title: "Add Time Block",
                 style: .gradient,
                 action: {
-                    HapticManager.shared.premiumImpact()
+                    HapticManager.shared.impact()
                     showingAddBlock = true
                 }
             )
@@ -283,8 +282,8 @@ struct ScheduleBuilderView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.premiumBlue.opacity(0.4),
-                                Color.premiumPurple.opacity(0.2),
+                                Color.anchorBlue.opacity(0.4),
+                                Color.anchorPurple.opacity(0.2),
                                 Color.clear
                             ],
                             center: .center,
@@ -299,7 +298,7 @@ struct ScheduleBuilderView: View {
                     .font(.system(size: 80, weight: .thin))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            colors: [Color.anchorBlue, Color.anchorPurple],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -313,7 +312,7 @@ struct ScheduleBuilderView: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.premiumBlue, Color.premiumPurple],
+                            colors: [Color.anchorBlue, Color.anchorPurple],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -332,11 +331,11 @@ struct ScheduleBuilderView: View {
             
             // Action buttons
             VStack(spacing: 16) {
-                PremiumButton(
+                DesignedButton(
                     title: "Add Your First Block",
                     style: .gradient,
                     action: {
-                        HapticManager.shared.premiumImpact()
+                        HapticManager.shared.impact()
                         showingAddBlock = true
                     }
                 )
@@ -361,7 +360,7 @@ struct ScheduleBuilderView: View {
             Spacer()
             
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: Color.premiumBlue))
+                .progressViewStyle(CircularProgressViewStyle(tint: Color.anchorBlue))
                 .scaleEffect(1.5)
             
             Text("Setting up your schedule...")
@@ -408,7 +407,7 @@ struct ScheduleBuilderView: View {
     
     private func saveAndDismiss() {
         viewModel?.saveRoutine()
-        HapticManager.shared.premiumSuccess()
+        HapticManager.shared.anchorSuccess()
         dismiss()
     }
 }
@@ -424,13 +423,13 @@ struct SimpleTimeBlockRow: View {
     private var accentColors: [Color] {
         switch timeBlock.status {
         case .notStarted:
-            return [Color.premiumPurple, Color.premiumBlue]
+            return [Color.anchorPurple, Color.anchorBlue]
         case .inProgress:
-            return [Color.premiumBlue, Color.premiumTeal]
+            return [Color.anchorBlue, Color.anchorTeal]
         case .completed:
-            return [Color.premiumGreen, Color.premiumTeal]
+            return [Color.anchorGreen, Color.anchorTeal]
         case .skipped:
-            return [Color.premiumError, Color.premiumWarning]
+            return [Color.anchorError, Color.anchorWarning]
         }
     }
     
@@ -446,9 +445,9 @@ struct SimpleTimeBlockRow: View {
     private var statusColor: Color {
         switch timeBlock.status {
         case .notStarted: return .white.opacity(0.6)
-        case .inProgress: return .premiumBlue
-        case .completed: return .premiumGreen
-        case .skipped: return .premiumWarning
+        case .inProgress: return .anchorBlue
+        case .completed: return .anchorGreen
+        case .skipped: return .anchorWarning
         }
     }
     
@@ -512,18 +511,18 @@ struct SimpleTimeBlockRow: View {
                     Button(action: onEdit) {
                         Image(systemName: "pencil")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.premiumBlue)
+                            .foregroundStyle(Color.anchorBlue)
                             .frame(width: 32, height: 32)
-                            .background(Color.premiumBlue.opacity(0.15))
+                            .background(Color.anchorBlue.opacity(0.15))
                             .cornerRadius(8)
                     }
                     
                     Button(action: onDelete) {
                         Image(systemName: "trash")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.premiumError)
+                            .foregroundStyle(Color.anchorError)
                             .frame(width: 32, height: 32)
-                            .background(Color.premiumError.opacity(0.15))
+                            .background(Color.anchorError.opacity(0.15))
                             .cornerRadius(8)
                     }
                 }

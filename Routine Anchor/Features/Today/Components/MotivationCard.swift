@@ -106,7 +106,7 @@ struct CompletionActions: View {
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [Color.premiumGreen, Color.premiumTeal],
+                        colors: [Color.anchorGreen, Color.anchorTeal],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -121,16 +121,16 @@ struct CompletionActions: View {
                     Text("Plan Tomorrow")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundStyle(Color.premiumBlue)
+                .foregroundStyle(Color.anchorBlue)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(
-                    Color.premiumBlue.opacity(0.15)
+                    Color.anchorBlue.opacity(0.15)
                 )
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.premiumBlue.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
                 )
             }
         }

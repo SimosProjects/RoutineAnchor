@@ -19,7 +19,7 @@ struct TabItemView: View {
                 .foregroundStyle(
                     isSelected ?
                     LinearGradient(
-                        colors: [Color.premiumBlue, Color.premiumPurple],
+                        colors: [Color.anchorBlue, Color.anchorPurple],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ) :
@@ -35,7 +35,7 @@ struct TabItemView: View {
             Text(title)
                 .font(.system(size: 10, weight: isSelected ? .semibold : .medium))
                 .foregroundStyle(
-                    isSelected ? Color.premiumBlue : Color.white.opacity(0.6)
+                    isSelected ? Color.anchorBlue : Color.white.opacity(0.6)
                 )
         }
     }

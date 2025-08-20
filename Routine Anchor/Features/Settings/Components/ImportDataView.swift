@@ -23,7 +23,6 @@ struct ImportDataView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Premium background
                 AnimatedGradientBackground()
                     .ignoresSafeArea()
                 
@@ -98,7 +97,7 @@ struct ImportDataView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [Color.premiumBlue.opacity(0.3), Color.premiumPurple.opacity(0.3)],
+                                colors: [Color.anchorBlue.opacity(0.3), Color.anchorPurple.opacity(0.3)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -110,7 +109,7 @@ struct ImportDataView: View {
                         .font(.system(size: 40, weight: .medium))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.premiumBlue, Color.premiumPurple],
+                                colors: [Color.anchorBlue, Color.anchorPurple],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -142,14 +141,14 @@ struct ImportDataView: View {
                     icon: "doc.text",
                     title: "JSON",
                     description: "Complete data with all details",
-                    color: .premiumBlue
+                    color: .anchorBlue
                 )
                 
                 FormatRow(
                     icon: "tablecells",
                     title: "CSV",
                     description: "Spreadsheet format for basic data",
-                    color: .premiumGreen
+                    color: .anchorGreen
                 )
             }
         }
@@ -182,13 +181,13 @@ struct ImportDataView: View {
             .frame(height: 56)
             .background(
                 LinearGradient(
-                    colors: [Color.premiumBlue, Color.premiumPurple],
+                    colors: [Color.anchorBlue, Color.anchorPurple],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
             .cornerRadius(16)
-            .shadow(color: Color.premiumBlue.opacity(0.3), radius: 12, x: 0, y: 6)
+            .shadow(color: Color.anchorBlue.opacity(0.3), radius: 12, x: 0, y: 6)
         }
         .disabled(isImporting)
     }
@@ -244,10 +243,10 @@ struct ImportDataView: View {
                 self.importResult = importResult
                 
                 if importResult.isSuccess {
-                    HapticManager.shared.premiumSuccess()
+                    HapticManager.shared.anchorSuccess()
                     showingSuccessAlert = true
                 } else if !importResult.errors.isEmpty {
-                    HapticManager.shared.premiumError()
+                    HapticManager.shared.anchorError()
                     // Show all errors, not just the first one
                     errorMessage = importResult.errors
                         .map { $0.localizedDescription }
@@ -260,11 +259,11 @@ struct ImportDataView: View {
             } catch let error as ImportError {
                 // Handle specific import errors
                 errorMessage = error.localizedDescription
-                HapticManager.shared.premiumError()
+                HapticManager.shared.anchorError()
             } catch {
                 // Handle general errors (file access, etc.)
                 errorMessage = "Failed to import: \(error.localizedDescription)"
-                HapticManager.shared.premiumError()
+                HapticManager.shared.anchorError()
             }
             
             isImporting = false

@@ -37,7 +37,6 @@ struct TodayView: View {
     
     var body: some View {
         ZStack {
-            // Premium background
             AnimatedGradientBackground()
                 .ignoresSafeArea()
             
@@ -188,7 +187,7 @@ struct TodayView: View {
             ZStack {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(Color.premiumBlue.opacity(0.3))
+                        .fill(Color.anchorBlue.opacity(0.3))
                         .frame(width: 12, height: 12)
                         .scaleEffect(refreshTrigger ? 1.5 : 1.0)
                         .offset(x: CGFloat(index - 1) * 25)

@@ -29,12 +29,12 @@ struct IconChip: View {
             .frame(width: 44, height: 44)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.premiumTeal.opacity(0.3) : Color.white.opacity(0.1))
+                    .fill(isSelected ? Color.anchorTeal.opacity(0.3) : Color.white.opacity(0.1))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(
-                        isSelected ? Color.premiumTeal : Color.white.opacity(0.2),
+                        isSelected ? Color.anchorTeal : Color.white.opacity(0.2),
                         lineWidth: isSelected ? 2 : 1
                     )
             )
