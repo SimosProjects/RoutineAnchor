@@ -10,7 +10,6 @@ struct AppPreferencesSection: View {
     @Binding var hapticsEnabled: Bool
     @Binding var autoResetEnabled: Bool
     let onResetProgress: () -> Void
-    let onClearTodaysSchedule: () -> Void
     
     // MARK: - State
     @State private var showingResetConfirmation = false
@@ -52,19 +51,6 @@ struct AppPreferencesSection: View {
                     .frame(height: 1)
                     .padding(.vertical, 4)
                 
-                SettingsButton(
-                    title: "Clear Today's Schedule",
-                    subtitle: "Delete all time blocks for today",
-                    icon: "trash.fill",
-                    color: .anchorError,
-                    action: {
-                        HapticManager.shared.lightImpact()
-                        showingClearTodayConfirmation = true
-                    }
-                )
-                .scaleEffect(animateClear ? 1.05 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: animateClear)
-                
                 // Additional preferences info
                 preferencesInfoSection
             }
@@ -88,26 +74,6 @@ struct AppPreferencesSection: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This will reset all time blocks back to 'Not Started' for today. This action cannot be undone.")
-        }
-        .confirmationDialog(
-            "Clear Today's Schedule",
-            isPresented: $showingClearTodayConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Clear Schedule", role: .destructive) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    animateClear = true
-                }
-                onClearTodaysSchedule()
-                
-                // Reset animation after delay
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    animateClear = false
-                }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This will permanently delete all time blocks for today. This will give you a completely fresh start for the day. This action cannot be undone.")
         }
     }
     
@@ -174,9 +140,6 @@ struct AppPreferencesSection: View {
                 autoResetEnabled: .constant(true),
                 onResetProgress: {
                     print("Reset progress")
-                },
-                onClearTodaysSchedule: {
-                    print("Clear today's schedule")
                 }
             )
             .padding()

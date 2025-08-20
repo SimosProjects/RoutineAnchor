@@ -8,11 +8,14 @@ struct DataManagementSection: View {
     let onExportData: () -> Void
     let onImportData: () -> Void
     let onShowPrivacyPolicy: () -> Void
+    let onClearTodaysSchedule: () -> Void
     let onDeleteAllData: () -> Void
     
     // MARK: - State
+    @State private var showingClearTodayConfirmation = false
     @State private var showingDeleteConfirmation = false
     @State private var deleteButtonScale: CGFloat = 1.0
+    @State private var clearTodayButtonScale: CGFloat = 1.0
     
     var body: some View {
         SettingsSection(
@@ -74,11 +77,11 @@ struct DataManagementSection: View {
                     color: Color.anchorWarning,
                     action: {
                         HapticManager.shared.warning()
-                        // This could call a different method that only clears today
-                        onDeleteAllData()
+                        showingClearTodayConfirmation = true
                     }
                 )
                 .accessibilityIdentifier("ClearTodaysScheduleButton")
+                .scaleEffect(clearTodayButtonScale)
                 
                 // Delete all data button - Updated for better UI testing
                 SettingsButton(
@@ -94,6 +97,27 @@ struct DataManagementSection: View {
                 .accessibilityIdentifier("DeleteAllDataButton")
                 .scaleEffect(deleteButtonScale)
             }
+        }
+        .confirmationDialog(
+            "Clear Today's Schedule",
+            isPresented: $showingClearTodayConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Clear Schedule", role: .destructive) {
+                HapticManager.shared.anchorError()
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    clearTodayButtonScale = 0.95
+                }
+                onClearTodaysSchedule()  // Call the correct function
+                
+                // Reset animation after delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    clearTodayButtonScale = 1.0
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will permanently delete all time blocks for today. This will give you a completely fresh start for the day. This action cannot be undone.")
         }
         .confirmationDialog(
             "Delete All Data",
@@ -163,6 +187,9 @@ struct DataManagementSection: View {
                 },
                 onShowPrivacyPolicy: {
                     print("Show privacy policy")
+                },
+                onClearTodaysSchedule: {
+                    print("Clear today's schedule")
                 },
                 onDeleteAllData: {
                     print("Delete all data")

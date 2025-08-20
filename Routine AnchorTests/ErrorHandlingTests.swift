@@ -148,7 +148,7 @@ final class ErrorHandlingTests: XCTestCase {
                 }
                 
                 // More flexible assertion - accept any error for invalid blocks
-                XCTAssertTrue(isValidationError || isDataManagerError || error is Error,
+                XCTAssertTrue(isValidationError || isDataManagerError,
                              "Block \(index) should throw some kind of error")
             }
         }

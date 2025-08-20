@@ -76,9 +76,6 @@ struct SettingsView: View {
                         autoResetEnabled: $autoResetEnabled,
                         onResetProgress: {
                             showingResetConfirmation = true
-                        },
-                        onClearTodaysSchedule: {
-                            viewModel?.clearTodaysSchedule()
                         }
                     )
                     
@@ -110,6 +107,9 @@ struct SettingsView: View {
                         },
                         onShowPrivacyPolicy: {
                             showingPrivacyPolicy = true
+                        },
+                        onClearTodaysSchedule: {
+                            viewModel?.clearTodaysSchedule()
                         },
                         onDeleteAllData: {
                             showingDeleteAllConfirmation = true
