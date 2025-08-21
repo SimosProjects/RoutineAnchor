@@ -2,14 +2,13 @@
 //  AdBannerView.swift
 //  Routine Anchor
 //
-//  Banner ad component with premium gating
+//  Fixed banner ad component with crash prevention
 //
 import SwiftUI
 import GoogleMobileAds
 
 struct AdBannerView: UIViewRepresentable {
     @Environment(\.premiumManager) private var premiumManager
-    @StateObject private var adManager = AdManager()
     
     let adSize: AdSize
     
@@ -21,35 +20,79 @@ struct AdBannerView: UIViewRepresentable {
         let bannerView = BannerView(adSize: adSize)
         bannerView.adUnitID = "ca-app-pub-3940256099942544/2934735716" // Test ID
         
-        // Set root view controller
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootViewController = windowScene.windows.first?.rootViewController {
-            bannerView.rootViewController = rootViewController
-        }
+        // Set delegate for error handling
+        bannerView.delegate = context.coordinator
+        
+        // Set root view controller safely
+        setRootViewController(for: bannerView)
         
         return bannerView
     }
     
     func updateUIView(_ bannerView: BannerView, context: Context) {
-        // Only load ads if user is not premium
-        if premiumManager?.shouldShowAds == true {
-            bannerView.load(Request())
+        // Only load ads if user is not premium and view is properly configured
+        guard premiumManager?.shouldShowAds == true,
+              bannerView.rootViewController != nil else {
+            return
+        }
+        
+        // Don't reload if already loaded
+        guard bannerView.responseInfo == nil else {
+            return
+        }
+        
+        let request = Request()
+        bannerView.load(request)
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+    
+    private func setRootViewController(for bannerView: BannerView) {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first?.rootViewController {
+            bannerView.rootViewController = rootViewController
+        } else {
+            print("⚠️ Could not set root view controller for banner ad")
+        }
+    }
+    
+    // MARK: - Coordinator
+    class Coordinator: NSObject, BannerViewDelegate {
+        
+        func bannerViewDidReceiveAd(_ bannerView: BannerView) {
+            print("✅ Banner ad loaded successfully")
+        }
+        
+        func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
+            print("❌ Banner ad failed to load: \(error.localizedDescription)")
+        }
+        
+        func bannerViewWillPresentScreen(_ bannerView: BannerView) {
+            print("🎬 Banner ad will present screen")
+        }
+        
+        func bannerViewDidDismissScreen(_ bannerView: BannerView) {
+            print("✅ Banner ad did dismiss screen")
         }
     }
 }
 
-// MARK: - Styled Ad Banner with Upgrade Prompt
+// MARK: - Styled Ad Banner with Upgrade Prompt (Fixed)
 struct StyledAdBanner: View {
     @Environment(\.premiumManager) private var premiumManager
+    @State private var showUpgrade = false
     
     var body: some View {
         if premiumManager?.shouldShowAds == true {
             VStack(spacing: 12) {
-                // Ad Banner
+                // Ad Banner with error boundary
                 AdBannerView()
                     .frame(height: 50)
                     .background(Color.black.opacity(0.1))
                     .cornerRadius(8)
+                    .clipped() // Prevent overflow issues
                 
                 // Upgrade prompt
                 HStack(spacing: 8) {
@@ -64,7 +107,8 @@ struct StyledAdBanner: View {
                     Spacer()
                     
                     Button("Upgrade") {
-                        // TODO: Show premium upgrade
+                        showUpgrade = true
+                        HapticManager.shared.anchorSelection()
                     }
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Color.anchorBlue)
@@ -79,6 +123,11 @@ struct StyledAdBanner: View {
                 .cornerRadius(8)
             }
             .padding(.horizontal, 20)
+            .sheet(isPresented: $showUpgrade) {
+                if let premiumManager = premiumManager {
+                    PremiumUpgradeView(premiumManager: premiumManager)
+                }
+            }
         }
     }
 }

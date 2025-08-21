@@ -155,15 +155,9 @@ struct MainTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ForceShowEmailCapture"))) { _ in
             showingEmailCapture = true
         }
-        .onChange(of: selectedTab) { _, _ in
-            loadExistingTimeBlocks()
-        }
         .onChange(of: selectedTab) { oldTab, newTab in
-            // Temporarily disable interstitial ads to prevent crashes
-            // TODO: Fix interstitial ad integration
-            // if shouldShowInterstitialAd() {
-            //     adManager.showInterstitialAd()
-            // }
+            // Handle tab changes with proper ad integration
+            handleTabChangeWithAds(from: oldTab, to: newTab)
         }
     }
     
@@ -180,6 +174,22 @@ struct MainTabView: View {
     }
     
     // MARK: - Helper Methods
+    
+    private func handleTabChangeWithAds(from oldTab: Tab, to newTab: Tab) {
+        // Ensure we don't show ads during ad presentation
+        guard !adManager.isShowingAd else {
+            print("⚠️ Ad currently showing, deferring tab change handling")
+            return
+        }
+        
+        // Check if we should show an interstitial ad
+        if shouldShowInterstitialAd() {
+            adManager.showInterstitialIfAllowed(premiumManager: safePremiumManager)
+        }
+        
+        // Continue with normal tab change handling
+        loadExistingTimeBlocks()
+    }
     
     private func createTimeBlock(title: String, startTime: Date, endTime: Date, notes: String, category: String) {
         let newBlock = TimeBlock(
@@ -223,11 +233,27 @@ struct MainTabView: View {
     }
     
     private func shouldShowInterstitialAd() -> Bool {
-        guard safePremiumManager.shouldShowAds else { return false }
+        // Don't show ads if user has premium
+        guard safePremiumManager.shouldShowAds else {
+            return false
+        }
         
+        // Don't show if ad is currently being shown or not loaded
+        guard !adManager.isShowingAd && adManager.isAdLoaded else {
+            return false
+        }
+        
+        // Track tab switches and show ad every 5th switch
         let tabSwitchCount = UserDefaults.standard.integer(forKey: "tabSwitchCount") + 1
         UserDefaults.standard.set(tabSwitchCount, forKey: "tabSwitchCount")
-        return tabSwitchCount % 5 == 0
+        
+        let shouldShow = tabSwitchCount % 5 == 0
+        
+        if shouldShow {
+            print("📊 Tab switch #\(tabSwitchCount) - showing interstitial ad")
+        }
+        
+        return shouldShow
     }
     
     // MARK: - Email Capture
@@ -622,26 +648,22 @@ struct BasicAnalyticsView: View {
         
         dataManager = DataManager(modelContext: modelContext)
         
-        do {
-            let today = Calendar.current.startOfDay(for: Date())
-            let progressArray = try dataManager!.loadDailyProgress(from: today, to: today)
-            todaysProgress = progressArray.first
-            
-            let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
-            let timeBlocks = try dataManager!.loadAllTimeBlocks().filter { $0.startTime >= weekAgo }
-            
-            let totalWeeklyBlocks = timeBlocks.count
-            let completedWeeklyBlocks = timeBlocks.filter { $0.status == .completed }.count
-            let averageCompletion = totalWeeklyBlocks > 0 ? Double(completedWeeklyBlocks) / Double(totalWeeklyBlocks) : 0
-            
-            weeklyStats = (
-                totalBlocks: totalWeeklyBlocks,
-                completedBlocks: completedWeeklyBlocks,
-                averageCompletion: averageCompletion
-            )
-        } catch {
-            print("Failed to load basic analytics: \(error)")
-        }
+        let today = Calendar.current.startOfDay(for: Date())
+        let progressArray = dataManager!.loadDailyProgressRangeSafely(from: today, to: today)
+        todaysProgress = progressArray.first
+        
+        let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+        let timeBlocks = dataManager!.loadAllTimeBlocksSafely().filter { $0.startTime >= weekAgo }
+        
+        let totalWeeklyBlocks = timeBlocks.count
+        let completedWeeklyBlocks = timeBlocks.filter { $0.status == .completed }.count
+        let averageCompletion = totalWeeklyBlocks > 0 ? Double(completedWeeklyBlocks) / Double(totalWeeklyBlocks) : 0
+        
+        weeklyStats = (
+            totalBlocks: totalWeeklyBlocks,
+            completedBlocks: completedWeeklyBlocks,
+            averageCompletion: averageCompletion
+        )
     }
 }
 

@@ -86,43 +86,41 @@ final class TodayViewModel {
         errorMessage = nil
         
         do {
-            // Since DataManager should be @MainActor, we can call it directly
-            // without Task.detached
-            let blocks = try dataManager.loadTodaysTimeBlocks()
-            try dataManager.updateDailyProgress(for: Date())
-            let updatedProgress = try dataManager.loadDailyProgress(for: Date())
+            // Use safe loading methods
+            let blocks = dataManager.loadTodaysTimeBlocksSafely()
+            dataManager.updateDailyProgressSafely(for: Date())
             
             // Update properties directly (we're already on MainActor)
             self.timeBlocks = blocks
-            self.dailyProgress = updatedProgress
+            self.dailyProgress = nil // Don't store the DailyProgress object
             self.isLoading = false
             
         } catch {
             self.errorMessage = "Failed to load today's blocks: \(error.localizedDescription)"
             self.isLoading = false
+            self.timeBlocks = []
+            self.dailyProgress = nil
             print("Error loading today's blocks: \(error)")
         }
     }
     
-    /* Refresh data and update time-based statuses
-    func refreshData() async {
-        do {
-            try dataManager.updateTimeBlocksBasedOnCurrentTime()
-            await loadTodaysBlocks()
-        } catch {
-            self.errorMessage = "Failed to refresh data: \(error.localizedDescription)"
-        }
-    }*/
-    
     func refreshData() async {
         print("🔄 TodayViewModel.refreshData() starting...")
+        
+        // Add safety guard for model context
+        guard dataManager.modelContext.hasChanges == false || dataManager.modelContext.hasChanges == true else {
+            print("⚠️ ModelContext appears invalid, skipping refresh")
+            return
+        }
         
         isLoading = true
         errorMessage = nil
         
         do {
             print("🔄 Loading today's time blocks...")
-            timeBlocks = try dataManager.loadTodaysTimeBlocks()
+            
+            // Use safe loading method
+            timeBlocks = dataManager.loadTodaysTimeBlocksSafely()
             print("🔄 Loaded \(timeBlocks.count) time blocks")
             
             for block in timeBlocks {
@@ -130,13 +128,23 @@ final class TodayViewModel {
             }
             
             print("🔄 Updating daily progress...")
-            try dataManager.updateDailyProgress(for: Date())
-            dailyProgress = try dataManager.loadDailyProgress(for: Date())
+            
+            // Use safe update method instead of storing the DailyProgress object
+            dataManager.updateDailyProgressSafely(for: Date())
+            
+            // DON'T store the DailyProgress object - reload it each time it's needed
+            // This prevents holding onto destroyed model instances
+            // dailyProgress = try dataManager.loadDailyProgress(for: Date()) // <- Remove this line
+            dailyProgress = nil // Clear any existing reference
+            
             print("🔄 ✅ Daily progress updated")
             
         } catch {
             print("🔄 ❌ TodayViewModel refresh failed: \(error)")
             errorMessage = "Failed to refresh data: \(error.localizedDescription)"
+            // Set safe fallbacks
+            timeBlocks = []
+            dailyProgress = nil
         }
         
         isLoading = false
@@ -193,33 +201,37 @@ final class TodayViewModel {
     
     // MARK: - Computed Properties
     
+    var safeDailyProgress: DailyProgress? {
+        return dataManager.loadDailyProgressSafely(for: Date())
+    }
+    
     var progressPercentage: Double {
-        return dailyProgress?.completionPercentage ?? 0.0
+        return safeDailyProgress?.completionPercentage ?? 0.0
     }
     
     /// Formatted progress percentage string
     var formattedProgressPercentage: String {
-        return dailyProgress?.formattedCompletionPercentage ?? "0%"
+        return safeDailyProgress?.formattedCompletionPercentage ?? "0%"
     }
     
     /// Completion summary string (e.g., "4 of 6 completed")
     var completionSummary: String {
-        return dailyProgress?.completionSummary ?? "No tasks scheduled"
+        return safeDailyProgress?.completionSummary ?? "No tasks scheduled"
     }
     
     /// Time summary string (e.g., "2h 30m of 4h planned")
     var timeSummary: String {
-        return dailyProgress?.timeSummary ?? "No time planned"
+        return safeDailyProgress?.timeSummary ?? "No time planned"
     }
     
     /// Performance level for the day
     var performanceLevel: DailyProgress.PerformanceLevel {
-        return dailyProgress?.performanceLevel ?? .none
+        return safeDailyProgress?.performanceLevel ?? .none
     }
     
     /// Motivational message based on progress
     var motivationalMessage: String {
-        return dailyProgress?.motivationalMessage ?? "Ready to start your day?"
+        return safeDailyProgress?.motivationalMessage ?? "Ready to start your day?"
     }
     
     /// Sorted time blocks by start time

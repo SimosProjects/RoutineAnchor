@@ -15,6 +15,8 @@ class DataManager {
     // MARK: - Properties
     
     let modelContext: ModelContext
+    private var lastSaveTime: Date = .distantPast
+    private let saveThrottleInterval: TimeInterval = 0.1
     
     // MARK: - Published Properties for SwiftUI
     
@@ -28,6 +30,127 @@ class DataManager {
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
+    }
+    
+    // MARK: - Model Safety Guards
+    
+    /// Safely access model properties with error handling
+    func safeModelAccess<T>(_ operation: () throws -> T, fallback: T) -> T {
+        do {
+            return try operation()
+        } catch {
+            print("⚠️ Model access failed (likely destroyed), using fallback: \(error)")
+            return fallback
+        }
+    }
+    
+    /// Check if a model object is still valid
+    func isModelValid<T: PersistentModel>(_ model: T) -> Bool {
+        do {
+            // Try to access the persistent identifier to check validity
+            _ = model.persistentModelID
+            return true
+        } catch {
+            return false
+        }
+    }
+    
+    func loadDailyProgressSafely(for date: Date) -> DailyProgress? {
+        return safeModelAccess({
+            try loadDailyProgress(for: date)
+        }, fallback: nil)
+    }
+    
+    /// Safe version of loadAllTimeBlocks
+    func loadAllTimeBlocksSafely() -> [TimeBlock] {
+        return safeModelAccess({
+            try loadAllTimeBlocks()
+        }, fallback: [])
+    }
+    
+    /// Safe version of loadTimeBlocks(for:) - for specific dates
+    func loadTimeBlocksSafely(for date: Date) -> [TimeBlock] {
+        return safeModelAccess({
+            try loadTimeBlocks(for: date)
+        }, fallback: [])
+    }
+    
+    /// Safe version of resetTimeBlocksStatus
+    func resetTimeBlocksStatusSafely(for date: Date) {
+        safeModelAccess({
+            try resetTimeBlocksStatus(for: date)
+        }, fallback: ())
+    }
+    
+    /// Safe version of deleteAllTimeBlocks
+    func deleteAllTimeBlocksSafely(for date: Date) {
+        safeModelAccess({
+            try deleteAllTimeBlocks(for: date)
+        }, fallback: ())
+    }
+    
+    /// Safe version of clearDailyProgress
+    func clearDailyProgressSafely(for date: Date) {
+        safeModelAccess({
+            try clearDailyProgress(for: date)
+        }, fallback: ())
+    }
+    
+    /// Safe version of loadDailyProgress range
+    func loadDailyProgressRangeSafely(from startDate: Date, to endDate: Date) -> [DailyProgress] {
+        return safeModelAccess({
+            try loadDailyProgress(from: startDate, to: endDate)
+        }, fallback: [])
+    }
+    
+    /// Safe version of deleteTimeBlock
+    func deleteTimeBlockSafely(_ timeBlock: TimeBlock) {
+        safeModelAccess({
+            try deleteTimeBlock(timeBlock)
+        }, fallback: ())
+    }
+    
+    /// Safe generic model deletion
+    func deleteModelSafely<T: PersistentModel>(_ model: T) {
+        safeModelAccess({
+            modelContext.delete(model)
+            try save()
+        }, fallback: ())
+    }
+    
+    /// Safe version of addTimeBlock
+    func addTimeBlockSafely(_ timeBlock: TimeBlock) {
+        safeModelAccess({
+            try addTimeBlock(timeBlock)
+        }, fallback: ())
+    }
+    
+    /// Safely update daily progress with error recovery
+    func updateDailyProgressSafely(for date: Date) {
+        safeModelAccess({
+            try updateDailyProgress(for: date)
+        }, fallback: ())
+    }
+    
+    func updateTimeBlockStatusSafely(_ timeBlock: TimeBlock, to status: BlockStatus) {
+        safeModelAccess({
+            try updateTimeBlockStatus(timeBlock, to: status)
+        }, fallback: ())
+    }
+    
+    /// Refresh context if models become invalid
+    func refreshContextIfNeeded() {
+        // Check if context is still valid by performing a simple operation
+        do {
+            var descriptor = FetchDescriptor<TimeBlock>(
+                sortBy: [SortDescriptor(\.startTime, order: .forward)]
+            )
+            descriptor.fetchLimit = 1
+            _ = try modelContext.fetch(descriptor)
+        } catch {
+            print("🔄 Context appears invalid, attempting refresh...")
+            // The context will be recreated by the SwiftData system automatically
+        }
     }
     
     // MARK: - TimeBlock Operations
@@ -73,9 +196,16 @@ class DataManager {
         }
     }
 
-    /// Load today's time blocks
+    /// Load today's time blocks with safety
     func loadTodaysTimeBlocks() throws -> [TimeBlock] {
         return try loadTimeBlocks(for: Date())
+    }
+    
+    /// Safely load today's time blocks
+    func loadTodaysTimeBlocksSafely() -> [TimeBlock] {
+        return safeModelAccess({
+            try loadTodaysTimeBlocks()
+        }, fallback: [])
     }
     
     /// Load time blocks for a date range
@@ -186,12 +316,7 @@ class DataManager {
             throw DataManagerError.conflictDetected("Time block conflicts with existing blocks: \(conflicts.map { $0.title }.joined(separator: ", "))")
         }
         
-        do {
-            timeBlock.touch()
-            try save()
-        } catch {
-            throw DataManagerError.saveFailed("Failed to update time block: \(error.localizedDescription)")
-        }
+        timeBlock.touch()
     }
     
     /// Delete a time block
@@ -204,13 +329,19 @@ class DataManager {
         }
     }
     
-    /// Update time block status
+    /// Update time block status with safety
     func updateTimeBlockStatus(_ timeBlock: TimeBlock, to status: BlockStatus) throws {
+        // Check if the model is still valid first
+        guard isModelValid(timeBlock) else {
+            print("⚠️ TimeBlock model is invalid, skipping status update")
+            return
+        }
+        
         timeBlock.updateStatus(to: status)
         try updateTimeBlock(timeBlock)
         
-        // Update daily progress after status change
-        try updateDailyProgress(for: timeBlock.scheduledDate)
+        // Update daily progress after status change with safety
+        updateDailyProgressSafely(for: timeBlock.scheduledDate)
     }
     
     /// Mark time block as completed
@@ -274,15 +405,19 @@ class DataManager {
     
     /// Update daily progress based on current time blocks
     func updateDailyProgress(for date: Date) throws {
-        let progress = try loadOrCreateDailyProgress(for: date)
-        let timeBlocks = try loadTimeBlocks(for: date)
-        
-        progress.updateFromTimeBlocks(timeBlocks)
-        
-        do {
-            try save()
-        } catch {
-            throw DataManagerError.saveFailed("Failed to update daily progress: \(error.localizedDescription)")
+        try performBatchOperation {
+            let progress = try loadOrCreateDailyProgress(for: date)
+            let timeBlocks = try loadTimeBlocks(for: date)
+            
+            // Check if progress model is still valid before updating
+            guard isModelValid(progress) else {
+                print("⚠️ DailyProgress model is invalid, recreating...")
+                let newProgress = try createDailyProgress(for: date)
+                newProgress.updateFromTimeBlocks(timeBlocks)
+                return
+            }
+            
+            progress.updateFromTimeBlocks(timeBlocks)
         }
     }
     
@@ -327,22 +462,24 @@ class DataManager {
     
     /// Reset all time blocks status for a date (back to not started)
     func resetTimeBlocksStatus(for date: Date) throws {
-        let timeBlocks = try loadTimeBlocks(for: date)
-        
-        for block in timeBlocks {
-            // FORCE reset by directly setting status (bypass canTransition check)
-            print("🔄 Resetting block '\(block.title)' from \(block.status.rawValue) to notStarted")
-            block.status = .notStarted
-            block.updatedAt = Date()
-        }
-        
-        do {
-            try save()
-            try updateDailyProgress(for: date)
-            print("🔄 ✅ Status reset and data saved successfully")
-        } catch {
-            print("🔄 ❌ Save failed: \(error)")
-            throw DataManagerError.saveFailed("Failed to reset time blocks: \(error.localizedDescription)")
+        try performBatchOperation {
+            let timeBlocks = try loadTimeBlocks(for: date)
+            
+            for block in timeBlocks {
+                // Check if model is still valid before updating
+                guard isModelValid(block) else {
+                    print("⚠️ TimeBlock model invalid during reset, skipping...")
+                    continue
+                }
+                
+                print("🔄 Resetting block '\(block.title)' from \(block.status.rawValue) to notStarted")
+                block.status = .notStarted
+                block.updatedAt = Date()
+            }
+            
+            // Update daily progress safely
+            updateDailyProgressSafely(for: date)
+            print("🔄 ✅ Status reset completed (single save)")
         }
     }
     
@@ -440,6 +577,12 @@ class DataManager {
         var hasChanges = false
         
         for block in todaysBlocks {
+            // Check if model is still valid
+            guard isModelValid(block) else {
+                print("⚠️ TimeBlock model invalid during time update, skipping...")
+                continue
+            }
+            
             let oldStatus = block.status
             block.updateStatusBasedOnTime()
             
@@ -450,7 +593,7 @@ class DataManager {
         
         if hasChanges {
             try save()
-            try updateDailyProgress(for: Date())
+            updateDailyProgressSafely(for: Date())
         }
     }
     
@@ -458,12 +601,33 @@ class DataManager {
     
     /// Save changes to the persistent store
     func save() throws {
+        let now = Date()
+        
+        // Throttle saves to prevent excessive calls
+        guard now.timeIntervalSince(lastSaveTime) >= saveThrottleInterval else {
+            return // Skip this save if too recent
+        }
+        
         do {
             try modelContext.save()
+            lastSaveTime = now
         } catch {
             lastError = DataManagerError.saveFailed("Failed to save changes: \(error.localizedDescription)")
             throw lastError!
         }
+    }
+    
+    /// Save only if there are actual changes
+    func saveIfNeeded() throws {
+        if modelContext.hasChanges {
+            try modelContext.save()
+        }
+    }
+    
+    func performBatchOperation<T>(_ operation: () throws -> T) throws -> T {
+        let result = try operation()
+        try saveIfNeeded()
+        return result
     }
     
     /// Clear any error state

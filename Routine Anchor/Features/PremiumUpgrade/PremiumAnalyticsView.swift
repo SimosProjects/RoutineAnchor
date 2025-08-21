@@ -527,48 +527,42 @@ struct PremiumAnalyticsView: View {
         isLoading = true
         errorMessage = nil
         
-        do {
-            let timeBlocks = try dataManager.loadAllTimeBlocks()
-            let dailyProgress = try dataManager.loadDailyProgress(
-                from: Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date(),
-                to: Date()
-            )
-            
-            await MainActor.run {
-                switch selectedTimeRange {
-                case .week:
-                    weeklyReport = AnalyticsService.shared.generateWeeklyReport(
-                        timeBlocks: timeBlocks,
-                        dailyProgress: dailyProgress
-                    )
-                    monthlyReport = nil
-                    
-                case .month:
-                    monthlyReport = AnalyticsService.shared.generateMonthlyReport(
-                        timeBlocks: timeBlocks,
-                        dailyProgress: dailyProgress
-                    )
-                    weeklyReport = nil
-                    
-                default:
-                    // For quarter and year, we'll use monthly for now
-                    monthlyReport = AnalyticsService.shared.generateMonthlyReport(
-                        timeBlocks: timeBlocks,
-                        dailyProgress: dailyProgress
-                    )
-                    weeklyReport = nil
-                }
+        // Use safe methods to avoid crashes with invalid models
+        let timeBlocks = dataManager.loadAllTimeBlocksSafely()
+        let dailyProgress = dataManager.loadDailyProgressRangeSafely(
+            from: Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date(),
+            to: Date()
+        )
+        
+        await MainActor.run {
+            switch selectedTimeRange {
+            case .week:
+                weeklyReport = AnalyticsService.shared.generateWeeklyReport(
+                    timeBlocks: timeBlocks,
+                    dailyProgress: dailyProgress
+                )
+                monthlyReport = nil
                 
-                isLoading = false
+            case .month:
+                monthlyReport = AnalyticsService.shared.generateMonthlyReport(
+                    timeBlocks: timeBlocks,
+                    dailyProgress: dailyProgress
+                )
+                weeklyReport = nil
+                
+            default:
+                // For quarter and year, we'll use monthly for now
+                monthlyReport = AnalyticsService.shared.generateMonthlyReport(
+                    timeBlocks: timeBlocks,
+                    dailyProgress: dailyProgress
+                )
+                weeklyReport = nil
             }
             
-        } catch {
-            await MainActor.run {
-                errorMessage = "Failed to load analytics data: \(error.localizedDescription)"
-                isLoading = false
-            }
+            isLoading = false
         }
     }
+    
     
     // MARK: - Helper Methods
     private func formatDuration(_ timeInterval: TimeInterval) -> String {

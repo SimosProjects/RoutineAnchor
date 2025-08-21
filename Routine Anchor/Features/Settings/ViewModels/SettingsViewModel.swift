@@ -243,11 +243,9 @@ final class SettingsViewModel {
         guard notificationsEnabled else { return }
         
         Task {
-            // Re-schedule time block notifications
-            let timeBlocks = try? dataManager.loadTodaysTimeBlocks()
-            if let blocks = timeBlocks {
-                await notificationService.scheduleTimeBlockNotifications(for: blocks)
-            }
+            let timeBlocks = dataManager.loadTodaysTimeBlocksSafely()
+            
+            await notificationService.scheduleTimeBlockNotifications(for: timeBlocks)
             
             // Re-schedule daily reminder
             await notificationService.scheduleDailyReminder(at: dailyReminderTime)
@@ -261,17 +259,12 @@ final class SettingsViewModel {
     
     /// Schedule all notifications (time blocks + daily reminder)
     private func scheduleAllNotifications() async {
-        do {
-            let todaysBlocks = try dataManager.loadTodaysTimeBlocks()
-            
-            await notificationService.rescheduleAllNotifications(
-                blocks: todaysBlocks,
-                dailyReminderTime: notificationsEnabled ? dailyReminderTime : nil
-            )
-        } catch {
-            errorMessage = "Failed to schedule notifications: \(error.localizedDescription)"
-            clearMessages()
-        }
+        let todaysBlocks = dataManager.loadTodaysTimeBlocksSafely()
+        
+        await notificationService.rescheduleAllNotifications(
+            blocks: todaysBlocks,
+            dailyReminderTime: notificationsEnabled ? dailyReminderTime : nil
+        )
     }
     
     /// Observe notification permission status changes
@@ -293,25 +286,19 @@ final class SettingsViewModel {
         isLoading = true
         errorMessage = nil
         
-        do {
-            try dataManager.resetTimeBlocksStatus(for: Date())
-            
-            // Reschedule notifications for reset blocks
-            Task {
-                await scheduleAllNotifications()
-            }
-            
-            HapticManager.shared.anchorSuccess()
-            successMessage = "Today's progress has been reset"
-            
-            // Notify other views to refresh
-            NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
-            NotificationCenter.default.post(name: .refreshTodayView, object: nil)
-            
-        } catch {
-            errorMessage = "Failed to reset today's progress: \(error.localizedDescription)"
-            HapticManager.shared.anchorError()
+        dataManager.resetTimeBlocksStatusSafely(for: Date())
+        
+        // Reschedule notifications for reset blocks
+        Task {
+            await scheduleAllNotifications()
         }
+        
+        HapticManager.shared.anchorSuccess()
+        successMessage = "Today's progress has been reset"
+        
+        // Notify other views to refresh
+        NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
+        NotificationCenter.default.post(name: .refreshTodayView, object: nil)
         
         isLoading = false
         clearMessages()
@@ -321,23 +308,16 @@ final class SettingsViewModel {
         isLoading = true
         errorMessage = nil
         
-        do {
-            try dataManager.deleteAllTimeBlocks(for: Date())
-            
-            // Also clear today's daily progress since no blocks exist
-            try dataManager.clearDailyProgress(for: Date())
-            
-            HapticManager.shared.anchorSuccess()
-            successMessage = "Today's schedule has been cleared"
-            
-            // Notify other views to refresh
-            NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
-            NotificationCenter.default.post(name: .refreshTodayView, object: nil)
-            
-        } catch {
-            errorMessage = "Failed to clear today's schedule: \(error.localizedDescription)"
-            HapticManager.shared.anchorError()
-        }
+        // Use safe methods - need to add these to DataManager:
+        dataManager.deleteAllTimeBlocksSafely(for: Date())
+        dataManager.clearDailyProgressSafely(for: Date())
+        
+        HapticManager.shared.anchorSuccess()
+        successMessage = "Today's schedule has been cleared"
+        
+        // Notify other views to refresh
+        NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
+        NotificationCenter.default.post(name: .refreshTodayView, object: nil)
         
         isLoading = false
         clearMessages()
@@ -348,40 +328,30 @@ final class SettingsViewModel {
         isLoading = true
         errorMessage = nil
         
-        do {
-            // Get all data
-            let allTimeBlocks = try dataManager.loadAllTimeBlocks()
-            let allProgress = try dataManager.loadDailyProgress(
-                from: Date.distantPast,
-                to: Date.distantFuture
-            )
-            
-            // Delete all time blocks
-            for block in allTimeBlocks {
-                try dataManager.deleteTimeBlock(block)
-            }
-            
-            // Delete all progress records
-            for progress in allProgress {
-                dataManager.modelContext.delete(progress)
-            }
-            
-            // Save changes
-            try dataManager.modelContext.save()
-            
-            // Clear user preferences
-            clearUserPreferences()
-            
-            // Clear all notifications
-            notificationService.removeAllPendingNotifications()
-            
-            HapticManager.shared.anchorSuccess()
-            successMessage = "All data has been cleared"
-            
-        } catch {
-            errorMessage = "Failed to clear all data: \(error.localizedDescription)"
-            HapticManager.shared.anchorError()
+        let allTimeBlocks = dataManager.loadAllTimeBlocksSafely()
+        let allProgress = dataManager.loadDailyProgressRangeSafely(
+            from: Date.distantPast,
+            to: Date.distantFuture
+        )
+        
+        // Delete all time blocks safely
+        for block in allTimeBlocks {
+            dataManager.deleteTimeBlockSafely(block)
         }
+        
+        // Delete all progress records safely
+        for progress in allProgress {
+            dataManager.deleteModelSafely(progress)
+        }
+        
+        // Clear user preferences
+        clearUserPreferences()
+        
+        // Clear all notifications
+        notificationService.removeAllPendingNotifications()
+        
+        HapticManager.shared.anchorSuccess()
+        successMessage = "All data has been cleared"
         
         isLoading = false
         clearMessages()
@@ -389,66 +359,65 @@ final class SettingsViewModel {
     
     /// Export all user data as JSON
     func exportUserData() -> String {
+        let timeBlocks = dataManager.loadAllTimeBlocksSafely()
+        let progressRecords = dataManager.loadDailyProgressRangeSafely(
+            from: Date.distantPast,
+            to: Date.distantFuture
+        )
+        
+        var exportData: [String: Any] = [:]
+        
+        // App metadata
+        exportData["exportInfo"] = [
+            "exportDate": ISO8601DateFormatter().string(from: Date()),
+            "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0",
+            "dataVersion": "1.0"
+        ]
+        
+        // Export time blocks
+        exportData["timeBlocks"] = timeBlocks.map { block in
+            return [
+                "id": block.id.uuidString,
+                "title": block.title,
+                "startTime": ISO8601DateFormatter().string(from: block.startTime),
+                "endTime": ISO8601DateFormatter().string(from: block.endTime),
+                "status": block.status.rawValue,
+                "notes": block.notes ?? "",
+                "category": block.category ?? "",
+                "icon": block.icon ?? "",
+                "createdAt": ISO8601DateFormatter().string(from: block.createdAt),
+                "updatedAt": ISO8601DateFormatter().string(from: block.updatedAt)
+            ]
+        }
+        
+        // Export progress records
+        exportData["dailyProgress"] = progressRecords.map { progress in
+            return [
+                "date": ISO8601DateFormatter().string(from: progress.date),
+                "completedBlocks": progress.completedBlocks,
+                "totalBlocks": progress.totalBlocks,
+                "skippedBlocks": progress.skippedBlocks,
+                "dayRating": progress.dayRating as Any,
+                "dayNotes": progress.dayNotes as Any
+            ]
+        }
+        
+        // Export user settings
+        exportData["settings"] = [
+            "notificationsEnabled": notificationsEnabled,
+            "notificationSound": notificationSound,
+            "hapticsEnabled": hapticsEnabled,
+            "autoResetEnabled": autoResetEnabled,
+            "dailyReminderTime": ISO8601DateFormatter().string(from: dailyReminderTime)
+        ]
+        
+        // Export statistics
+        exportData["statistics"] = generateStatistics(timeBlocks: timeBlocks, progressRecords: progressRecords)
+        
+        // Convert to JSON
         do {
-            let timeBlocks = try dataManager.loadAllTimeBlocks()
-            let progressRecords = try dataManager.loadDailyProgress(
-                from: Date.distantPast,
-                to: Date.distantFuture
-            )
-            
-            var exportData: [String: Any] = [:]
-            
-            // App metadata
-            exportData["exportInfo"] = [
-                "exportDate": ISO8601DateFormatter().string(from: Date()),
-                "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0",
-                "dataVersion": "1.0"
-            ]
-            
-            // Export time blocks
-            exportData["timeBlocks"] = timeBlocks.map { block in
-                return [
-                    "id": block.id.uuidString,
-                    "title": block.title,
-                    "startTime": ISO8601DateFormatter().string(from: block.startTime),
-                    "endTime": ISO8601DateFormatter().string(from: block.endTime),
-                    "status": block.status.rawValue,
-                    "notes": block.notes ?? "",
-                    "category": block.category ?? "",
-                    "icon": block.icon ?? "",
-                    "createdAt": ISO8601DateFormatter().string(from: block.createdAt),
-                    "updatedAt": ISO8601DateFormatter().string(from: block.updatedAt)
-                ]
-            }
-            
-            // Export progress records
-            exportData["dailyProgress"] = progressRecords.map { progress in
-                return [
-                    "date": ISO8601DateFormatter().string(from: progress.date),
-                    "completedBlocks": progress.completedBlocks,
-                    "totalBlocks": progress.totalBlocks,
-                    "skippedBlocks": progress.skippedBlocks,
-                    "dayRating": progress.dayRating as Any,
-                    "dayNotes": progress.dayNotes as Any
-                ]
-            }
-            
-            // Export user settings
-            exportData["settings"] = [
-                "notificationsEnabled": notificationsEnabled,
-                "notificationSound": notificationSound,
-                "hapticsEnabled": hapticsEnabled,
-                "autoResetEnabled": autoResetEnabled,
-                "dailyReminderTime": ISO8601DateFormatter().string(from: dailyReminderTime)
-            ]
-            
-            // Export statistics
-            exportData["statistics"] = generateStatistics(timeBlocks: timeBlocks, progressRecords: progressRecords)
-            
-            // Convert to JSON
             let jsonData = try JSONSerialization.data(withJSONObject: exportData, options: .prettyPrinted)
             return String(data: jsonData, encoding: .utf8) ?? "Export failed: Unable to encode data"
-            
         } catch {
             errorMessage = "Failed to export data: \(error.localizedDescription)"
             clearMessages()

@@ -48,7 +48,7 @@ struct DailySummaryView: View {
                     if viewModel.hasData {
                         VStack(spacing: 12) {
                             // Progress visualization
-                            progressSection(viewModel)
+                            progressCircleSection(viewModel)
                             
                             // Statistics cards
                             statisticsSection(viewModel)
@@ -193,7 +193,7 @@ struct DailySummaryView: View {
                             )
                         )
                     
-                    if let progress = viewModel.dailyProgress {
+                    if let progress = viewModel.safeDailyProgress {
                         Text(progress.formattedDate)
                             .font(.system(size: 18, weight: .medium, design: .rounded))
                             .foregroundStyle(Color.white.opacity(0.7))
@@ -206,37 +206,16 @@ struct DailySummaryView: View {
     }
     
     // MARK: - Progress Section
-    private func progressSection(_ viewModel: DailySummaryViewModel) -> some View {
+    private func progressCircleSection(_ viewModel: DailySummaryViewModel) -> some View {
         VStack(spacing: 24) {
-            if let progress = viewModel.dailyProgress {
-                // Main progress circle
-                ZStack {
-                    // Background circles
-                    ForEach(0..<3) { index in
-                        Circle()
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        progress.performanceLevel.color.opacity(0.3 - Double(index) * 0.1),
-                                        progress.performanceLevel.color.opacity(0.1 - Double(index) * 0.03)
-                                    ],
-                                    startPoint: .topTrailing,
-                                    endPoint: .bottomLeading
-                                ),
-                                lineWidth: 2
-                            )
-                            .frame(
-                                width: 180 + CGFloat(index * 20),
-                                height: 180 + CGFloat(index * 20)
-                            )
-                            .rotationEffect(.degrees(Double(index) * 30))
-                    }
-                    
-                    // Main progress ring
-                    Circle()
-                        .stroke(Color.white.opacity(0.1), lineWidth: 16)
-                        .frame(width: 160, height: 160)
-                    
+            ZStack {
+                // Background circle
+                Circle()
+                    .stroke(Color.white.opacity(0.1), lineWidth: 16)
+                    .frame(width: 160, height: 160)
+                
+                // Use safe progress access
+                if let progress = viewModel.safeDailyProgress {
                     Circle()
                         .trim(from: 0, to: CGFloat(progress.completionPercentage))
                         .stroke(
@@ -269,15 +248,38 @@ struct DailySummaryView: View {
                             .textCase(.uppercase)
                             .tracking(1)
                     }
+                    
+                    // Motivational message
+                    Text(progress.motivationalMessage)
+                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                        .padding(.horizontal, 20)
+                } else {
+                    // Safe fallback when no progress available
+                    VStack(spacing: 8) {
+                        Text("📊")
+                            .font(.system(size: 36))
+                        
+                        Text("0%")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.white.opacity(0.6))
+                        
+                        Text("Complete")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color.white.opacity(0.6))
+                            .textCase(.uppercase)
+                            .tracking(1)
+                    }
+                    
+                    Text("Ready to start your day?")
+                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                        .padding(.horizontal, 20)
                 }
-                
-                // Motivational message
-                Text(progress.motivationalMessage)
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .padding(.horizontal, 20)
             }
         }
         .padding(24)
@@ -288,7 +290,7 @@ struct DailySummaryView: View {
     // MARK: - Statistics Section
     private func statisticsSection(_ viewModel: DailySummaryViewModel) -> some View {
         HStack(spacing: 12) {
-            if let progress = viewModel.dailyProgress {
+            if let progress = viewModel.safeDailyProgress {
                 StatCard(
                     title: "Completed",
                     value: "\(progress.completedBlocks)",
@@ -298,19 +300,44 @@ struct DailySummaryView: View {
                 )
                 
                 StatCard(
-                    title: "Time",
-                    value: formatTime(progress.completedMinutes),
-                    subtitle: "tracked",
-                    color: Color.anchorBlue,
-                    icon: "clock.fill"
-                )
-                
-                StatCard(
                     title: "Skipped",
                     value: "\(progress.skippedBlocks)",
                     subtitle: progress.skippedBlocks == 1 ? "block" : "blocks",
                     color: Color.anchorWarning,
-                    icon: "forward.circle.fill"
+                    icon: "forward.fill"
+                )
+                
+                StatCard(
+                    title: "Time Used",
+                    value: "\(progress.completedMinutes / 60)h \(progress.completedMinutes % 60)m",
+                    subtitle: "planned",
+                    color: Color.anchorBlue,
+                    icon: "clock.fill"
+                )
+            } else {
+                // Safe fallback cards
+                StatCard(
+                    title: "Completed",
+                    value: "0",
+                    subtitle: "blocks",
+                    color: Color.anchorGreen,
+                    icon: "checkmark.circle.fill"
+                )
+                
+                StatCard(
+                    title: "Skipped",
+                    value: "0",
+                    subtitle: "blocks",
+                    color: Color.anchorWarning,
+                    icon: "forward.fill"
+                )
+                
+                StatCard(
+                    title: "Time Used",
+                    value: "0h 0m",
+                    subtitle: "planned",
+                    color: Color.anchorBlue,
+                    icon: "clock.fill"
                 )
             }
         }
@@ -463,7 +490,7 @@ struct DailySummaryView: View {
     }
     
     private func generateBasicInsight(_ viewModel: DailySummaryViewModel) -> String {
-        guard let progress = viewModel.dailyProgress else {
+        guard let progress = viewModel.safeDailyProgress else {
             return "⭐ Create your first time block to start tracking progress!"
         }
         
@@ -481,30 +508,6 @@ struct DailySummaryView: View {
             return "⭐ Ready to start? Create your first time block to begin tracking progress!"
         }
     }
-    /*private func insightsSection(_ viewModel: DailySummaryViewModel) -> some View {
-        VStack(spacing: 16) {
-            HStack {
-                Image(systemName: "lightbulb.circle")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.anchorWarning)
-                
-                Text("Insights & Suggestions")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: 12) {
-                ForEach(Array(viewModel.getPersonalizedInsights().enumerated()), id: \.offset) { index, insight in
-                    InsightRow(text: insight, delay: Double(index) * 0.1)
-                }
-            }
-        }
-        .padding(20)
-        .glassMorphism(cornerRadius: 20)
-        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-    }*/
     
     // MARK: - Rating Section
     private func ratingSection(_ viewModel: DailySummaryViewModel) -> some View {
@@ -580,7 +583,7 @@ struct DailySummaryView: View {
         .glassMorphism(cornerRadius: 20)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
         .onAppear {
-            if let progress = viewModel.dailyProgress {
+            if let progress = viewModel.safeDailyProgress {
                 selectedRating = progress.dayRating ?? 0
                 dayNotes = progress.dayNotes ?? ""
             }

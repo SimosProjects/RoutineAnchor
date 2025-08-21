@@ -10,7 +10,6 @@ import Foundation
 @MainActor
 class DailySummaryViewModel {
     // MARK: - Published Properties
-    var dailyProgress: DailyProgress?
     var todaysTimeBlocks: [TimeBlock] = []
     var weeklyStats: WeeklyStats?
     var isLoading = false
@@ -20,6 +19,10 @@ class DailySummaryViewModel {
     // MARK: - Private Properties
     private let dataManager: DataManager
     private var loadTask: Task<Void, Never>?
+    
+    var safeDailyProgress: DailyProgress? {
+        return dataManager.loadDailyProgressSafely(for: selectedDate)
+    }
     
     // MARK: - Initialization
     init(dataManager: DataManager, loadImmediately: Bool = true) {
@@ -52,27 +55,16 @@ class DailySummaryViewModel {
         // Cancel any existing load task
         loadTask?.cancel()
         
-        do {
-            // Since DataManager is @MainActor, we can call it directly
-            let blocks = try dataManager.loadTimeBlocks(for: date)
-            let _ = try dataManager.loadOrCreateDailyProgress(for: date)
-            try dataManager.updateDailyProgress(for: date)
-            let updatedProgress = try dataManager.loadDailyProgress(for: date)
-            
-            // Create weekly stats if we have a method for it
-            let stats = await calculateWeeklyStats(for: date)
-            
-            // Update properties directly (we're already on MainActor)
-            self.todaysTimeBlocks = blocks
-            self.dailyProgress = updatedProgress
-            self.weeklyStats = stats
-            self.isLoading = false
-            
-        } catch {
-            print("Error loading data: \(error)")
-            self.isLoading = false
-            self.errorMessage = "Failed to load data: \(error.localizedDescription)"
-        }
+        let blocks = dataManager.loadTimeBlocksSafely(for: date)
+        dataManager.updateDailyProgressSafely(for: date)
+        
+        // Create weekly stats if we have a method for it
+        let stats = await calculateWeeklyStats(for: date)
+        
+        // Update properties directly
+        self.todaysTimeBlocks = blocks
+        self.weeklyStats = stats
+        self.isLoading = false
     }
     
     private func calculateWeeklyStats(for date: Date) async -> WeeklyStats? {
@@ -91,20 +83,15 @@ class DailySummaryViewModel {
             guard let day = calendar.date(byAdding: .day, value: dayOffset, to: weekStart),
                   day <= Date() else { continue }
 
-            do {
-                if let progress = try dataManager.loadDailyProgress(for: day) {
-                    totalDays += 1
-                    totalCompletion += progress.completionPercentage
-                    totalBlocks += progress.totalBlocks
-                    totalCompleted += progress.completedBlocks
+            if let progress = dataManager.loadDailyProgressSafely(for: day) {
+                totalDays += 1
+                totalCompletion += progress.completionPercentage
+                totalBlocks += progress.totalBlocks
+                totalCompleted += progress.completedBlocks
 
-                    if progress.completionPercentage >= 0.7 {
-                        completedDays += 1
-                    }
+                if progress.completionPercentage >= 0.7 {
+                    completedDays += 1
                 }
-            } catch {
-                print("Failed to calculate weekly stats: \(error)")
-                return nil
             }
         }
 
@@ -118,8 +105,6 @@ class DailySummaryViewModel {
             totalCompleted: totalCompleted
         )
     }
-
-
     
     /// Refresh current data
     func refreshData() async {
@@ -131,75 +116,63 @@ class DailySummaryViewModel {
     /// Save day rating and notes
     @MainActor
     func saveDayRatingAndNotes(rating: Int, notes: String) async {
-        guard let progress = dailyProgress else { return }
+        guard let progress = safeDailyProgress else { return }
         
-        do {
-            // Update the progress object
-            if rating > 0 {
-                progress.setDayRating(rating)
-            }
-            
-            let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmedNotes.isEmpty {
-                progress.setDayNotes(trimmedNotes)
-            }
-            
-            // Mark summary as viewed
-            progress.markSummaryViewed()
-            
-            // Save changes through data manager
-            try dataManager.updateDailyProgress(for: selectedDate)
-            
-            // Trigger success haptic
-            HapticManager.shared.lightImpact()
-            
-        } catch {
-            errorMessage = "Failed to save rating and notes: \(error.localizedDescription)"
-            HapticManager.shared.error()
+        // REPLACE try-catch with safe calls:
+        // Update the progress object
+        if rating > 0 {
+            progress.setDayRating(rating)
         }
+        
+        let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedNotes.isEmpty {
+            progress.setDayNotes(trimmedNotes)
+        }
+        
+        // Mark summary as viewed
+        progress.markSummaryViewed()
+        
+        dataManager.updateDailyProgressSafely(for: selectedDate)
+        
+        // Trigger success haptic
+        HapticManager.shared.lightImpact()
     }
     
     /// Update a specific time block status from summary view
     func updateTimeBlockStatus(_ timeBlock: TimeBlock, to status: BlockStatus) async {
-        do {
-            try dataManager.updateTimeBlockStatus(timeBlock, to: status)
-            
-            // Refresh data to show updated statistics
-            await refreshData()
-            
-            HapticManager.shared.success()
-            
-        } catch {
-            errorMessage = "Failed to update time block: \(error.localizedDescription)"
-            HapticManager.shared.error()
-        }
+        dataManager.updateTimeBlockStatusSafely(timeBlock, to: status)
+        
+        // Refresh data to show updated statistics
+        await refreshData()
+        
+        HapticManager.shared.success()
     }
     
     // MARK: - Computed Properties
     
     /// Whether we have any data to show
     var hasData: Bool {
-        return !todaysTimeBlocks.isEmpty || dailyProgress?.totalBlocks ?? 0 > 0
+        return !todaysTimeBlocks.isEmpty || safeDailyProgress?.totalBlocks ?? 0 > 0
     }
     
     /// Completion percentage for the day
     var completionPercentage: Double {
-        return dailyProgress?.completionPercentage ?? 0.0
+        return safeDailyProgress?.completionPercentage ?? 0.0
     }
     
     /// Performance message for the day
     var performanceMessage: String {
-        return dailyProgress?.motivationalMessage ?? "Keep going! Every step counts."
+        return safeDailyProgress?.motivationalMessage ?? "Keep going! Every step counts."
     }
     
     /// Whether the day is complete
     var isDayComplete: Bool {
-        return dailyProgress?.isDayComplete ?? false
+        return safeDailyProgress?.isDayComplete ?? false
     }
     
     /// Performance level for the day
     var performanceLevel: DailyProgress.PerformanceLevel {
-        return dailyProgress?.performanceLevel ?? .none
+        return safeDailyProgress?.performanceLevel ?? .none
     }
     
     /// Time blocks grouped by status for better organization
@@ -226,7 +199,7 @@ class DailySummaryViewModel {
     
     /// Get personalized insights based on performance
     func getPersonalizedInsights() -> [String] {
-        guard let progress = dailyProgress else {
+        guard let progress = safeDailyProgress else {
             return ["Create time blocks to start tracking your progress!"]
         }
         
@@ -291,7 +264,7 @@ class DailySummaryViewModel {
     
     /// Get improvement suggestions
     func getImprovementSuggestions() -> [String] {
-        guard let progress = dailyProgress else { return [] }
+        guard let progress = safeDailyProgress else { return [] }
         
         var suggestions: [String] = []
         
@@ -334,22 +307,43 @@ class DailySummaryViewModel {
     
     /// Generate shareable text summary
     func generateShareableText() -> String {
-        guard let progress = dailyProgress else {
+        guard let progress = safeDailyProgress else {
             return "Daily Summary - No data available"
         }
         
         let formatter = DateFormatter()
         formatter.dateStyle = .full
         
+        // Wrap property access safely
+        let performanceLevel = dataManager.safeModelAccess({
+            progress.performanceLevel
+        }, fallback: DailyProgress.PerformanceLevel.none)
+        
+        let completionPercentage = dataManager.safeModelAccess({
+            progress.formattedCompletionPercentage
+        }, fallback: "0%")
+        
+        let completionSummary = dataManager.safeModelAccess({
+            progress.completionSummary
+        }, fallback: "No data")
+        
         var text = """
         📊 Daily Summary - \(formatter.string(from: selectedDate))
         
-        ✨ Performance: \(progress.performanceLevel.displayName) \(progress.performanceLevel.emoji)
-        📈 Completion: \(progress.formattedCompletionPercentage) (\(progress.completionSummary))
+        ✨ Performance: \(performanceLevel.displayName) \(performanceLevel.emoji)
+        📈 Completion: \(completionPercentage) (\(completionSummary))
         """
         
-        if progress.totalPlannedMinutes > 0 {
-            text += "\n⏰ Time: \(progress.timeSummary)"
+        // Safe access to planned minutes
+        let plannedMinutes = dataManager.safeModelAccess({
+            progress.totalPlannedMinutes
+        }, fallback: 0)
+        
+        if plannedMinutes > 0 {
+            let timeSummary = dataManager.safeModelAccess({
+                progress.timeSummary
+            }, fallback: "No time data")
+            text += "\n⏰ Time: \(timeSummary)"
         }
         
         // Add breakdown if meaningful
@@ -362,17 +356,30 @@ class DailySummaryViewModel {
             if counts.upcoming > 0 { text += "\n• Upcoming: \(counts.upcoming)" }
         }
         
+        // Safe access to rating and notes
+        let rating = dataManager.safeModelAccess({
+            progress.dayRating
+        }, fallback: nil)
+        
+        let notes = dataManager.safeModelAccess({
+            progress.dayNotes
+        }, fallback: nil)
+        
         // Add rating and reflection
-        if let rating = progress.dayRating {
+        if let rating = rating {
             text += "\n\n💭 Personal Rating: \(String(repeating: "⭐", count: rating))"
         }
         
-        if let notes = progress.dayNotes, !notes.isEmpty {
+        if let notes = notes, !notes.isEmpty {
             text += "\n📝 Reflection: \(notes)"
         }
         
         // Add motivational close
-        text += "\n\n\(progress.motivationalMessage)"
+        let motivationalMessage = dataManager.safeModelAccess({
+            progress.motivationalMessage
+        }, fallback: "Keep going!")
+        
+        text += "\n\n\(motivationalMessage)"
         text += "\n\n—\nBuilt with Routine Anchor 🎯"
         
         return text
@@ -380,8 +387,24 @@ class DailySummaryViewModel {
     
     /// Generate detailed export data
     func generateDetailedExport() -> [String: Any] {
-        guard let progress = dailyProgress else {
+        guard let progress = safeDailyProgress else {
             return ["error": "No data available"]
+        }
+        
+        // Create weekly context with explicit type annotation
+        let weeklyContext: [String: Any]
+        if let weeklyStats = weeklyStats {
+            weeklyContext = [
+                "averageCompletion": weeklyStats.averageCompletion,
+                "totalDays": weeklyStats.totalDays,
+                "completedDays": weeklyStats.completedDays
+            ]
+        } else {
+            weeklyContext = [
+                "averageCompletion": 0.0,
+                "totalDays": 0,
+                "completedDays": 0
+            ]
         }
         
         return [
@@ -397,29 +420,24 @@ class DailySummaryViewModel {
                 "dayRating": progress.dayRating as Any,
                 "dayNotes": progress.dayNotes as Any
             ],
-            "timeBlocks": todaysTimeBlocks.map { block in
-                [
-                    "id": block.id.uuidString,
-                    "title": block.title,
-                    "startTime": ISO8601DateFormatter().string(from: block.startTime),
-                    "endTime": ISO8601DateFormatter().string(from: block.endTime),
-                    "duration": block.durationMinutes,
-                    "status": block.status.rawValue,
-                    "category": block.category ?? "",
-                    "icon": block.icon ?? ""
-                ]
-            },
+            "timeBlocks": todaysTimeBlocks.compactMap { block in
+                // Wrap property access in safe access to prevent crashes
+                return dataManager.safeModelAccess({
+                    return [
+                        "id": block.id.uuidString,
+                        "title": block.title,
+                        "startTime": ISO8601DateFormatter().string(from: block.startTime),
+                        "endTime": ISO8601DateFormatter().string(from: block.endTime),
+                        "duration": block.durationMinutes,
+                        "status": block.status.rawValue,
+                        "category": block.category ?? "",
+                        "icon": block.icon ?? ""
+                    ]
+                }, fallback: nil)
+            }.compactMap { $0 },
             "insights": getPersonalizedInsights(),
             "suggestions": getImprovementSuggestions(),
-            "weeklyContext": weeklyStats != nil ? [
-                "averageCompletion": weeklyStats!.averageCompletion,
-                "totalDays": weeklyStats!.totalDays,
-                "completedDays": weeklyStats!.completedDays
-            ] : nil ?? [
-                "averageCompleted": 0,
-                "totalDays": 0,
-                "completedDays": 0
-            ],
+            "weeklyContext": weeklyContext,
             "exportedAt": ISO8601DateFormatter().string(from: Date())
         ]
     }
