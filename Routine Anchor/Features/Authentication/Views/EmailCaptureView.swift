@@ -39,7 +39,10 @@ struct EmailCaptureView: View {
             // Close button
             HStack {
                 Spacer()
-                Button(action: { dismiss() }) {
+                Button(action: {
+                    // Close button - just dismiss normally
+                    dismiss()
+                }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 24))
                         .foregroundStyle(.white.opacity(0.7))
@@ -63,59 +66,40 @@ struct EmailCaptureView: View {
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                 
-                Text("Get notified about new features, productivity tips, and exclusive app development courses")
+                Text("Get productivity tips, app updates, and early access to new features")
                     .font(.system(size: 16))
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
-                    .lineSpacing(2)
             }
+            
+            // Benefits
+            VStack(spacing: 16) {
+                benefitRow(icon: "lightbulb", text: "Weekly productivity insights")
+                benefitRow(icon: "star", text: "Early access to new features")
+                benefitRow(icon: "bell", text: "App updates and announcements")
+                benefitRow(icon: "gift", text: "Exclusive tips and guides")
+            }
+            .padding(.vertical, 16)
             
             // Email input
             VStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "envelope")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(Color.anchorBlue)
-                        
-                        TextField("Enter your email", text: $email)
-                            .font(.system(size: 16))
-                            .foregroundStyle(.white)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .autocorrectionDisabled()
+                    TextField("Enter your email", text: $email)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        .onSubmit {
+                            submitEmail()
+                        }
+                    
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundStyle(.red)
                     }
-                    .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(.ultraThinMaterial)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
-                            )
-                    )
                 }
                 
-                if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .font(.system(size: 14))
-                        .foregroundStyle(Color.anchorWarning)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-            
-            // Benefits
-            VStack(spacing: 12) {
-                benefitRow(icon: "star", text: "Early access to new features")
-                benefitRow(icon: "lightbulb", text: "Productivity tips and insights")
-                benefitRow(icon: "graduationcap", text: "Exclusive app development courses")
-                benefitRow(icon: "gift", text: "Special offers and discounts")
-            }
-            
-            Spacer()
-            
-            // Action buttons
-            VStack(spacing: 12) {
                 Button(action: submitEmail) {
                     HStack {
                         if isLoading {
@@ -123,7 +107,7 @@ struct EmailCaptureView: View {
                                 .scaleEffect(0.8)
                                 .foregroundStyle(.white)
                         } else {
-                            Text("Join the Community")
+                            Text("Stay Updated")
                                 .font(.system(size: 16, weight: .semibold))
                         }
                     }
@@ -132,27 +116,26 @@ struct EmailCaptureView: View {
                     .frame(height: 50)
                     .background(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [Color.anchorGreen, Color.anchorTeal],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
                     .cornerRadius(12)
-                    .disabled(email.isEmpty || isLoading)
-                    .opacity(email.isEmpty ? 0.6 : 1.0)
+                    .disabled(isLoading || email.isEmpty)
                 }
                 
                 Button("Maybe Later") {
+                    // "Maybe Later" - just dismiss normally
                     dismiss()
                 }
                 .font(.system(size: 14))
                 .foregroundStyle(.white.opacity(0.7))
             }
             
-            // Privacy note
-            Text("We respect your privacy. No spam, unsubscribe anytime.")
+            Text("We respect your privacy. Unsubscribe anytime.")
                 .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(.white.opacity(0.5))
                 .multilineTextAlignment(.center)
         }
     }
@@ -167,8 +150,8 @@ struct EmailCaptureView: View {
                     .font(.system(size: 80, weight: .medium))
                     .foregroundStyle(Color.anchorGreen)
                 
-                VStack(spacing: 12) {
-                    Text("Welcome Aboard!")
+                VStack(spacing: 16) {
+                    Text("Thank You!")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                     
@@ -209,7 +192,7 @@ struct EmailCaptureView: View {
         }
     }
     
-    // MARK: - Actions
+    // MARK: - Actions (FIXED)
     private func submitEmail() {
         guard isValidEmail(email) else {
             errorMessage = "Please enter a valid email address"
@@ -224,7 +207,7 @@ struct EmailCaptureView: View {
             isLoading = false
             onEmailCaptured(email)
             
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                 showThankYou = true
             }
             

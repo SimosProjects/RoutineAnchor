@@ -24,6 +24,9 @@ struct MainTabView: View {
     // Track if we're programmatically changing tabs to prevent loops
     @State private var isInternalTabChange = false
     
+    // Track if we've already handled email capture on this app launch
+    @State private var hasHandledEmailCaptureThisSession = false
+    
     // Use fallback if premiumManager is nil
     private var safePremiumManager: PremiumManager {
         premiumManager ?? PremiumManager()
@@ -82,6 +85,22 @@ struct MainTabView: View {
                 }
                 .tag(Tab.summary)
                 
+                // Analytics Tab (Premium gated)
+                NavigationStack {
+                    analyticsTab
+                        .environment(safePremiumManager)
+                        .background(Color.clear)
+                }
+                .tabItem {
+                    TabItemView(
+                        icon: "chart.bar",
+                        selectedIcon: "chart.bar.fill",
+                        title: "Analytics",
+                        isSelected: selectedTab == .analytics
+                    )
+                }
+                .tag(Tab.analytics)
+                
                 // Settings Tab
                 NavigationStack {
                     SettingsView()
@@ -133,22 +152,34 @@ struct MainTabView: View {
             AddTimeBlockView(
                 existingTimeBlocks: existingTimeBlocks
             ) { title, startTime, endTime, notes, category in
-                createTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes!, category: category!)
+                createTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes ?? "", category: category ?? "")
             }
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
+
         .sheet(isPresented: $showingEmailCapture) {
             EmailCaptureView { email in
                 authManager.captureEmail(email)
             }
+            .onDisappear {
+                // Ensure dismissal is properly tracked when sheet is dismissed
+                if !authManager.isEmailCaptured {
+                    authManager.dismissEmailCapture()
+                }
+            }
         }
         .onAppear {
-            checkForEmailCapture()
+            // Only check for email capture once per session and after a delay
+            if !hasHandledEmailCaptureThisSession {
+                hasHandledEmailCaptureThisSession = true
+                checkForEmailCapture()
+            }
             loadExistingTimeBlocks()
         }
         .onReceive(authManager.$shouldShowEmailCapture) { shouldShow in
-            if shouldShow {
+            // Only show if not already handled and conditions are met
+            if shouldShow && !showingEmailCapture && !authManager.isEmailCaptured {
                 showingEmailCapture = true
             }
         }
@@ -259,8 +290,9 @@ struct MainTabView: View {
     // MARK: - Email Capture
     
     private func checkForEmailCapture() {
+        // Add a delay and pass premium manager for proper checking
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            authManager.checkShouldShowEmailCapture()
+            authManager.checkShouldShowEmailCapture(premiumManager: safePremiumManager)
         }
     }
     
@@ -309,10 +341,10 @@ struct MainTabView: View {
     }
     
     private func shouldShowFloatingButton(for tab: Tab) -> Bool {
-        switch tab {
-        case .today:
+        if tab == .today {
             return true
-        case .schedule, .summary, .settings:
+        }
+        else {
             return false
         }
     }
@@ -786,6 +818,7 @@ extension MainTabView {
         case today = "today"
         case schedule = "schedule"
         case summary = "summary"
+        case analytics = "analytics"
         case settings = "settings"
         
         var title: String {
@@ -793,6 +826,7 @@ extension MainTabView {
             case .today: return "Today"
             case .schedule: return "Schedule"
             case .summary: return "Insights"
+            case .analytics: return "Analytics"
             case .settings: return "Settings"
             }
         }
@@ -802,6 +836,7 @@ extension MainTabView {
             case .today: return "calendar.circle"
             case .schedule: return "clock"
             case .summary: return "chart.pie"
+            case .analytics: return "chart.bar"
             case .settings: return "gearshape"
             }
         }
@@ -811,6 +846,7 @@ extension MainTabView {
             case .today: return "calendar.circle.fill"
             case .schedule: return "clock.fill"
             case .summary: return "chart.pie.fill"
+            case .analytics: return "chart.bar.fill"  // ADDED: Missing analytics case
             case .settings: return "gearshape.fill"
             }
         }
@@ -820,6 +856,7 @@ extension MainTabView {
             case .today: return [Color.anchorBlue, Color.anchorTeal]
             case .schedule: return [Color.anchorPurple, Color.anchorBlue]
             case .summary: return [Color.anchorGreen, Color.anchorTeal]
+            case .analytics: return [Color.anchorWarning, Color.anchorPurple]  // ADDED: Missing analytics case
             case .settings: return [Color.anchorTextSecondary, Color.anchorTextTertiary]
             }
         }

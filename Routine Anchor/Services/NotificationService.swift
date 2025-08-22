@@ -711,4 +711,5 @@ extension Notification.Name {
     static let showTemplatesInSchedule = Notification.Name("showTemplatesInSchedule")
     static let showQuickStats = Notification.Name("showQuickStats")
     static let saveTimeBlock = Notification.Name("saveTimeBlock")
+    static let refreshAllDataAfterAd = Notification.Name("refreshAllDataAfterAd")
 }

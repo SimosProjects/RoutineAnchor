@@ -145,7 +145,14 @@ extension AdManager: FullScreenContentDelegate {
     /// Called when the ad is dismissed - This is the critical method that prevents crashes
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         print("✅ Ad did dismiss full screen content")
-        cleanupAfterAdDismissal()
+        
+        // FIXED: Add delay to prevent immediate model context access
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.cleanupAfterAdDismissal()
+            
+            // FIXED: Post notification to refresh data after ad dismissal
+            NotificationCenter.default.post(name: .refreshAllDataAfterAd, object: nil)
+        }
     }
     
     /// Called when the ad will present (optional - newer versions may not have this)

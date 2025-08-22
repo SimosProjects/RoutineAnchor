@@ -20,8 +20,17 @@ class DailySummaryViewModel {
     private let dataManager: DataManager
     private var loadTask: Task<Void, Never>?
     
+    // FIXED: Safe access to daily progress with crash protection
     var safeDailyProgress: DailyProgress? {
-        return dataManager.loadDailyProgressSafely(for: selectedDate)
+        do {
+            // Use safe model access to prevent crashes
+            return dataManager.safeModelAccess({
+                return dataManager.loadDailyProgressSafely(for: selectedDate)
+            }, fallback: nil)
+        } catch {
+            print("⚠️ Model context issue in safeDailyProgress: \(error)")
+            return nil
+        }
     }
     
     // MARK: - Initialization
@@ -44,7 +53,7 @@ class DailySummaryViewModel {
         taskToCancel?.cancel()
     }
     
-    // MARK: - Data Loading
+    // MARK: - Data Loading (FIXED with crash protection)
     
     /// Load all data for the specified date
     func loadData(for date: Date) async {
@@ -55,55 +64,75 @@ class DailySummaryViewModel {
         // Cancel any existing load task
         loadTask?.cancel()
         
-        let blocks = dataManager.loadTimeBlocksSafely(for: date)
-        dataManager.updateDailyProgressSafely(for: date)
-        
-        // Create weekly stats if we have a method for it
-        let stats = await calculateWeeklyStats(for: date)
-        
-        // Update properties directly
-        self.todaysTimeBlocks = blocks
-        self.weeklyStats = stats
-        self.isLoading = false
+        do {
+            // FIXED: Wrap all model access in try-catch
+            let blocks = dataManager.safeModelAccess({
+                return dataManager.loadTimeBlocksSafely(for: date)
+            }, fallback: [])
+            
+            dataManager.safeModelAccess({
+                dataManager.updateDailyProgressSafely(for: date)
+            }, fallback: ())
+            
+            // Create weekly stats if we have a method for it
+            let stats = await calculateWeeklyStats(for: date)
+            
+            // Update properties directly
+            self.todaysTimeBlocks = blocks
+            self.weeklyStats = stats
+            self.isLoading = false
+            
+        } catch {
+            print("⚠️ Error loading data: \(error)")
+            self.isLoading = false
+            self.errorMessage = "Failed to load data. Please try again."
+        }
     }
     
     private func calculateWeeklyStats(for date: Date) async -> WeeklyStats? {
-        let calendar = Calendar.current
-        guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: date)?.start else {
-            return nil
-        }
+        return dataManager.safeModelAccess({
+            let calendar = Calendar.current
+            guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: date)?.start else {
+                return nil
+            }
 
-        var totalDays = 0
-        var completedDays = 0
-        var totalCompletion: Double = 0
-        var totalBlocks = 0
-        var totalCompleted = 0
+            var totalDays = 0
+            var completedDays = 0
+            var totalCompletion: Double = 0
+            var totalBlocks = 0
+            var totalCompleted = 0
 
-        for dayOffset in 0..<7 {
-            guard let day = calendar.date(byAdding: .day, value: dayOffset, to: weekStart),
-                  day <= Date() else { continue }
+            for dayOffset in 0..<7 {
+                guard let day = calendar.date(byAdding: .day, value: dayOffset, to: weekStart),
+                      day <= Date() else { continue }
 
-            if let progress = dataManager.loadDailyProgressSafely(for: day) {
-                totalDays += 1
-                totalCompletion += progress.completionPercentage
-                totalBlocks += progress.totalBlocks
-                totalCompleted += progress.completedBlocks
+                if let progress = dataManager.loadDailyProgressSafely(for: day) {
+                    // Wrap each property access in safe access
+                    let completion = dataManager.safeModelAccess({ progress.completionPercentage }, fallback: 0.0)
+                    let blocks = dataManager.safeModelAccess({ progress.totalBlocks }, fallback: 0)
+                    let completed = dataManager.safeModelAccess({ progress.completedBlocks }, fallback: 0)
+                    
+                    totalDays += 1
+                    totalCompletion += completion
+                    totalBlocks += blocks
+                    totalCompleted += completed
 
-                if progress.completionPercentage >= 0.7 {
-                    completedDays += 1
+                    if completion >= 0.7 {
+                        completedDays += 1
+                    }
                 }
             }
-        }
 
-        guard totalDays > 0 else { return nil }
+            guard totalDays > 0 else { return nil }
 
-        return WeeklyStats(
-            totalDays: totalDays,
-            completedDays: completedDays,
-            averageCompletion: totalCompletion / Double(totalDays),
-            totalBlocks: totalBlocks,
-            totalCompleted: totalCompleted
-        )
+            return WeeklyStats(
+                totalDays: totalDays,
+                completedDays: completedDays,
+                averageCompletion: totalCompletion / Double(totalDays),
+                totalBlocks: totalBlocks,
+                totalCompleted: totalCompleted
+            )
+        }, fallback: nil)
     }
     
     /// Refresh current data
@@ -111,91 +140,131 @@ class DailySummaryViewModel {
         await loadData(for: selectedDate)
     }
     
-    // MARK: - Data Updates
+    // MARK: - Data Updates (FIXED with crash protection)
     
     /// Save day rating and notes
     @MainActor
     func saveDayRatingAndNotes(rating: Int, notes: String) async {
-        guard let progress = safeDailyProgress else { return }
-        
-        // REPLACE try-catch with safe calls:
-        // Update the progress object
-        if rating > 0 {
-            progress.setDayRating(rating)
+        do {
+            guard let progress = safeDailyProgress else { return }
+            
+            // FIXED: Wrap all model property access in safe calls
+            dataManager.safeModelAccess({
+                // Update the progress object
+                if rating > 0 {
+                    progress.setDayRating(rating)
+                }
+                
+                let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmedNotes.isEmpty {
+                    progress.setDayNotes(trimmedNotes)
+                }
+                
+                // Mark summary as viewed
+                progress.markSummaryViewed()
+            }, fallback: ())
+            
+            dataManager.safeModelAccess({
+                dataManager.updateDailyProgressSafely(for: selectedDate)
+            }, fallback: ())
+            
+            // Trigger success haptic
+            HapticManager.shared.lightImpact()
+            
         }
-        
-        let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmedNotes.isEmpty {
-            progress.setDayNotes(trimmedNotes)
-        }
-        
-        // Mark summary as viewed
-        progress.markSummaryViewed()
-        
-        dataManager.updateDailyProgressSafely(for: selectedDate)
-        
-        // Trigger success haptic
-        HapticManager.shared.lightImpact()
     }
     
     /// Update a specific time block status from summary view
     func updateTimeBlockStatus(_ timeBlock: TimeBlock, to status: BlockStatus) async {
-        dataManager.updateTimeBlockStatusSafely(timeBlock, to: status)
-        
-        // Refresh data to show updated statistics
-        await refreshData()
-        
-        HapticManager.shared.success()
+        do {
+            dataManager.safeModelAccess({
+                dataManager.updateTimeBlockStatusSafely(timeBlock, to: status)
+            }, fallback: ())
+            
+            // Refresh data to show updated statistics
+            await refreshData()
+            
+            HapticManager.shared.success()
+        }
     }
     
-    // MARK: - Computed Properties
+    // MARK: - Computed Properties (FIXED with crash protection)
     
     /// Whether we have any data to show
     var hasData: Bool {
-        return !todaysTimeBlocks.isEmpty || safeDailyProgress?.totalBlocks ?? 0 > 0
+        let timeBlocksExist = !todaysTimeBlocks.isEmpty
+        let progressExists = dataManager.safeModelAccess({
+            safeDailyProgress?.totalBlocks ?? 0 > 0
+        }, fallback: false)
+        return timeBlocksExist || progressExists
     }
     
     /// Completion percentage for the day
     var completionPercentage: Double {
-        return safeDailyProgress?.completionPercentage ?? 0.0
+        return dataManager.safeModelAccess({
+            safeDailyProgress?.completionPercentage ?? 0.0
+        }, fallback: 0.0)
     }
     
     /// Performance message for the day
     var performanceMessage: String {
-        return safeDailyProgress?.motivationalMessage ?? "Keep going! Every step counts."
+        return dataManager.safeModelAccess({
+            safeDailyProgress?.motivationalMessage ?? "Keep going! Every step counts."
+        }, fallback: "Keep going! Every step counts.")
     }
     
     /// Whether the day is complete
     var isDayComplete: Bool {
-        return safeDailyProgress?.isDayComplete ?? false
+        return dataManager.safeModelAccess({
+            safeDailyProgress?.isDayComplete ?? false
+        }, fallback: false)
     }
     
     /// Performance level for the day
     var performanceLevel: DailyProgress.PerformanceLevel {
-        return safeDailyProgress?.performanceLevel ?? .none
+        return dataManager.safeModelAccess({
+            safeDailyProgress?.performanceLevel ?? .none
+        }, fallback: .none)
     }
     
     /// Time blocks grouped by status for better organization
     var timeBlocksByStatus: [BlockStatus: [TimeBlock]] {
-        return Dictionary(grouping: todaysTimeBlocks) { $0.status }
+        return Dictionary(grouping: todaysTimeBlocks) { timeBlock in
+            dataManager.safeModelAccess({ timeBlock.status }, fallback: .notStarted)
+        }
     }
     
     /// Sorted time blocks by start time
     var sortedTimeBlocks: [TimeBlock] {
-        return todaysTimeBlocks.sorted()
+        return todaysTimeBlocks.sorted { block1, block2 in
+            let time1 = dataManager.safeModelAccess({ block1.startTime }, fallback: Date())
+            let time2 = dataManager.safeModelAccess({ block2.startTime }, fallback: Date())
+            return time1 < time2
+        }
     }
     
     /// Count of blocks by each status
     var statusCounts: (completed: Int, skipped: Int, inProgress: Int, upcoming: Int) {
-        let completed = todaysTimeBlocks.filter { $0.status == .completed }.count
-        let skipped = todaysTimeBlocks.filter { $0.status == .skipped }.count
-        let inProgress = todaysTimeBlocks.filter { $0.status == .inProgress }.count
-        let upcoming = todaysTimeBlocks.filter { $0.status == .notStarted }.count
+        let completed = todaysTimeBlocks.filter { block in
+            dataManager.safeModelAccess({ block.status == .completed }, fallback: false)
+        }.count
+        
+        let skipped = todaysTimeBlocks.filter { block in
+            dataManager.safeModelAccess({ block.status == .skipped }, fallback: false)
+        }.count
+        
+        let inProgress = todaysTimeBlocks.filter { block in
+            dataManager.safeModelAccess({ block.status == .inProgress }, fallback: false)
+        }.count
+        
+        let upcoming = todaysTimeBlocks.filter { block in
+            dataManager.safeModelAccess({ block.status == .notStarted }, fallback: false)
+        }.count
         
         return (completed, skipped, inProgress, upcoming)
     }
     
-    // MARK: - Analysis & Insights
+    // MARK: - Analysis & Insights (FIXED with crash protection)
     
     /// Get personalized insights based on performance
     func getPersonalizedInsights() -> [String] {
@@ -205,27 +274,36 @@ class DailySummaryViewModel {
         
         var insights: [String] = []
         
+        // FIXED: Wrap all progress property access in safe calls
+        let performanceLevel = dataManager.safeModelAccess({ progress.performanceLevel }, fallback: .none)
+        let completedBlocks = dataManager.safeModelAccess({ progress.completedBlocks }, fallback: 0)
+        let skipRate = dataManager.safeModelAccess({ progress.skipRate }, fallback: 0.0)
+        let totalPlannedMinutes = dataManager.safeModelAccess({ progress.totalPlannedMinutes }, fallback: 0)
+        let completionPercentage = dataManager.safeModelAccess({ progress.completionPercentage }, fallback: 0.0)
+        
         // Performance-based insights
-        switch progress.performanceLevel {
+        switch performanceLevel {
         case .excellent:
             insights.append("Outstanding work! You're building incredible momentum.")
-            if progress.completedBlocks >= 5 {
-                insights.append("Managing \(progress.completedBlocks) blocks shows exceptional time management.")
+            if completedBlocks >= 5 {
+                insights.append("Managing \(completedBlocks) blocks shows exceptional time management.")
             }
             
         case .good:
             insights.append("Great job! You're on track to build lasting habits.")
-            if let suggestion = progress.suggestions.first {
+            let suggestions = dataManager.safeModelAccess({ progress.suggestions }, fallback: [])
+            if let suggestion = suggestions.first {
                 insights.append(suggestion)
             }
             
         case .fair:
             insights.append("Good progress! Consistency is key to improvement.")
-            insights.append(contentsOf: progress.suggestions.prefix(2))
+            let suggestions = dataManager.safeModelAccess({ progress.suggestions }, fallback: [])
+            insights.append(contentsOf: suggestions.prefix(2))
             
         case .poor:
             insights.append("Every step forward counts. Tomorrow is a new opportunity.")
-            if progress.skipRate > 0.5 {
+            if skipRate > 0.5 {
                 insights.append("High skip rate detected. Consider shorter, more manageable blocks.")
             }
             
@@ -234,13 +312,13 @@ class DailySummaryViewModel {
         }
         
         // Time-based insights
-        if progress.totalPlannedMinutes > 8 * 60 {
+        if totalPlannedMinutes > 8 * 60 {
             insights.append("Remember to include breaks in long schedules for sustainability.")
         }
         
         // Weekly context insights
         if let weeklyStats = weeklyStats {
-            let todayVsAverage = progress.completionPercentage - weeklyStats.averageCompletion
+            let todayVsAverage = completionPercentage - weeklyStats.averageCompletion
             
             if todayVsAverage > 0.2 {
                 insights.append("You're \(Int(todayVsAverage * 100))% above your weekly average! 🌟")
@@ -254,7 +332,11 @@ class DailySummaryViewModel {
         }
         
         // Pattern insights
-        let completedCategories = Set(todaysTimeBlocks.filter { $0.status == .completed }.compactMap { $0.category })
+        let completedCategories = Set(todaysTimeBlocks.compactMap { block in
+            let isCompleted = dataManager.safeModelAccess({ block.status == .completed }, fallback: false)
+            return isCompleted ? dataManager.safeModelAccess({ block.category }, fallback: nil) : nil
+        })
+        
         if completedCategories.count >= 3 {
             insights.append("Great balance across \(completedCategories.count) different life areas today.")
         }
@@ -268,33 +350,51 @@ class DailySummaryViewModel {
         
         var suggestions: [String] = []
         
+        // FIXED: Wrap all property access in safe calls
+        let completionPercentage = dataManager.safeModelAccess({ progress.completionPercentage }, fallback: 0.0)
+        let totalBlocks = dataManager.safeModelAccess({ progress.totalBlocks }, fallback: 0)
+        
         // Completion rate suggestions
-        if progress.completionPercentage < 0.5 && progress.totalBlocks > 5 {
+        if completionPercentage < 0.5 && totalBlocks > 5 {
             suggestions.append("Consider reducing to 3-4 essential blocks to build momentum.")
         }
         
         // Skip pattern analysis
-        let skippedBlocks = todaysTimeBlocks.filter { $0.status == .skipped }
+        let skippedBlocks = todaysTimeBlocks.filter { block in
+            dataManager.safeModelAccess({ block.status == .skipped }, fallback: false)
+        }
+        
         if !skippedBlocks.isEmpty {
-            let categories = Set(skippedBlocks.compactMap { $0.category })
+            let categories = Set(skippedBlocks.compactMap { block in
+                dataManager.safeModelAccess({ block.category }, fallback: nil)
+            })
             if categories.count == 1, let category = categories.first {
                 suggestions.append("Notice a pattern? \(category) blocks are frequently skipped.")
             }
         }
         
         // Time of day patterns
-        let morningBlocks = todaysTimeBlocks.filter {
-            Calendar.current.component(.hour, from: $0.startTime) < 12
+        let morningBlocks = todaysTimeBlocks.filter { block in
+            let startTime = dataManager.safeModelAccess({ block.startTime }, fallback: Date())
+            return Calendar.current.component(.hour, from: startTime) < 12
         }
-        let morningCompletion = morningBlocks.filter { $0.status == .completed }.count
+        
+        let morningCompletion = morningBlocks.filter { block in
+            dataManager.safeModelAccess({ block.status == .completed }, fallback: false)
+        }.count
         
         if morningBlocks.count > 0 && Double(morningCompletion) / Double(morningBlocks.count) < 0.5 {
             suggestions.append("Morning blocks have lower completion. Are you a night owl?")
         }
         
         // Duration insights
-        let longBlocks = todaysTimeBlocks.filter { $0.durationMinutes > 90 }
-        let longBlocksSkipped = longBlocks.filter { $0.status == .skipped }.count
+        let longBlocks = todaysTimeBlocks.filter { block in
+            dataManager.safeModelAccess({ block.durationMinutes > 90 }, fallback: false)
+        }
+        
+        let longBlocksSkipped = longBlocks.filter { block in
+            dataManager.safeModelAccess({ block.status == .skipped }, fallback: false)
+        }.count
         
         if longBlocks.count > 0 && Double(longBlocksSkipped) / Double(longBlocks.count) > 0.5 {
             suggestions.append("Long blocks (90+ min) are often skipped. Try breaking them down.")
@@ -303,7 +403,7 @@ class DailySummaryViewModel {
         return suggestions.isEmpty ? ["Keep experimenting to find your optimal routine!"] : suggestions
     }
     
-    // MARK: - Sharing & Export
+    // MARK: - Sharing & Export (FIXED with crash protection)
     
     /// Generate shareable text summary
     func generateShareableText() -> String {
@@ -407,8 +507,9 @@ class DailySummaryViewModel {
             ]
         }
         
-        return [
-            "summary": [
+        // FIXED: Wrap all progress property access in safe calls
+        let summaryData = dataManager.safeModelAccess({
+            return [
                 "date": ISO8601DateFormatter().string(from: selectedDate),
                 "completionPercentage": progress.completionPercentage,
                 "performanceLevel": progress.performanceLevel.rawValue,
@@ -419,7 +520,22 @@ class DailySummaryViewModel {
                 "completedMinutes": progress.completedMinutes,
                 "dayRating": progress.dayRating as Any,
                 "dayNotes": progress.dayNotes as Any
-            ],
+            ]
+        }, fallback: [
+            "date": ISO8601DateFormatter().string(from: selectedDate),
+            "completionPercentage": 0.0,
+            "performanceLevel": "none",
+            "totalBlocks": 0,
+            "completedBlocks": 0,
+            "skippedBlocks": 0,
+            "totalMinutes": 0,
+            "completedMinutes": 0,
+            "dayRating": NSNull(),
+            "dayNotes": NSNull()
+        ])
+        
+        return [
+            "summary": summaryData,
             "timeBlocks": todaysTimeBlocks.compactMap { block in
                 // Wrap property access in safe access to prevent crashes
                 return dataManager.safeModelAccess({

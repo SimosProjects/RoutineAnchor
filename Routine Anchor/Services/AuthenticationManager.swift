@@ -21,6 +21,7 @@ class AuthenticationManager: ObservableObject {
     private let userEmailKey = "userEmail"
     private let emailCaptureShownKey = "emailCaptureShownCount"
     private let firstLaunchKey = "firstLaunchDate"
+    private let lastDismissedKey = "emailCaptureLastDismissed"
     
     // MARK: - Initialization
     init() {
@@ -29,9 +30,15 @@ class AuthenticationManager: ObservableObject {
     }
     
     // MARK: - Email Capture Logic
-    func checkShouldShowEmailCapture() {
+    func checkShouldShowEmailCapture(premiumManager: PremiumManager? = nil) {
         // Don't show if already captured
         guard !isEmailCaptured else {
+            shouldShowEmailCapture = false
+            return
+        }
+        
+        // Don't show if user has premium subscription
+        if let premiumManager = premiumManager, premiumManager.hasPremiumAccess {
             shouldShowEmailCapture = false
             return
         }
@@ -42,6 +49,15 @@ class AuthenticationManager: ObservableObject {
             return
         }
         
+        // Check if user dismissed it recently (within last 24 hours)
+        if let lastDismissed = UserDefaults.standard.object(forKey: lastDismissedKey) as? Date {
+            let hoursSinceDismissal = Calendar.current.dateComponents([.hour], from: lastDismissed, to: Date()).hour ?? 0
+            if hoursSinceDismissal < 24 {
+                shouldShowEmailCapture = false
+                return
+            }
+        }
+        
         // Check if user has been using the app for at least 3 days
         let daysRequired = 3
         let firstLaunchDate = UserDefaults.standard.object(forKey: firstLaunchKey) as? Date ?? Date()
@@ -49,6 +65,14 @@ class AuthenticationManager: ObservableObject {
         let shouldShow = daysSinceFirstLaunch >= daysRequired
         
         shouldShowEmailCapture = shouldShow
+        
+        // Debug logging
+        print("📧 Email capture check:")
+        print("   - Email captured: \(isEmailCaptured)")
+        print("   - Has premium: \(premiumManager?.hasPremiumAccess ?? false)")
+        print("   - Show count: \(emailCaptureShownCount)/3")
+        print("   - Days since launch: \(daysSinceFirstLaunch)/\(daysRequired)")
+        print("   - Should show: \(shouldShow)")
     }
     
     func captureEmail(_ email: String) {
@@ -74,7 +98,14 @@ class AuthenticationManager: ObservableObject {
     
     func dismissEmailCapture() {
         shouldShowEmailCapture = false
+        
+        // Track the dismissal time to prevent immediate re-showing
+        UserDefaults.standard.set(Date(), forKey: lastDismissedKey)
+        
+        // Increment the shown count
         incrementEmailCaptureShownCount()
+        
+        print("📧 Email capture dismissed. Count: \(emailCaptureShownCount)/3")
     }
     
     // MARK: - User Data Management
@@ -115,6 +146,7 @@ class AuthenticationManager: ObservableObject {
         UserDefaults.standard.removeObject(forKey: userEmailKey)
         UserDefaults.standard.removeObject(forKey: emailCaptureKey)
         UserDefaults.standard.removeObject(forKey: emailCaptureShownKey)
+        UserDefaults.standard.removeObject(forKey: lastDismissedKey)
         UserDefaults.standard.removeObject(forKey: "emailPref_marketing")
         UserDefaults.standard.removeObject(forKey: "emailPref_productUpdates")
         UserDefaults.standard.removeObject(forKey: "emailPref_courses")
@@ -139,6 +171,7 @@ class AuthenticationManager: ObservableObject {
         UserDefaults.standard.removeObject(forKey: userEmailKey)
         UserDefaults.standard.removeObject(forKey: emailCaptureShownKey)
         UserDefaults.standard.removeObject(forKey: firstLaunchKey)
+        UserDefaults.standard.removeObject(forKey: lastDismissedKey)
         
         // Reset properties
         userEmail = nil

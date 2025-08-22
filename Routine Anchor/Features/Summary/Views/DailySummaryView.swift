@@ -40,13 +40,13 @@ struct DailySummaryView: View {
                 .allowsHitTesting(false)
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 12) {
+                VStack(spacing: 20) { // Increased spacing from 12 to 20
                     // Header
                     headerSection
                     
                     // Main content
                     if viewModel.hasData {
-                        VStack(spacing: 12) {
+                        VStack(spacing: 20) { // Increased spacing from 12 to 20
                             // Progress visualization
                             progressCircleSection(viewModel)
                             
@@ -205,84 +205,95 @@ struct DailySummaryView: View {
         .offset(y: isVisible ? 0 : -20)
     }
     
-    // MARK: - Progress Section
+    // MARK: - Progress Section (FIXED)
     private func progressCircleSection(_ viewModel: DailySummaryViewModel) -> some View {
-        VStack(spacing: 24) {
-            ZStack {
-                // Background circle
-                Circle()
-                    .stroke(Color.white.opacity(0.1), lineWidth: 16)
-                    .frame(width: 160, height: 160)
-                
-                // Use safe progress access
-                if let progress = viewModel.safeDailyProgress {
+        VStack(spacing: 0) { // Removed spacing to better control layout
+            // Progress Circle Container
+            VStack(spacing: 16) { // Reduced from 24 to 16
+                ZStack {
+                    // Background circle
                     Circle()
-                        .trim(from: 0, to: CGFloat(progress.completionPercentage))
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    progress.performanceLevel.color,
-                                    progress.performanceLevel.color.opacity(0.6)
-                                ],
-                                startPoint: .topTrailing,
-                                endPoint: .bottomLeading
-                            ),
-                            style: StrokeStyle(lineWidth: 16, lineCap: .round)
-                        )
+                        .stroke(Color.white.opacity(0.1), lineWidth: 16)
                         .frame(width: 160, height: 160)
-                        .rotationEffect(.degrees(-90))
-                        .animation(.spring(response: 1.2, dampingFraction: 0.8), value: progress.completionPercentage)
                     
-                    // Center content
-                    VStack(spacing: 8) {
-                        Text(progress.performanceLevel.emoji)
-                            .font(.system(size: 36))
+                    // Use safe progress access
+                    if let progress = viewModel.safeDailyProgress {
+                        Circle()
+                            .trim(from: 0, to: CGFloat(progress.completionPercentage))
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        progress.performanceLevel.color,
+                                        progress.performanceLevel.color.opacity(0.6)
+                                    ],
+                                    startPoint: .topTrailing,
+                                    endPoint: .bottomLeading
+                                ),
+                                style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                            )
+                            .frame(width: 160, height: 160)
+                            .rotationEffect(.degrees(-90))
+                            .animation(.spring(response: 1.2, dampingFraction: 0.8), value: progress.completionPercentage)
                         
-                        Text(progress.formattedCompletionPercentage)
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(progress.performanceLevel.color)
-                        
-                        Text("Complete")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.6))
-                            .textCase(.uppercase)
-                            .tracking(1)
+                        // Center content
+                        VStack(spacing: 8) {
+                            Text(progress.performanceLevel.emoji)
+                                .font(.system(size: 36))
+                            
+                            Text(progress.formattedCompletionPercentage)
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundStyle(progress.performanceLevel.color)
+                            
+                            Text("Complete")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(Color.white.opacity(0.6))
+                                .textCase(.uppercase)
+                                .tracking(1)
+                        }
+                    } else {
+                        // Safe fallback when no progress available
+                        VStack(spacing: 8) {
+                            Text("📊")
+                                .font(.system(size: 36))
+                            
+                            Text("0%")
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color.white.opacity(0.6))
+                            
+                            Text("Complete")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(Color.white.opacity(0.6))
+                                .textCase(.uppercase)
+                                .tracking(1)
+                        }
                     }
-                    
-                    // Motivational message
+                }
+            }
+            
+            // Motivational message in separate container to prevent overlap
+            VStack(spacing: 0) {
+                if let progress = viewModel.safeDailyProgress {
                     Text(progress.motivationalMessage)
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                        .font(.system(size: 16, weight: .medium, design: .rounded)) // Reduced from 18 to 16
                         .foregroundStyle(Color.white.opacity(0.8))
                         .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .padding(.horizontal, 20)
+                        .lineSpacing(3) // Reduced from 4 to 3
+                        .padding(.horizontal, 24) // Increased horizontal padding
+                        .padding(.top, 16) // Add controlled top spacing
+                        .lineLimit(3) // Limit to 3 lines to prevent excessive height
                 } else {
-                    // Safe fallback when no progress available
-                    VStack(spacing: 8) {
-                        Text("📊")
-                            .font(.system(size: 36))
-                        
-                        Text("0%")
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color.white.opacity(0.6))
-                        
-                        Text("Complete")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.6))
-                            .textCase(.uppercase)
-                            .tracking(1)
-                    }
-                    
                     Text("Ready to start your day?")
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundStyle(Color.white.opacity(0.8))
                         .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .padding(.horizontal, 20)
+                        .lineSpacing(3)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
                 }
             }
         }
-        .padding(24)
+        .padding(.horizontal, 20) // Reduced from 24 to 20
+        .padding(.vertical, 20) // Reduced from 24 to 20
         .glassMorphism(cornerRadius: 24)
         .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
     }
