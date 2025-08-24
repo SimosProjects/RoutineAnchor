@@ -127,7 +127,7 @@ struct TodayView: View {
             NavigationStack {
                 QuickStatsView(viewModel: viewModel)
             }
-            .presentationDetents([.medium])
+            .presentationDetents([.fraction(0.7)])
             .presentationDragIndicator(.visible)
         }
         .onReceive(NotificationCenter.default.publisher(for: .showQuickStats)) { _ in
