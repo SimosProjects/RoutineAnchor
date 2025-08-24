@@ -24,30 +24,57 @@ struct PremiumUpgradeView: View {
             AnimatedGradientBackground()
                 .ignoresSafeArea()
             
-            ScrollView {
-                VStack(spacing: 32) {
-                    // Header
-                    headerSection
-                    
-                    // Features
-                    featuresSection
-                    
-                    // Pricing
-                    pricingSection
-                    
-                    // Purchase buttons
-                    purchaseSection
-                    
-                    // Restore purchases
-                    restoreSection
+            if premiumManager.isLoading && premiumManager.products.isEmpty {
+                // Loading state
+                loadingView
+            } else {
+                // Main content
+                ScrollView {
+                    VStack(spacing: 32) {
+                        // Header
+                        headerSection
+                        
+                        // Features
+                        featuresSection
+                        
+                        // Pricing
+                        pricingSection
+                        
+                        // Purchase buttons
+                        purchaseSection
+                        
+                        // Restore purchases
+                        restoreSection
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 32)
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 32)
             }
         }
         .navigationBarHidden(true)
+        .task {
+            // Load products on appear and auto-select recommended plan
+            await loadProductsAndSetDefaults()
+        }
         .onAppear {
             startAnimations()
+        }
+    }
+    
+    // MARK: - Loading View
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            
+            ProgressView()
+                .scaleEffect(1.5)
+                .tint(.white)
+            
+            Text("Loading Premium Plans...")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(.white.opacity(0.8))
+            
+            Spacer()
         }
     }
     
@@ -136,75 +163,135 @@ struct PremiumUpgradeView: View {
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
                 .foregroundStyle(.white)
             
-            VStack(spacing: 12) {
-                if let yearlyProduct = premiumManager.yearlyProduct {
-                    PremiumPricingCard(
-                        product: yearlyProduct,
-                        isSelected: selectedProduct?.id == yearlyProduct.id,
-                        savings: premiumManager.monthlySavings,
-                        isRecommended: true
-                    ) {
-                        selectedProduct = yearlyProduct
-                        HapticManager.shared.anchorSelection()
+            if premiumManager.products.isEmpty {
+                // Fallback when products aren't loaded
+                VStack(spacing: 12) {
+                    Text("Unable to load pricing")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.white.opacity(0.7))
+                    
+                    Button("Retry") {
+                        Task {
+                            await loadProductsAndSetDefaults()
+                        }
                     }
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color.anchorBlue)
                 }
-                
-                if let monthlyProduct = premiumManager.monthlyProduct {
-                    PremiumPricingCard(
-                        product: monthlyProduct,
-                        isSelected: selectedProduct?.id == monthlyProduct.id,
-                        savings: nil,
-                        isRecommended: false
-                    ) {
-                        selectedProduct = monthlyProduct
-                        HapticManager.shared.anchorSelection()
+                .padding(20)
+                .background(Color.white.opacity(0.1))
+                .cornerRadius(12)
+            } else {
+                VStack(spacing: 12) {
+                    // Yearly plan (recommended)
+                    if let yearlyProduct = premiumManager.yearlyProduct {
+                        PremiumPricingCard(
+                            product: yearlyProduct,
+                            isSelected: selectedProduct?.id == yearlyProduct.id,
+                            savings: premiumManager.monthlySavings,
+                            isRecommended: true
+                        ) {
+                            selectedProduct = yearlyProduct
+                            HapticManager.shared.anchorSelection()
+                        }
+                    }
+                    
+                    // Monthly plan
+                    if let monthlyProduct = premiumManager.monthlyProduct {
+                        PremiumPricingCard(
+                            product: monthlyProduct,
+                            isSelected: selectedProduct?.id == monthlyProduct.id,
+                            savings: nil,
+                            isRecommended: false
+                        ) {
+                            selectedProduct = monthlyProduct
+                            HapticManager.shared.anchorSelection()
+                        }
                     }
                 }
             }
         }
     }
     
-    // MARK: - Purchase Section
+    // MARK: - Purchase Section (ENHANCED)
     private var purchaseSection: some View {
         VStack(spacing: 16) {
             if let selectedProduct = selectedProduct {
                 DesignedButton(
-                    title: "Start Premium - \(selectedProduct.displayPrice)",
+                    title: premiumManager.purchaseInProgress ? "Processing..." : "Start Premium - \(selectedProduct.displayPrice)",
                     style: .gradient,
                     action: {
                         Task {
-                            try await premiumManager.purchase(selectedProduct)
-                            if premiumManager.userIsPremium {
-                                dismiss()
-                            }
+                            await attemptPurchase(selectedProduct)
                         }
                     }
                 )
-                .disabled(premiumManager.isLoading)
-                .opacity(premiumManager.isLoading ? 0.6 : 1.0)
+                .disabled(premiumManager.isLoading || premiumManager.purchaseInProgress)
+                .opacity(premiumManager.isLoading || premiumManager.purchaseInProgress ? 0.6 : 1.0)
+                
+                // Purchase details
+                if selectedProduct.id.contains("yearly") {
+                    VStack(spacing: 4) {
+                        Text("• Billed annually")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.white.opacity(0.6))
+                        
+                        Text("• Cancel anytime in Settings")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                } else {
+                    Text("• Billed monthly, cancel anytime")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
+                
             } else {
-                Text("Select a plan to continue")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.6))
-                    .padding(.vertical, 16)
+                VStack(spacing: 8) {
+                    Text("Select a plan to continue")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.6))
+                    
+                    // Auto-select recommended plan button
+                    if let yearlyProduct = premiumManager.yearlyProduct {
+                        Button("Select Recommended Plan") {
+                            selectedProduct = yearlyProduct
+                            HapticManager.shared.anchorSelection()
+                        }
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.anchorBlue)
+                    }
+                }
+                .padding(.vertical, 16)
             }
             
-            if premiumManager.isLoading {
+            // Loading indicator
+            if premiumManager.isLoading || premiumManager.purchaseInProgress {
                 HStack(spacing: 8) {
                     ProgressView()
                         .scaleEffect(0.8)
+                        .tint(.white)
                     Text("Processing...")
                         .font(.system(size: 14))
                         .foregroundStyle(.white.opacity(0.7))
                 }
             }
             
+            // Error handling
             if let errorMessage = premiumManager.errorMessage {
-                Text(errorMessage)
+                VStack(spacing: 8) {
+                    Text(errorMessage)
+                        .font(.system(size: 14))
+                        .foregroundStyle(.red)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    Button("Dismiss") {
+                        premiumManager.clearError()
+                    }
                     .font(.system(size: 14))
-                    .foregroundStyle(.red)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .foregroundStyle(.white.opacity(0.7))
+                }
             }
         }
     }
@@ -214,10 +301,7 @@ struct PremiumUpgradeView: View {
         VStack(spacing: 12) {
             Button("Restore Purchases") {
                 Task {
-                    await premiumManager.restorePurchases()
-                    if premiumManager.userIsPremium {
-                        dismiss()
-                    }
+                    await attemptRestore()
                 }
             }
             .font(.system(size: 16, weight: .medium))
@@ -227,14 +311,12 @@ struct PremiumUpgradeView: View {
             // Terms and privacy
             HStack(spacing: 4) {
                 Button("Terms") {
-                    // TODO: Open terms URL
                     if let url = URL(string: "https://routineanchor.com/terms") {
                         UIApplication.shared.open(url)
                     }
                 }
                 Text("•")
                 Button("Privacy") {
-                    // TODO: Open privacy URL
                     if let url = URL(string: "https://routineanchor.com/privacy") {
                         UIApplication.shared.open(url)
                     }
@@ -250,6 +332,134 @@ struct PremiumUpgradeView: View {
         withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
             animationPhase = 1.0
         }
+    }
+    
+    // Load products and set defaults
+    private func loadProductsAndSetDefaults() async {
+        await premiumManager.loadProducts()
+        
+        // Auto-select yearly plan if available (recommended)
+        if selectedProduct == nil, let yearlyProduct = premiumManager.yearlyProduct {
+            selectedProduct = yearlyProduct
+        }
+    }
+    
+    // Purchase error handling
+    private func attemptPurchase(_ product: Product) async {
+        do {
+            try await premiumManager.purchase(product)
+            if premiumManager.userIsPremium {
+                // Success - dismiss view
+                await MainActor.run {
+                    dismiss()
+                }
+            }
+        } catch {
+            // Error is already handled by PremiumManager
+            HapticManager.shared.anchorError()
+        }
+    }
+    
+    // Restore with feedback
+    private func attemptRestore() async {
+        await premiumManager.restorePurchases()
+        if premiumManager.userIsPremium {
+            await MainActor.run {
+                dismiss()
+            }
+        } else {
+            // Show feedback that no purchases were found
+            HapticManager.shared.lightImpact()
+        }
+    }
+}
+
+// MARK: - Enhanced Premium Pricing Card
+struct PremiumPricingCard: View {
+    let product: Product
+    let isSelected: Bool
+    let savings: String?
+    let isRecommended: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 12) {
+                // Recommended badge
+                if isRecommended {
+                    HStack {
+                        Spacer()
+                        Text("MOST POPULAR")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color.anchorGreen)
+                            )
+                        Spacer()
+                    }
+                }
+                
+                // Title and price
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(product.displayName)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.white)
+                        
+                        if let savings = savings, !savings.isEmpty {
+                            Text("Save \(savings)")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(.green)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(product.displayPrice)
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundStyle(.white)
+                        
+                        // Show billing period
+                        Text(product.id.contains("yearly") ? "per year" : "per month")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                }
+                
+                // Per month calculation for yearly
+                if product.id.contains("yearly") {
+                    HStack {
+                        let monthlyEquivalent = NSDecimalNumber(decimal: product.price).doubleValue / 12.0
+                        Text("Just $\(String(format: "%.2f", monthlyEquivalent)) per month")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.white.opacity(0.7))
+                        Spacer()
+                    }
+                }
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        isSelected ? Color.anchorBlue : Color.white.opacity(0.2),
+                        lineWidth: isSelected ? 2 : 1
+                    )
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(
+                                isSelected
+                                ? Color.anchorBlue.opacity(0.1)
+                                : Color.white.opacity(0.05)
+                            )
+                    )
+            )
+        }
+        .scaleEffect(isSelected ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
 }
 
@@ -314,89 +524,6 @@ struct PremiumFeatureRow: View {
         default:
             return .anchorBlue
         }
-    }
-}
-
-// MARK: - Premium Pricing Card
-struct PremiumPricingCard: View {
-    let product: Product
-    let isSelected: Bool
-    let savings: String?
-    let isRecommended: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            VStack(spacing: 12) {
-                // Recommended badge
-                if isRecommended {
-                    HStack {
-                        Spacer()
-                        Text("MOST POPULAR")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(Color.anchorGreen)
-                            )
-                        Spacer()
-                    }
-                }
-                
-                // Title and price
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(product.displayName)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.white)
-                        
-                        if let savings = savings, !savings.isEmpty {
-                            Text("Save \(savings)")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(.green)
-                        }
-                    }
-                    
-                    Spacer()
-                    
-                    Text(product.displayPrice)
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(.white)
-                }
-                
-                // Per month calculation for yearly
-                if product.id.contains("yearly") {
-                    HStack {
-                        // Fixed: Convert Decimal to Double properly
-                        let monthlyEquivalent = NSDecimalNumber(decimal: product.price).doubleValue / 12.0
-                        Text("Just $\(String(format: "%.2f", monthlyEquivalent)) per month")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.white.opacity(0.7))
-                        Spacer()
-                    }
-                }
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(
-                        isSelected ? Color.anchorBlue : Color.white.opacity(0.2),
-                        lineWidth: isSelected ? 2 : 1
-                    )
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(
-                                isSelected
-                                ? Color.anchorBlue.opacity(0.1)
-                                : Color.white.opacity(0.05)
-                            )
-                    )
-            )
-        }
-        .scaleEffect(isSelected ? 1.02 : 1.0)
-        .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
 }
 
