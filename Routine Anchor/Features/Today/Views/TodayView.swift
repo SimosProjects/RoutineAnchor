@@ -7,6 +7,7 @@ import SwiftData
 
 struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.premiumManager) private var premiumManager
     @Bindable var viewModel: TodayViewModel
     @State private var dataManager: DataManager
     @State private var refreshTask: Task<Void, Never>?

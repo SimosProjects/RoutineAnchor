@@ -8,7 +8,7 @@ import SwiftData
 struct DailySummaryView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Environment(PremiumManager.self) private var premiumManager
+    @Environment(\.premiumManager) private var premiumManager
     @State private var viewModel: DailySummaryViewModel
     @State private var showingPremiumUpgrade = false
     
@@ -84,7 +84,31 @@ struct DailySummaryView: View {
             await setupInitialState()
         }
         .sheet(isPresented: $showingPremiumUpgrade) {
-            PremiumUpgradeView(premiumManager: premiumManager)
+            if let premiumManager = premiumManager {
+                PremiumUpgradeView(premiumManager: premiumManager)
+            } else {
+                // Fallback view when premium manager is unavailable
+                VStack(spacing: 20) {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 48))
+                        .foregroundStyle(Color.anchorWarning)
+                    
+                    Text("Premium Features")
+                        .font(.title.bold())
+                        .foregroundStyle(.white)
+                    
+                    Text("Premium features are temporarily unavailable. Please try again later.")
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.white.opacity(0.8))
+                    
+                    Button("Close") {
+                        showingPremiumUpgrade = false
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
+                .presentationDetents([.medium])
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshSummaryView)) { _ in
             Task { @MainActor in
@@ -399,12 +423,12 @@ struct DailySummaryView: View {
                 Spacer()
                 
                 // Show premium badge if user has premium
-                if premiumManager.canAccessAdvancedAnalytics {
+                if premiumManager?.canAccessAdvancedAnalytics == true {
                     PremiumBadge()
                 }
             }
             
-            if premiumManager.canAccessAdvancedAnalytics {
+            if premiumManager?.canAccessAdvancedAnalytics == true {
                 // FULL INSIGHTS FOR PREMIUM USERS
                 VStack(spacing: 12) {
                     ForEach(Array(viewModel.getPersonalizedInsights().enumerated()), id: \.offset) { index, insight in

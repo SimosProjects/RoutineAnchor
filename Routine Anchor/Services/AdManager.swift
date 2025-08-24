@@ -176,6 +176,7 @@ extension AdManager {
             return
         }
         
-        showInterstitialAd()
+        //TODO: Causes errors when ad runs.  Uncomment once troubleshooting finished
+        //showInterstitialAd()
     }
 }
