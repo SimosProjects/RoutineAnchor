@@ -137,6 +137,17 @@ struct DailySummaryView: View {
         }
     }
     
+    private func planTomorrow() {
+        HapticManager.shared.impact()
+        
+        NotificationCenter.default.post(name: .navigateToSchedule, object: nil)
+        
+        // Small delay then dismiss
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            dismiss()
+        }
+    }
+    
     // MARK: - Header Section
     private var headerSection: some View {
         VStack(spacing: 16) {
@@ -635,17 +646,31 @@ struct DailySummaryView: View {
                     .multilineTextAlignment(.center)
             }
             
-            DesignedButton(
-                title: "Plan Tomorrow",
-                style: .gradient,
-                action: planTomorrow
-            )
-            
-            SecondaryActionButton(
-                title: viewModel.isDayComplete ? "Done" : "Back to Today",
-                icon: viewModel.isDayComplete ? "checkmark" : "arrow.left",
-                action: { dismiss() }
-            )
+            Button(action: planTomorrow) {
+                HStack(spacing: 10) {
+                    Image(systemName: "calendar.badge.plus")
+                        .font(.system(size: 18, weight: .medium))
+                    
+                    Text(viewModel.isDayComplete ? "Plan Tomorrow" : "Back to Schedule")
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(
+                    LinearGradient(
+                        colors: [Color.anchorBlue, Color.anchorPurple],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(16)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                )
+                .shadow(color: Color.anchorBlue.opacity(0.3), radius: 10, x: 0, y: 5)
+            }
         }
     }
     
@@ -760,12 +785,6 @@ struct DailySummaryView: View {
             await viewModel.saveDayRatingAndNotes(rating: selectedRating, notes: dayNotes)
             HapticManager.shared.lightImpact()
         }
-    }
-    
-    private func planTomorrow() {
-        HapticManager.shared.impact()
-        // Navigate to schedule builder for tomorrow
-        dismiss()
     }
     
     private func formatTime(_ minutes: Int) -> String {

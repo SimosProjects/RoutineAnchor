@@ -9,6 +9,7 @@ import StoreKit
 
 struct PremiumUpgradeView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.presentationMode) private var presentationMode
     @State private var premiumManager: PremiumManager
     @State private var selectedProduct: Product?
     @State private var showingFeatureDetail = false
@@ -84,11 +85,14 @@ struct PremiumUpgradeView: View {
             // Close button
             HStack {
                 Spacer()
-                Button(action: { dismiss() }) {
+                Button(action: { closeView() }) {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .font(.system(size: 28))
+                        .foregroundStyle(.white.opacity(0.8))
                 }
+                .frame(width: 44, height: 44)
+                .background(Color.clear)
+                .contentShape(Rectangle())
             }
             
             // Premium crown
@@ -213,7 +217,7 @@ struct PremiumUpgradeView: View {
         }
     }
     
-    // MARK: - Purchase Section (ENHANCED)
+    // MARK: - Purchase Section
     private var purchaseSection: some View {
         VStack(spacing: 16) {
             if let selectedProduct = selectedProduct {
@@ -334,6 +338,25 @@ struct PremiumUpgradeView: View {
         }
     }
     
+    private func closeView() {
+        print("Close button tapped")
+        
+        HapticManager.shared.lightImpact()
+        
+        // Try multiple methods to ensure dismissal
+        if #available(iOS 15.0, *) {
+            dismiss()
+        } else {
+            presentationMode.wrappedValue.dismiss()
+        }
+        
+        // Fallback: Post notification to parent to handle dismissal
+        NotificationCenter.default.post(
+            name: Notification.Name("dismissPremiumUpgrade"),
+            object: nil
+        )
+    }
+    
     // Load products and set defaults
     private func loadProductsAndSetDefaults() async {
         await premiumManager.loadProducts()
@@ -351,7 +374,7 @@ struct PremiumUpgradeView: View {
             if premiumManager.userIsPremium {
                 // Success - dismiss view
                 await MainActor.run {
-                    dismiss()
+                    closeView()
                 }
             }
         } catch {
@@ -365,7 +388,7 @@ struct PremiumUpgradeView: View {
         await premiumManager.restorePurchases()
         if premiumManager.userIsPremium {
             await MainActor.run {
-                dismiss()
+                closeView()
             }
         } else {
             // Show feedback that no purchases were found

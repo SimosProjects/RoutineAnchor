@@ -34,8 +34,6 @@ struct PremiumAnalyticsView: View {
                 }
             }
         }
-        .navigationTitle("Analytics")
-        .navigationBarTitleDisplayMode(.large)
         .task {
             await setupDataManager()
             await loadAnalyticsData()
@@ -61,6 +59,16 @@ struct PremiumAnalyticsView: View {
     private var analyticsScrollView: some View {
         ScrollView {
             VStack(spacing: 24) {
+                HStack {
+                    Text("Analytics")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.top, 20)
+                
                 // Time range selector
                 timeRangeSelector
                 

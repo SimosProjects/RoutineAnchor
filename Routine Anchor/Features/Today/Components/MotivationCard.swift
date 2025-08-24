@@ -2,7 +2,7 @@
 //  MotivationCard.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/21/25.
+//  Enhanced with functional buttons and better styling
 //
 import SwiftUI
 import UserNotifications
@@ -35,11 +35,16 @@ struct MotivationalCard: View {
             }
             
             if viewModel.isDayComplete {
-                CompletionActions(onViewSummary: {
-                    // Show summary
-                }, onPlanTomorrow: {
-                    // Plan tomorrow
-                })
+                CompletionActions(
+                    onViewSummary: {
+                        // FIXED: Actually show the summary
+                        NotificationCenter.default.post(name: .showDailySummary, object: nil)
+                    },
+                    onPlanTomorrow: {
+                        // FIXED: Actually navigate to schedule for planning tomorrow
+                        NotificationCenter.default.post(name: .navigateToSchedule, object: nil)
+                    }
+                )
             }
         }
         .padding(20)
@@ -87,14 +92,30 @@ struct MotivationalCard: View {
     }
 }
 
-// MARK: - Completion Actions
+// MARK: - Enhanced Completion Actions
 struct CompletionActions: View {
     let onViewSummary: () -> Void
     let onPlanTomorrow: () -> Void
     
+    @State private var isViewSummaryPressed = false
+    @State private var isPlanTomorrowPressed = false
+    
     var body: some View {
         HStack(spacing: 12) {
-            Button(action: onViewSummary) {
+            // View Summary Button (keep existing good style, add press animation)
+            Button(action: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    isViewSummaryPressed = true
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isViewSummaryPressed = false
+                    }
+                    HapticManager.shared.lightImpact()
+                    onViewSummary()
+                }
+            }) {
                 HStack(spacing: 6) {
                     Image(systemName: "chart.pie.fill")
                         .font(.system(size: 14, weight: .medium))
@@ -112,26 +133,48 @@ struct CompletionActions: View {
                     )
                 )
                 .cornerRadius(10)
+                .scaleEffect(isViewSummaryPressed ? 0.97 : 1)
+                .shadow(color: Color.anchorGreen.opacity(0.3), radius: 6, x: 0, y: 3)
             }
             
-            Button(action: onPlanTomorrow) {
+            // FIXED: Plan Tomorrow Button - styled like the alternative solution
+            Button(action: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    isPlanTomorrowPressed = true
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPlanTomorrowPressed = false
+                    }
+                    HapticManager.shared.impact()
+                    onPlanTomorrow()
+                }
+            }) {
                 HStack(spacing: 6) {
                     Image(systemName: "calendar.badge.plus")
                         .font(.system(size: 14, weight: .medium))
                     Text("Plan Tomorrow")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundStyle(Color.anchorBlue)
+                .foregroundStyle(.white) // FIXED: Changed to white text
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(
-                    Color.anchorBlue.opacity(0.15)
+                    // FIXED: Changed to gradient like the alternative solution
+                    LinearGradient(
+                        colors: [Color.anchorBlue, Color.anchorPurple],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
                 )
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.2), lineWidth: 1) // FIXED: Added subtle border
                 )
+                .scaleEffect(isPlanTomorrowPressed ? 0.97 : 1) // FIXED: Added press animation
+                .shadow(color: Color.anchorBlue.opacity(0.3), radius: 6, x: 0, y: 3) // FIXED: Added shadow
             }
         }
     }

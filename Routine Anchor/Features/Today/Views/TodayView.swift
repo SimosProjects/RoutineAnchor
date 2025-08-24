@@ -133,6 +133,9 @@ struct TodayView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showQuickStats)) { _ in
             showingQuickStats = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .showDailySummary)) { _ in
+            showingSummary = true
+        }
         .onReceive(NotificationCenter.default.publisher(for: .timeBlockCompleted)) { notification in
             handleTimeBlockCompletion(notification)
         }

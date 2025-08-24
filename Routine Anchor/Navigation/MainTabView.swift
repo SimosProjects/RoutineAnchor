@@ -134,18 +134,6 @@ struct MainTabView: View {
             
             // Floating action button
             floatingActionButton
-            
-            // Premium upgrade overlay
-            if showingPremiumUpgrade {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        showingPremiumUpgrade = false
-                    }
-                
-                PremiumUpgradeView(premiumManager: safePremiumManager)
-                    .transition(.scale.combined(with: .opacity))
-            }
         }
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showingPremiumUpgrade)
         .sheet(isPresented: $showingAddTimeBlock) {
@@ -168,6 +156,11 @@ struct MainTabView: View {
                     authManager.dismissEmailCapture()
                 }
             }
+        }
+        .sheet(isPresented: $showingPremiumUpgrade) {
+            PremiumUpgradeView(premiumManager: safePremiumManager)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .onAppear {
             // Only check for email capture once per session and after a delay
@@ -523,6 +516,11 @@ struct BasicAnalyticsView: View {
         }
         .navigationTitle("Analytics")
         .navigationBarTitleDisplayMode(.large)
+        .onAppear {
+            // Set navigation title color to white with opacity
+            UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white.withAlphaComponent(0.8)]
+            UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.white.withAlphaComponent(0.8)]
+        }
         .task {
             await loadBasicAnalytics()
         }
