@@ -164,7 +164,7 @@ struct AboutView: View {
             }
         }
         .padding(20)
-        .glassMorphism()
+        .themedGlassMorphism()
     }
     
     // MARK: - Developer Section
@@ -295,7 +295,7 @@ struct InfoCard: View {
                 .lineSpacing(2)
         }
         .padding(20)
-        .glassMorphism()
+        .themedGlassMorphism()
         .opacity(isVisible ? 1 : 0)
         .offset(y: isVisible ? 0 : 20)
         .onAppear {

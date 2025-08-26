@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MigrationSettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.themeManager) private var themeManager
     
     // MARK: - State
     @State private var backupEnabled: Bool = true
@@ -16,6 +17,19 @@ struct MigrationSettingsView: View {
     @State private var showingExportSheet = false
     @State private var exportedData: String?
     private let migrationService = MigrationService.shared
+    
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+    
+    private var themeTertiaryText: Color {
+        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+    }
     
     var body: some View {
         NavigationStack {
@@ -50,10 +64,9 @@ struct MigrationSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    ThemedButton(title: "Done", style: .secondary) {
                         dismiss()
                     }
-                    .foregroundColor(.anchorBlue)
                 }
             }
         }
@@ -62,6 +75,7 @@ struct MigrationSettingsView: View {
         }
         .sheet(isPresented: $showingBackupInfo) {
             BackupInfoSheet()
+                .environment(\.themeManager, themeManager)
         }
         .sheet(isPresented: $showingExportSheet) {
             if let data = exportedData {
@@ -73,166 +87,151 @@ struct MigrationSettingsView: View {
     // MARK: - Components
     
     private var headerCard: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "externaldrive.badge.checkmark")
-                .font(.system(size: 50))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+        ThemedCard {
+            VStack(spacing: 12) {
+                Image(systemName: "externaldrive.badge.checkmark")
+                    .font(.system(size: 50))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
-            
-            Text("Data Protection")
-                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundColor(.white)
-            
-            Text("Your data is automatically protected during app updates")
-                .font(.system(size: 14))
-                .foregroundColor(.white.opacity(0.7))
-                .multilineTextAlignment(.center)
+                
+                Text("Data Protection")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(themePrimaryText)
+                
+                Text("Your data is automatically protected during app updates")
+                    .font(.system(size: 14))
+                    .foregroundStyle(themeSecondaryText)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity)
-        .padding(24)
-        .glassMorphism()
     }
     
     private var migrationInfoCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label("Schema Version", systemImage: "doc.badge.gearshape")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
-            
-            HStack {
-                Text("Current Version:")
-                    .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.7))
+        ThemedCard {
+            VStack(alignment: .leading, spacing: 16) {
+                Label("Schema Version", systemImage: "doc.badge.gearshape")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(themePrimaryText)
                 
-                Spacer()
+                HStack {
+                    Text("Current Version:")
+                        .font(.system(size: 14))
+                        .foregroundStyle(themeSecondaryText)
+                    
+                    Spacer()
+                    
+                    Text(migrationService.currentSchemaVersion.rawValue)
+                        .font(.system(size: 14, weight: .medium, design: .monospaced))
+                        .foregroundStyle(Color.anchorGreen)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(Color.anchorGreen.opacity(0.2))
+                        .cornerRadius(6)
+                }
                 
-                Text(migrationService.currentSchemaVersion.rawValue)
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundColor(.anchorGreen)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 4)
-                    .background(Color.anchorGreen.opacity(0.2))
-                    .cornerRadius(6)
+                Text("App updates may include data structure improvements that require migration.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(themeTertiaryText)
             }
-            
-            Text("App updates may include data structure improvements that require migration.")
-                .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.5))
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .glassMorphism()
     }
     
     private var backupSettingsCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label("Backup Settings", systemImage: "arrow.triangle.2.circlepath")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
-            
-            Toggle(isOn: $backupEnabled) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Auto-Backup Before Migration")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white)
-                    
-                    Text("Creates a safety backup before updating data")
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.5))
+        ThemedCard {
+            VStack(alignment: .leading, spacing: 16) {
+                Label("Backup Settings", systemImage: "arrow.triangle.2.circlepath")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(themePrimaryText)
+                
+                Toggle(isOn: $backupEnabled) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Auto-Backup Before Migration")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(themePrimaryText)
+                        
+                        Text("Creates a safety backup before updating data")
+                            .font(.system(size: 12))
+                            .foregroundStyle(themeTertiaryText)
+                    }
+                }
+                .tint(Color.anchorBlue)
+                .onChange(of: backupEnabled) { _, newValue in
+                    migrationService.setBackupEnabled(newValue)
+                    HapticManager.shared.lightImpact()
+                }
+                
+                Button(action: {
+                    showingBackupInfo = true
+                }) {
+                    HStack {
+                        Image(systemName: "info.circle")
+                        Text("Learn More About Backups")
+                    }
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.anchorBlue)
                 }
             }
-            .tint(Color.anchorBlue)
-            .onChange(of: backupEnabled) { _, newValue in
-                migrationService.setBackupEnabled(newValue)
-                HapticManager.shared.lightImpact()
-            }
-            
-            Button(action: {
-                showingBackupInfo = true
-            }) {
-                HStack {
-                    Image(systemName: "info.circle")
-                    Text("Learn More About Backups")
-                }
-                .font(.system(size: 12))
-                .foregroundColor(.anchorBlue)
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .glassMorphism()
     }
     
     private var manualBackupCard: some View {
-        VStack(spacing: 16) {
-            Label("Manual Backup", systemImage: "square.and.arrow.up")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
-            
-            Text("Export your data anytime for safekeeping")
-                .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.7))
-            
-            Button(action: exportData) {
-                HStack {
-                    Image(systemName: "arrow.down.doc.fill")
-                    Text("Export All Data")
+        ThemedCard {
+            VStack(spacing: 16) {
+                Label("Manual Backup", systemImage: "square.and.arrow.up")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(themePrimaryText)
+                
+                Text("Export your data anytime for safekeeping")
+                    .font(.system(size: 12))
+                    .foregroundStyle(themeSecondaryText)
+                
+                ThemedButton(title: "Export All Data", style: .primary) {
+                    exportData()
                 }
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(
-                    LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .cornerRadius(12)
             }
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity)
-        .padding(20)
-        .glassMorphism()
     }
     
     private func migrationHistoryCard(lastMigration: Date) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label("Migration History", systemImage: "clock.arrow.circlepath")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
-            
-            HStack {
-                Text("Last Migration:")
-                    .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.7))
+        ThemedCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Label("Migration History", systemImage: "clock.arrow.circlepath")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(themePrimaryText)
                 
-                Spacer()
+                HStack {
+                    Text("Last Migration:")
+                        .font(.system(size: 14))
+                        .foregroundStyle(themeSecondaryText)
+                    
+                    Spacer()
+                    
+                    Text(lastMigration, style: .date)
+                        .font(.system(size: 14))
+                        .foregroundStyle(themePrimaryText)
+                }
                 
-                Text(lastMigration, style: .date)
-                    .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.9))
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.anchorGreen)
+                        .font(.system(size: 12))
+                    
+                    Text("All migrations completed successfully")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.anchorGreen)
+                }
             }
-            
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.anchorGreen)
-                    .font(.system(size: 12))
-                
-                Text("All migrations completed successfully")
-                    .font(.system(size: 12))
-                    .foregroundColor(.anchorGreen)
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .glassMorphism()
     }
     
     // MARK: - Actions
@@ -264,6 +263,16 @@ struct MigrationSettingsView: View {
 // MARK: - Backup Info Sheet
 struct BackupInfoSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.themeManager) private var themeManager
+    
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
     
     var body: some View {
         NavigationStack {
@@ -287,7 +296,7 @@ struct BackupInfoSheet: View {
                             
                             Text("About Data Backups")
                                 .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
+                                .foregroundStyle(themePrimaryText)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.bottom)
@@ -330,36 +339,35 @@ struct BackupInfoSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    ThemedButton(title: "Done", style: .secondary) {
                         dismiss()
                     }
-                    .foregroundColor(.anchorBlue)
                 }
             }
         }
     }
     
     private func infoSection(title: String, icon: String, description: String) -> some View {
-        HStack(alignment: .top, spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundColor(.anchorBlue)
-                .frame(width: 30)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text(title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
+        ThemedCard {
+            HStack(alignment: .top, spacing: 16) {
+                Image(systemName: icon)
+                    .font(.system(size: 24))
+                    .foregroundStyle(Color.anchorBlue)
+                    .frame(width: 30)
                 
-                Text(description)
-                    .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.7))
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(themePrimaryText)
+                    
+                    Text(description)
+                        .font(.system(size: 14))
+                        .foregroundStyle(themeSecondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .glassMorphism()
     }
 }
 

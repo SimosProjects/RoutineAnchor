@@ -10,11 +10,73 @@ import UserNotifications
 // MARK: - Navigation Button
 struct NavigationButton: View {
     let icon: String
-    let gradient: [Color]
+    let style: NavigationButtonStyle
     let action: () -> Void
     
     @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
+    
+    enum NavigationButtonStyle {
+        case primary
+        case secondary
+        case accent
+        case success
+    }
+    
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeGradient: LinearGradient {
+        guard let theme = themeManager?.currentTheme else {
+            return Theme.defaultTheme.backgroundGradient
+        }
+        
+        switch style {
+        case .primary:
+            return LinearGradient(
+                colors: [theme.primaryColor, theme.secondaryColor],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .secondary:
+            return LinearGradient(
+                colors: [theme.colorScheme.surfacePrimary.color, theme.colorScheme.surfaceSecondary.color],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .accent:
+            return LinearGradient(
+                colors: [theme.accentColor, theme.primaryColor],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .success:
+            return LinearGradient(
+                colors: [Color.anchorGreen, Color.anchorTeal],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+    }
+    
+    private var shadowColor: Color {
+        guard let theme = themeManager?.currentTheme else {
+            return Theme.defaultTheme.primaryColor.opacity(0.3)
+        }
+        
+        switch style {
+        case .primary:
+            return theme.primaryColor.opacity(0.3)
+        case .secondary:
+            return theme.colorScheme.surfacePrimary.color.opacity(0.3)
+        case .accent:
+            return theme.accentColor.opacity(0.3)
+        case .success:
+            return Color.anchorGreen.opacity(0.3)
+        }
+    }
     
     var body: some View {
         Button(action: {
@@ -31,18 +93,48 @@ struct NavigationButton: View {
         }) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themePrimaryText)
                 .frame(width: 40, height: 40)
-                .background(
-                    LinearGradient(
-                        colors: gradient,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .background(themeGradient)
                 .cornerRadius(12)
-                .shadow(color: gradient.first?.opacity(0.3) ?? .clear, radius: 8, x: 0, y: 4)
+                .shadow(color: shadowColor, radius: 8, x: 0, y: 4)
                 .scaleEffect(isPressed ? 0.95 : 1)
         }
+    }
+}
+
+// MARK: - Convenience Initializers
+extension NavigationButton {
+    // Primary navigation button (default)
+    init(
+        icon: String,
+        action: @escaping () -> Void
+    ) {
+        self.icon = icon
+        self.style = .primary
+        self.action = action
+    }
+    
+    // Secondary navigation button
+    static func secondary(
+        icon: String,
+        action: @escaping () -> Void
+    ) -> NavigationButton {
+        NavigationButton(icon: icon, style: .secondary, action: action)
+    }
+    
+    // Accent navigation button
+    static func accent(
+        icon: String,
+        action: @escaping () -> Void
+    ) -> NavigationButton {
+        NavigationButton(icon: icon, style: .accent, action: action)
+    }
+    
+    static func success(
+        icon: String,
+        action: @escaping () -> Void
+    ) -> NavigationButton {
+        NavigationButton(icon: icon, style: .success, action: action)
     }
 }

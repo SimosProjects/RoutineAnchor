@@ -22,6 +22,23 @@ struct DailySummaryView: View {
     @State private var selectedRating: Int = 0
     @State private var dayNotes = ""
     
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+    
+    private var themeTertiaryText: Color {
+        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+    }
+    
+    private var cardShadowColor: Color {
+        themeManager?.currentTheme.colorScheme.backgroundPrimary.color.opacity(0.1) ?? Theme.defaultTheme.colorScheme.backgroundPrimary.color.opacity(0.1)
+    }
+    
     init(modelContext: ModelContext, loadImmediately: Bool = true) {
         let dataManager = DataManager(modelContext: modelContext)
         let viewModel = DailySummaryViewModel(dataManager: dataManager, loadImmediately: loadImmediately)
@@ -88,23 +105,24 @@ struct DailySummaryView: View {
                 PremiumUpgradeView(premiumManager: premiumManager)
             } else {
                 // Fallback view when premium manager is unavailable
-                VStack(spacing: 20) {
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 48))
-                        .foregroundStyle(Color.anchorWarning)
-                    
-                    Text("Premium Features")
-                        .font(.title.bold())
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                    
-                    Text("Premium features are temporarily unavailable. Please try again later.")
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
-                    
-                    Button("Close") {
-                        showingPremiumUpgrade = false
+                ThemedCard {
+                    VStack(spacing: 20) {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 48))
+                            .foregroundStyle(Color.anchorWarning)
+                        
+                        Text("Premium Features")
+                            .font(.title.bold())
+                            .foregroundStyle(themePrimaryText)
+                        
+                        Text("Premium features are temporarily unavailable. Please try again later.")
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(themeSecondaryText)
+                        
+                        ThemedButton(title: "Close", style: .secondary) {
+                            showingPremiumUpgrade = false
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
                 }
                 .padding()
                 .presentationDetents([.medium])
@@ -156,16 +174,16 @@ struct DailySummaryView: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.8))
+                        .foregroundStyle(themeSecondaryText)
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
                                 .fill(.ultraThinMaterial)
                                 .background(
-                                    Circle().fill(Color.white.opacity(0.1))
+                                    Circle().fill(themeTertiaryText.opacity(0.1))
                                 )
                         )
-                        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                        .shadow(color: cardShadowColor, radius: 8, x: 0, y: 4)
                 }
                 
                 Spacer()
@@ -232,7 +250,7 @@ struct DailySummaryView: View {
                     if let progress = viewModel.safeDailyProgress {
                         Text(progress.formattedDate)
                             .font(.system(size: 18, weight: .medium, design: .rounded))
-                            .foregroundStyle(Color.white.opacity(0.7))
+                            .foregroundStyle(themeSecondaryText)
                     }
                 }
             }
@@ -243,95 +261,94 @@ struct DailySummaryView: View {
     
     // MARK: - Progress Section (FIXED)
     private func progressCircleSection(_ viewModel: DailySummaryViewModel) -> some View {
-        VStack(spacing: 0) { // Removed spacing to better control layout
-            // Progress Circle Container
-            VStack(spacing: 16) { // Reduced from 24 to 16
-                ZStack {
-                    // Background circle
-                    Circle()
-                        .stroke(Color.white.opacity(0.1), lineWidth: 16)
-                        .frame(width: 160, height: 160)
-                    
-                    // Use safe progress access
-                    if let progress = viewModel.safeDailyProgress {
+        ThemedCard(cornerRadius: 24) {
+            VStack(spacing: 0) {
+                // Progress Circle Container
+                VStack(spacing: 16) {
+                    ZStack {
+                        // Background circle
                         Circle()
-                            .trim(from: 0, to: CGFloat(progress.completionPercentage))
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        progress.performanceLevel.color,
-                                        progress.performanceLevel.color.opacity(0.6)
-                                    ],
-                                    startPoint: .topTrailing,
-                                    endPoint: .bottomLeading
-                                ),
-                                style: StrokeStyle(lineWidth: 16, lineCap: .round)
-                            )
+                            .stroke(themeTertiaryText.opacity(0.2), lineWidth: 16)
                             .frame(width: 160, height: 160)
-                            .rotationEffect(.degrees(-90))
-                            .animation(.spring(response: 1.2, dampingFraction: 0.8), value: progress.completionPercentage)
                         
-                        // Center content
-                        VStack(spacing: 8) {
-                            Text(progress.performanceLevel.emoji)
-                                .font(.system(size: 36))
+                        // Use safe progress access
+                        if let progress = viewModel.safeDailyProgress {
+                            Circle()
+                                .trim(from: 0, to: CGFloat(progress.completionPercentage))
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [
+                                            progress.performanceLevel.color,
+                                            progress.performanceLevel.color.opacity(0.6)
+                                        ],
+                                        startPoint: .topTrailing,
+                                        endPoint: .bottomLeading
+                                    ),
+                                    style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                                )
+                                .frame(width: 160, height: 160)
+                                .rotationEffect(.degrees(-90))
+                                .animation(.spring(response: 1.2, dampingFraction: 0.8), value: progress.completionPercentage)
                             
-                            Text(progress.formattedCompletionPercentage)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundStyle(progress.performanceLevel.color)
-                            
-                            Text("Complete")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(Color.white.opacity(0.6))
-                                .textCase(.uppercase)
-                                .tracking(1)
-                        }
-                    } else {
-                        // Safe fallback when no progress available
-                        VStack(spacing: 8) {
-                            Text("📊")
-                                .font(.system(size: 36))
-                            
-                            Text("0%")
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color.white.opacity(0.6))
-                            
-                            Text("Complete")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(Color.white.opacity(0.6))
-                                .textCase(.uppercase)
-                                .tracking(1)
+                            // Center content
+                            VStack(spacing: 8) {
+                                Text(progress.performanceLevel.emoji)
+                                    .font(.system(size: 36))
+                                
+                                Text(progress.formattedCompletionPercentage)
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(progress.performanceLevel.color)
+                                
+                                Text("Complete")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(themeTertiaryText)
+                                    .textCase(.uppercase)
+                                    .tracking(1)
+                            }
+                        } else {
+                            // Safe fallback when no progress available
+                            VStack(spacing: 8) {
+                                Text("📊")
+                                    .font(.system(size: 36))
+                                
+                                Text("0%")
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(themeTertiaryText)
+                                
+                                Text("Complete")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(themeTertiaryText)
+                                    .textCase(.uppercase)
+                                    .tracking(1)
+                            }
                         }
                     }
                 }
-            }
-            
-            // Motivational message in separate container to prevent overlap
-            VStack(spacing: 0) {
-                if let progress = viewModel.safeDailyProgress {
-                    Text(progress.motivationalMessage)
-                        .font(.system(size: 16, weight: .medium, design: .rounded)) // Reduced from 18 to 16
-                        .foregroundStyle(Color.white.opacity(0.8))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3) // Reduced from 4 to 3
-                        .padding(.horizontal, 24) // Increased horizontal padding
-                        .padding(.top, 16) // Add controlled top spacing
-                        .lineLimit(3) // Limit to 3 lines to prevent excessive height
-                } else {
-                    Text("Ready to start your day?")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color.white.opacity(0.8))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 16)
+                
+                // Motivational message in separate container to prevent overlap
+                VStack(spacing: 0) {
+                    if let progress = viewModel.safeDailyProgress {
+                        Text(progress.motivationalMessage)
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(themeSecondaryText)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(3)
+                            .padding(.horizontal, 24)
+                            .padding(.top, 16)
+                            .lineLimit(3)
+                    } else {
+                        Text("Ready to start your day?")
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(themeSecondaryText)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(3)
+                            .padding(.horizontal, 24)
+                            .padding(.top, 16)
+                    }
                 }
             }
         }
-        .padding(.horizontal, 20) // Reduced from 24 to 20
-        .padding(.vertical, 20) // Reduced from 24 to 20
-        .glassMorphism(cornerRadius: 24)
-        .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
+        .shadow(color: cardShadowColor, radius: 20, x: 0, y: 10)
     }
     
     // MARK: - Statistics Section
@@ -392,148 +409,148 @@ struct DailySummaryView: View {
     
     // MARK: - Task Breakdown Section
     private func taskBreakdownSection(_ viewModel: DailySummaryViewModel) -> some View {
-        VStack(spacing: 16) {
-            HStack {
-                Image(systemName: "list.bullet.circle")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.anchorPurple)
+        ThemedCard(cornerRadius: 20) {
+            VStack(spacing: 16) {
+                HStack {
+                    Image(systemName: "list.bullet.circle")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(Color.anchorPurple)
+                    
+                    Text("Task Breakdown")
+                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        .foregroundStyle(themePrimaryText)
+                    
+                    Spacer()
+                }
                 
-                Text("Task Breakdown")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: 8) {
-                ForEach(viewModel.sortedTimeBlocks) { timeBlock in
-                    TaskBreakdownRow(timeBlock: timeBlock)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .move(edge: .leading).combined(with: .opacity)
-                        ))
+                VStack(spacing: 8) {
+                    ForEach(viewModel.sortedTimeBlocks) { timeBlock in
+                        TaskBreakdownRow(timeBlock: timeBlock)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)
+                            ))
+                    }
                 }
             }
         }
-        .padding(20)
-        .themedGlassMorphism(cornerRadius: 20)
-        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .shadow(color: cardShadowColor, radius: 10, x: 0, y: 5)
     }
     
     // MARK: - Insights Section
     private func premiumGatedInsightsSection(_ viewModel: DailySummaryViewModel) -> some View {
-        VStack(spacing: 16) {
-            HStack {
-                Image(systemName: "lightbulb.circle")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.anchorWarning)
-                
-                Text("Insights & Suggestions")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                
-                Spacer()
-                
-                // Show premium badge if user has premium
-                if premiumManager?.canAccessAdvancedAnalytics == true {
-                    PremiumBadge()
-                }
-            }
-            
-            if premiumManager?.canAccessAdvancedAnalytics == true {
-                // FULL INSIGHTS FOR PREMIUM USERS
-                VStack(spacing: 12) {
-                    ForEach(Array(viewModel.getPersonalizedInsights().enumerated()), id: \.offset) { index, insight in
-                        InsightRow(text: insight, delay: Double(index) * 0.1)
-                    }
+        ThemedCard(cornerRadius: 20) {
+            VStack(spacing: 16) {
+                HStack {
+                    Image(systemName: "lightbulb.circle")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(Color.anchorWarning)
                     
-                    // Show improvement suggestions for premium users
-                    let suggestions = viewModel.getImprovementSuggestions()
-                    if !suggestions.isEmpty {
-                        Divider()
-                            .background(.white.opacity(0.2))
-                            .padding(.vertical, 8)
+                    Text("Insights & Suggestions")
+                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        .foregroundStyle(themePrimaryText)
+                    
+                    Spacer()
+                    
+                    // Show premium badge if user has premium
+                    if premiumManager?.canAccessAdvancedAnalytics == true {
+                        PremiumBadge()
+                    }
+                }
+                
+                if premiumManager?.canAccessAdvancedAnalytics == true {
+                    // FULL INSIGHTS FOR PREMIUM USERS
+                    VStack(spacing: 12) {
+                        ForEach(Array(viewModel.getPersonalizedInsights().enumerated()), id: \.offset) { index, insight in
+                            InsightRow(text: insight, delay: Double(index) * 0.1)
+                        }
                         
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Image(systemName: "brain.head.profile")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(Color.anchorTeal)
-                                
-                                Text("AI Suggestions")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                            }
+                        // Show improvement suggestions for premium users
+                        let suggestions = viewModel.getImprovementSuggestions()
+                        if !suggestions.isEmpty {
+                            Divider()
+                                .background(themeTertiaryText.opacity(0.2))
+                                .padding(.vertical, 8)
                             
-                            ForEach(Array(suggestions.enumerated()), id: \.offset) { index, suggestion in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Text("•")
-                                        .font(.system(size: 14, weight: .bold))
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "brain.head.profile")
+                                        .font(.system(size: 14, weight: .medium))
                                         .foregroundStyle(Color.anchorTeal)
                                     
-                                    Text(suggestion)
-                                        .font(.system(size: 14))
-                                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
-                                        .lineLimit(nil)
+                                    Text("AI Suggestions")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundStyle(themePrimaryText)
+                                }
+                                
+                                ForEach(Array(suggestions.enumerated()), id: \.offset) { index, suggestion in
+                                    HStack(alignment: .top, spacing: 8) {
+                                        Text("•")
+                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundStyle(Color.anchorTeal)
+                                        
+                                        Text(suggestion)
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(themeSecondaryText)
+                                            .lineLimit(nil)
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            } else {
-                // LIMITED INSIGHTS FOR FREE USERS
-                VStack(spacing: 16) {
-                    // Show one basic insight
-                    let basicInsight = generateBasicInsight(viewModel)
-                    InsightRow(text: basicInsight, delay: 0.1)
-                    
-                    // Premium upgrade prompt
-                    PremiumMiniPrompt(
-                        title: "Unlock Advanced Insights",
-                        subtitle: "Get AI-powered recommendations and detailed analysis"
-                    ) {
-                        showingPremiumUpgrade = true
-                        HapticManager.shared.anchorSelection()
-                    }
-                    
-                    // Show what premium users get
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "crown.fill")
-                                .font(.system(size: 12))
-                                .foregroundStyle(Color.anchorWarning)
-                            
-                            Text("Premium insights include:")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                } else {
+                    // LIMITED INSIGHTS FOR FREE USERS
+                    VStack(spacing: 16) {
+                        // Show one basic insight
+                        let basicInsight = generateBasicInsight(viewModel)
+                        InsightRow(text: basicInsight, delay: 0.1)
+                        
+                        // Premium upgrade prompt
+                        PremiumMiniPrompt(
+                            title: "Unlock Advanced Insights",
+                            subtitle: "Get AI-powered recommendations and detailed analysis"
+                        ) {
+                            showingPremiumUpgrade = true
+                            HapticManager.shared.anchorSelection()
                         }
                         
-                        let features = [
-                            "🎯 Personalized productivity patterns",
-                            "⏰ Time-of-day performance analysis",
-                            "📊 Category-based recommendations",
-                            "📈 Weekly progress trends",
-                            "🧠 AI-powered improvement suggestions"
-                        ]
-                        
-                        ForEach(features, id: \.self) { feature in
-                            HStack(spacing: 8) {
-                                Text(feature)
+                        // Show what premium users get
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "crown.fill")
                                     .font(.system(size: 12))
-                                    .foregroundStyle(.white.opacity(0.6))
+                                    .foregroundStyle(Color.anchorWarning)
                                 
-                                Spacer()
+                                Text("Premium insights include:")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(themeSecondaryText)
                             }
-                            .padding(.leading, 8)
+                            
+                            let features = [
+                                "🎯 Personalized productivity patterns",
+                                "⏰ Time-of-day performance analysis",
+                                "📊 Category-based recommendations",
+                                "📈 Weekly progress trends",
+                                "🧠 AI-powered improvement suggestions"
+                            ]
+                            
+                            ForEach(features, id: \.self) { feature in
+                                HStack(spacing: 8) {
+                                    Text(feature)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(themeTertiaryText)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.leading, 8)
+                            }
                         }
+                        .padding(.top, 8)
                     }
-                    .padding(.top, 8)
                 }
             }
         }
-        .padding(20)
-        .themedGlassMorphism(cornerRadius: 20)
-        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .shadow(color: cardShadowColor, radius: 10, x: 0, y: 5)
     }
     
     private func generateBasicInsight(_ viewModel: DailySummaryViewModel) -> String {
@@ -558,77 +575,77 @@ struct DailySummaryView: View {
     
     // MARK: - Rating Section
     private func ratingSection(_ viewModel: DailySummaryViewModel) -> some View {
-        VStack(spacing: 20) {
-            HStack {
-                Image(systemName: "star.circle")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.anchorWarning)
+        ThemedCard(cornerRadius: 20) {
+            VStack(spacing: 20) {
+                HStack {
+                    Image(systemName: "star.circle")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(Color.anchorWarning)
+                    
+                    Text("Rate Your Day")
+                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        .foregroundStyle(themePrimaryText)
+                    
+                    Spacer()
+                }
                 
-                Text("Rate Your Day")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                
-                Spacer()
-            }
-            
-            // Rating stars
-            HStack(spacing: 12) {
-                ForEach(1...5, id: \.self) { rating in
-                    Button(action: {
-                        selectedRating = rating
-                        HapticManager.shared.anchorSelection()
-                    }) {
-                        Image(systemName: selectedRating >= rating ? "star.fill" : "star")
-                            .font(.system(size: 32, weight: .medium))
-                            .foregroundStyle(
-                                selectedRating >= rating ?
-                                LinearGradient(
-                                    colors: [Color.anchorWarning, Color.anchorWarning.opacity(0.8)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                ) :
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.3), Color.white.opacity(0.3)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
+                // Rating stars
+                HStack(spacing: 12) {
+                    ForEach(1...5, id: \.self) { rating in
+                        Button(action: {
+                            selectedRating = rating
+                            HapticManager.shared.anchorSelection()
+                        }) {
+                            Image(systemName: selectedRating >= rating ? "star.fill" : "star")
+                                .font(.system(size: 32, weight: .medium))
+                                .foregroundStyle(
+                                    selectedRating >= rating ?
+                                    LinearGradient(
+                                        colors: [Color.anchorWarning, Color.anchorWarning.opacity(0.8)],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ) :
+                                    LinearGradient(
+                                        colors: [themeTertiaryText, themeTertiaryText],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
                                 )
-                            )
-                            .scaleEffect(selectedRating == rating ? 1.2 : 1.0)
-                            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedRating)
+                                .scaleEffect(selectedRating == rating ? 1.2 : 1.0)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedRating)
+                        }
                     }
                 }
-            }
-            
-            // Notes field
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    Image(systemName: "note.text")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.anchorTeal)
-                    
-                    Text("Reflection")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.8))
-                }
                 
-                TextField("How did your day go?", text: $dayNotes, axis: .vertical)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                    .lineLimit(3...6)
-                    .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white.opacity(0.1))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
+                // Notes field
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "note.text")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Color.anchorTeal)
+                        
+                        Text("Reflection")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(themeSecondaryText)
+                    }
+                    
+                    TextField("How did your day go?", text: $dayNotes, axis: .vertical)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(themePrimaryText)
+                        .lineLimit(3...6)
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(themeTertiaryText.opacity(0.1))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(themeTertiaryText.opacity(0.2), lineWidth: 1)
+                        )
+                }
             }
         }
-        .padding(20)
-        .themedGlassMorphism(cornerRadius: 20)
-        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .shadow(color: cardShadowColor, radius: 10, x: 0, y: 5)
         .onAppear {
             if let progress = viewModel.safeDailyProgress {
                 selectedRating = progress.dayRating ?? 0
@@ -647,30 +664,11 @@ struct DailySummaryView: View {
                     .multilineTextAlignment(.center)
             }
             
-            Button(action: planTomorrow) {
-                HStack(spacing: 10) {
-                    Image(systemName: "calendar.badge.plus")
-                        .font(.system(size: 18, weight: .medium))
-                    
-                    Text(viewModel.isDayComplete ? "Plan Tomorrow" : "Back to Schedule")
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                }
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(
-                    LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .cornerRadius(16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                )
-                .shadow(color: Color.anchorBlue.opacity(0.3), radius: 10, x: 0, y: 5)
+            ThemedButton(
+                title: viewModel.isDayComplete ? "Plan Tomorrow" : "Back to Schedule",
+                style: .primary
+            ) {
+                planTomorrow()
             }
         }
     }
@@ -713,23 +711,20 @@ struct DailySummaryView: View {
             VStack(spacing: 16) {
                 Text("No Data Yet")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themePrimaryText)
                 
                 Text("Complete some time blocks to see your daily summary")
                     .font(.system(size: 18, weight: .regular, design: .rounded))
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .foregroundStyle(themeSecondaryText)
                     .multilineTextAlignment(.center)
             }
             
             Spacer()
             
-            DesignedButton(
-                title: "Start Your Day",
-                action: {
-                    // Navigate to Today tab
-                    NotificationCenter.default.post(name: .navigateToToday, object: nil)
-                }
-            )
+            ThemedButton(title: "Start Your Day", style: .primary) {
+                // Navigate to Today tab
+                NotificationCenter.default.post(name: .navigateToToday, object: nil)
+            }
         }
         .padding(.horizontal, 40)
     }
@@ -757,7 +752,7 @@ struct DailySummaryView: View {
             
             Text("Loading your summary...")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.7))
+                .foregroundStyle(themeSecondaryText)
             
             Spacer()
         }
@@ -808,7 +803,12 @@ struct InsightRow: View {
     let text: String
     let delay: Double
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -819,7 +819,7 @@ struct InsightRow: View {
             
             Text(text)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.white.opacity(0.8))
+                .foregroundStyle(themeSecondaryText)
                 .lineSpacing(2)
             
             Spacer()

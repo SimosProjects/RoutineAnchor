@@ -176,7 +176,7 @@ struct PrivacyPolicyView: View {
             .padding(.horizontal, 20)
         }
         .padding(20)
-        .glassMorphism()
+        .themedGlassMorphism()
     }
     
     // MARK: - Actions

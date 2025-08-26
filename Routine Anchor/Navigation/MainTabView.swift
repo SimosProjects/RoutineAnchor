@@ -33,6 +33,19 @@ struct MainTabView: View {
         premiumManager ?? PremiumManager()
     }
     
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeAccent: Color {
+        themeManager?.currentTheme.accentColor ?? Theme.defaultTheme.accentColor
+    }
+    
+    private var themeBackground: Color {
+        themeManager?.currentTheme.colorScheme.backgroundPrimary.color ?? Theme.defaultTheme.colorScheme.backgroundPrimary.color
+    }
+    
     var body: some View {
         ZStack {
             ThemedAnimatedBackground()
@@ -123,7 +136,7 @@ struct MainTabView: View {
                 }
                 .tag(Tab.settings)
             }
-            .tint(Color.anchorBlue)
+            .tint(themeAccent)
             .background(Color.clear)
             .onAppear {
                 setupTabBarAppearance()
@@ -391,21 +404,24 @@ struct MainTabView: View {
     private func setupTabBar() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor.black.withAlphaComponent(0.95)
+        appearance.backgroundColor = UIColor(themeBackground).withAlphaComponent(0.95)
         appearance.backgroundEffect = UIBlurEffect(style: .systemMaterialDark)
         
         appearance.shadowImage = UIImage()
         appearance.shadowColor = .clear
         
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor.white.withAlphaComponent(0.5)
+        let normalIconColor = themePrimaryText.opacity(0.5)
+        let selectedIconColor = themeAccent
+        
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(normalIconColor)
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-            .foregroundColor: UIColor.white.withAlphaComponent(0.5),
+            .foregroundColor: UIColor(normalIconColor),
             .font: UIFont.systemFont(ofSize: 11, weight: .medium)
         ]
         
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.anchorBlue)
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(selectedIconColor)
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-            .foregroundColor: UIColor(Color.anchorBlue),
+            .foregroundColor: UIColor(selectedIconColor),
             .font: UIFont.systemFont(ofSize: 11, weight: .semibold)
         ]
         
@@ -508,6 +524,19 @@ struct BasicAnalyticsView: View {
     
     let onUpgrade: () -> Void
     
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+    
+    private var themeTertiaryText: Color {
+        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+    }
+    
     var body: some View {
         ZStack {
             ThemedAnimatedBackground()
@@ -527,13 +556,21 @@ struct BasicAnalyticsView: View {
         .navigationTitle("Analytics")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
-            // Set navigation title color to white with opacity
-            UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white.withAlphaComponent(0.8)]
-            UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.white.withAlphaComponent(0.8)]
+            setupNavigationBarAppearance()
         }
         .task {
             await loadBasicAnalytics()
         }
+    }
+    
+    private func setupNavigationBarAppearance() {
+        // Set navigation title color using theme
+        UINavigationBar.appearance().largeTitleTextAttributes = [
+            .foregroundColor: UIColor(themePrimaryText.opacity(0.8))
+        ]
+        UINavigationBar.appearance().titleTextAttributes = [
+            .foregroundColor: UIColor(themePrimaryText.opacity(0.8))
+        ]
     }
     
     private var headerSection: some View {
@@ -541,141 +578,135 @@ struct BasicAnalyticsView: View {
             HStack {
                 Text("Your Progress")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themePrimaryText)
                 
                 Spacer()
                 
-                Button("Upgrade") {
+                ThemedButton(title: "Upgrade", style: .accent) {
                     onUpgrade()
                     HapticManager.shared.anchorSelection()
                 }
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.anchorBlue)
-                .cornerRadius(8)
             }
             
             Text("Unlock advanced insights and detailed analytics with Premium")
                 .font(.system(size: 16))
-                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                .foregroundStyle(themeSecondaryText)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
     
     private var basicStatsSection: some View {
-        VStack(spacing: 16) {
-            Text("Today's Overview")
-                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            if let progress = todaysProgress {
-                HStack(spacing: 16) {
-                    StatCard(
-                        title: "Completed",
-                        value: "\(progress.completedBlocks)",
-                        subtitle: "blocks",
-                        color: Color.anchorGreen,
-                        icon: "checkmark.circle.fill"
-                    )
-                    
-                    StatCard(
-                        title: "Progress",
-                        value: "\(Int(progress.completionPercentage * 100))%",
-                        subtitle: "today",
-                        color: Color.anchorBlue,
-                        icon: "chart.pie.fill"
-                    )
-                }
+        ThemedCard(cornerRadius: 20) {
+            VStack(spacing: 16) {
+                Text("Today's Overview")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(themePrimaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
-                if let weeklyStats = weeklyStats {
+                if let progress = todaysProgress {
                     HStack(spacing: 16) {
                         StatCard(
-                            title: "This Week",
-                            value: "\(weeklyStats.completedBlocks)",
-                            subtitle: "completed",
-                            color: Color.anchorPurple,
-                            icon: "calendar.circle.fill"
+                            title: "Completed",
+                            value: "\(progress.completedBlocks)",
+                            subtitle: "blocks",
+                            color: Color.anchorGreen,
+                            icon: "checkmark.circle.fill"
                         )
                         
                         StatCard(
-                            title: "Average",
-                            value: "\(Int(weeklyStats.averageCompletion * 100))%",
-                            subtitle: "weekly",
-                            color: Color.anchorTeal,
-                            icon: "chart.line.uptrend.xyaxis"
+                            title: "Progress",
+                            value: "\(Int(progress.completionPercentage * 100))%",
+                            subtitle: "today",
+                            color: Color.anchorBlue,
+                            icon: "chart.pie.fill"
                         )
                     }
-                }
-            } else {
-                VStack(spacing: 12) {
-                    Image(systemName: "chart.bar.fill")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.white.opacity(0.3))
                     
-                    Text("No data yet")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
-                    
-                    Text("Create and complete time blocks to see your progress!")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.white.opacity(0.5))
-                        .multilineTextAlignment(.center)
+                    if let weeklyStats = weeklyStats {
+                        HStack(spacing: 16) {
+                            StatCard(
+                                title: "This Week",
+                                value: "\(weeklyStats.completedBlocks)",
+                                subtitle: "completed",
+                                color: Color.anchorPurple,
+                                icon: "calendar.circle.fill"
+                            )
+                            
+                            StatCard(
+                                title: "Average",
+                                value: "\(Int(weeklyStats.averageCompletion * 100))%",
+                                subtitle: "weekly",
+                                color: Color.anchorTeal,
+                                icon: "chart.line.uptrend.xyaxis"
+                            )
+                        }
+                    }
+                } else {
+                    VStack(spacing: 12) {
+                        Image(systemName: "chart.bar.fill")
+                            .font(.system(size: 40))
+                            .foregroundStyle(themeTertiaryText)
+                        
+                        Text("No data yet")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(themeSecondaryText)
+                        
+                        Text("Create and complete time blocks to see your progress!")
+                            .font(.system(size: 14))
+                            .foregroundStyle(themeTertiaryText)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.vertical, 40)
                 }
-                .padding(.vertical, 40)
             }
         }
-        .padding(20)
-        .themedGlassMorphism(cornerRadius: 20)
     }
     
     private var premiumFeaturesShowcase: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text("Premium Analytics")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+        ThemedCard(cornerRadius: 20) {
+            VStack(spacing: 16) {
+                HStack {
+                    Text("Premium Analytics")
+                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        .foregroundStyle(themePrimaryText)
+                    
+                    Spacer()
+                    
+                    PremiumBadge()
+                }
                 
-                Spacer()
-                
-                PremiumBadge()
-            }
-            
-            VStack(spacing: 12) {
-                PremiumFeaturePreview(
-                    icon: "chart.line.uptrend.xyaxis",
-                    title: "Productivity Trends",
-                    description: "Track your completion rates over time",
-                    color: Color.anchorBlue
-                )
-                
-                PremiumFeaturePreview(
-                    icon: "brain.head.profile",
-                    title: "Peak Performance Times",
-                    description: "Discover when you're most productive",
-                    color: Color.anchorGreen
-                )
-                
-                PremiumFeaturePreview(
-                    icon: "lightbulb.fill",
-                    title: "AI-Powered Insights",
-                    description: "Get personalized recommendations",
-                    color: Color.anchorWarning
-                )
-                
-                PremiumFeaturePreview(
-                    icon: "target",
-                    title: "Category Performance",
-                    description: "Analyze completion by activity type",
-                    color: Color.anchorPurple
-                )
+                VStack(spacing: 12) {
+                    PremiumFeaturePreview(
+                        icon: "chart.line.uptrend.xyaxis",
+                        title: "Productivity Trends",
+                        description: "Track your completion rates over time",
+                        color: Color.anchorBlue
+                    )
+                    
+                    PremiumFeaturePreview(
+                        icon: "brain.head.profile",
+                        title: "Peak Performance Times",
+                        description: "Discover when you're most productive",
+                        color: Color.anchorGreen
+                    )
+                    
+                    PremiumFeaturePreview(
+                        icon: "lightbulb.fill",
+                        title: "AI-Powered Insights",
+                        description: "Get personalized recommendations",
+                        color: Color.anchorWarning
+                    )
+                    
+                    PremiumFeaturePreview(
+                        icon: "target",
+                        title: "Category Performance",
+                        description: "Analyze completion by activity type",
+                        color: Color.anchorPurple
+                    )
+                }
             }
         }
-        .padding(20)
-        .themedGlassMorphism(cornerRadius: 20)
     }
     
     private var upgradePromptSection: some View {
@@ -714,6 +745,12 @@ struct PremiumFeaturePreview: View {
     let description: String
     let color: Color
     
+    @Environment(\.themeManager) private var themeManager
+    
+    private var themeTertiaryText: Color {
+        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+    }
+    
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
@@ -728,11 +765,11 @@ struct PremiumFeaturePreview: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(themeTertiaryText)
                 
                 Text(description)
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(themeTertiaryText.opacity(0.8))
                     .lineLimit(2)
             }
             
@@ -751,6 +788,7 @@ struct FloatingActionButton: View {
     let tab: MainTabView.Tab
     let action: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
     @State private var pulseScale: CGFloat = 1.0
     
@@ -764,7 +802,20 @@ struct FloatingActionButton: View {
     }
     
     private var gradientColors: [Color] {
-        tab.gradientColors
+        guard let theme = themeManager?.currentTheme else {
+            return tab.gradientColors
+        }
+        
+        // Use theme colors instead of hardcoded tab gradient colors
+        return [theme.primaryColor, theme.accentColor]
+    }
+    
+    private var shadowColor: Color {
+        themeManager?.currentTheme.primaryColor.opacity(0.4) ?? Theme.defaultTheme.primaryColor.opacity(0.4)
+    }
+    
+    private var backgroundShadowColor: Color {
+        themeManager?.currentTheme.colorScheme.backgroundPrimary.color.opacity(0.2) ?? Theme.defaultTheme.colorScheme.backgroundPrimary.color.opacity(0.2)
     }
     
     var body: some View {
@@ -805,11 +856,11 @@ struct FloatingActionButton: View {
                 
                 Image(systemName: icon)
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .rotationEffect(.degrees(isPressed ? 90 : 0))
             }
-            .shadow(color: gradientColors[0].opacity(0.4), radius: 12, x: 0, y: 6)
-            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+            .shadow(color: shadowColor, radius: 12, x: 0, y: 6)
+            .shadow(color: backgroundShadowColor, radius: 8, x: 0, y: 4)
             .scaleEffect(isPressed ? 0.95 : 1.0)
         }
         .onAppear {
@@ -854,7 +905,7 @@ extension MainTabView {
             case .today: return "calendar.circle.fill"
             case .schedule: return "clock.fill"
             case .summary: return "chart.pie.fill"
-            case .analytics: return "chart.bar.fill"  // ADDED: Missing analytics case
+            case .analytics: return "chart.bar.fill"
             case .settings: return "gearshape.fill"
             }
         }
@@ -864,7 +915,7 @@ extension MainTabView {
             case .today: return [Color.anchorBlue, Color.anchorTeal]
             case .schedule: return [Color.anchorPurple, Color.anchorBlue]
             case .summary: return [Color.anchorGreen, Color.anchorTeal]
-            case .analytics: return [Color.anchorWarning, Color.anchorPurple]  // ADDED: Missing analytics case
+            case .analytics: return [Color.anchorWarning, Color.anchorPurple]
             case .settings: return [Color.anchorTextSecondary, Color.anchorTextTertiary]
             }
         }

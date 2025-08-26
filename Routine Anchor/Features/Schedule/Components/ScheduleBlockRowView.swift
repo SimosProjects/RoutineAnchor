@@ -15,107 +15,108 @@ struct ScheduleBlockRowView: View {
     @State private var isPressed = false
     @State private var isVisible = false
     
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+    
+    private var themeTertiaryText: Color {
+        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+    }
+    
+    private var cardShadowColor: Color {
+        themeManager?.currentTheme.colorScheme.backgroundPrimary.color.opacity(0.1) ?? Theme.defaultTheme.colorScheme.backgroundPrimary.color.opacity(0.1)
+    }
+    
     var body: some View {
-        HStack(spacing: 16) {
-            // Time and status indicator
-            VStack(spacing: 8) {
-                // Status indicator
-                ZStack {
-                    Circle()
-                        .fill(statusColor.opacity(0.2))
-                        .frame(width: 32, height: 32)
-                    
-                    Image(systemName: timeBlock.status.iconName)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(statusColor)
-                }
-                
-                // Time range
-                VStack(spacing: 2) {
-                    Text(timeBlock.shortFormattedTimeRange)
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(Color.white.opacity(0.8))
-                    
-                    Text(timeBlock.formattedDuration)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.5))
-                }
-            }
-            
-            // Main content
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    if let icon = timeBlock.icon {
-                        Text(icon)
-                            .font(.system(size: 18))
-                    }
-                    
-                    Text(timeBlock.title)
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                        .lineLimit(1)
-                }
-                
-                if let notes = timeBlock.notes, !notes.isEmpty {
-                    Text(notes)
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundStyle(Color.white.opacity(0.6))
-                        .lineLimit(2)
-                }
-                
-                if let category = timeBlock.category {
-                    HStack(spacing: 4) {
-                        Image(systemName: "folder")
-                            .font(.system(size: 10, weight: .medium))
+        ThemedCard(cornerRadius: 20) {
+            HStack(spacing: 16) {
+                // Time and status indicator
+                VStack(spacing: 8) {
+                    // Status indicator
+                    ZStack {
+                        Circle()
+                            .fill(statusColor.opacity(0.2))
+                            .frame(width: 32, height: 32)
                         
-                        Text(category)
-                            .font(.system(size: 12, weight: .medium))
+                        Image(systemName: timeBlock.status.iconName)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(statusColor)
                     }
-                    .foregroundStyle(Color.white.opacity(0.5))
-                }
-            }
-            
-            Spacer()
-            
-            // Action buttons
-            HStack(spacing: 8) {
-                Button(action: onEdit) {
-                    Image(systemName: "pencil")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.anchorBlue)
-                        .frame(width: 36, height: 36)
-                        .background(Color.anchorBlue.opacity(0.15))
-                        .cornerRadius(10)
+                    
+                    // Time range
+                    VStack(spacing: 2) {
+                        Text(timeBlock.shortFormattedTimeRange)
+                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(themeSecondaryText)
+                        
+                        Text(timeBlock.formattedDuration)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(themeTertiaryText)
+                    }
                 }
                 
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.anchorError)
-                        .frame(width: 36, height: 36)
-                        .background(Color.anchorError.opacity(0.15))
-                        .cornerRadius(10)
+                // Main content
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        if let icon = timeBlock.icon {
+                            Text(icon)
+                                .font(.system(size: 18))
+                        }
+                        
+                        Text(timeBlock.title)
+                            .font(.system(size: 18, weight: .semibold, design: .rounded))
+                            .foregroundStyle(themePrimaryText)
+                            .lineLimit(1)
+                    }
+                    
+                    if let notes = timeBlock.notes, !notes.isEmpty {
+                        Text(notes)
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundStyle(themeSecondaryText)
+                            .lineLimit(2)
+                    }
+                    
+                    if let category = timeBlock.category {
+                        HStack(spacing: 4) {
+                            Image(systemName: "folder")
+                                .font(.system(size: 10, weight: .medium))
+                            
+                            Text(category)
+                                .font(.system(size: 12, weight: .medium))
+                        }
+                        .foregroundStyle(themeTertiaryText)
+                    }
+                }
+                
+                Spacer()
+                
+                // Action buttons
+                HStack(spacing: 8) {
+                    Button(action: onEdit) {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(editButtonColor)
+                            .frame(width: 36, height: 36)
+                            .background(editButtonColor.opacity(0.15))
+                            .cornerRadius(10)
+                    }
+                    
+                    Button(action: onDelete) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(deleteButtonColor)
+                            .frame(width: 36, height: 36)
+                            .background(deleteButtonColor.opacity(0.15))
+                            .cornerRadius(10)
+                    }
                 }
             }
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(.ultraThinMaterial)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.05),
-                                    Color.white.opacity(0.02)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
         .overlay(
             RoundedRectangle(cornerRadius: 20)
                 .stroke(
@@ -130,7 +131,7 @@ struct ScheduleBlockRowView: View {
                     lineWidth: 1
                 )
         )
-        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .shadow(color: cardShadowColor, radius: 10, x: 0, y: 5)
         .scaleEffect(isPressed ? 0.98 : 1)
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : 50)
@@ -142,11 +143,28 @@ struct ScheduleBlockRowView: View {
     }
     
     private var statusColor: Color {
-        switch timeBlock.status {
-        case .notStarted: return Color.white.opacity(0.6)
-        case .inProgress: return Color.anchorBlue
-        case .completed: return Color.anchorGreen
-        case .skipped: return Color.anchorWarning
+        guard let theme = themeManager?.currentTheme else {
+            switch timeBlock.status {
+            case .notStarted: return Theme.defaultTheme.textSecondaryColor
+            case .inProgress: return Theme.defaultTheme.colorScheme.blue.color
+            case .completed: return Theme.defaultTheme.colorScheme.success.color
+            case .skipped: return Theme.defaultTheme.colorScheme.warning.color
+            }
         }
+        
+        switch timeBlock.status {
+        case .notStarted: return theme.textSecondaryColor
+        case .inProgress: return theme.colorScheme.blue.color
+        case .completed: return theme.colorScheme.success.color
+        case .skipped: return theme.colorScheme.warning.color
+        }
+    }
+    
+    private var editButtonColor: Color {
+        themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+    }
+    
+    private var deleteButtonColor: Color {
+        themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
     }
 }

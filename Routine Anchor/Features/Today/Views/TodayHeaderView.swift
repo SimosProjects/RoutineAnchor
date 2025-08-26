@@ -23,6 +23,19 @@ struct TodayHeaderView: View {
     // MARK: - Environment
     @Environment(\.colorScheme) var colorScheme
     
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+    
+    private var themeTertiaryText: Color {
+        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+    }
+    
     var body: some View {
         VStack(spacing: 24) {
             // Top navigation bar
@@ -67,7 +80,7 @@ struct TodayHeaderView: View {
             HStack(spacing: 6) {
                 Text(viewModel.greetingText)
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.white.opacity(0.8))
+                    .foregroundStyle(themeSecondaryText)
                 
                 if viewModel.isSpecialDay {
                     Image(systemName: viewModel.specialDayIcon)
@@ -90,7 +103,7 @@ struct TodayHeaderView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.currentDateText)
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themePrimaryText)
                     .opacity(dateOpacity)
                     .offset(y: dateOpacity < 1 ? 10 : 0)
                     .onAppear {
@@ -101,7 +114,7 @@ struct TodayHeaderView: View {
                 
                 Text(viewModel.dailyQuote)
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(Color.white.opacity(0.6))
+                    .foregroundStyle(themeTertiaryText)
                     .lineLimit(1)
             }
             .opacity(dateOpacity)
@@ -115,7 +128,7 @@ struct TodayHeaderView: View {
             // Summary button (with badge if needed)
             NavigationButton(
                 icon: viewModel.shouldShowSummary ? "chart.pie.fill" : "chart.pie",
-                gradient: [Color.anchorGreen, Color.anchorTeal]
+                style: .success
             ) {
                 HapticManager.shared.impact()
                 showingSummary = true
@@ -133,7 +146,7 @@ struct TodayHeaderView: View {
             // Settings button
             NavigationButton(
                 icon: "gearshape.fill",
-                gradient: [Color.anchorPurple, Color.anchorBlue]
+                style: .secondary
             ) {
                 HapticManager.shared.lightImpact()
                 showingSettings = true
@@ -145,7 +158,7 @@ struct TodayHeaderView: View {
             if viewModel.hasScheduledBlocks {
                 NavigationButton(
                     icon: "bolt.fill",
-                    gradient: [Color.anchorWarning, Color.anchorTeal]
+                    style: .accent
                 ) {
                     HapticManager.shared.lightImpact()
                     // Post notification to show quick stats
@@ -187,24 +200,29 @@ struct NotificationBadge: View {
 
 // MARK: - Weather Widget (Optional Enhancement)
 struct WeatherWidget: View {
+    @Environment(\.themeManager) private var themeManager
     @State private var temperature: String = "--"
     @State private var weatherIcon: String = "sun.max"
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
     
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: weatherIcon)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.white.opacity(0.7))
+                .foregroundStyle(themeSecondaryText)
             
             Text(temperature)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.7))
+                .foregroundStyle(themeSecondaryText)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill(Color.white.opacity(0.1))
+                .fill(themeSecondaryText.opacity(0.1))
         )
         .onAppear {
             // Fetch weather data
