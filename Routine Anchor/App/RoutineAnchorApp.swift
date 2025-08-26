@@ -14,6 +14,7 @@ struct RoutineAnchorApp: App {
     @StateObject private var authManager = AuthenticationManager()
     @StateObject private var adManager = AdManager()
     @State private var premiumManager = PremiumManager()
+    @State private var themeManager: ThemeManager?
     @State private var modelContainer: ModelContainer?
     @State private var showMigrationView = false
     @State private var initializationError: Error?
@@ -38,6 +39,12 @@ struct RoutineAnchorApp: App {
                         .premiumEnvironment(premiumManager)
                         .environmentObject(authManager)
                         .environmentObject(adManager)
+                        .environment(\.themeManager, themeManager)
+                        .onAppear {
+                            if themeManager == nil {
+                                themeManager = ThemeManager(premiumManager: premiumManager)
+                            }
+                        }
                         .overlay {
                             if showMigrationView {
                                 MigrationProgressView()

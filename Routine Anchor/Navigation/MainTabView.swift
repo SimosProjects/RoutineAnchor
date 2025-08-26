@@ -500,7 +500,7 @@ struct BasicAnalyticsView: View {
     
     var body: some View {
         ZStack {
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             ScrollView {
@@ -619,7 +619,7 @@ struct BasicAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     private var premiumFeaturesShowcase: some View {
@@ -665,7 +665,7 @@ struct BasicAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     private var upgradePromptSection: some View {

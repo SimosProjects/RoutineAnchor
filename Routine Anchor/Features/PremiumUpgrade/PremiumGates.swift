@@ -47,7 +47,7 @@ struct PremiumGateView: View {
             )
         }
         .padding(24)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
         .padding(.horizontal)
     }
 }
@@ -127,7 +127,7 @@ struct AnalyticsGate: View {
             )
         }
         .padding(24)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
         .padding(.horizontal)
     }
 }

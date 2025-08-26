@@ -33,22 +33,9 @@
 		24F94D772E2BE0E60001A468 /* Routine AnchorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Routine AnchorUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		249447562E55DCF000931D35 /* Exceptions for "Routine Anchor" folder in "Routine Anchor" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Routine-Anchor-Info.plist",
-			);
-			target = 24F94D5C2E2BE0E50001A468 /* Routine Anchor */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		24F94D5F2E2BE0E50001A468 /* Routine Anchor */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				249447562E55DCF000931D35 /* Exceptions for "Routine Anchor" folder in "Routine Anchor" target */,
-			);
 			path = "Routine Anchor";
 			sourceTree = "<group>";
 		};

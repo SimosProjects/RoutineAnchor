@@ -415,7 +415,7 @@ struct DailySummaryView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
     }
     
@@ -531,7 +531,7 @@ struct DailySummaryView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
     }
     
@@ -626,7 +626,7 @@ struct DailySummaryView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
         .onAppear {
             if let progress = viewModel.safeDailyProgress {

@@ -157,7 +157,7 @@ struct PremiumUpgradeView: View {
             }
         }
         .padding(24)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     // MARK: - Pricing Section

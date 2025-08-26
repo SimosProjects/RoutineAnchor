@@ -69,6 +69,8 @@ struct SettingsView: View {
                         accountSection
                     }
                     
+                    ThemeSettingsRow()
+                    
                     // Settings sections
                     NotificationSettingsSection(
                         notificationsEnabled: $notificationsEnabled,

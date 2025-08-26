@@ -170,11 +170,6 @@ class PremiumManager {
         return hasPremiumAccess
     }
     
-    /// Check if user can use premium themes
-    var canUsePremiumThemes: Bool {
-        return hasPremiumAccess
-    }
-    
     /// Check if user can access unlimited templates
     func canCreateTemplate(currentTemplateCount: Int) -> Bool {
         if hasPremiumAccess { return true }

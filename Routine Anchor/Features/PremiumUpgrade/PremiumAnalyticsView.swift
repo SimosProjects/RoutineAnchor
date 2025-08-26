@@ -212,7 +212,7 @@ struct PremiumAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     // MARK: - Monthly Overview Section
@@ -265,7 +265,7 @@ struct PremiumAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     // MARK: - Weekly Detailed Sections
@@ -329,7 +329,7 @@ struct PremiumAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     // MARK: - Time of Day Section
@@ -365,7 +365,7 @@ struct PremiumAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     // MARK: - Trend Message Section
@@ -418,7 +418,7 @@ struct PremiumAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     // MARK: - Weekly Progression Section
@@ -443,7 +443,7 @@ struct PremiumAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     // MARK: - Productive Days Section
@@ -475,7 +475,7 @@ struct PremiumAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     // MARK: - Improvement Suggestions Section
@@ -519,7 +519,7 @@ struct PremiumAnalyticsView: View {
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 20)
+        .themedGlassMorphism(cornerRadius: 20)
     }
     
     // MARK: - Data Management
