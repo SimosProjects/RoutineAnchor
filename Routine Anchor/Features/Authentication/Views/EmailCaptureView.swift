@@ -18,7 +18,7 @@ struct EmailCaptureView: View {
     var body: some View {
         ZStack {
             // Background
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             VStack(spacing: 32) {

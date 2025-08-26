@@ -308,7 +308,7 @@ struct AppLoadingView: View {
     var body: some View {
         ZStack {
             // Background gradient
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             VStack(spacing: 32) {
@@ -369,7 +369,7 @@ struct DataErrorView: View {
     var body: some View {
         ZStack {
             // Background
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             VStack(spacing: 24) {

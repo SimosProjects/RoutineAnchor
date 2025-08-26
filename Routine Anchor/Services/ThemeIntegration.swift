@@ -266,19 +266,11 @@ struct ThemeMigrationHelpers {
         OLD: .foregroundStyle(.white)
         NEW: .foregroundStyle(Color.themed.textPrimary)
      
-     2. Replace background gradients:
-        OLD: AnimatedGradientBackground()
-        NEW: ThemedAnimatedBackground()
-     
-     3. Replace glass morphism:
-        OLD: .glassMorphism(cornerRadius: 16)
-        NEW: .themedGlassMorphism(cornerRadius: 16)
-     
-     4. Replace cards:
+     2. Replace cards:
         OLD: VStack { content }.padding(20).glassMorphism(cornerRadius: 16)
         NEW: ThemedCard { VStack { content } }
      
-     5. Replace buttons:
+     3. Replace buttons:
         OLD: Custom button implementations
         NEW: ThemedButton(title: "Text", style: .primary) { action }
      */

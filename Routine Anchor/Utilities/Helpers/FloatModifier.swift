@@ -89,7 +89,7 @@ extension View {
 // MARK: - Preview
 #Preview("Float Modifier Examples") {
     ZStack {
-        AnimatedGradientBackground()
+        ThemedAnimatedBackground()
             .ignoresSafeArea()
         
         VStack(spacing: 40) {

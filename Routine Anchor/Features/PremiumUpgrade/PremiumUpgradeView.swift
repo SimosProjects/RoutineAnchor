@@ -22,8 +22,7 @@ struct PremiumUpgradeView: View {
     var body: some View {
         ZStack {
             // Background
-            AnimatedGradientBackground()
-                .ignoresSafeArea()
+            ThemedAnimatedBackground()                .ignoresSafeArea()
             
             if premiumManager.isLoading && premiumManager.products.isEmpty {
                 // Loading state

@@ -29,7 +29,7 @@ struct DailySummaryView: View {
     
     var body: some View {
         ZStack {
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             AnimatedMeshBackground()

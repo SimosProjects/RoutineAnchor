@@ -64,7 +64,7 @@ struct StatCard: View {
 // MARK: - Preview
 #Preview("Stat Cards") {
     ZStack {
-        AnimatedGradientBackground()
+        ThemedAnimatedBackground()
             .ignoresSafeArea()
         
         HStack(spacing: 12) {

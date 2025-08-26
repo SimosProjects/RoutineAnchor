@@ -26,7 +26,7 @@ struct ExportDataView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AnimatedGradientBackground()
+                ThemedAnimatedBackground()
                     .ignoresSafeArea()
                 
                 ScrollView {

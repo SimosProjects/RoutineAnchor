@@ -62,7 +62,7 @@ struct TaskBreakdownRow: View {
 // MARK: - Preview
 #Preview("Task Breakdown Row") {
     ZStack {
-        AnimatedGradientBackground()
+        ThemedAnimatedBackground()
             .ignoresSafeArea()
         
         VStack(spacing: 8) {

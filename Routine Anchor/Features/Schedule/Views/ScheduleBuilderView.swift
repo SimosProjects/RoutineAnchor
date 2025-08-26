@@ -8,6 +8,7 @@ import SwiftData
 struct ScheduleBuilderView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.themeManager) private var themeManager
     @State private var viewModel: ScheduleBuilderViewModel?
     
     // MARK: - State
@@ -21,15 +22,8 @@ struct ScheduleBuilderView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.05, green: 0.05, blue: 0.15),
-                    Color(red: 0.08, green: 0.05, blue: 0.2),
-                    Color(red: 0.05, green: 0.08, blue: 0.25)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            ThemedAnimatedBackground()
+                .ignoresSafeArea()
             .ignoresSafeArea()
             .overlay(
                 RadialGradient(
@@ -128,6 +122,7 @@ struct ScheduleBuilderView: View {
                     category: category
                 )
             }
+            .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
@@ -136,6 +131,7 @@ struct ScheduleBuilderView: View {
                 EditTimeBlockView(timeBlock: block, existingTimeBlocks: viewModel!.timeBlocks) { updatedBlock in
                     viewModel?.updateTimeBlock(updatedBlock)
                 }
+                .environment(\.themeManager, themeManager)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }

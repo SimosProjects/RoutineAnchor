@@ -8,6 +8,7 @@ import SwiftData
 struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.premiumManager) private var premiumManager
+    @Environment(\.themeManager) private var themeManager
     @Bindable var viewModel: TodayViewModel
     @State private var dataManager: DataManager
     @State private var refreshTask: Task<Void, Never>?
@@ -38,7 +39,7 @@ struct TodayView: View {
     
     var body: some View {
         ZStack {
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             GeometryReader { geometry in
@@ -113,6 +114,7 @@ struct TodayView: View {
             NavigationStack {
                 SettingsView()
             }
+            .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
@@ -120,6 +122,7 @@ struct TodayView: View {
             NavigationStack {
                 DailySummaryView(modelContext: modelContext)
             }
+            .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
@@ -127,6 +130,7 @@ struct TodayView: View {
             NavigationStack {
                 QuickStatsView(viewModel: viewModel)
             }
+            .environment(\.themeManager, themeManager)
             .presentationDetents([.fraction(0.7)])
             .presentationDragIndicator(.visible)
         }

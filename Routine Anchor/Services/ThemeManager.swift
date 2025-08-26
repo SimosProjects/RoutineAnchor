@@ -27,6 +27,16 @@ class ThemeManager {
         self.premiumManager = premiumManager
         self.currentTheme = Theme.defaultTheme
         loadCurrentTheme()
+        
+        NotificationCenter.default.addObserver(
+            forName: .premiumStatusChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.handlePremiumStatusChange()
+            }
+        }
     }
     
     // MARK: - Theme Management
@@ -173,6 +183,9 @@ class ThemeManager {
         if !premiumManager.hasPremiumAccess && currentTheme.isPremium {
             switchToTheme(Theme.defaultTheme)
         }
+        
+        // Add this: Also check if current theme is still valid
+        loadCurrentTheme()
         
         // Clear any error messages when premium status changes
         errorMessage = nil

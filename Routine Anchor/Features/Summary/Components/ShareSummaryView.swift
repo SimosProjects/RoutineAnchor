@@ -16,7 +16,7 @@ struct ShareSummaryView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AnimatedGradientBackground()
+                ThemedAnimatedBackground()
                     .ignoresSafeArea()
                 
                 VStack(spacing: 24) {

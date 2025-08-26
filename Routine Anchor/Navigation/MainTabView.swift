@@ -10,6 +10,7 @@ import SwiftData
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.premiumManager) private var premiumManager
+    @Environment(\.themeManager) private var themeManager
     @EnvironmentObject private var authManager: AuthenticationManager
     @EnvironmentObject private var adManager: AdManager
     @State private var tabViewModel = MainTabViewModel()
@@ -34,13 +35,14 @@ struct MainTabView: View {
     
     var body: some View {
         ZStack {
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             TabView(selection: tabSelectionBinding) {
                 // Today Tab
                 NavigationStack {
                     TodayView(modelContext: modelContext)
+                        .environment(\.themeManager, themeManager)
                         .background(Color.clear)
                 }
                 .tabItem {
@@ -56,6 +58,7 @@ struct MainTabView: View {
                 // Schedule Tab
                 NavigationStack {
                     ScheduleBuilderView()
+                        .environment(\.themeManager, themeManager)
                         .background(Color.clear)
                 }
                 .tabItem {
@@ -72,6 +75,7 @@ struct MainTabView: View {
                 NavigationStack {
                     DailySummaryView(modelContext: modelContext)
                         .environment(safePremiumManager)
+                        .environment(\.themeManager, themeManager)
                         .background(Color.clear)
                 }
                 .tabItem {
@@ -89,6 +93,7 @@ struct MainTabView: View {
                 NavigationStack {
                     analyticsTab
                         .environment(safePremiumManager)
+                        .environment(\.themeManager, themeManager)
                         .background(Color.clear)
                 }
                 .tabItem {
@@ -105,6 +110,7 @@ struct MainTabView: View {
                 NavigationStack {
                     SettingsView()
                         .environmentObject(authManager)
+                        .environment(\.themeManager, themeManager)
                         .background(Color.clear)
                 }
                 .tabItem {
@@ -142,6 +148,7 @@ struct MainTabView: View {
             ) { title, startTime, endTime, notes, category in
                 createTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes ?? "", category: category ?? "")
             }
+            .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
@@ -159,6 +166,7 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $showingPremiumUpgrade) {
             PremiumUpgradeView(premiumManager: safePremiumManager)
+                .environment(\.themeManager, themeManager)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }

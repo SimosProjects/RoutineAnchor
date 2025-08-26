@@ -100,7 +100,7 @@ struct NotificationSettingsSection: View {
 // MARK: - Preview
 #Preview {
     ZStack {
-        AnimatedGradientBackground()
+        ThemedAnimatedBackground()
             .ignoresSafeArea()
         
         ScrollView {

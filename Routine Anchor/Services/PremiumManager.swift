@@ -324,6 +324,8 @@ extension PremiumManager {
         userIsPremium = true
         savePremiumStatus(true)
         print("🔓 Debug: Premium enabled for testing")
+        
+        NotificationCenter.default.post(name: .premiumStatusChanged, object: nil)
     }
     
     /// Disable premium for testing (debug only)
@@ -334,6 +336,8 @@ extension PremiumManager {
         temporaryPremiumUntil = nil
         UserDefaults.standard.removeObject(forKey: "temporaryPremiumUntil")
         print("🔒 Debug: Premium disabled for testing")
+        
+        NotificationCenter.default.post(name: .premiumStatusChanged, object: nil)
     }
     
     /// Toggle premium status for testing
@@ -343,6 +347,8 @@ extension PremiumManager {
         } else {
             enableDebugPremium()
         }
+        
+        NotificationCenter.default.post(name: .premiumStatusChanged, object: nil)
     }
     #endif
 }

@@ -11,6 +11,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.premiumManager) private var premiumManager
+    @Environment(\.themeManager) private var themeManager
     @EnvironmentObject private var authManager: AuthenticationManager
     
     // MARK: - State
@@ -44,7 +45,7 @@ struct SettingsView: View {
     
     var body: some View {
         ZStack {
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             AnimatedMeshBackground()
@@ -159,6 +160,7 @@ struct SettingsView: View {
             NavigationStack {
                 PrivacyPolicyView()
             }
+            .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
@@ -166,6 +168,7 @@ struct SettingsView: View {
             NavigationStack {
                 AboutView()
             }
+            .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
@@ -173,18 +176,21 @@ struct SettingsView: View {
             NavigationStack {
                 HelpView()
             }
+            .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingExportData) {
             ExportDataView()
                 .modelContainer(modelContext.container)
+                .environment(\.themeManager, themeManager)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingImportView) {
             ImportDataView()
                 .modelContainer(modelContext.container)
+                .environment(\.themeManager, themeManager)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
@@ -193,6 +199,7 @@ struct SettingsView: View {
                 EmailPreferencesView()
                     .environmentObject(authManager)
             }
+            .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }

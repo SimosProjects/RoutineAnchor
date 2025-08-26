@@ -23,7 +23,7 @@ struct PremiumAnalyticsView: View {
     
     var body: some View {
         ZStack {
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             if premiumManager.canAccessAdvancedAnalytics {

@@ -21,7 +21,7 @@ struct EmailPreferencesView: View {
     var body: some View {
         ZStack {
             // Background
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             ScrollView {

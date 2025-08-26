@@ -12,7 +12,7 @@ struct PrivacyPolicyView: View {
     
     var body: some View {
         ZStack {
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
             AnimatedMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)

@@ -21,7 +21,7 @@ struct MigrationSettingsView: View {
         NavigationStack {
             ZStack {
                 // Background
-                AnimatedGradientBackground()
+                ThemedAnimatedBackground()
                     .ignoresSafeArea()
                 
                 ScrollView {
@@ -268,7 +268,7 @@ struct BackupInfoSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AnimatedGradientBackground()
+                ThemedAnimatedBackground()
                     .ignoresSafeArea()
                 
                 ScrollView {

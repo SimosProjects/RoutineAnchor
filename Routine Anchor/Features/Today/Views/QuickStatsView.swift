@@ -102,7 +102,7 @@ struct QuickStatsView: View {
                 Spacer(minLength: geometry.safeAreaInsets.bottom + 16)
             }
         }
-        .background(AnimatedGradientBackground())
+        .background(ThemedAnimatedBackground())
         .ignoresSafeArea(.container, edges: .bottom)
     }
 }

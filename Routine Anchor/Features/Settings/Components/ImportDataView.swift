@@ -23,7 +23,7 @@ struct ImportDataView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AnimatedGradientBackground()
+                ThemedAnimatedBackground()
                     .ignoresSafeArea()
                 
                 ScrollView {

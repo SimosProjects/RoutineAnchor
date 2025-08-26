@@ -160,7 +160,7 @@ struct TimeBlockFormView<Content: View>: View {
     var body: some View {
         ZStack {
             // Animated background
-            AnimatedGradientBackground()
+            ThemedAnimatedBackground()
                 .ignoresSafeArea()
             
             AnimatedMeshBackground()

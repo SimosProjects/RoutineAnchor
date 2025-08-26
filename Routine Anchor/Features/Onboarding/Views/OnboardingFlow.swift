@@ -13,7 +13,7 @@ struct OnboardingFlow: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                AnimatedGradientBackground()
+                ThemedAnimatedBackground()
                 AnimatedMeshBackground()
                     .opacity(0.3)
                     .allowsHitTesting(false)
