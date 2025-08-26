@@ -7,8 +7,13 @@
 import SwiftUI
 
 struct MessageBanner: View {
+    @Environment(\.themeManager) private var themeManager
     let message: String
     let type: MessageType
+    
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
     
     enum MessageType {
         case success, error
@@ -29,33 +34,34 @@ struct MessageBanner: View {
     }
     
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: type.icon)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(type.color)
-            
-            Text(message)
-                .font(TypographyConstants.Body.emphasized)
-                .foregroundStyle(Color.anchorTextPrimary)
-                .lineLimit(2)
-            
-            Spacer()
+        ThemedCard(cornerRadius: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: type.icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(type.color)
+                
+                Text(message)
+                    .font(TypographyConstants.Body.emphasized)
+                    .foregroundStyle(themePrimaryText)
+                    .lineLimit(2)
+                
+                Spacer()
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(.ultraThinMaterial)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(type.color.opacity(0.1))
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(type.color.opacity(0.3), lineWidth: 1)
+            )
+            .shadow(color: type.color.opacity(0.2), radius: 8, x: 0, y: 4)
+            .padding(.horizontal, 24)
+            .padding(.top, 8)
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(.ultraThinMaterial)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(type.color.opacity(0.1))
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(type.color.opacity(0.3), lineWidth: 1)
-        )
-        .shadow(color: type.color.opacity(0.2), radius: 8, x: 0, y: 4)
-        .padding(.horizontal, 24)
-        .padding(.top, 8)
     }
 }

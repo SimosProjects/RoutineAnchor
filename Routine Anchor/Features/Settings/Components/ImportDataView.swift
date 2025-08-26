@@ -203,12 +203,12 @@ struct ImportDataView: View {
                 
                 Text("Important")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.white.opacity(0.9))
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             }
             
             Text("• Imported time blocks will be added to your existing schedule\n• Duplicate entries will be skipped automatically\n• Make sure the file is in a supported format (JSON or CSV)")
                 .font(.system(size: 12, weight: .regular))
-                .foregroundStyle(Color.white.opacity(0.6))
+                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 .lineSpacing(2)
         }
         .padding(16)
@@ -274,10 +274,19 @@ struct ImportDataView: View {
 
 // MARK: - Format Row Component
 struct FormatRow: View {
+    @Environment(\.themeManager) private var themeManager
     let icon: String
     let title: String
     let description: String
     let color: Color
+    
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
     
     var body: some View {
         HStack(spacing: 16) {
@@ -289,11 +298,11 @@ struct FormatRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(themePrimaryText)
                 
                 Text(description)
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundStyle(Color.white.opacity(0.6))
+                    .foregroundStyle(themeSecondaryText)
             }
             
             Spacer()

@@ -480,11 +480,16 @@ struct BenefitCard: View {
 
 // MARK: - Secondary Action Button
 struct SecondaryActionButton: View {
+    @Environment(\.themeManager) private var themeManager
     let title: String
     let icon: String
     let action: () -> Void
     
     @State private var isPressed = false
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
     
     var body: some View {
         Button(action: {
@@ -506,7 +511,7 @@ struct SecondaryActionButton: View {
                 Text(title)
                     .font(.system(size: 16, weight: .medium, design: .rounded))
             }
-            .foregroundStyle(Color.white.opacity(0.8))
+            .foregroundStyle(themeSecondaryText)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .background(
@@ -517,8 +522,8 @@ struct SecondaryActionButton: View {
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(0.1),
-                                        Color.white.opacity(0.05)
+                                        themeSecondaryText.opacity(0.15),
+                                        themeSecondaryText.opacity(0.08)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -531,8 +536,8 @@ struct SecondaryActionButton: View {
                     .stroke(
                         LinearGradient(
                             colors: [
-                                Color.white.opacity(0.3),
-                                Color.white.opacity(0.1)
+                                themeSecondaryText.opacity(0.4),
+                                themeSecondaryText.opacity(0.15)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing

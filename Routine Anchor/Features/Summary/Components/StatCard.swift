@@ -16,6 +16,14 @@ struct StatCard: View {
     @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
     
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+
+    private var themeTertiaryText: Color {
+        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+    }
+    
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: icon)
@@ -29,13 +37,13 @@ struct StatCard: View {
                 
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.6))
+                    .foregroundStyle(themeSecondaryText)
                     .textCase(.uppercase)
                     .tracking(0.5)
                 
                 Text(subtitle)
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(Color.white.opacity(0.5))
+                    .foregroundStyle(themeTertiaryText)
             }
         }
         .frame(maxWidth: .infinity)

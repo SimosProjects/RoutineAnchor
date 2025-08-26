@@ -14,6 +14,14 @@ struct EmailCaptureView: View {
     @State private var showThankYou = false
     @State private var errorMessage: String?
     
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+
+    private var themeTertiaryText: Color {
+        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+    }
+    
     let onEmailCaptured: (String) -> Void
     
     var body: some View {
@@ -136,7 +144,7 @@ struct EmailCaptureView: View {
             
             Text("We respect your privacy. Unsubscribe anytime.")
                 .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.5))
+                .foregroundStyle(themeTertiaryText)
                 .multilineTextAlignment(.center)
         }
     }
@@ -187,13 +195,13 @@ struct EmailCaptureView: View {
             
             Text(text)
                 .font(.system(size: 14))
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(themeSecondaryText)
             
             Spacer()
         }
     }
     
-    // MARK: - Actions (FIXED)
+    // MARK: - Actions
     private func submitEmail() {
         guard isValidEmail(email) else {
             errorMessage = "Please enter a valid email address"

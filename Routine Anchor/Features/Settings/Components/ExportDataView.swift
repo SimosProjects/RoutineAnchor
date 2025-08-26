@@ -224,12 +224,12 @@ struct ExportDataView: View {
                 
                 Text("About Your Data")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.white.opacity(0.9))
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             }
             
             Text("Your exported data includes all time blocks\(includeProgress ? ", daily progress records" : "")\(includeSettings ? ", and app settings" : ""). The file will be saved to your device and can be shared or stored as a backup.")
                 .font(.system(size: 12, weight: .regular))
-                .foregroundStyle(Color.white.opacity(0.6))
+                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 .lineSpacing(2)
         }
         .padding(16)

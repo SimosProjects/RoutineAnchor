@@ -7,10 +7,19 @@
 import SwiftUI
 
 struct TimePicker: View {
+    @Environment(\.themeManager) private var themeManager
     let title: String
     @Binding var selection: Date
     let icon: String
     let isDisabled: Bool
+    
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
 
     init(title: String, selection: Binding<Date>, icon: String, isDisabled: Bool = false) {
         self.title = title
@@ -24,11 +33,11 @@ struct TimePicker: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(isDisabled ? Color.white.opacity(0.4) : Color.anchorGreen)
+                    .foregroundStyle(isDisabled ? themeSecondaryText.opacity(0.6) : Color.anchorGreen)
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(isDisabled ? Color.white.opacity(0.4) : .white)
+                    .foregroundStyle(isDisabled ? themeSecondaryText.opacity(0.6) : themePrimaryText)
             }
 
             DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
@@ -43,14 +52,11 @@ struct TimePicker: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isDisabled ? Color.white.opacity(0.05) : Color.white.opacity(0.1))
+                .fill(isDisabled ? themeSecondaryText.opacity(0.1) : themeSecondaryText.opacity(0.2))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(
-                    isDisabled ? Color.white.opacity(0.1) : Color.white.opacity(0.2),
-                    lineWidth: 1
-                )
+                .stroke(isDisabled ? themeSecondaryText.opacity(0.2) : themeSecondaryText.opacity(0.3), lineWidth: 1)
         )
     }
 }

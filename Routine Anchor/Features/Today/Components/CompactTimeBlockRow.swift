@@ -21,7 +21,7 @@ struct CompactTimeBlockRow: View {
                 // Time
                 Text(timeBlock.startTime, style: .time)
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundStyle(isActive ? Color.anchorBlue : Color.white.opacity(0.7))
+                    .foregroundStyle(isActive ? Color.anchorBlue : themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                     .frame(width: 60, alignment: .leading)
                 
                 // Icon and title
