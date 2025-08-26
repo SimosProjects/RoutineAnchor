@@ -172,6 +172,7 @@ struct FloatingActionButtons: View {
 
 // MARK: - Main Floating Button
 struct MainFloatingButton: View {
+    @Environment(\.themeManager) private var themeManager
     @Binding var isExpanded: Bool
     let primaryAction: () -> Void
     
@@ -217,7 +218,7 @@ struct MainFloatingButton: View {
                     .overlay(
                         Image(systemName: isExpanded ? "xmark" : "plus")
                             .font(.system(size: 24, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                             .rotationEffect(.degrees(isExpanded ? 45 : 0))
                     )
                     .shadow(
@@ -248,6 +249,7 @@ struct MiniFloatingButton: View {
     let color: Color
     let action: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
     
     var body: some View {
@@ -267,7 +269,7 @@ struct MiniFloatingButton: View {
                 .overlay(
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 )
                 .shadow(
                     color: color.opacity(0.3),
@@ -294,6 +296,7 @@ struct CompletionCelebrationCard: View {
     let performanceLevel: DailyProgress.PerformanceLevel
     let onViewSummary: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var cardScale: CGFloat = 0.8
     @State private var showConfetti = false
     
@@ -309,7 +312,7 @@ struct CompletionCelebrationCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Day Complete!")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text(completionMessage)
                         .font(.system(size: 14, weight: .medium))
@@ -339,7 +342,7 @@ struct CompletionCelebrationCard: View {
                     Text("View Summary")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(

@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct TaskBreakdownRow: View {
+    @Environment(\.themeManager) private var themeManager
     let timeBlock: TimeBlock
     
     var body: some View {
@@ -25,7 +26,7 @@ struct TaskBreakdownRow: View {
                     
                     Text(timeBlock.title)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         .lineLimit(1)
                 }
                 

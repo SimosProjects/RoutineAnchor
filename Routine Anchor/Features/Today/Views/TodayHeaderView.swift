@@ -8,6 +8,7 @@ import SwiftUI
 
 struct TodayHeaderView: View {
     let viewModel: TodayViewModel
+    @Environment(\.themeManager) private var themeManager
     @Binding var showingSettings: Bool
     @Binding var showingSummary: Bool
     @Binding var showingQuickStats: Bool
@@ -89,7 +90,7 @@ struct TodayHeaderView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.currentDateText)
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .opacity(dateOpacity)
                     .offset(y: dateOpacity < 1 ? 10 : 0)
                     .onAppear {

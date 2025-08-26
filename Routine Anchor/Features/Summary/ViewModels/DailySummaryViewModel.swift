@@ -20,16 +20,13 @@ class DailySummaryViewModel {
     private let dataManager: DataManager
     private var loadTask: Task<Void, Never>?
     
-    // FIXED: Safe access to daily progress with crash protection
+    // Safe access to daily progress with crash protection
     var safeDailyProgress: DailyProgress? {
         do {
             // Use safe model access to prevent crashes
             return dataManager.safeModelAccess({
                 return dataManager.loadDailyProgressSafely(for: selectedDate)
             }, fallback: nil)
-        } catch {
-            print("⚠️ Model context issue in safeDailyProgress: \(error)")
-            return nil
         }
     }
     
@@ -65,7 +62,6 @@ class DailySummaryViewModel {
         loadTask?.cancel()
         
         do {
-            // FIXED: Wrap all model access in try-catch
             let blocks = dataManager.safeModelAccess({
                 return dataManager.loadTimeBlocksSafely(for: date)
             }, fallback: [])
@@ -81,11 +77,6 @@ class DailySummaryViewModel {
             self.todaysTimeBlocks = blocks
             self.weeklyStats = stats
             self.isLoading = false
-            
-        } catch {
-            print("⚠️ Error loading data: \(error)")
-            self.isLoading = false
-            self.errorMessage = "Failed to load data. Please try again."
         }
     }
     

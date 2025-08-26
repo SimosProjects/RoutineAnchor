@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct AboutView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @State private var animationPhase = 0
     @State private var animationTask: Task<Void, Never>?
@@ -18,7 +19,6 @@ struct AboutView: View {
             AnimatedMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)
-            // CHANGED: Now using self-contained ParticleEffectView
             ParticleEffectView()
                 .allowsHitTesting(false)
             
@@ -108,7 +108,7 @@ struct AboutView: View {
                     
                     Image(systemName: "clock.badge.checkmark")
                         .font(.system(size: 32, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 }
                 .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animationPhase)
                 
@@ -207,7 +207,7 @@ struct AboutView: View {
                         .font(TypographyConstants.UI.button)
                         .fontWeight(.medium)
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(

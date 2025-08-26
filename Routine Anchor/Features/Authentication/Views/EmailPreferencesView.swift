@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct EmailPreferencesView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authManager: AuthenticationManager
     
@@ -51,7 +52,7 @@ struct EmailPreferencesView: View {
                 Button("Cancel") {
                     dismiss()
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             }
         }
         .onAppear {
@@ -92,11 +93,11 @@ struct EmailPreferencesView: View {
             VStack(spacing: 8) {
                 Text("Email Preferences")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("Choose what you'd like to receive from us")
                     .font(.system(size: 16))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                     .multilineTextAlignment(.center)
             }
         }
@@ -113,11 +114,11 @@ struct EmailPreferencesView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Email Address")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                     
                     Text(authManager.userEmail ?? "No email")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 }
                 
                 Spacer()
@@ -143,7 +144,7 @@ struct EmailPreferencesView: View {
         VStack(spacing: 20) {
             Text("Email Types")
                 .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             VStack(spacing: 16) {
@@ -182,13 +183,13 @@ struct EmailPreferencesView: View {
                     if isLoading {
                         ProgressView()
                             .scaleEffect(0.8)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     } else {
                         Text("Save Preferences")
                             .font(.system(size: 16, weight: .semibold))
                     }
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .background(
@@ -218,7 +219,7 @@ struct EmailPreferencesView: View {
             VStack(spacing: 12) {
                 Text("Don't want any emails?")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                 
                 Button("Unsubscribe from All") {
                     showingUnsubscribeConfirmation = true
@@ -277,6 +278,7 @@ struct EmailPreferencesView: View {
 
 // MARK: - Email Preference Toggle
 struct EmailPreferenceToggle: View {
+    @Environment(\.themeManager) private var themeManager
     let icon: String
     let title: String
     let description: String
@@ -301,7 +303,7 @@ struct EmailPreferenceToggle: View {
                 // Title - allow it to expand and shrink as needed
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .lineLimit(1)
                     .layoutPriority(1) // Give title priority over spacer
                     .minimumScaleFactor(0.8) // Allow slight text scaling if needed

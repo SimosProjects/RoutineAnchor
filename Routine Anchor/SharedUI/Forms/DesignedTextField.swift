@@ -12,6 +12,8 @@ struct DesignedTextField: View {
     let placeholder: String
     let icon: String
     let isMultiline: Bool
+    
+    @Environment(\.themeManager) private var themeManager
 
     init(title: String, text: Binding<String>, placeholder: String, icon: String, isMultiline: Bool = false) {
         self.title = title
@@ -30,7 +32,7 @@ struct DesignedTextField: View {
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             }
 
             Group {
@@ -42,7 +44,7 @@ struct DesignedTextField: View {
                 }
             }
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(.white)
+            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)

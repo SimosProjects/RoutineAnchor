@@ -10,6 +10,7 @@ import UserNotifications
 // MARK: - Progress Overview Card
 struct ProgressOverviewCard: View {
     let viewModel: TodayViewModel
+    @Environment(\.themeManager) private var themeManager
     @State private var animateProgress = false
     
     var body: some View {
@@ -35,14 +36,14 @@ struct ProgressOverviewCard: View {
                 
                 Text(viewModel.formattedProgressPercentage)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             }
             
             // Progress details
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.completionSummary)
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(viewModel.timeSummary)
                     .font(.system(size: 14, weight: .medium))

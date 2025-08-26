@@ -17,6 +17,7 @@ struct StatusGroupSection: View {
     let onComplete: (TimeBlock) -> Void
     let onSkip: (TimeBlock) -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var sectionAnimation = false
     
     var body: some View {
@@ -35,7 +36,7 @@ struct StatusGroupSection: View {
                         
                         Text(status.displayName)
                             .font(.system(size: 18, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         
                         Text("\(blocks.count) \(blocks.count == 1 ? "block" : "blocks")")
                             .font(.system(size: 14, weight: .medium))

@@ -10,6 +10,7 @@ import UserNotifications
 // MARK: - Setup Complete View
 struct SetupCompleteView: View {
     let onFinish: () -> Void
+    @Environment(\.themeManager) private var themeManager
     @State private var appearAnimation = false
     @State private var confettiAnimation = false
     
@@ -50,7 +51,7 @@ struct SetupCompleteView: View {
                                 .overlay(
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 50, weight: .bold))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                                 )
                                 .shadow(color: Color(red: 0.2, green: 0.7, blue: 0.5).opacity(0.4), radius: 30, x: 0, y: 15)
                         }

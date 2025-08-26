@@ -13,6 +13,7 @@ struct NavigationButton: View {
     let gradient: [Color]
     let action: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
     
     var body: some View {
@@ -30,7 +31,7 @@ struct NavigationButton: View {
         }) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(width: 40, height: 40)
                 .background(
                     LinearGradient(

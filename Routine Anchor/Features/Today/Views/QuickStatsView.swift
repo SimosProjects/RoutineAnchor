@@ -8,6 +8,7 @@ import SwiftUI
 
 struct QuickStatsView: View {
     let viewModel: TodayViewModel
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -84,7 +85,7 @@ struct QuickStatsView: View {
                         
                         Text(currentBlock.title)
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         
                         if let remaining = viewModel.remainingTimeForCurrentBlock() {
                             Text(remaining)

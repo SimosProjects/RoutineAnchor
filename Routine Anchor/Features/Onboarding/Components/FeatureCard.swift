@@ -8,6 +8,7 @@ import SwiftUI
 import UserNotifications
 
 struct FeatureCard: View {
+    @Environment(\.themeManager) private var themeManager
     let icon: String
     let title: String
     let description: String
@@ -31,7 +32,7 @@ struct FeatureCard: View {
                 .overlay(
                     Image(systemName: icon)
                         .font(.system(size: 22, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 )
                 .shadow(color: Color(red: 0.3, green: 0.4, blue: 0.9).opacity(0.5), radius: 10, x: 0, y: 5)
             
@@ -39,7 +40,7 @@ struct FeatureCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(description)
                     .font(.system(size: 14, weight: .regular, design: .rounded))

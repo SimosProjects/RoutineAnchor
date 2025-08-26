@@ -90,17 +90,11 @@ final class TodayViewModel {
             let blocks = dataManager.loadTodaysTimeBlocksSafely()
             dataManager.updateDailyProgressSafely(for: Date())
             
-            // Update properties directly (we're already on MainActor)
+            // Update properties directly
             self.timeBlocks = blocks
-            self.dailyProgress = nil // Don't store the DailyProgress object
+            self.dailyProgress = nil
             self.isLoading = false
             
-        } catch {
-            self.errorMessage = "Failed to load today's blocks: \(error.localizedDescription)"
-            self.isLoading = false
-            self.timeBlocks = []
-            self.dailyProgress = nil
-            print("Error loading today's blocks: \(error)")
         }
     }
     
@@ -139,12 +133,6 @@ final class TodayViewModel {
             
             print("🔄 ✅ Daily progress updated")
             
-        } catch {
-            print("🔄 ❌ TodayViewModel refresh failed: \(error)")
-            errorMessage = "Failed to refresh data: \(error.localizedDescription)"
-            // Set safe fallbacks
-            timeBlocks = []
-            dailyProgress = nil
         }
         
         isLoading = false

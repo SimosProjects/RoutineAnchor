@@ -500,6 +500,7 @@ struct MainTabView: View {
 
 // MARK: - Basic Analytics View (Free Users)
 struct BasicAnalyticsView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.modelContext) private var modelContext
     @State private var dataManager: DataManager?
     @State private var todaysProgress: DailyProgress?
@@ -540,7 +541,7 @@ struct BasicAnalyticsView: View {
             HStack {
                 Text("Your Progress")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
                 
@@ -549,7 +550,7 @@ struct BasicAnalyticsView: View {
                     HapticManager.shared.anchorSelection()
                 }
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(Color.anchorBlue)
@@ -558,7 +559,7 @@ struct BasicAnalyticsView: View {
             
             Text("Unlock advanced insights and detailed analytics with Premium")
                 .font(.system(size: 16))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -568,7 +569,7 @@ struct BasicAnalyticsView: View {
         VStack(spacing: 16) {
             Text("Today's Overview")
                 .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             if let progress = todaysProgress {
@@ -617,7 +618,7 @@ struct BasicAnalyticsView: View {
                     
                     Text("No data yet")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                     
                     Text("Create and complete time blocks to see your progress!")
                         .font(.system(size: 14))
@@ -636,7 +637,7 @@ struct BasicAnalyticsView: View {
             HStack {
                 Text("Premium Analytics")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
                 

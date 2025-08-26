@@ -12,13 +12,14 @@ struct QuickTip: View {
     let text: String
     let delay: Double
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
     
     var body: some View {
         HStack(spacing: 12) {
             Text(number)
                 .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(width: 28, height: 28)
                 .background(
                     Circle()
@@ -33,7 +34,7 @@ struct QuickTip: View {
             
             Text(text)
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             Spacer()
         }

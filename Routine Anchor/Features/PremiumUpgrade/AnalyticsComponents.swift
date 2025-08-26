@@ -8,6 +8,7 @@ import SwiftUI
 
 // MARK: - Analytics Card
 struct AnalyticsCard: View {
+    @Environment(\.themeManager) private var themeManager
     let title: String
     let value: String
     let subtitle: String
@@ -31,12 +32,12 @@ struct AnalyticsCard: View {
             
             Text(value)
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                 
                 Text(subtitle)
                     .font(.system(size: 10))
@@ -57,6 +58,7 @@ struct AnalyticsCard: View {
 
 // MARK: - Category Performance Row
 struct CategoryPerformanceRow: View {
+    @Environment(\.themeManager) private var themeManager
     let category: String
     let completionRate: Double
     let totalTime: String
@@ -67,7 +69,7 @@ struct CategoryPerformanceRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(category)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(totalTime)
                     .font(.system(size: 12))
@@ -79,7 +81,7 @@ struct CategoryPerformanceRow: View {
             VStack(alignment: .trailing, spacing: 4) {
                 Text("\(Int(completionRate * 100))%")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 ProgressView(value: completionRate)
                     .progressViewStyle(LinearProgressViewStyle(tint: color))
@@ -93,6 +95,7 @@ struct CategoryPerformanceRow: View {
 
 // MARK: - Time Slot Row
 struct TimeSlotRow: View {
+    @Environment(\.themeManager) private var themeManager
     let timeSlot: String
     let performance: Double
     let label: String
@@ -103,7 +106,7 @@ struct TimeSlotRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(timeSlot)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(label)
                     .font(.system(size: 12))
@@ -115,7 +118,7 @@ struct TimeSlotRow: View {
             HStack(spacing: 8) {
                 Text("\(Int(performance * 100))%")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Circle()
                     .fill(color)

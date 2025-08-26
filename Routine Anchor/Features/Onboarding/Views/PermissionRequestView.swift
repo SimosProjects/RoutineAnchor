@@ -11,6 +11,7 @@ import UserNotifications
 struct PermissionView: View {
     let onAllow: () -> Void
     let onSkip: () -> Void
+    @Environment(\.themeManager) private var themeManager
     @State private var appearAnimation = false
     @State private var pulseAnimation = false
     
@@ -58,7 +59,7 @@ struct PermissionView: View {
                             .overlay(
                                 Image(systemName: "bell.badge.fill")
                                     .font(.system(size: 40, weight: .medium))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                             )
                             .rotation3DEffect(
                                 .degrees(appearAnimation ? 0 : 180),

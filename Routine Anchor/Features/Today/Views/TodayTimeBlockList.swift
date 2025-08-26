@@ -8,6 +8,7 @@ import SwiftUI
 
 struct TodayTimeBlocksList: View {
     let viewModel: TodayViewModel
+    @Environment(\.themeManager) private var themeManager
     @Binding var selectedTimeBlock: TimeBlock?
     @Binding var showingActionSheet: Bool
     @Binding var highlightedBlockId: UUID?
@@ -40,7 +41,7 @@ struct TodayTimeBlocksList: View {
         HStack {
             Text("Today's Schedule")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             Spacer()
             
@@ -182,7 +183,7 @@ struct TodayTimeBlocksList: View {
                     Text("Add Time Blocks")
                         .font(.system(size: 16, weight: .semibold))
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(

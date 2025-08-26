@@ -404,6 +404,7 @@ struct BenefitCard: View {
     let color: Color
     let delay: Double
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
     
     var body: some View {
@@ -423,7 +424,7 @@ struct BenefitCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(description)
                     .font(.system(size: 14, weight: .regular))

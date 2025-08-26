@@ -12,6 +12,7 @@ struct DesignedButton: View {
     var style: ButtonStyle = .primary
     let action: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
     
     enum ButtonStyle {
@@ -34,7 +35,7 @@ struct DesignedButton: View {
         }) {
             Text(title)
                 .font(.system(size: 19, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 60)
                 .background(

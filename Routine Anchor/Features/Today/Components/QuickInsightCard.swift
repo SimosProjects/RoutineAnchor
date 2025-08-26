@@ -14,6 +14,7 @@ struct QuickInsightCard: View {
     let timeText: String
     let color: Color
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
     
     var body: some View {
@@ -37,7 +38,7 @@ struct QuickInsightCard: View {
                 
                 Text(subtitle)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .lineLimit(1)
             }
             

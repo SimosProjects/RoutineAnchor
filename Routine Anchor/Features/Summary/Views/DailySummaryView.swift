@@ -95,11 +95,11 @@ struct DailySummaryView: View {
                     
                     Text("Premium Features")
                         .font(.title.bold())
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text("Premium features are temporarily unavailable. Please try again later.")
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                     
                     Button("Close") {
                         showingPremiumUpgrade = false
@@ -400,7 +400,7 @@ struct DailySummaryView: View {
                 
                 Text("Task Breakdown")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -430,7 +430,7 @@ struct DailySummaryView: View {
                 
                 Text("Insights & Suggestions")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
                 
@@ -462,7 +462,7 @@ struct DailySummaryView: View {
                                 
                                 Text("AI Suggestions")
                                     .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                             }
                             
                             ForEach(Array(suggestions.enumerated()), id: \.offset) { index, suggestion in
@@ -473,7 +473,7 @@ struct DailySummaryView: View {
                                     
                                     Text(suggestion)
                                         .font(.system(size: 14))
-                                        .foregroundStyle(.white.opacity(0.8))
+                                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                                         .lineLimit(nil)
                                 }
                             }
@@ -505,7 +505,7 @@ struct DailySummaryView: View {
                             
                             Text("Premium insights include:")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(.white.opacity(0.8))
+                                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                         }
                         
                         let features = [
@@ -566,7 +566,7 @@ struct DailySummaryView: View {
                 
                 Text("Rate Your Day")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -613,7 +613,7 @@ struct DailySummaryView: View {
                 
                 TextField("How did your day go?", text: $dayNotes, axis: .vertical)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .lineLimit(3...6)
                     .padding(16)
                     .background(
@@ -655,7 +655,7 @@ struct DailySummaryView: View {
                     Text(viewModel.isDayComplete ? "Plan Tomorrow" : "Back to Schedule")
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
                 .background(
@@ -713,7 +713,7 @@ struct DailySummaryView: View {
             VStack(spacing: 16) {
                 Text("No Data Yet")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("Complete some time blocks to see your daily summary")
                     .font(.system(size: 18, weight: .regular, design: .rounded))

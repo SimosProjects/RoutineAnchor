@@ -9,6 +9,8 @@ import SwiftUI
 struct DurationCard: View {
     let minutes: Int
     let color: Color
+    
+    @Environment(\.themeManager) private var themeManager
 
     private var formattedDuration: String {
         let hours = minutes / 60
@@ -31,7 +33,7 @@ struct DurationCard: View {
 
             Text("Duration:")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
 
             Spacer()
 

@@ -8,6 +8,7 @@ import SwiftUI
 
 struct EmailCaptureView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.themeManager) private var themeManager
     @State private var email = ""
     @State private var isLoading = false
     @State private var showThankYou = false
@@ -45,7 +46,7 @@ struct EmailCaptureView: View {
                 }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 24))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                 }
             }
             
@@ -63,12 +64,12 @@ struct EmailCaptureView: View {
                 
                 Text("Stay in the Loop")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .multilineTextAlignment(.center)
                 
                 Text("Get productivity tips, app updates, and early access to new features")
                     .font(.system(size: 16))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                     .multilineTextAlignment(.center)
             }
             
@@ -105,13 +106,13 @@ struct EmailCaptureView: View {
                         if isLoading {
                             ProgressView()
                                 .scaleEffect(0.8)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         } else {
                             Text("Stay Updated")
                                 .font(.system(size: 16, weight: .semibold))
                         }
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(
@@ -130,7 +131,7 @@ struct EmailCaptureView: View {
                     dismiss()
                 }
                 .font(.system(size: 14))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
             }
             
             Text("We respect your privacy. Unsubscribe anytime.")
@@ -153,11 +154,11 @@ struct EmailCaptureView: View {
                 VStack(spacing: 16) {
                     Text("Thank You!")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text("Check your email for a welcome message with productivity tips to get started.")
                         .font(.system(size: 16))
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                         .multilineTextAlignment(.center)
                 }
             }
@@ -168,7 +169,7 @@ struct EmailCaptureView: View {
                 dismiss()
             }
             .font(.system(size: 16, weight: .semibold))
-            .foregroundStyle(.white)
+            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             .frame(maxWidth: .infinity)
             .frame(height: 50)
             .background(Color.anchorGreen)

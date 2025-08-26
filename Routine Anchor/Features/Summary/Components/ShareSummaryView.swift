@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct ShareSummaryView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     let viewModel: DailySummaryViewModel
     
@@ -34,7 +35,7 @@ struct ShareSummaryView: View {
                         
                         Text("Share Your Progress")
                             .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         
                         Text("Inspire others with your journey")
                             .font(.system(size: 16, weight: .medium))
@@ -68,7 +69,7 @@ struct ShareSummaryView: View {
                         ScrollView {
                             Text(viewModel.generateShareableText())
                                 .font(.system(size: 14, weight: .medium, design: .monospaced))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                                 .padding(20)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(

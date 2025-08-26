@@ -5,6 +5,7 @@
 import SwiftUI
 
 struct EditTimeBlockView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @State private var formData: TimeBlockFormData
     @State private var showingValidationErrors = false
@@ -139,7 +140,7 @@ struct EditTimeBlockView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Currently Active")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("This time block is in progress")
                     .font(.system(size: 12, weight: .medium))

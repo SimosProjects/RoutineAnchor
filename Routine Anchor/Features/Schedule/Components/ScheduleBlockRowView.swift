@@ -11,6 +11,7 @@ struct ScheduleBlockRowView: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
     @State private var isVisible = false
     
@@ -51,7 +52,7 @@ struct ScheduleBlockRowView: View {
                     
                     Text(timeBlock.title)
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         .lineLimit(1)
                 }
                 

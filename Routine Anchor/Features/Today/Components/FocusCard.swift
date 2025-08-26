@@ -13,6 +13,7 @@ struct FocusCard: View {
     let currentBlock: TimeBlock?
     let viewModel: TodayViewModel
     
+    @Environment(\.themeManager) private var themeManager
     @State private var pulseScale: CGFloat = 1.0
     @State private var progressAnimation: CGFloat = 0
     
@@ -58,7 +59,7 @@ struct FocusCard: View {
                 
                 Text(text)
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .lineLimit(2)
                 
                 // Progress bar for current block

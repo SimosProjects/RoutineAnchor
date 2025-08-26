@@ -7,6 +7,7 @@ import UserNotifications
 
 struct OnboardingFlow: View {
     @Binding var showOnboarding: Bool
+    @Environment(\.themeManager) private var themeManager
     @State private var viewModel = OnboardingViewModel()
     @State private var animationPhase = 0
 
@@ -79,6 +80,7 @@ struct OnboardingFlow: View {
 
 // MARK: - Supporting Views
 struct NotificationPreview: View {
+    @Environment(\.themeManager) private var themeManager
     @State private var showNotification = false
     
     var body: some View {
@@ -91,7 +93,7 @@ struct NotificationPreview: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Time for: Morning Routine")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text("Your 7:00 AM block is starting now")
                         .font(.system(size: 12))

@@ -188,7 +188,7 @@ struct ScheduleBuilderView: View {
             HStack {
                 Text("Your Schedule")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
                 
@@ -414,6 +414,7 @@ struct SimpleTimeBlockRow: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
     
     private var accentColors: [Color] {
@@ -465,7 +466,7 @@ struct SimpleTimeBlockRow: View {
                 VStack(spacing: 2) {
                     Text(timeBlock.startTime.formatted(date: .omitted, time: .shortened))
                         .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text(timeBlock.formattedDuration)
                         .font(.system(size: 10, weight: .medium, design: .monospaced))
@@ -482,7 +483,7 @@ struct SimpleTimeBlockRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(timeBlock.title)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     if let notes = timeBlock.notes, !notes.isEmpty {
                         Text(notes)

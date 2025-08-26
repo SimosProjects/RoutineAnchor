@@ -8,6 +8,7 @@ import SwiftUI
 
 // MARK: - Premium Gate View
 struct PremiumGateView: View {
+    @Environment(\.themeManager) private var themeManager
     let feature: String
     let description: String
     let icon: String
@@ -30,12 +31,12 @@ struct PremiumGateView: View {
             VStack(spacing: 12) {
                 Text(feature)
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .multilineTextAlignment(.center)
                 
                 Text(description)
                     .font(.system(size: 16))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
             }
@@ -54,6 +55,7 @@ struct PremiumGateView: View {
 
 // MARK: - Time Block Limit Gate
 struct TimeBlockLimitGate: View {
+    @Environment(\.themeManager) private var themeManager
     let currentCount: Int
     let limit: Int
     let onUpgrade: () -> Void
@@ -65,13 +67,13 @@ struct TimeBlockLimitGate: View {
                 HStack {
                     Text("Daily Time Blocks")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Spacer()
                     
                     Text("\(currentCount)/\(limit)")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                 }
                 
                 ProgressView(value: Double(currentCount), total: Double(limit))
@@ -91,6 +93,7 @@ struct TimeBlockLimitGate: View {
 
 // MARK: - Analytics Gate
 struct AnalyticsGate: View {
+    @Environment(\.themeManager) private var themeManager
     let onUpgrade: () -> Void
     
     var body: some View {
@@ -110,12 +113,12 @@ struct AnalyticsGate: View {
             VStack(spacing: 12) {
                 Text("Advanced Analytics")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .multilineTextAlignment(.center)
                 
                 Text("Unlock detailed insights, productivity trends, and personalized recommendations to optimize your routine.")
                     .font(.system(size: 16))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
             }
@@ -178,6 +181,7 @@ struct WidgetsGate: View {
 
 // MARK: - Premium Badge
 struct PremiumBadge: View {
+    @Environment(\.themeManager) private var themeManager
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: "crown.fill")
@@ -186,7 +190,7 @@ struct PremiumBadge: View {
             Text("PRO")
                 .font(.system(size: 12, weight: .bold))
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
@@ -265,6 +269,7 @@ struct PremiumFeatureCard: View {
 
 // MARK: - Premium Mini Prompt
 struct PremiumMiniPrompt: View {
+    @Environment(\.themeManager) private var themeManager
     let title: String
     let subtitle: String
     let onUpgrade: () -> Void
@@ -278,11 +283,11 @@ struct PremiumMiniPrompt: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(subtitle)
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
             }
             
             Spacer()
@@ -292,7 +297,7 @@ struct PremiumMiniPrompt: View {
                 HapticManager.shared.anchorSelection()
             }
             .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(.white)
+            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(

@@ -13,6 +13,7 @@ struct StatCard: View {
     let color: Color
     let icon: String
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
     
     var body: some View {
@@ -24,7 +25,7 @@ struct StatCard: View {
             VStack(spacing: 4) {
                 Text(value)
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(title)
                     .font(.system(size: 12, weight: .medium))

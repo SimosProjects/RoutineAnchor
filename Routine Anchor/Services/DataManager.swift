@@ -50,8 +50,6 @@ class DataManager {
             // Try to access the persistent identifier to check validity
             _ = model.persistentModelID
             return true
-        } catch {
-            return false
         }
     }
     

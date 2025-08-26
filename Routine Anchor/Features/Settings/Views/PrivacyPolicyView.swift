@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct PrivacyPolicyView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @State private var animationPhase = 0
     
@@ -159,7 +160,7 @@ struct PrivacyPolicyView: View {
                         .font(TypographyConstants.UI.button)
                         .fontWeight(.medium)
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(

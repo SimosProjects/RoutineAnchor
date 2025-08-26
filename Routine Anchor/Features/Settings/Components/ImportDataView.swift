@@ -9,6 +9,7 @@ import SwiftData
 import UniformTypeIdentifiers
 
 struct ImportDataView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
@@ -176,7 +177,7 @@ struct ImportDataView: View {
                 Text("Choose File to Import")
                     .font(.system(size: 18, weight: .semibold))
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(

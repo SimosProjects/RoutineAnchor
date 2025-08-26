@@ -8,6 +8,7 @@ import SwiftUI
 import SwiftData
 
 struct PremiumAnalyticsView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.modelContext) private var modelContext
     @State private var premiumManager: PremiumManager
     @State private var dataManager: DataManager?
@@ -62,7 +63,7 @@ struct PremiumAnalyticsView: View {
                 HStack {
                     Text("Analytics")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Spacer()
                 }
@@ -100,7 +101,7 @@ struct PremiumAnalyticsView: View {
             
             Text("Loading Analytics...")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -113,18 +114,18 @@ struct PremiumAnalyticsView: View {
             
             Text("Error Loading Analytics")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             Text(message)
                 .font(.system(size: 14))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                 .multilineTextAlignment(.center)
             
             Button("Try Again") {
                 Task { await loadAnalyticsData() }
             }
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(.white)
+            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
             .background(Color.anchorBlue)
@@ -168,7 +169,7 @@ struct PremiumAnalyticsView: View {
             HStack {
                 Text("This Week's Overview")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -221,7 +222,7 @@ struct PremiumAnalyticsView: View {
             HStack {
                 Text("Monthly Overview")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -305,7 +306,7 @@ struct PremiumAnalyticsView: View {
             HStack {
                 Text("Category Performance")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -338,7 +339,7 @@ struct PremiumAnalyticsView: View {
             HStack {
                 Text("Peak Performance Times")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -378,14 +379,14 @@ struct PremiumAnalyticsView: View {
                 
                 Text("Trend Analysis")
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
             
             Text(trends.message)
                 .font(.system(size: 14))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -406,7 +407,7 @@ struct PremiumAnalyticsView: View {
             HStack {
                 Text("Daily Breakdown")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -427,7 +428,7 @@ struct PremiumAnalyticsView: View {
             HStack {
                 Text("Weekly Progression")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -452,7 +453,7 @@ struct PremiumAnalyticsView: View {
             HStack {
                 Text("Most Productive Days")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -484,7 +485,7 @@ struct PremiumAnalyticsView: View {
             HStack {
                 Text("AI Insights & Recommendations")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
                 
@@ -499,11 +500,11 @@ struct PremiumAnalyticsView: View {
                     
                     Text("You're doing great!")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text("No specific improvements needed right now. Keep up the excellent work!")
                         .font(.system(size: 14))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                         .multilineTextAlignment(.center)
                 }
                 .padding(.vertical, 20)
@@ -670,6 +671,7 @@ struct PremiumAnalyticsView: View {
 // MARK: - Supporting View Components
 
 struct DailyStatsRow: View {
+    @Environment(\.themeManager) private var themeManager
     let dailyStats: DailyStats
     
     var body: some View {
@@ -677,7 +679,7 @@ struct DailyStatsRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(dailyStats.date, style: .date)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 if let notes = dailyStats.dayNotes, !notes.isEmpty {
                     Text(notes)
@@ -692,7 +694,7 @@ struct DailyStatsRow: View {
             VStack(alignment: .trailing, spacing: 4) {
                 Text("\(dailyStats.completedBlocks)/\(dailyStats.totalBlocks)")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("\(Int(dailyStats.completionRate * 100))%")
                     .font(.system(size: 12))
@@ -704,6 +706,7 @@ struct DailyStatsRow: View {
 }
 
 struct WeeklyBreakdownRow: View {
+    @Environment(\.themeManager) private var themeManager
     let weekNumber: Int
     let completionRate: Double
     let totalBlocks: Int
@@ -712,14 +715,14 @@ struct WeeklyBreakdownRow: View {
         HStack {
             Text("Week \(weekNumber)")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             Spacer()
             
             VStack(alignment: .trailing, spacing: 4) {
                 Text("\(Int(completionRate * 100))%")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("\(totalBlocks) blocks")
                     .font(.system(size: 12))
@@ -731,6 +734,7 @@ struct WeeklyBreakdownRow: View {
 }
 
 struct ProductiveDayRow: View {
+    @Environment(\.themeManager) private var themeManager
     let productiveDay: ProductiveDay
     let rank: Int
     
@@ -744,7 +748,7 @@ struct ProductiveDayRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(productiveDay.date, style: .date)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("\(productiveDay.totalBlocks) blocks completed")
                     .font(.system(size: 12))
@@ -762,6 +766,7 @@ struct ProductiveDayRow: View {
 }
 
 struct ImprovementSuggestionCard: View {
+    @Environment(\.themeManager) private var themeManager
     let suggestion: ImprovementSuggestion
     let color: Color
     
@@ -775,11 +780,11 @@ struct ImprovementSuggestionCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(suggestion.title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(suggestion.description)
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                     .lineLimit(nil)
             }
             

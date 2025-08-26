@@ -356,18 +356,19 @@ extension PremiumManager {
 // MARK: - Debug Settings View
 #if DEBUG
 struct DebugPremiumView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.premiumManager) private var premiumManager
     
     var body: some View {
         VStack(spacing: 20) {
             Text("🧪 Debug Premium Controls")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             VStack(spacing: 12) {
                 HStack {
                     Text("Premium Status:")
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Spacer()
                     
@@ -390,7 +391,7 @@ struct DebugPremiumView: View {
                         Text(premiumManager?.userIsPremium == true ? "Disable Premium" : "Enable Premium")
                     }
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
                     .background(
@@ -407,7 +408,7 @@ struct DebugPremiumView: View {
                         Text("Grant 1 Hour Premium")
                     }
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 40)
                     .background(

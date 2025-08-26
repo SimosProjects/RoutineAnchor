@@ -8,6 +8,7 @@ import SwiftUI
 import SwiftData
 
 struct ExportDataView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Query private var timeBlocks: [TimeBlock]
@@ -94,7 +95,7 @@ struct ExportDataView: View {
                 
                 Text("Export Your Data")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("Download your routines and progress")
                     .font(.system(size: 16, weight: .medium))
@@ -108,7 +109,7 @@ struct ExportDataView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Export Format")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             VStack(spacing: 12) {
                 ForEach(ExportService.ExportFormat.allCases, id: \.self) { format in
@@ -161,7 +162,7 @@ struct ExportDataView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Include in Export")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             VStack(spacing: 12) {
                 ToggleOption(
@@ -197,7 +198,7 @@ struct ExportDataView: View {
                 Text(isExporting ? "Exporting..." : "Export Data")
                     .font(.system(size: 18, weight: .semibold))
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(
@@ -332,6 +333,7 @@ struct ExportDataView: View {
 // MARK: - Supporting Views
 
 struct ToggleOption: View {
+    @Environment(\.themeManager) private var themeManager
     let title: String
     let subtitle: String
     @Binding var isOn: Bool
@@ -347,7 +349,7 @@ struct ToggleOption: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium))

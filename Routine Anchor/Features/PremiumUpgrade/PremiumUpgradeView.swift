@@ -8,6 +8,7 @@ import SwiftUI
 import StoreKit
 
 struct PremiumUpgradeView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.presentationMode) private var presentationMode
     @State private var premiumManager: PremiumManager
@@ -72,7 +73,7 @@ struct PremiumUpgradeView: View {
             
             Text("Loading Premium Plans...")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
             
             Spacer()
         }
@@ -87,7 +88,7 @@ struct PremiumUpgradeView: View {
                 Button(action: { closeView() }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 28))
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
                 .background(Color.clear)
@@ -110,12 +111,12 @@ struct PremiumUpgradeView: View {
             VStack(spacing: 12) {
                 Text("Upgrade to Premium")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .multilineTextAlignment(.center)
                 
                 Text("Unlock the full potential of Routine Anchor")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                     .multilineTextAlignment(.center)
             }
         }
@@ -126,7 +127,7 @@ struct PremiumUpgradeView: View {
         VStack(spacing: 20) {
             Text("Premium Features")
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             VStack(spacing: 16) {
                 PremiumFeatureRow(
@@ -164,14 +165,14 @@ struct PremiumUpgradeView: View {
         VStack(spacing: 16) {
             Text("Choose Your Plan")
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             if premiumManager.products.isEmpty {
                 // Fallback when products aren't loaded
                 VStack(spacing: 12) {
                     Text("Unable to load pricing")
                         .font(.system(size: 16))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                     
                     Button("Retry") {
                         Task {
@@ -276,7 +277,7 @@ struct PremiumUpgradeView: View {
                         .tint(.white)
                     Text("Processing...")
                         .font(.system(size: 14))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                 }
             }
             
@@ -293,7 +294,7 @@ struct PremiumUpgradeView: View {
                         premiumManager.clearError()
                     }
                     .font(.system(size: 14))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                 }
             }
         }
@@ -308,7 +309,7 @@ struct PremiumUpgradeView: View {
                 }
             }
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(.white.opacity(0.7))
+            .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
             .disabled(premiumManager.isLoading)
             
             // Terms and privacy
@@ -398,6 +399,7 @@ struct PremiumUpgradeView: View {
 
 // MARK: - Enhanced Premium Pricing Card
 struct PremiumPricingCard: View {
+    @Environment(\.themeManager) private var themeManager
     let product: Product
     let isSelected: Bool
     let savings: String?
@@ -413,7 +415,7 @@ struct PremiumPricingCard: View {
                         Spacer()
                         Text("MOST POPULAR")
                             .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 4)
                             .background(
@@ -429,7 +431,7 @@ struct PremiumPricingCard: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(product.displayName)
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         
                         if let savings = savings, !savings.isEmpty {
                             Text("Save \(savings)")
@@ -443,7 +445,7 @@ struct PremiumPricingCard: View {
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(product.displayPrice)
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         
                         // Show billing period
                         Text(product.id.contains("yearly") ? "per year" : "per month")
@@ -458,7 +460,7 @@ struct PremiumPricingCard: View {
                         let monthlyEquivalent = NSDecimalNumber(decimal: product.price).doubleValue / 12.0
                         Text("Just $\(String(format: "%.2f", monthlyEquivalent)) per month")
                             .font(.system(size: 14))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                         Spacer()
                     }
                 }
@@ -487,6 +489,7 @@ struct PremiumPricingCard: View {
 
 // MARK: - Premium Feature Row
 struct PremiumFeatureRow: View {
+    @Environment(\.themeManager) private var themeManager
     let feature: PremiumManager.PremiumFeature
     let delay: Double
     @State private var isVisible = false
@@ -507,11 +510,11 @@ struct PremiumFeatureRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(feature.displayName)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(feature.description)
                     .font(.system(size: 14))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                     .lineLimit(2)
             }
             

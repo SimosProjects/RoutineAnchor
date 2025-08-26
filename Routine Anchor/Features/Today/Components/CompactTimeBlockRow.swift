@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct CompactTimeBlockRow: View {
+    @Environment(\.themeManager) private var themeManager
     let timeBlock: TimeBlock
     let isActive: Bool
     let isHighlighted: Bool
@@ -32,7 +33,7 @@ struct CompactTimeBlockRow: View {
                     
                     Text(timeBlock.title)
                         .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         .lineLimit(1)
                 }
                 

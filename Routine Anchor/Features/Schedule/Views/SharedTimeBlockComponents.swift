@@ -98,6 +98,7 @@ struct QuickDurationSelector: View {
 
 // MARK: - Shared History Row Component (for Edit view)
 struct HistoryRow: View {
+    @Environment(\.themeManager) private var themeManager
     let title: String
     let date: Date
     let icon: String
@@ -111,7 +112,7 @@ struct HistoryRow: View {
             
             Text(title)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             Spacer()
             

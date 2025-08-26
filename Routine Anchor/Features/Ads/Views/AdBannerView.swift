@@ -79,8 +79,9 @@ struct AdBannerView: UIViewRepresentable {
     }
 }
 
-// MARK: - Styled Ad Banner with Upgrade Prompt (Fixed)
+// MARK: - Styled Ad Banner with Upgrade Prompt
 struct StyledAdBanner: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.premiumManager) private var premiumManager
     @State private var showUpgrade = false
     
@@ -102,7 +103,7 @@ struct StyledAdBanner: View {
                     
                     Text("Remove ads with Premium")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                     
                     Spacer()
                     

@@ -55,43 +55,23 @@ struct ThemedAnimatedBackground: View {
     }
 }
 
-// MARK: - Theme-Aware Color Extensions
-extension Color {
-    // Current theme colors
-    static var themed: ThemedColors {
-        ThemedColors()
-    }
-}
-
-@MainActor
-struct ThemedColors {
-    @Environment(\.themeManager) private var themeManager
-    
-    var primary: Color {
-        themeManager?.currentTheme.primaryColor ?? Theme.defaultTheme.primaryColor
-    }
-    
-    var secondary: Color {
-        themeManager?.currentTheme.secondaryColor ?? Theme.defaultTheme.secondaryColor
-    }
-    
-    var accent: Color {
-        themeManager?.currentTheme.accentColor ?? Theme.defaultTheme.accentColor
-    }
-    
-    var textPrimary: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
-    }
-    
-    var textSecondary: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
-    }
-}
-
 // MARK: - Settings Integration Component
 struct ThemeSettingsRow: View {
     @Environment(\.themeManager) private var themeManager
     @State private var showThemeSelection = false
+    
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+    
+    private var themeTertiaryText: Color {
+        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+    }
     
     var body: some View {
         Button(action: {
@@ -105,7 +85,7 @@ struct ThemeSettingsRow: View {
                         .frame(width: 32, height: 32)
                     
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(.white.opacity(0.3), lineWidth: 1)
+                        .stroke(themeTertiaryText.opacity(0.3), lineWidth: 1)
                         .frame(width: 32, height: 32)
                 }
                 
@@ -113,7 +93,7 @@ struct ThemeSettingsRow: View {
                     HStack {
                         Text("Theme")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themePrimaryText)
                         
                         if themeManager?.currentTheme.isPremium == true {
                             Image(systemName: "crown.fill")
@@ -124,14 +104,14 @@ struct ThemeSettingsRow: View {
                     
                     Text(themeManager?.currentTheme.name ?? "Default")
                         .font(.system(size: 14))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(themeSecondaryText)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(themeSecondaryText)
             }
             .padding(.vertical, 4)
         }
@@ -178,6 +158,15 @@ struct ThemedButton: View {
     
     @Environment(\.themeManager) private var themeManager
     
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+    
     var body: some View {
         Button(action: action) {
             Text(title)
@@ -193,15 +182,19 @@ struct ThemedButton: View {
     private var textColor: Color {
         switch style {
         case .primary, .accent:
-            return .white
+            return themePrimaryText
         case .secondary:
-            return themeManager?.currentTheme.textPrimaryColor ?? .white
+            return themeSecondaryText
         }
     }
     
     private var backgroundGradient: LinearGradient {
         guard let theme = themeManager?.currentTheme else {
-            return LinearGradient(colors: [.blue], startPoint: .leading, endPoint: .trailing)
+            return LinearGradient(
+                colors: [Theme.defaultTheme.primaryColor, Theme.defaultTheme.secondaryColor],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
         }
         
         switch style {
@@ -257,36 +250,26 @@ struct ThemedCard<Content: View>: View {
     }
 }
 
-// MARK: - Migration Helper for Existing Views
-struct ThemeMigrationHelpers {
-    /*
-     Use these helpers to gradually migrate your existing views to use themes:
-     
-     1. Replace hardcoded colors:
-        OLD: .foregroundStyle(.white)
-        NEW: .foregroundStyle(Color.themed.textPrimary)
-     
-     2. Replace cards:
-        OLD: VStack { content }.padding(20).glassMorphism(cornerRadius: 16)
-        NEW: ThemedCard { VStack { content } }
-     
-     3. Replace buttons:
-        OLD: Custom button implementations
-        NEW: ThemedButton(title: "Text", style: .primary) { action }
-     */
-}
-
 // MARK: - Debug Theme Switcher (Development Only)
 #if DEBUG
 struct DebugThemeSwitcher: View {
     @Environment(\.themeManager) private var themeManager
     
+    // Theme color helpers
+    private var themePrimaryText: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var themeSecondaryText: Color {
+        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+    }
+    
     var body: some View {
         if let themeManager = themeManager {
             VStack(spacing: 12) {
-                Text("🎨 Debug Theme Switcher")
+                Text("Debug Theme Switcher")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themePrimaryText)
                 
                 HStack(spacing: 8) {
                     Button("Random") {
@@ -295,7 +278,7 @@ struct DebugThemeSwitcher: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Color.blue)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themePrimaryText)
                     .cornerRadius(8)
                     
                     Button("Next") {
@@ -304,7 +287,7 @@ struct DebugThemeSwitcher: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Color.green)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themePrimaryText)
                     .cornerRadius(8)
                     
                     Button("Default") {
@@ -313,22 +296,19 @@ struct DebugThemeSwitcher: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Color.orange)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themePrimaryText)
                     .cornerRadius(8)
                 }
                 
                 Text("Current: \(themeManager.currentTheme.name)")
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(themeSecondaryText)
             }
             .padding(16)
             .themedGlassMorphism(cornerRadius: 12)
         }
     }
 }
-
-// Add this to any view during development:
-// .overlay(alignment: .topTrailing) { DebugThemeSwitcher().padding() }
 #endif
 
 // MARK: - Theme System Health Check

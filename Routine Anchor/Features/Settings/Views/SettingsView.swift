@@ -322,7 +322,7 @@ struct SettingsView: View {
             HStack {
                 Text("Premium")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
                 
@@ -342,11 +342,11 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Premium Active")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                             
                             Text("Thank you for supporting Routine Anchor!")
                                 .font(.system(size: 14))
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                         }
                         
                         Spacer()
@@ -371,14 +371,14 @@ struct SettingsView: View {
                         
                         Text("Upgrade to Premium")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         
                         Spacer()
                     }
                     
                     Text("Unlock unlimited time blocks, advanced analytics, and premium themes")
                         .font(.system(size: 14))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -425,7 +425,7 @@ struct SettingsView: View {
                 HStack {
                     Text("Account")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Spacer()
                     
@@ -450,11 +450,11 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Email Address")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                         
                         Text(authManager.userEmail ?? "No email")
                             .font(.system(size: 16))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     }
                     
                     Spacer()
@@ -474,11 +474,11 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Email Preferences")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         
                         Text("Manage notification settings")
                             .font(.system(size: 14))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                     }
                     
                     Spacer()
@@ -532,7 +532,7 @@ struct SettingsView: View {
             HStack {
                 Text("🧪 Debug")
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
                 
@@ -544,7 +544,7 @@ struct SettingsView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Color.red)
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .cornerRadius(6)
             }
             
@@ -564,15 +564,15 @@ struct SettingsView: View {
                 
                 Text("isEmailCaptured: \(authManager.isEmailCaptured)")
                     .font(.system(size: 10))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("userEmail: \(authManager.userEmail ?? "nil")")
                     .font(.system(size: 10))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("shouldShowEmailCapture: \(authManager.shouldShowEmailCapture)")
                     .font(.system(size: 10))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             }
             .padding(8)
             .background(Color.black.opacity(0.5))
@@ -581,7 +581,7 @@ struct SettingsView: View {
             HStack {
                 Text("Status: \(premiumManager?.userIsPremium == true ? "PREMIUM ✅" : "FREE ❌")")
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
                 
                 Spacer()
                 
@@ -593,7 +593,7 @@ struct SettingsView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Color.blue)
-                .foregroundStyle(.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .cornerRadius(6)
             }
         }

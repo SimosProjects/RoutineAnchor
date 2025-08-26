@@ -12,6 +12,7 @@ struct FormSection<Content: View>: View {
     let color: Color
     let content: Content
 
+    @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
 
     init(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) {
@@ -31,7 +32,7 @@ struct FormSection<Content: View>: View {
 
                 Text(title)
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
 
                 Spacer()
             }
