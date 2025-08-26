@@ -9,6 +9,7 @@ struct DailySummaryView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.premiumManager) private var premiumManager
+    @Environment(\.themeManager) private var themeManager
     @State private var viewModel: DailySummaryViewModel
     @State private var showingPremiumUpgrade = false
     
@@ -40,13 +41,12 @@ struct DailySummaryView: View {
                 .allowsHitTesting(false)
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) { // Increased spacing from 12 to 20
-                    // Header
+                VStack(spacing: 20) {
                     headerSection
                     
                     // Main content
                     if viewModel.hasData {
-                        VStack(spacing: 20) { // Increased spacing from 12 to 20
+                        VStack(spacing: 20) {
                             // Progress visualization
                             progressCircleSection(viewModel)
                             
@@ -129,6 +129,7 @@ struct DailySummaryView: View {
         }
         .sheet(isPresented: $showingShareSheet) {
             ShareSummaryView(viewModel: viewModel)
+                .environment(\.themeManager, themeManager)
         }
         .onChange(of: selectedRating) { _, newValue in
             if newValue > 0 {

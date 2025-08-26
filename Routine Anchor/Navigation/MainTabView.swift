@@ -157,6 +157,7 @@ struct MainTabView: View {
             EmailCaptureView { email in
                 authManager.captureEmail(email)
             }
+            .environment(\.themeManager, themeManager)
             .onDisappear {
                 // Ensure dismissal is properly tracked when sheet is dismissed
                 if !authManager.isEmailCaptured {
