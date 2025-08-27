@@ -130,11 +130,13 @@ struct ExportDataView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(format.rawValue)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(selectedFormat == format ? .white : Color.white.opacity(0.8))
+                        .foregroundStyle(selectedFormat == format ?
+                            (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) :
+                            (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                     
                     Text(descriptionForFormat(format))
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.6))
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 }
                 
                 Spacer()
@@ -342,8 +344,8 @@ struct ToggleOption: View {
     var body: some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(isOn ? Color.anchorBlue : Color.white.opacity(0.6))
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(isOn ? Color.anchorBlue : (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -353,7 +355,7 @@ struct ToggleOption: View {
                 
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.6))
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             }
             
             Spacer()

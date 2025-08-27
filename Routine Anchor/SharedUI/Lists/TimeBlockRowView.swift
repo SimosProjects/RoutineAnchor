@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct TimeBlockRowView: View {
+    @Environment(\.themeManager) private var themeManager
+    
     let timeBlock: TimeBlock
     let showActions: Bool
     let onStart: (() -> Void)?
@@ -166,20 +168,24 @@ struct TimeBlockRowView: View {
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.white, Color.white.opacity(0.9)],
+                            colors: [
+                                themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor,
+                                (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.9)
+                            ],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
-                
+
                 Text(timeBlock.formattedDuration)
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.6))
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(
                         Capsule()
-                            .fill(Color.white.opacity(0.1))
+                            .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ??
+                                   Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
                     )
             }
         }

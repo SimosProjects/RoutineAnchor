@@ -11,6 +11,8 @@ struct TabItemView: View {
     let selectedIcon: String
     let title: String
     let isSelected: Bool
+    
+    @Environment(\.themeManager) private var themeManager
 
     var body: some View {
         VStack(spacing: 4) {
@@ -19,12 +21,18 @@ struct TabItemView: View {
                 .foregroundStyle(
                     isSelected ?
                     LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
+                        colors: [
+                            themeManager?.currentTheme.primaryColor ?? Color.anchorBlue,
+                            themeManager?.currentTheme.accentColor ?? Color.anchorPurple
+                        ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ) :
                     LinearGradient(
-                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.6)],
+                        colors: [
+                            themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor,
+                            themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+                        ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -35,7 +43,9 @@ struct TabItemView: View {
             Text(title)
                 .font(.system(size: 10, weight: isSelected ? .semibold : .medium))
                 .foregroundStyle(
-                    isSelected ? Color.anchorBlue : Color.white.opacity(0.6)
+                    isSelected ?
+                    (themeManager?.currentTheme.primaryColor ?? Color.anchorBlue) :
+                    (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 )
         }
     }

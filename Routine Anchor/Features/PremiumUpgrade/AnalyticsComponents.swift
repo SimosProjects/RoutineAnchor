@@ -41,7 +41,8 @@ struct AnalyticsCard: View {
                 
                 Text(subtitle)
                     .font(.system(size: 10))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ??
+                                     Theme.defaultTheme.textSecondaryColor)
             }
         }
         .padding(16)
@@ -73,7 +74,8 @@ struct CategoryPerformanceRow: View {
                 
                 Text(totalTime)
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ??
+                                     Theme.defaultTheme.textSecondaryColor)
             }
             
             Spacer()

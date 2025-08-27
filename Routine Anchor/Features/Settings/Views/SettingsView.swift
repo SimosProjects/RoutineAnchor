@@ -421,7 +421,6 @@ struct SettingsView: View {
     private var accountSection: some View {
         VStack(spacing: 16) {
             VStack(spacing: 16) {
-                // Title inside the box (like other sections)
                 HStack {
                     Text("Account")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -485,7 +484,7 @@ struct SettingsView: View {
                     
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.5))
+                        .foregroundStyle(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor)
                 }
                 .onTapGesture {
                     showingEmailPreferences = true

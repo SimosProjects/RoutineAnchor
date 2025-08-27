@@ -18,7 +18,8 @@ struct ProgressOverviewCard: View {
             // Circular progress
             ZStack {
                 Circle()
-                    .stroke(Color.white.opacity(0.2), lineWidth: 4)
+                    .stroke((themeManager?.currentTheme.textTertiaryColor ??
+                             Theme.defaultTheme.textTertiaryColor).opacity(0.4), lineWidth: 4)
                     .frame(width: 60, height: 60)
                 
                 Circle()
@@ -47,7 +48,8 @@ struct ProgressOverviewCard: View {
                 
                 Text(viewModel.timeSummary)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ??
+                                     Theme.defaultTheme.textSecondaryColor)
                 
                 // Performance indicator
                 HStack(spacing: 6) {

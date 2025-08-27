@@ -34,7 +34,8 @@ struct QuickInsightCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.6))
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ??
+                                     Theme.defaultTheme.textSecondaryColor)
                 
                 Text(subtitle)
                     .font(.system(size: 14, weight: .semibold))

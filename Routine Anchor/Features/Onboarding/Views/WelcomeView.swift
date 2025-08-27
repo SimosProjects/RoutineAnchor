@@ -10,6 +10,7 @@ import UserNotifications
 // MARK: - Welcome View
 struct WelcomeView: View {
     let onContinue: () -> Void
+    @Environment(\.themeManager) private var themeManager
     @State private var appearAnimation = false
     @State private var floatingAnimation = false
 
@@ -96,7 +97,8 @@ struct WelcomeView: View {
 
                             Text("Transform your daily chaos into\npeaceful productivity")
                                 .font(.system(size: 20, weight: .regular, design: .rounded))
-                                .foregroundStyle(Color.white.opacity(0.7))
+                                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ??
+                                                 Theme.defaultTheme.textSecondaryColor)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(6)
                                 .opacity(appearAnimation ? 1 : 0)
@@ -145,8 +147,8 @@ struct WelcomeView: View {
 
                         Text("Join 100,000+ people building better habits")
                             .font(.system(size: 15, weight: .medium, design: .rounded))
-                            .foregroundStyle(Color.white.opacity(0.5))
-                            .opacity(appearAnimation ? 1 : 0)
+                            .foregroundStyle(themeManager?.currentTheme.textTertiaryColor ??
+                                             Theme.defaultTheme.textTertiaryColor)
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 20)

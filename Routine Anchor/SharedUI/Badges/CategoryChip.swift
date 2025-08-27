@@ -11,6 +11,8 @@ struct CategoryChip: View {
     let isSelected: Bool
     let color: Color
     let action: () -> Void
+    
+    @Environment(\.themeManager) private var themeManager
 
     var body: some View {
         Button(action: {
@@ -19,13 +21,17 @@ struct CategoryChip: View {
         }) {
             Text(title)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(isSelected ? .white : color)
+                .foregroundStyle(isSelected ?
+                    (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) :
+                    color)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(isSelected ? color : Color.white.opacity(0.1))
+                        .fill(isSelected ? color :
+                            (themeManager?.currentTheme.colorScheme.surfacePrimary.color.opacity(0.3) ??
+                             Color.white.opacity(0.1)))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
