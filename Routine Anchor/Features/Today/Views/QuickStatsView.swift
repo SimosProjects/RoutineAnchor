@@ -31,7 +31,7 @@ struct QuickStatsView: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundStyle(Color.white.opacity(0.3))
+                            .foregroundStyle(Color(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
                     }
                 }
                 .padding(.horizontal, 24)
@@ -81,7 +81,7 @@ struct QuickStatsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Currently Working On")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.6))
+                            .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         
                         Text(currentBlock.title)
                             .font(.system(size: 18, weight: .semibold))
@@ -95,7 +95,7 @@ struct QuickStatsView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
-                    .background(Color.white.opacity(0.05))
+                    .background(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
                     .cornerRadius(12)
                     .padding(.horizontal, 24)
                 }

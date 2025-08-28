@@ -205,7 +205,7 @@ struct EmailPreferencesView: View {
             
             Text("We respect your privacy and will never spam you. You can change these preferences anytime.")
                 .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                 .multilineTextAlignment(.center)
         }
     }
@@ -214,7 +214,7 @@ struct EmailPreferencesView: View {
     private var unsubscribeSection: some View {
         VStack(spacing: 16) {
             Divider()
-                .background(.white.opacity(0.2))
+                .background((themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color))
             
             VStack(spacing: 12) {
                 Text("Don't want any emails?")
@@ -321,7 +321,7 @@ struct EmailPreferenceToggle: View {
                 HStack {
                     Text(description)
                         .font(.system(size: 13))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                     
@@ -338,7 +338,7 @@ struct EmailPreferenceToggle: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(
-                            isOn ? color.opacity(0.3) : Color.white.opacity(0.1),
+                            isOn ? color.opacity(0.3) : Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color),
                             lineWidth: 1
                         )
                 )

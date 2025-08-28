@@ -40,7 +40,7 @@ struct StatusGroupSection: View {
                         
                         Text("\(blocks.count) \(blocks.count == 1 ? "block" : "blocks")")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.6))
+                            .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                     }
                     
                     Spacer()
@@ -48,7 +48,7 @@ struct StatusGroupSection: View {
                     // Expand icon
                     Image(systemName: "chevron.down")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.6))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
                 .padding(16)
@@ -87,7 +87,7 @@ struct StatusGroupSection: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.08),
+                                    Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.8),
                                     Color.white.opacity(0.04)
                                 ],
                                 startPoint: .topLeading,

@@ -11,6 +11,7 @@ import SwiftUI
 // MARK: - Shared Category Selector Component
 struct CategorySelector: View {
     let categories: [String]
+    @Environment(\.themeManager) private var themeManager
     @Binding var selectedCategory: String
     
     var body: some View {
@@ -19,7 +20,7 @@ struct CategorySelector: View {
             CategoryChip(
                 title: "No Category",
                 isSelected: selectedCategory.isEmpty,
-                color: Color.white.opacity(0.6)
+                color: Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85)
             ) {
                 selectedCategory = ""
             }
@@ -43,7 +44,7 @@ struct CategorySelector: View {
         case "health": return Color.anchorGreen
         case "learning": return Color.anchorTeal
         case "social": return Color.anchorWarning
-        default: return Color.white.opacity(0.6)
+        default: return Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85)
         }
     }
 }
@@ -140,7 +141,7 @@ struct TimeBlockFormView<Content: View>: View {
     let content: Content
     let onDismiss: () -> Void
     
-    // REMOVED: @State private var particleSystem = ParticleSystem()
+    @Environment(\.themeManager) private var themeManager
     @State private var animationPhase = 0
     @State private var isVisible = false
     
@@ -186,7 +187,6 @@ struct TimeBlockFormView<Content: View>: View {
         }
         .navigationBarHidden(true)
         .task {
-            // CHANGED: Using .task instead of .onAppear for async work
             await startAnimations()
         }
     }
@@ -197,13 +197,13 @@ struct TimeBlockFormView<Content: View>: View {
                 Button(action: onDismiss) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.8))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
                                 .fill(.ultraThinMaterial)
                                 .background(
-                                    Circle().fill(Color.white.opacity(0.1))
+                                    Circle().fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
                                 )
                         )
                         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
@@ -258,7 +258,7 @@ struct TimeBlockFormView<Content: View>: View {
                     
                     Text(subtitle)
                         .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                 }
             }
         }

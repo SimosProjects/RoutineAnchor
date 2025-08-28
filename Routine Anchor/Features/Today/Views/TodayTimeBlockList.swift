@@ -167,11 +167,11 @@ struct TodayTimeBlocksList: View {
         VStack(spacing: 16) {
             Image(systemName: "calendar.badge.plus")
                 .font(.system(size: 48, weight: .light))
-                .foregroundStyle(Color.white.opacity(0.3))
+                .foregroundStyle(Color(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
             
             Text("No blocks scheduled for today")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(Color.white.opacity(0.6))
+                .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
             
             Button(action: {
                 NotificationCenter.default.post(name: .navigateToSchedule, object: nil)

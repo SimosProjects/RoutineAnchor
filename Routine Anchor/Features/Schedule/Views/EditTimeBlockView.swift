@@ -144,7 +144,7 @@ struct EditTimeBlockView: View {
                 
                 Text("This time block is in progress")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
             }
             
             Spacer()
@@ -242,7 +242,7 @@ struct EditTimeBlockView: View {
                         
                         Text("Quick Duration")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.8))
+                            .foregroundStyle(Color(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                     }
                     
                     QuickDurationSelector(
@@ -314,7 +314,7 @@ struct EditTimeBlockView: View {
         FormSection(
             title: "History",
             icon: "clock.arrow.circlepath",
-            color: Color.white.opacity(0.6)
+            color: Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85)
         ) {
             VStack(spacing: 12) {
                 // Safely handle dates
@@ -337,7 +337,7 @@ struct EditTimeBlockView: View {
                 if originalTimeBlock.createdAt == Date.distantPast {
                     Text("No history available")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.5))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor))
                 }
             }
         }

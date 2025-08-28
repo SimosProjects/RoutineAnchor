@@ -82,7 +82,7 @@ struct ImportDataView: View {
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 28))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
                         .background(
                             Circle()
                                 .fill(.ultraThinMaterial)
@@ -124,7 +124,7 @@ struct ImportDataView: View {
                     
                     Text("Restore from backup")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.6))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                 }
             }
         }
@@ -159,7 +159,7 @@ struct ImportDataView: View {
                 .fill(.ultraThinMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color), lineWidth: 1)
                 )
         )
     }

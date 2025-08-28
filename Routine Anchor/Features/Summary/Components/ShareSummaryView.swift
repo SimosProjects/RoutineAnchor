@@ -39,7 +39,7 @@ struct ShareSummaryView: View {
                         
                         Text("Inspire others with your journey")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.7))
+                            .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                     }
                     .padding(.top, 20)
                     
@@ -48,7 +48,7 @@ struct ShareSummaryView: View {
                         HStack {
                             Text("Preview")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(Color.white.opacity(0.8))
+                                .foregroundStyle(Color(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                             
                             Spacer()
                             
@@ -77,12 +77,12 @@ struct ShareSummaryView: View {
                                         .fill(.ultraThinMaterial)
                                         .background(
                                             RoundedRectangle(cornerRadius: 16)
-                                                .fill(Color.white.opacity(0.05))
+                                                .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
                                         )
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                        .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
                                 )
                         }
                         .frame(maxHeight: 300)

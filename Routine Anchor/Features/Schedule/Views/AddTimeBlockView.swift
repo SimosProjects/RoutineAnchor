@@ -6,6 +6,7 @@ import SwiftUI
 import Foundation
 
 struct AddTimeBlockView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @State private var formData = TimeBlockFormData()
     
@@ -140,7 +141,7 @@ struct AddTimeBlockView: View {
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white.opacity(0.1))
+                            .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
@@ -237,7 +238,7 @@ struct AddTimeBlockView: View {
                         
                         Text("Quick Duration")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.8))
+                            .foregroundStyle(Color(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                     }
                     
                     QuickDurationSelector(

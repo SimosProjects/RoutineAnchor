@@ -183,7 +183,7 @@ struct PremiumUpgradeView: View {
                     .foregroundStyle(Color.anchorBlue)
                 }
                 .padding(20)
-                .background(Color.white.opacity(0.1))
+                .background(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
                 .cornerRadius(12)
             } else {
                 VStack(spacing: 12) {
@@ -238,23 +238,23 @@ struct PremiumUpgradeView: View {
                     VStack(spacing: 4) {
                         Text("• Billed annually")
                             .font(.system(size: 14))
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         
                         Text("• Cancel anytime in Settings")
                             .font(.system(size: 14))
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                     }
                 } else {
                     Text("• Billed monthly, cancel anytime")
                         .font(.system(size: 14))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                 }
                 
             } else {
                 VStack(spacing: 8) {
                     Text("Select a plan to continue")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                     
                     // Auto-select recommended plan button
                     if let yearlyProduct = premiumManager.yearlyProduct {
@@ -327,7 +327,7 @@ struct PremiumUpgradeView: View {
                 }
             }
             .font(.system(size: 12))
-            .foregroundStyle(.white.opacity(0.5))
+            .foregroundStyle((themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor))
         }
     }
     
@@ -450,7 +450,7 @@ struct PremiumPricingCard: View {
                         // Show billing period
                         Text(product.id.contains("yearly") ? "per year" : "per month")
                             .font(.system(size: 12))
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                     }
                 }
                 
@@ -469,7 +469,7 @@ struct PremiumPricingCard: View {
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
-                        isSelected ? Color.anchorBlue : Color.white.opacity(0.2),
+                        isSelected ? Color.anchorBlue : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color),
                         lineWidth: isSelected ? 2 : 1
                     )
                     .background(
@@ -477,7 +477,7 @@ struct PremiumPricingCard: View {
                             .fill(
                                 isSelected
                                 ? Color.anchorBlue.opacity(0.1)
-                                : Color.white.opacity(0.05)
+                                : Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5)
                             )
                     )
             )

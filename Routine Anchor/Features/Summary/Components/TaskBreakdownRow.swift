@@ -32,7 +32,7 @@ struct TaskBreakdownRow: View {
                 
                 Text(timeBlock.shortFormattedTimeRange)
                     .font(.system(size: 12, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.6))
+                    .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
             }
             
             Spacer()
@@ -41,7 +41,7 @@ struct TaskBreakdownRow: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(timeBlock.formattedDuration)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.6))
+                    .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                 
                 Text(timeBlock.status.shortDisplayName)
                     .font(.system(size: 11, weight: .semibold))
@@ -51,7 +51,7 @@ struct TaskBreakdownRow: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.05))
+                .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)

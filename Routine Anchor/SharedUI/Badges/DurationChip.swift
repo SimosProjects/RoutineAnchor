@@ -11,6 +11,7 @@ struct DurationChip: View {
     let isSelected: Bool
     let action: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
     
     var displayText: String {
@@ -35,7 +36,7 @@ struct DurationChip: View {
         }) {
             Text(displayText)
                 .font(.system(size: 14, weight: isSelected ? .bold : .semibold))
-                .foregroundStyle(isSelected ? .white : Color.anchorWarning)
+                .foregroundStyle(isSelected ? (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) : Color.anchorWarning)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(

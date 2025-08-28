@@ -8,6 +8,7 @@ import SwiftUI
 
 // MARK: - Progress Bar
 struct ProgressBar: View {
+    @Environment(\.themeManager) private var themeManager
     let progress: Double
     let color: Color
     let animated: Bool
@@ -19,7 +20,7 @@ struct ProgressBar: View {
             ZStack(alignment: .leading) {
                 // Track
                 Capsule()
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
                     .frame(height: 4)
                 
                 // Progress

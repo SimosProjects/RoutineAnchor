@@ -27,7 +27,7 @@ struct AnalyticsCard: View {
                 
                 Image(systemName: trend.iconName)
                     .font(.system(size: 12))
-                    .foregroundStyle(trend.color)
+                    .foregroundStyle(trend.color(theme: themeManager?.currentTheme))
             }
             
             Text(value)

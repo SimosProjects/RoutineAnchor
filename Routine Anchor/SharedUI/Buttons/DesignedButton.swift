@@ -58,7 +58,7 @@ struct DesignedButton: View {
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                        .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
                 )
                 .shadow(
                     color: style == .gradient ? Color(red: 0.2, green: 0.7, blue: 0.5).opacity(0.5) : Color(red: 0.3, green: 0.5, blue: 1.0).opacity(0.5),

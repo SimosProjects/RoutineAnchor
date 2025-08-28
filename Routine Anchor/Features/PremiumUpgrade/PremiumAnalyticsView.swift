@@ -146,7 +146,7 @@ struct PremiumAnalyticsView: View {
                 }) {
                     Text(range.displayName)
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(selectedTimeRange == range ? .white : .white.opacity(0.6))
+                        .foregroundStyle(selectedTimeRange == range ? (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) : (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(
@@ -159,7 +159,7 @@ struct PremiumAnalyticsView: View {
         .padding(4)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.1))
+                .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
         )
     }
     
@@ -314,7 +314,7 @@ struct PremiumAnalyticsView: View {
             if categories.isEmpty {
                 Text("No category data available")
                     .font(.system(size: 14))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                     .padding(.vertical, 20)
             } else {
                 VStack(spacing: 12) {
@@ -347,7 +347,7 @@ struct PremiumAnalyticsView: View {
             if timeStats.mostProductiveHours.isEmpty {
                 Text("More data needed for time analysis")
                     .font(.system(size: 14))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                     .padding(.vertical, 20)
             } else {
                 VStack(spacing: 12) {
@@ -461,7 +461,7 @@ struct PremiumAnalyticsView: View {
             if productiveDays.isEmpty {
                 Text("Keep building your routine to see productive day patterns!")
                     .font(.system(size: 14))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                     .multilineTextAlignment(.center)
                     .padding(.vertical, 20)
             } else {
@@ -684,7 +684,7 @@ struct DailyStatsRow: View {
                 if let notes = dailyStats.dayNotes, !notes.isEmpty {
                     Text(notes)
                         .font(.system(size: 12))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         .lineLimit(1)
                 }
             }
@@ -698,7 +698,7 @@ struct DailyStatsRow: View {
                 
                 Text("\(Int(dailyStats.completionRate * 100))%")
                     .font(.system(size: 12))
-                    .foregroundStyle(dailyStats.completionRate > 0.8 ? .green : .white.opacity(0.6))
+                    .foregroundStyle(dailyStats.completionRate > 0.8 ? .green : (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
             }
         }
         .padding(.vertical, 8)
@@ -726,7 +726,7 @@ struct WeeklyBreakdownRow: View {
                 
                 Text("\(totalBlocks) blocks")
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
             }
         }
         .padding(.vertical, 6)
@@ -752,7 +752,7 @@ struct ProductiveDayRow: View {
                 
                 Text("\(productiveDay.totalBlocks) blocks completed")
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
             }
             
             Spacer()
@@ -837,11 +837,13 @@ enum TrendDisplayDirection {
         }
     }
     
-    var color: Color {
+    func color(theme: Theme? = nil) -> Color {
         switch self {
         case .up: return .green
         case .down: return .red
-        case .neutral: return .white.opacity(0.6)
+        case .neutral:
+            let themeToUse = theme ?? Theme.defaultTheme
+            return themeToUse.textSecondaryColor.opacity(0.85)
         }
     }
 }

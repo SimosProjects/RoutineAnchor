@@ -158,7 +158,7 @@ struct ScheduleBuilderView: View {
                     
                     Text("Design your perfect routine")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 }
                 
                 Spacer()
@@ -317,7 +317,7 @@ struct ScheduleBuilderView: View {
                 
                 Text("Create time blocks to structure your day and build consistent, productive habits.")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -361,7 +361,7 @@ struct ScheduleBuilderView: View {
             
             Text("Setting up your schedule...")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.7))
+                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             
             Spacer()
         }
@@ -441,7 +441,7 @@ struct SimpleTimeBlockRow: View {
     
     private var statusColor: Color {
         switch timeBlock.status {
-        case .notStarted: return .white.opacity(0.6)
+        case .notStarted: return (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85)
         case .inProgress: return .anchorBlue
         case .completed: return .anchorGreen
         case .skipped: return .anchorWarning
@@ -470,13 +470,13 @@ struct SimpleTimeBlockRow: View {
                     
                     Text(timeBlock.formattedDuration)
                         .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundStyle(Color.white.opacity(0.6))
+                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.1))
+                        .fill(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color)
                 )
                 
                 // Title and notes
@@ -488,7 +488,7 @@ struct SimpleTimeBlockRow: View {
                     if let notes = timeBlock.notes, !notes.isEmpty {
                         Text(notes)
                             .font(.system(size: 12, weight: .regular))
-                            .foregroundStyle(Color.white.opacity(0.6))
+                            .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                             .lineLimit(1)
                     }
                 }
@@ -529,11 +529,11 @@ struct SimpleTimeBlockRow: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.white.opacity(0.05))
+                .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color, lineWidth: 1)
         )
         .scaleEffect(isPressed ? 0.97 : 1.0)
         .onTapGesture {
@@ -552,6 +552,8 @@ struct SimpleTimeBlockRow: View {
 // MARK: - Static Background Components
 
 struct StaticMeshBackground: View {
+    @Environment(\.themeManager) private var themeManager
+    
     var body: some View {
         Canvas { context, size in
             let gridSize = 30
@@ -564,7 +566,7 @@ struct StaticMeshBackground: View {
                     
                     context.fill(
                         Path(ellipseIn: CGRect(x: xPos - dotSize/2, y: yPos - dotSize/2, width: dotSize, height: dotSize)),
-                        with: .color(.white.opacity(0.05))
+                        with: .color((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
                     )
                 }
             }

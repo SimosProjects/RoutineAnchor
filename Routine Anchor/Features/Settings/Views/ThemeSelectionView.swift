@@ -292,6 +292,8 @@ struct ThemeSelectionView: View {
 
 // MARK: - Category Pill
 struct CategoryPill: View {
+    @Environment(\.themeManager) private var themeManager
+    
     let category: ThemeCategory
     let isSelected: Bool
     let action: () -> Void
@@ -300,12 +302,12 @@ struct CategoryPill: View {
         Button(action: action) {
             Text(category.displayName)
                 .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
-                .foregroundStyle(isSelected ? .black : .white.opacity(0.8))
+                .foregroundStyle(isSelected ? .black : (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(
                     Capsule()
-                        .fill(isSelected ? .white : Color.white.opacity(0.2))
+                        .fill(isSelected ? (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color))
                 )
         }
         .scaleEffect(isSelected ? 1.05 : 1.0)

@@ -20,7 +20,7 @@ struct PremiumGateView: View {
             ZStack {
                 Image(systemName: icon)
                     .font(.system(size: 40, weight: .light))
-                    .foregroundStyle(.white.opacity(0.3))
+                    .foregroundStyle((themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
                 
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .medium))
@@ -102,7 +102,7 @@ struct AnalyticsGate: View {
             ZStack {
                 Image(systemName: "chart.line.uptrend.xyaxis")
                     .font(.system(size: 40, weight: .light))
-                    .foregroundStyle(.white.opacity(0.3))
+                    .foregroundStyle((themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
                 
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .medium))
@@ -208,6 +208,8 @@ struct PremiumBadge: View {
 
 // MARK: - Premium Feature Card
 struct PremiumFeatureCard: View {
+    @Environment(\.themeManager) private var themeManager
+    
     let feature: PremiumManager.PremiumFeature
     let isLocked: Bool
     let onTap: () -> Void
@@ -219,7 +221,7 @@ struct PremiumFeatureCard: View {
                 ZStack {
                     Image(systemName: feature.icon)
                         .font(.system(size: 24, weight: .medium))
-                        .foregroundStyle(isLocked ? .white.opacity(0.3) : .white)
+                        .foregroundStyle(isLocked ? (themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6) : .white)
                     
                     if isLocked {
                         Image(systemName: "lock.fill")
@@ -232,7 +234,7 @@ struct PremiumFeatureCard: View {
                 VStack(spacing: 4) {
                     Text(feature.displayName)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(isLocked ? .white.opacity(0.5) : .white)
+                        .foregroundStyle(isLocked ? (themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor) : .white)
                         .multilineTextAlignment(.center)
                     
                     if isLocked {
@@ -247,14 +249,14 @@ struct PremiumFeatureCard: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(
                         isLocked
-                        ? Color.white.opacity(0.05)
+                        ? Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5)
                         : Color.anchorBlue.opacity(0.1)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(
                                 isLocked
-                                ? Color.white.opacity(0.1)
+                                ? Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color)
                                 : Color.anchorBlue.opacity(0.3),
                                 lineWidth: 1
                             )

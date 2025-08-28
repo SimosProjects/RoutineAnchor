@@ -329,7 +329,7 @@ struct CompletionCelebrationCard: View {
                 }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
                 }
             }
             

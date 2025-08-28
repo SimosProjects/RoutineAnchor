@@ -36,7 +36,7 @@ struct FocusCard: View {
                 HStack {
                     Text("Focus Mode")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.6))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         .textCase(.uppercase)
                         .tracking(1)
                     

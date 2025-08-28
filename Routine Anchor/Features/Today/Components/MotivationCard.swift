@@ -21,7 +21,7 @@ struct MotivationalCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Daily Reflection")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.6))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         .textCase(.uppercase)
                         .tracking(1)
                     
@@ -168,7 +168,7 @@ struct CompletionActions: View {
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                        .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
                 )
                 .scaleEffect(isPlanTomorrowPressed ? 0.97 : 1)
                 .shadow(color: Color.anchorBlue.opacity(0.3), radius: 6, x: 0, y: 3)

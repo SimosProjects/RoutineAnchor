@@ -79,7 +79,7 @@ struct WelcomeView: View {
                         VStack(spacing: 12) {
                             Text("Welcome to")
                                 .font(.system(size: 26, weight: .medium, design: .rounded))
-                                .foregroundStyle(Color.white.opacity(0.8))
+                                .foregroundStyle(Color(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                                 .opacity(appearAnimation ? 1 : 0)
                                 .offset(y: appearAnimation ? 0 : 20)
 

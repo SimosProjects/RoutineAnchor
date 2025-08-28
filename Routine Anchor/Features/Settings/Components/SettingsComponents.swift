@@ -8,6 +8,7 @@ import SwiftUI
 import SwiftData
 
 struct SettingsSection<Content: View>: View {
+    @Environment(\.themeManager) private var themeManager
     let title: String
     let icon: String
     let color: Color
@@ -50,7 +51,7 @@ struct SettingsSection<Content: View>: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.08),
+                                    Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.8),
                                     Color.white.opacity(0.04)
                                 ],
                                 startPoint: .topLeading,
@@ -117,12 +118,14 @@ struct SettingsToggle: View {
 
 // MARK: - Custom Toggle Style
 struct DesignedToggleStyle: ToggleStyle {
+    @Environment(\.themeManager) private var themeManager
+    
     func makeBody(configuration: Configuration) -> some View {
         HStack {
             configuration.label
             
             RoundedRectangle(cornerRadius: 16)
-                .fill(configuration.isOn ? Color.anchorGreen : Color.white.opacity(0.2))
+                .fill(configuration.isOn ? Color.anchorGreen : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color))
                 .frame(width: 44, height: 26)
                 .overlay(
                     Circle()

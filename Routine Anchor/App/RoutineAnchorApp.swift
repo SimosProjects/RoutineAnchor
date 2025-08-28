@@ -190,8 +190,9 @@ struct RoutineAnchorApp: App {
     }
 }
 
-// MARK: - Migration Progress View (unchanged)
+// MARK: - Migration Progress View
 struct MigrationProgressView: View {
+    @Environment(\.themeManager) private var themeManager
     @EnvironmentObject var migrationService: MigrationService
     @State private var animationProgress: Double = 0
     
@@ -227,7 +228,7 @@ struct MigrationProgressView: View {
                 // Description
                 Text("We're migrating your data to the latest format. This will only take a moment.")
                     .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
@@ -240,7 +241,7 @@ struct MigrationProgressView: View {
                     
                     Text("\(Int(migrationService.migrationProgress * 100))%")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                 }
                 .padding(.horizontal)
                 
@@ -253,7 +254,7 @@ struct MigrationProgressView: View {
                         
                         Text(error.localizedDescription)
                             .font(.system(size: 12))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                             .multilineTextAlignment(.center)
                         
                         Button(action: {
@@ -282,8 +283,8 @@ struct MigrationProgressView: View {
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(0.2),
-                                        Color.white.opacity(0.1)
+                                        Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color),
+                                        Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -302,6 +303,7 @@ struct MigrationProgressView: View {
 
 // MARK: - App Loading View (unchanged)
 struct AppLoadingView: View {
+    @Environment(\.themeManager) private var themeManager
     @State private var pulseScale: CGFloat = 1.0
     @State private var rotationDegrees: Double = 0
     
@@ -343,7 +345,7 @@ struct AppLoadingView: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.white, .white.opacity(0.8)],
+                            colors: [.white, (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -361,8 +363,10 @@ struct AppLoadingView: View {
     }
 }
 
-// MARK: - Data Error View (unchanged)
+// MARK: - Data Error View
 struct DataErrorView: View {
+    @Environment(\.themeManager) private var themeManager
+    
     let error: Error
     let retry: () -> Void
     
@@ -386,7 +390,7 @@ struct DataErrorView: View {
                 // Error message
                 Text(error.localizedDescription)
                     .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
@@ -410,7 +414,7 @@ struct DataErrorView: View {
                     }) {
                         Text("Check Settings")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                     }
                 }
                 .padding(.horizontal, 40)

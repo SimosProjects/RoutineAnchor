@@ -49,7 +49,7 @@ struct OnboardingFlow: View {
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     ) : LinearGradient(
-                                        colors: [Color.white.opacity(0.2), Color.white.opacity(0.2)],
+                                        colors: [Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color)],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -97,7 +97,7 @@ struct NotificationPreview: View {
                     
                     Text("Your 7:00 AM block is starting now")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                 }
                 
                 Spacer()
@@ -105,7 +105,7 @@ struct NotificationPreview: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(.ultraThinMaterial)
@@ -113,7 +113,7 @@ struct NotificationPreview: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                    .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.3), radius: 15, x: 0, y: 8)
             .scaleEffect(showNotification ? 1 : 0.8)

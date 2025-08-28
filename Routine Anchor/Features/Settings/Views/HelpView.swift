@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct HelpView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @State private var animationPhase = 0
     @State private var searchText = ""
@@ -71,13 +72,13 @@ struct HelpView: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.8))
+                        .foregroundStyle(Color(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                         .frame(width: 32, height: 32)
                         .background(
                             Circle()
                                 .fill(.ultraThinMaterial)
                                 .background(
-                                    Circle().fill(Color.white.opacity(0.1))
+                                    Circle().fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
                                 )
                         )
                 }
@@ -94,7 +95,7 @@ struct HelpView: View {
                     .foregroundStyle(Color.anchorBlue)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.white.opacity(0.15))
+                    .background(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color))
                     .cornerRadius(8)
                 }
             }
@@ -153,12 +154,12 @@ struct HelpView: View {
                 .fill(.ultraThinMaterial)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.05))
+                        .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
                 )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
         )
         .padding(.horizontal, 24)
         .padding(.top, 16)
@@ -209,6 +210,7 @@ struct HelpView: View {
 }
 
 struct HelpCategoryChip: View {
+    @Environment(\.themeManager) private var themeManager
     let category: HelpCategory
     let isSelected: Bool
     let action: () -> Void
@@ -225,17 +227,17 @@ struct HelpCategoryChip: View {
                 Text(category.title)
                     .font(.system(size: 14, weight: .medium))
             }
-            .foregroundStyle(isSelected ? .white : Color.anchorTextSecondary)
+            .foregroundStyle(isSelected ? (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) : Color.anchorTextSecondary)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? category.color : Color.white.opacity(0.1))
+                    .fill(isSelected ? category.color : Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(
-                        isSelected ? Color.clear : Color.white.opacity(0.15),
+                        isSelected ? Color.clear : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color),
                         lineWidth: 1
                     )
             )
@@ -397,6 +399,7 @@ private let helpItems: [HelpItem] = [
 
 // MARK: - Supporting Views
 struct HelpItemView: View {
+    @Environment(\.themeManager) private var themeManager
     let item: HelpItem
     @State private var isExpanded = false
     @State private var isVisible = false
@@ -456,7 +459,7 @@ struct HelpItemView: View {
                 .fill(.ultraThinMaterial)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.05))
+                        .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
                 )
         )
         .overlay(

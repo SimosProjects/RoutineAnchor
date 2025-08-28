@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct AppPreferencesSection: View {
+    @Environment(\.themeManager) private var themeManager
+    
     @Binding var hapticsEnabled: Bool
     @Binding var autoResetEnabled: Bool
     let onResetProgress: () -> Void
@@ -123,7 +125,7 @@ struct AppPreferencesSection: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white.opacity(0.05))
+                .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
         )
     }
 }

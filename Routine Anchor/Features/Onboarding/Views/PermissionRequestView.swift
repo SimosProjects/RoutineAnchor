@@ -85,7 +85,7 @@ struct PermissionView: View {
                             
                             Text("Gentle nudges at just the right moments keep you focused without the stress")
                                 .font(.system(size: 18, weight: .regular, design: .rounded))
-                                .foregroundStyle(Color.white.opacity(0.7))
+                                .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(4)
                                 .padding(.horizontal, 20)
@@ -119,7 +119,7 @@ struct PermissionView: View {
                         }) {
                             Text("I'll set this up later")
                                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundStyle(Color.white.opacity(0.6))
+                                .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         }
                         .opacity(appearAnimation ? 1 : 0)
                     }

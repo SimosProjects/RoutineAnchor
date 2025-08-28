@@ -215,7 +215,7 @@ struct TodayView: View {
             
             Text("Loading your day...")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.7))
+                .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
             
             Spacer()
         }
