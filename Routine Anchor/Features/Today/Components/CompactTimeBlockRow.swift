@@ -74,7 +74,8 @@ struct CompactTimeBlockRow: View {
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(isActive ? Color.anchorBlue.opacity(0.1) : Color.white.opacity(0.05))
+                    .fill(isActive ? Color.anchorBlue.opacity(0.1) :
+                        (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.2))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
@@ -100,10 +101,14 @@ struct CompactTimeBlockRow: View {
     
     private var statusColor: Color {
         switch timeBlock.status {
-        case .notStarted: return .white.opacity(0.6)
-        case .inProgress: return .anchorBlue
-        case .completed: return .anchorGreen
-        case .skipped: return .anchorWarning
+        case .notStarted:
+            return themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        case .inProgress:
+            return Color.anchorBlue
+        case .completed:
+            return Color.anchorGreen
+        case .skipped:
+            return Color.anchorWarning
         }
     }
 }

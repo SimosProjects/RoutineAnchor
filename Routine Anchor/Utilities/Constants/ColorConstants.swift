@@ -17,10 +17,19 @@ struct ColorConstants {
         static let background = Color.appBackgroundPrimary
         static let surface = Color.appBackgroundSecondary
         
-        static let onPrimary = Color.white
-        static let onSuccess = Color.white
-        static let onWarning = Color.white
-        static let onError = Color.white
+        // DEPRECATED: These should use theme colors instead
+        // Kept for backward compatibility but should be migrated
+        @available(*, deprecated, message: "Use themeManager.currentTheme.textPrimaryColor")
+        static let onPrimary = Color(red: 1.0, green: 1.0, blue: 1.0)
+        
+        @available(*, deprecated, message: "Use themeManager.currentTheme.textPrimaryColor")
+        static let onSuccess = Color(red: 1.0, green: 1.0, blue: 1.0)
+        
+        @available(*, deprecated, message: "Use themeManager.currentTheme.textPrimaryColor")
+        static let onWarning = Color(red: 1.0, green: 1.0, blue: 1.0)
+        
+        @available(*, deprecated, message: "Use themeManager.currentTheme.textPrimaryColor")
+        static let onError = Color(red: 1.0, green: 1.0, blue: 1.0)
     }
     
     // MARK: - Status Colors
@@ -38,9 +47,14 @@ struct ColorConstants {
         static let progressTrack = Color.progressTrack
         static let progressFill = Color.progressFill
         
-        // Additional UI colors
+        // Additional UI colors - DEPRECATED
+        @available(*, deprecated, message: "Use themeManager.currentTheme.colorScheme.surfacePrimary")
         static let cardBackground = Color.cardBackground
+        
+        @available(*, deprecated, message: "Use themeManager.currentTheme.textPrimaryColor")
         static let textPrimary = Color.textPrimary
+        
+        @available(*, deprecated, message: "Use themeManager.currentTheme.textSecondaryColor")
         static let textSecondary = Color.textSecondary
     }
     
@@ -49,5 +63,43 @@ struct ColorConstants {
         static let primary = Color.buttonPrimary
         static let secondary = Color.buttonSecondary
         static let destructive = Color.buttonDestructive
+    }
+}
+
+// MARK: - Theme-Aware Color Helper
+// This extension provides theme-aware color access
+extension ColorConstants {
+    /// Helper to get theme-aware text colors
+    @MainActor
+    struct ThemedText {
+        @Environment(\.themeManager) private var themeManager
+        
+        var primary: Color {
+            themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        }
+        
+        var secondary: Color {
+            themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        }
+        
+        var tertiary: Color {
+            themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+        }
+    }
+    
+    /// Helper to get theme-aware surface colors
+    @MainActor
+    struct ThemedSurface {
+        @Environment(\.themeManager) private var themeManager
+        
+        var primary: Color {
+            themeManager?.currentTheme.colorScheme.surfacePrimary.color ??
+            Theme.defaultTheme.colorScheme.surfacePrimary.color
+        }
+        
+        var secondary: Color {
+            themeManager?.currentTheme.colorScheme.surfaceSecondary.color ??
+            Theme.defaultTheme.colorScheme.surfaceSecondary.color
+        }
     }
 }

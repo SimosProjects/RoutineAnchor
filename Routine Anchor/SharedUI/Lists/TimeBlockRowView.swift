@@ -94,9 +94,9 @@ struct TimeBlockRowView: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color.white.opacity(0),
-                                Color.white.opacity(0.3),
-                                Color.white.opacity(0)
+                                Color.clear,
+                                (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.3),
+                                Color.clear
                             ],
                             startPoint: .top,
                             endPoint: .bottom
@@ -139,7 +139,7 @@ struct TimeBlockRowView: View {
                     .frame(width: 36, height: 36)
                     .overlay(
                         Circle()
-                            .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                            .stroke((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.2), lineWidth: 0.5)
                     )
                 
                 // Icon with shadow
@@ -208,7 +208,10 @@ struct TimeBlockRowView: View {
                         .font(.system(size: 19, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.white, Color.white.opacity(0.95)],
+                                colors: [
+                                    themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor,
+                                    (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.95)
+                                ],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -244,20 +247,20 @@ struct TimeBlockRowView: View {
             if let notes = timeBlock.notes, !notes.isEmpty {
                 Text(notes)
                     .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.white.opacity(0.75))
+                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.9))
                     .lineLimit(2)
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.white.opacity(0.05))
+                            .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.2))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                                     .stroke(
                                         LinearGradient(
                                             colors: [
-                                                Color.white.opacity(0.1),
-                                                Color.white.opacity(0.05)
+                                                (themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color).opacity(0.3),
+                                                (themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color).opacity(0.1)
                                             ],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
@@ -281,7 +284,7 @@ struct TimeBlockRowView: View {
             ZStack(alignment: .leading) {
                 // Background track
                 Capsule()
-                    .fill(Color.white.opacity(0.1))
+                    .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
                     .frame(height: 4)
                 
                 // Progress fill
@@ -402,8 +405,8 @@ struct TimeBlockRowView: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color.white.opacity(0.08),
-                                Color.white.opacity(0.02)
+                                (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.15),
+                                (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.05)
                             ],
                             startPoint: .top,
                             endPoint: .bottom
@@ -417,8 +420,8 @@ struct TimeBlockRowView: View {
             .stroke(
                 LinearGradient(
                     colors: [
-                        Color.white.opacity(0.15),
-                        Color.white.opacity(0.05)
+                        (themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color).opacity(0.3),
+                        (themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color).opacity(0.1)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -430,10 +433,14 @@ struct TimeBlockRowView: View {
     // MARK: - Helper Properties
     private var statusColor: Color {
         switch timeBlock.status {
-        case .notStarted: return Color.white.opacity(0.7)
-        case .inProgress: return Color.anchorBlue
-        case .completed: return Color.anchorGreen
-        case .skipped: return Color.anchorWarning
+        case .notStarted:
+            return themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        case .inProgress:
+            return Color.anchorBlue
+        case .completed:
+            return Color.anchorGreen
+        case .skipped:
+            return Color.anchorWarning
         }
     }
     
@@ -459,7 +466,8 @@ struct TimeBlockRowView: View {
         case "personal": return Color.anchorPurple
         case "health": return Color.anchorGreen
         case "learning": return Color.anchorTeal
-        default: return Color.white.opacity(0.6)
+        default:
+            return themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
         }
     }
     
@@ -470,6 +478,7 @@ struct TimeBlockRowView: View {
 
 // MARK: - Action Button Component
 struct TimeBlockActionButton: View {
+    @Environment(\.themeManager) private var themeManager
     let icon: String
     let color: Color
     let action: () -> Void
@@ -498,7 +507,7 @@ struct TimeBlockActionButton: View {
                 
                 // Glass overlay
                 Circle()
-                    .fill(Color.white.opacity(0.05))
+                    .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.1))
                     .blur(radius: 1)
                 
                 // Border

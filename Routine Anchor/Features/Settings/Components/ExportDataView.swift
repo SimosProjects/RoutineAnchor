@@ -73,9 +73,9 @@ struct ExportDataView: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                         .frame(width: 30, height: 30)
-                        .background(Color.white.opacity(0.1))
+                        .background((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
                         .clipShape(Circle())
                 }
                 
@@ -99,7 +99,7 @@ struct ExportDataView: View {
                 
                 Text("Download your routines and progress")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             }
         }
     }
@@ -124,7 +124,8 @@ struct ExportDataView: View {
             HStack(spacing: 16) {
                 Image(systemName: iconForFormat(format))
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(selectedFormat == format ? Color.anchorBlue : Color.white.opacity(0.6))
+                    .foregroundStyle(selectedFormat == format ? Color.anchorBlue :
+                        (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                     .frame(width: 24, height: 24)
                 
                 VStack(alignment: .leading, spacing: 4) {
@@ -150,7 +151,9 @@ struct ExportDataView: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(selectedFormat == format ? Color.white.opacity(0.15) : Color.white.opacity(0.08))
+                    .fill(selectedFormat == format ?
+                        (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5) :
+                        (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -190,7 +193,7 @@ struct ExportDataView: View {
             HStack(spacing: 12) {
                 if isExporting {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .progressViewStyle(CircularProgressViewStyle(tint: themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor))
                         .scaleEffect(0.8)
                 } else {
                     Image(systemName: "square.and.arrow.up")
@@ -367,7 +370,7 @@ struct ToggleOption: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.08))
+                .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
         )
     }
 }

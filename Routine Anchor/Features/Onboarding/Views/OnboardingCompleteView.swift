@@ -74,7 +74,7 @@ struct SetupCompleteView: View {
                             
                             Text("Your journey to a more\nbalanced life starts now")
                                 .font(.system(size: 20, weight: .regular, design: .rounded))
-                                .foregroundStyle(Color.white.opacity(0.7))
+                                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(4)
                         }
@@ -118,7 +118,7 @@ struct SetupCompleteView: View {
                         
                         Text("Let's make today count 🚀")
                             .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundStyle(Color.white.opacity(0.6))
+                            .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                             .opacity(appearAnimation ? 1 : 0)
                     }
                     .padding(.horizontal, 24)

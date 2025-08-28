@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct SecondaryButton: View {
+    @Environment(\.themeManager) private var themeManager
+    
     // MARK: - Properties
     let title: String
     let action: () -> Void
@@ -81,7 +83,8 @@ struct SecondaryButton: View {
         case .filled:
             switch variant {
             case .neutral: return Color.textPrimary
-            case .destructive, .success: return Color.white
+            case .destructive, .success:
+                return themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
             }
         case .outlined, .ghost:
             switch variant {

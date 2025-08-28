@@ -2,12 +2,12 @@
 //  Color+Extensions.swift
 //  Routine Anchor
 //
-//  Design System Colors
+//  Design System Colors - Theme-aware version
 //
 import SwiftUI
 
 extension Color {
-    // MARK: - Brand Colors
+    // MARK: - Brand Colors (Keep these as they're brand-specific)
     static let anchorBlue = Color(red: 0.4, green: 0.6, blue: 1.0)
     static let anchorPurple = Color(red: 0.6, green: 0.4, blue: 1.0)
     static let anchorGreen = Color(red: 0.2, green: 0.8, blue: 0.5)
@@ -22,48 +22,22 @@ extension Color {
     // MARK: - Background Colors
     static let anchorBackground = Color(red: 0.051, green: 0.047, blue: 0.078)
     static let anchorBackgroundSecondary = Color(red: 0.071, green: 0.067, blue: 0.098)
-    static let glassMorphism = Color.white.opacity(0.08)
     
     // MARK: - Semantic Colors
     static let anchorSuccess = Color(red: 0.204, green: 0.78, blue: 0.349)
     static let anchorWarning = Color(red: 1.0, green: 0.584, blue: 0.0)
     static let anchorError = Color(red: 1.0, green: 0.231, blue: 0.188)
     
-    // MARK: - Text Colors for Dark Theme
-    static let anchorTextPrimary = Color.white
-    static let anchorTextSecondary = Color.white.opacity(0.7)
-    static let anchorTextTertiary = Color.white.opacity(0.5)
+    // MARK: - DEPRECATED: Legacy text colors (use Theme.defaultTheme colors instead)
+    // These are kept temporarily for backward compatibility but should be removed
+    @available(*, deprecated, message: "Use Theme.defaultTheme.textPrimaryColor instead")
+    static let anchorTextPrimary = Color(red: 1.0, green: 1.0, blue: 1.0)
     
-    // MARK: - Glass Morphism Effects
-    static var glassBackground: some View {
-        RoundedRectangle(cornerRadius: 20)
-            .fill(.ultraThinMaterial)
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color.white.opacity(0.05),
-                        Color.white.opacity(0.02)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .cornerRadius(20)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.2),
-                                Color.white.opacity(0.05)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            )
-    }
+    @available(*, deprecated, message: "Use Theme.defaultTheme.textSecondaryColor instead")
+    static let anchorTextSecondary = Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.7)
+    
+    @available(*, deprecated, message: "Use Theme.defaultTheme.textTertiaryColor instead")
+    static let anchorTextTertiary = Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.5)
     
     // MARK: - Gradient Definitions
     static let anchorGradient = LinearGradient(
@@ -95,27 +69,46 @@ extension Color {
     static let appBackgroundSecondary = anchorBackgroundSecondary
     static let appBackgroundTertiary = Color(red: 0.09, green: 0.087, blue: 0.118)
     
-    // MARK: - Text Colors
-    static let textPrimary = anchorTextPrimary
-    static let textSecondary = anchorTextSecondary
-    static let textTertiary = anchorTextTertiary
+    // MARK: - DEPRECATED: Legacy text colors (use Theme instead)
+    @available(*, deprecated, message: "Use themeManager.currentTheme.textPrimaryColor")
+    static let textPrimary = Color(red: 1.0, green: 1.0, blue: 1.0)
     
-    // MARK: - Original Status Colors
+    @available(*, deprecated, message: "Use themeManager.currentTheme.textSecondaryColor")
+    static let textSecondary = Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.7)
+    
+    @available(*, deprecated, message: "Use themeManager.currentTheme.textTertiaryColor")
+    static let textTertiary = Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.5)
+    
+    // MARK: - Status Colors
     static let blockCompleted = anchorGreen
     static let blockInProgress = anchorWarning
-    static let blockUpcoming = Color.white.opacity(0.3)
+    
+    // MARK: - DEPRECATED: Use theme colors for these
+    @available(*, deprecated, message: "Use themeManager.currentTheme.textTertiaryColor")
+    static let blockUpcoming = Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.3)
+    
     static let blockSkipped = anchorError
     
-    // MARK: - UI Element Colors
-    static let cardBackground = Color.white.opacity(0.06)
+    // MARK: - UI Element Colors - DEPRECATED (use theme colors)
+    @available(*, deprecated, message: "Use themeManager.currentTheme.colorScheme.surfacePrimary")
+    static let cardBackground = Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.06)
+    
     static let cardShadow = Color.black.opacity(0.3)
-    static let separatorColor = Color.white.opacity(0.1)
-    static let progressTrack = Color.white.opacity(0.1)
+    
+    @available(*, deprecated, message: "Use themeManager.currentTheme.colorScheme.surfaceSecondary")
+    static let separatorColor = Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.1)
+    
+    @available(*, deprecated, message: "Use themeManager.currentTheme.colorScheme.surfacePrimary")
+    static let progressTrack = Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.1)
+    
     static let progressFill = anchorBlue
     
     // MARK: - Interactive Colors
     static let buttonPrimary = anchorBlue
-    static let buttonSecondary = Color.white.opacity(0.15)
+    
+    @available(*, deprecated, message: "Use themeManager.currentTheme.colorScheme.surfaceSecondary")
+    static let buttonSecondary = Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.15)
+    
     static let buttonDestructive = anchorError
     
     // MARK: - Special Effects
@@ -140,7 +133,7 @@ extension Color {
     }
 }
 
-// MARK: - Gradient View Modifiers
+// MARK: - Theme-Aware View Modifiers
 extension View {
     /// Apply gradient background
     func anchorGradientBackground() -> some View {
@@ -156,15 +149,26 @@ extension View {
         )
     }
     
-    /// Apply glass morphism effect
+    /// DEPRECATED: Legacy glass morphism - use themedGlassMorphism instead
+    @available(*, deprecated, renamed: "themedGlassMorphism", message: "Use themedGlassMorphism for theme support")
     func glassMorphism(cornerRadius: CGFloat = 20) -> some View {
-        self
+        self.modifier(ThemedGlassMorphismModifier(cornerRadius: cornerRadius))
+    }
+}
+
+// MARK: - Theme-Aware Glass Morphism Modifier
+struct ThemedGlassMorphismModifier: ViewModifier {
+    @Environment(\.themeManager) private var themeManager
+    let cornerRadius: CGFloat
+    
+    func body(content: Content) -> some View {
+        content
             .background(.ultraThinMaterial)
             .background(
                 LinearGradient(
                     colors: [
-                        Color.white.opacity(0.05),
-                        Color.white.opacity(0.02)
+                        surfaceColor.opacity(0.05),
+                        surfaceColor.opacity(0.02)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -176,8 +180,8 @@ extension View {
                     .stroke(
                         LinearGradient(
                             colors: [
-                                Color.white.opacity(0.2),
-                                Color.white.opacity(0.05)
+                                surfaceColor.opacity(0.2),
+                                surfaceColor.opacity(0.05)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -185,5 +189,15 @@ extension View {
                         lineWidth: 1
                     )
             )
+    }
+    
+    private var surfaceColor: Color {
+        // Use theme surface color if available, otherwise fallback to a neutral gray
+        if let theme = themeManager?.currentTheme {
+            return theme.colorScheme.surfacePrimary.color
+        } else {
+            // Fallback to a neutral color that works in both light and dark mode
+            return Color(red: 0.5, green: 0.5, blue: 0.5)
+        }
     }
 }

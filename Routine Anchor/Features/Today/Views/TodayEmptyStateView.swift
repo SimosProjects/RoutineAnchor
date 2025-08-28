@@ -8,6 +8,7 @@ struct TodayEmptyStateView: View {
     let onCreateRoutine: () -> Void
     let onUseTemplate: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var appearAnimation = false
     @State private var floatingOffset: CGFloat = 0
     @State private var sparkleOpacity: Double = 0
@@ -72,7 +73,7 @@ struct TodayEmptyStateView: View {
                             
                             Text("Transform your day with intentional time blocks that keep you focused and productive")
                                 .font(.system(size: 18, weight: .regular, design: .rounded))
-                                .foregroundStyle(Color.white.opacity(0.7))
+                                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(4)
                                 .padding(.horizontal, 20)
@@ -135,11 +136,11 @@ struct TodayEmptyStateView: View {
                         VStack(spacing: 8) {
                             Text("✨ Start small, think big")
                                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundStyle(Color.white.opacity(0.6))
+                                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                             
                             Text("Most people begin with just 3-4 time blocks")
                                 .font(.system(size: 12, weight: .regular))
-                                .foregroundStyle(Color.white.opacity(0.5))
+                                .foregroundStyle(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor)
                         }
                         .opacity(appearAnimation ? 1 : 0)
                     }
@@ -179,11 +180,12 @@ struct TodayEmptyStateView: View {
 
 // MARK: - Calendar Illustration
 struct CalendarIllustrationView: View {
+    @Environment(\.themeManager) private var themeManager
     @State private var blockAnimations: [Bool] = Array(repeating: false, count: 4)
     
     var body: some View {
         ZStack {
-            // Calendar base
+            // Calendar base - use themed glass morphism
             RoundedRectangle(cornerRadius: 20)
                 .fill(.ultraThinMaterial)
                 .background(
@@ -191,8 +193,8 @@ struct CalendarIllustrationView: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.15),
-                                    Color.white.opacity(0.05)
+                                    surfaceColor.opacity(0.15),
+                                    surfaceColor.opacity(0.05)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -205,8 +207,8 @@ struct CalendarIllustrationView: View {
                         .stroke(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.3),
-                                    Color.white.opacity(0.1)
+                                    surfaceColor.opacity(0.3),
+                                    surfaceColor.opacity(0.1)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -252,6 +254,10 @@ struct CalendarIllustrationView: View {
         }
     }
     
+    private var surfaceColor: Color {
+        themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color
+    }
+    
     private let blockColors: [Color] = [
         Color.anchorBlue,
         Color.anchorGreen,
@@ -282,7 +288,7 @@ struct TimeBlockPreview: View {
     }
 }
 
-// MARK: - Floating Particles (Swift 6 Compatible)
+// MARK: - Floating Particles
 struct FloatingParticlesView: View {
     @State private var particles: [FloatingParticle] = []
     @State private var animationTick = 0
@@ -334,7 +340,7 @@ struct FloatingParticlesView: View {
     }
 }
 
-// MARK: - Floating Particle (Sendable for Swift 6)
+// MARK: - Floating Particle
 struct FloatingParticle: Identifiable, Sendable {
     let id = UUID()
     var position: CGPoint
@@ -352,47 +358,6 @@ struct FloatingParticle: Identifiable, Sendable {
         self.size = CGFloat.random(in: 2...4)
         self.speed = CGFloat.random(in: 0.2...0.8)
         self.opacity = Double.random(in: 0.3...0.7)
-    }
-}
-
-// MARK: - Alternative: Timeline-based Floating Particles
-struct TimelineFloatingParticlesView: View {
-    @State private var particles: [FloatingParticle] = []
-    
-    var body: some View {
-        GeometryReader { geometry in
-            TimelineView(.animation(minimumInterval: 0.05)) { timeline in
-                Canvas { context, size in
-                    let date = timeline.date.timeIntervalSinceReferenceDate
-                    
-                    for particle in particles {
-                        var position = particle.position
-                        position.y -= particle.speed * CGFloat(date).truncatingRemainder(dividingBy: size.height)
-                        position.x += sin(position.y * 0.01) * 0.5
-                        
-                        if position.y < -50 {
-                            position.y = size.height + 50
-                        }
-                        
-                        context.fill(
-                            Circle().path(in: CGRect(
-                                x: position.x - particle.size/2,
-                                y: position.y - particle.size/2,
-                                width: particle.size,
-                                height: particle.size
-                            )),
-                            with: .color(particle.color.opacity(particle.opacity))
-                        )
-                    }
-                }
-                .blur(radius: 1)
-            }
-            .onAppear {
-                for _ in 0..<15 {
-                    particles.append(FloatingParticle(screenSize: geometry.size))
-                }
-            }
-        }
     }
 }
 
@@ -428,44 +393,14 @@ struct BenefitCard: View {
                 
                 Text(description)
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                     .lineLimit(2)
             }
             
             Spacer()
         }
         .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.08),
-                                    Color.white.opacity(0.04)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            color.opacity(0.3),
-                            color.opacity(0.1)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
+        .themedGlassMorphism(cornerRadius: 16)
         .shadow(color: color.opacity(0.2), radius: 8, x: 0, y: 4)
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : -20)
@@ -514,37 +449,7 @@ struct SecondaryActionButton: View {
             .foregroundStyle(themeSecondaryText)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(.ultraThinMaterial)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        themeSecondaryText.opacity(0.15),
-                                        themeSecondaryText.opacity(0.08)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                themeSecondaryText.opacity(0.4),
-                                themeSecondaryText.opacity(0.15)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            )
+            .themedGlassMorphism(cornerRadius: 16)
             .scaleEffect(isPressed ? 0.98 : 1)
             .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         }

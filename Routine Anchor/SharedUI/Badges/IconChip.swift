@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct IconChip: View {
+    @Environment(\.themeManager) private var themeManager
     let icon: String?
     let isSelected: Bool
     let action: () -> Void
@@ -23,18 +24,20 @@ struct IconChip: View {
                 } else {
                     Image(systemName: "minus")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.6))
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 }
             }
             .frame(width: 44, height: 44)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.anchorTeal.opacity(0.3) : Color.white.opacity(0.1))
+                    .fill(isSelected ? Color.anchorTeal.opacity(0.3) :
+                        (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(
-                        isSelected ? Color.anchorTeal : Color.white.opacity(0.2),
+                        isSelected ? Color.anchorTeal :
+                        (themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color).opacity(0.4),
                         lineWidth: isSelected ? 2 : 1
                     )
             )
@@ -43,4 +46,3 @@ struct IconChip: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
     }
 }
-
