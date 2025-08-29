@@ -69,9 +69,15 @@ struct SecondaryButton: View {
         switch style {
         case .filled:
             switch variant {
-            case .neutral: return Color.appBackgroundSecondary
-            case .destructive: return Color.errorRed
-            case .success: return Color.successGreen
+            case .neutral:
+                return themeManager?.currentTheme.colorScheme.surfaceSecondary.color ??
+                       Theme.defaultTheme.colorScheme.surfaceSecondary.color
+            case .destructive:
+                return themeManager?.currentTheme.colorScheme.error.color ??
+                       Theme.defaultTheme.colorScheme.error.color
+            case .success:
+                return themeManager?.currentTheme.colorScheme.success.color ??
+                       Theme.defaultTheme.colorScheme.success.color
             }
         case .outlined, .ghost:
             return Color.clear
@@ -82,13 +88,13 @@ struct SecondaryButton: View {
         switch style {
         case .filled:
             switch variant {
-            case .neutral: return Color.textPrimary
+            case .neutral: return themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
             case .destructive, .success:
                 return themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
             }
         case .outlined, .ghost:
             switch variant {
-            case .neutral: return Color.textSecondary
+            case .neutral: return themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
             case .destructive: return Color.errorRed
             case .success: return Color.successGreen
             }
@@ -101,7 +107,7 @@ struct SecondaryButton: View {
             return Color.clear
         case .outlined:
             switch variant {
-            case .neutral: return Color.separatorColor
+            case .neutral: return themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color
             case .destructive: return Color.errorRed
             case .success: return Color.successGreen
             }
@@ -360,12 +366,11 @@ extension SecondaryButton {
         }
     }
     .padding(20)
-    .background(Color.appBackgroundSecondary)
+    .background(Theme.defaultTheme.colorScheme.surfaceSecondary.color)
 }
 
 #Preview("Button Combinations") {
     VStack(spacing: 16) {
-        // Primary + Secondary combination (common pattern)
         VStack(spacing: 12) {
             PrimaryButton("Get Started") {}
             SecondaryButton("Maybe Later") {}
@@ -394,7 +399,7 @@ extension SecondaryButton {
         }
     }
     .padding(20)
-    .background(Color.appBackgroundSecondary)
+    .background(Theme.defaultTheme.colorScheme.surfaceSecondary.color)
 }
 
 #Preview("Dark Mode") {
@@ -406,6 +411,6 @@ extension SecondaryButton {
             .buttonStyle(.ghost)
     }
     .padding(20)
-    .background(Color.appBackgroundSecondary)
+    .background(Theme.defaultTheme.colorScheme.surfaceSecondary.color)
     .preferredColorScheme(.dark)
 }

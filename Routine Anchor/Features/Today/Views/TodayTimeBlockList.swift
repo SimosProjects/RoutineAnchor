@@ -67,9 +67,9 @@ struct TodayTimeBlocksList: View {
             } label: {
                 Image(systemName: useGroupedView ? "square.grid.2x2" : "list.bullet")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     .frame(width: 32, height: 32)
-                    .background(Color.anchorBlue.opacity(0.15))
+                    .background(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.15))
                     .cornerRadius(8)
             }
             
@@ -188,13 +188,13 @@ struct TodayTimeBlocksList: View {
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
+                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(12)
-                .shadow(color: Color.anchorBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), radius: 8, x: 0, y: 4)
             }
         }
         .padding(.vertical, 40)

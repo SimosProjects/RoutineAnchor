@@ -291,7 +291,7 @@ struct TimeBlockRowView: View {
                 Capsule()
                     .fill(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorBlue.opacity(0.6)],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.6)],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -330,7 +330,7 @@ struct TimeBlockRowView: View {
             if let onStart = onStart {
                 TimeBlockActionButton(
                     icon: "play.fill",
-                    color: .anchorGreen,
+                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
                     action: onStart,
                     isLarge: true
                 )
@@ -340,7 +340,7 @@ struct TimeBlockRowView: View {
                 if let onComplete = onComplete {
                     TimeBlockActionButton(
                         icon: "checkmark.circle.fill",
-                        color: .anchorGreen,
+                        color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
                         action: onComplete,
                         isLarge: true
                     )
@@ -348,7 +348,7 @@ struct TimeBlockRowView: View {
                 if let onSkip = onSkip {
                     TimeBlockActionButton(
                         icon: "forward.fill",
-                        color: .anchorWarning,
+                        color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
                         action: onSkip
                     )
                 }
@@ -359,8 +359,8 @@ struct TimeBlockRowView: View {
                 .foregroundStyle(
                     LinearGradient(
                         colors: timeBlock.status == .completed
-                            ? [Color.anchorGreen, Color.anchorGreen.opacity(0.7)]
-                            : [Color.anchorWarning, Color.anchorWarning.opacity(0.7)],
+                            ? [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.7)]
+                            : [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color, themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.7)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -373,7 +373,7 @@ struct TimeBlockRowView: View {
         if let onEdit = onEdit {
             TimeBlockActionButton(
                 icon: "pencil.circle",
-                color: .anchorBlue,
+                color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
                 action: onEdit
             )
         }
@@ -381,7 +381,7 @@ struct TimeBlockRowView: View {
         if let onDelete = onDelete {
             TimeBlockActionButton(
                 icon: "trash.circle",
-                color: .anchorError,
+                color: themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color,
                 action: onDelete
             )
         }
@@ -436,11 +436,11 @@ struct TimeBlockRowView: View {
         case .notStarted:
             return themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
         case .inProgress:
-            return Color.anchorBlue
+            return themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
         case .completed:
-            return Color.anchorGreen
+            return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
         case .skipped:
-            return Color.anchorWarning
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         }
     }
     
@@ -452,20 +452,20 @@ struct TimeBlockRowView: View {
                 Color(red: 118/255, green: 75/255,  blue: 162/255)  // #764ba2
             ]
         case .inProgress:
-            return [Color.anchorBlue, Color.anchorBlue.opacity(0.6)]
+            return [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.6)]
         case .completed:
-            return [Color.anchorGreen, Color.anchorGreen.opacity(0.6)]
+            return [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.6)]
         case .skipped:
-            return [Color.anchorWarning, Color.anchorWarning.opacity(0.6)]
+            return [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color, themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.6)]
         }
     }
     
     private var categoryColor: Color {
         switch timeBlock.category?.lowercased() {
-        case "work": return Color.anchorBlue
-        case "personal": return Color.anchorPurple
-        case "health": return Color.anchorGreen
-        case "learning": return Color.anchorTeal
+        case "work": return themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+        case "personal": return themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
+        case "health": return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
+        case "learning": return themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color
         default:
             return themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
         }

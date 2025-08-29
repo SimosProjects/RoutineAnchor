@@ -30,13 +30,13 @@ struct IconChip: View {
             .frame(width: 44, height: 44)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.anchorTeal.opacity(0.3) :
+                    .fill(isSelected ? themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color.opacity(0.3) :
                         (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(
-                        isSelected ? Color.anchorTeal :
+                        isSelected ? themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color :
                         (themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color).opacity(0.4),
                         lineWidth: isSelected ? 2 : 1
                     )

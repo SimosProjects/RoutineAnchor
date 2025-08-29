@@ -93,7 +93,7 @@ struct MigrationSettingsView: View {
                     .font(.system(size: 50))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -128,10 +128,10 @@ struct MigrationSettingsView: View {
                     
                     Text(migrationService.currentSchemaVersion.rawValue)
                         .font(.system(size: 14, weight: .medium, design: .monospaced))
-                        .foregroundStyle(Color.anchorGreen)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
-                        .background(Color.anchorGreen.opacity(0.2))
+                        .background(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.2))
                         .cornerRadius(6)
                 }
                 
@@ -161,7 +161,7 @@ struct MigrationSettingsView: View {
                             .foregroundStyle(themeTertiaryText)
                     }
                 }
-                .tint(Color.anchorBlue)
+                .tint(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 .onChange(of: backupEnabled) { _, newValue in
                     migrationService.setBackupEnabled(newValue)
                     HapticManager.shared.lightImpact()
@@ -175,7 +175,7 @@ struct MigrationSettingsView: View {
                         Text("Learn More About Backups")
                     }
                     .font(.system(size: 12))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -222,12 +222,12 @@ struct MigrationSettingsView: View {
                 
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(Color.anchorGreen)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                         .font(.system(size: 12))
                     
                     Text("All migrations completed successfully")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.anchorGreen)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -288,7 +288,7 @@ struct BackupInfoSheet: View {
                                 .font(.system(size: 50))
                                 .foregroundStyle(
                                     LinearGradient(
-                                        colors: [Color.anchorBlue, Color.anchorPurple],
+                                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -352,7 +352,7 @@ struct BackupInfoSheet: View {
             HStack(alignment: .top, spacing: 16) {
                 Image(systemName: icon)
                     .font(.system(size: 24))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     .frame(width: 30)
                 
                 VStack(alignment: .leading, spacing: 8) {

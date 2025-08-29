@@ -22,13 +22,13 @@ struct FocusCard: View {
             // Focus icon with pulse
             ZStack {
                 Circle()
-                    .fill(Color.anchorBlue.opacity(0.2))
+                    .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.2))
                     .frame(width: 50, height: 50)
                     .scaleEffect(pulseScale)
                 
                 Image(systemName: "target")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
             }
             
             // Focus content
@@ -66,21 +66,21 @@ struct FocusCard: View {
                 if let currentBlock = currentBlock, currentBlock.isCurrentlyActive {
                     ProgressBar(
                         progress: currentBlock.currentProgress,
-                        color: Color.anchorBlue,
+                        color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
                         animated: true
                     )
                 }
             }
         }
         .padding(20)
-        .glassMorphism(cornerRadius: 16)
+        .themedGlassMorphism(cornerRadius: 16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(
                     LinearGradient(
                         colors: [
-                            Color.anchorBlue.opacity(0.4),
-                            Color.anchorBlue.opacity(0.1)
+                            themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.4),
+                            themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -98,24 +98,25 @@ struct FocusCard: View {
 
 // MARK: - Time Indicator
 struct TimeIndicator: View {
+    @Environment(\.themeManager) private var themeManager
     let timeText: String
     let isActive: Bool
     
     var body: some View {
         HStack(spacing: 4) {
             Circle()
-                .fill(isActive ? Color.anchorGreen : Color.anchorBlue)
+                .fill(isActive ? themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color : themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 .frame(width: 6, height: 6)
             
             Text(timeText)
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundStyle(isActive ? Color.anchorGreen : Color.anchorBlue)
+                .foregroundStyle(isActive ? themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color : themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill((isActive ? Color.anchorGreen : Color.anchorBlue).opacity(0.15))
+                .fill((isActive ? themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color : themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.15))
         )
     }
 }

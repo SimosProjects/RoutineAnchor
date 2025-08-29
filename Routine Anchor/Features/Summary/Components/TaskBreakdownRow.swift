@@ -13,7 +13,7 @@ struct TaskBreakdownRow: View {
     var body: some View {
         HStack(spacing: 12) {
             // Status indicator
-            timeBlock.status.statusIndicator
+            StatusIndicatorView(status: timeBlock.status)
                 .frame(width: 24, height: 24)
             
             // Content
@@ -32,7 +32,7 @@ struct TaskBreakdownRow: View {
                 
                 Text(timeBlock.shortFormattedTimeRange)
                     .font(.system(size: 12, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
             }
             
             Spacer()
@@ -41,21 +41,21 @@ struct TaskBreakdownRow: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(timeBlock.formattedDuration)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                 
                 Text(timeBlock.status.shortDisplayName)
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(timeBlock.status.color)
+                    .foregroundStyle(statusColor(for: timeBlock.status, themeManager: themeManager))
             }
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
+                .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(timeBlock.status.color.opacity(0.2), lineWidth: 1)
+                .stroke(statusColor(for: timeBlock.status, themeManager: themeManager).opacity(0.2), lineWidth: 1)
         )
     }
 }

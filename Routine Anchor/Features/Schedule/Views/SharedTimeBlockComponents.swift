@@ -39,11 +39,11 @@ struct CategorySelector: View {
     
     private func categoryColor(for category: String) -> Color {
         switch category.lowercased() {
-        case "work": return Color.anchorBlue
-        case "personal": return Color.anchorPurple
-        case "health": return Color.anchorGreen
-        case "learning": return Color.anchorTeal
-        case "social": return Color.anchorWarning
+        case "work": return themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+        case "personal": return themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
+        case "health": return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
+        case "learning": return themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color
+        case "social": return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         default: return Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85)
         }
     }
@@ -219,8 +219,8 @@ struct TimeBlockFormView<Content: View>: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    Color.anchorBlue.opacity(0.4),
-                                    Color.anchorPurple.opacity(0.2),
+                                    themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.4),
+                                    themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color.opacity(0.2),
                                     Color.clear
                                 ],
                                 center: .center,
@@ -236,13 +236,13 @@ struct TimeBlockFormView<Content: View>: View {
                         .font(.system(size: 48, weight: .light))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.anchorBlue, Color.anchorPurple],
+                                colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.1)
-                        .shadow(color: Color.anchorBlue.opacity(0.4), radius: 20, x: 0, y: 10)
+                        .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.4), radius: 20, x: 0, y: 10)
                 }
                 
                 VStack(spacing: 8) {
@@ -250,7 +250,7 @@ struct TimeBlockFormView<Content: View>: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.anchorBlue, Color.anchorPurple],
+                                colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )

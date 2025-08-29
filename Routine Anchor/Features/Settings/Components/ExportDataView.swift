@@ -87,7 +87,7 @@ struct ExportDataView: View {
                     .font(.system(size: 56, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -124,7 +124,7 @@ struct ExportDataView: View {
             HStack(spacing: 16) {
                 Image(systemName: iconForFormat(format))
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(selectedFormat == format ? Color.anchorBlue :
+                    .foregroundStyle(selectedFormat == format ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color :
                         (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                     .frame(width: 24, height: 24)
                 
@@ -145,7 +145,7 @@ struct ExportDataView: View {
                 if selectedFormat == format {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.anchorBlue)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 }
             }
             .padding(16)
@@ -157,7 +157,7 @@ struct ExportDataView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(selectedFormat == format ? Color.anchorBlue.opacity(0.5) : Color.clear, lineWidth: 2)
+                    .stroke(selectedFormat == format ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.5) : Color.clear, lineWidth: 2)
             )
         }
     }
@@ -208,13 +208,13 @@ struct ExportDataView: View {
             .frame(height: 56)
             .background(
                 LinearGradient(
-                    colors: [Color.anchorBlue, Color.anchorPurple],
+                    colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
             .cornerRadius(16)
-            .shadow(color: Color.anchorBlue.opacity(0.3), radius: 12, x: 0, y: 6)
+            .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), radius: 12, x: 0, y: 6)
         }
         .disabled(isExporting)
     }
@@ -225,7 +225,7 @@ struct ExportDataView: View {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.anchorBlue.opacity(0.8))
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.8))
                 
                 Text("About Your Data")
                     .font(.system(size: 14, weight: .semibold))
@@ -240,11 +240,11 @@ struct ExportDataView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.anchorBlue.opacity(0.1))
+                .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.anchorBlue.opacity(0.2), lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.2), lineWidth: 1)
         )
     }
     
@@ -348,7 +348,7 @@ struct ToggleOption: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(isOn ? Color.anchorBlue : (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                .foregroundStyle(isOn ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color : (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 4) {

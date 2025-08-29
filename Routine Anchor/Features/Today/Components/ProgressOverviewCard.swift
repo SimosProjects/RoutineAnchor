@@ -27,7 +27,7 @@ struct ProgressOverviewCard: View {
                         .trim(from: 0, to: animateProgress ? CGFloat(viewModel.progressPercentage) : 0)
                         .stroke(
                             LinearGradient(
-                                colors: [Color.anchorGreen, Color.anchorTeal],
+                                colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
                                 startPoint: .topTrailing,
                                 endPoint: .bottomLeading
                             ),

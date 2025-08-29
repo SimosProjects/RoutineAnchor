@@ -208,7 +208,7 @@ struct ThemeSelectionView: View {
             HStack {
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color.anchorWarning)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                 
                 Text("Premium Themes")
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
@@ -238,7 +238,7 @@ struct ThemeSelectionView: View {
                 .frame(height: 48)
                 .background(
                     LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
+                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -387,7 +387,7 @@ struct ThemePreviewCard: View {
                                 
                                 Image(systemName: "crown.fill")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(Color.anchorWarning)
+                                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                             }
                         }
                     }

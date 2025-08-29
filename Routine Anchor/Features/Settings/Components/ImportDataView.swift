@@ -98,7 +98,7 @@ struct ImportDataView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [Color.anchorBlue.opacity(0.3), Color.anchorPurple.opacity(0.3)],
+                                colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color.opacity(0.3)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -110,7 +110,7 @@ struct ImportDataView: View {
                         .font(.system(size: 40, weight: .medium))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.anchorBlue, Color.anchorPurple],
+                                colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -142,14 +142,14 @@ struct ImportDataView: View {
                     icon: "doc.text",
                     title: "JSON",
                     description: "Complete data with all details",
-                    color: .anchorBlue
+                    color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
                 )
                 
                 FormatRow(
                     icon: "tablecells",
                     title: "CSV",
                     description: "Spreadsheet format for basic data",
-                    color: .anchorGreen
+                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
                 )
             }
         }
@@ -182,13 +182,13 @@ struct ImportDataView: View {
             .frame(height: 56)
             .background(
                 LinearGradient(
-                    colors: [Color.anchorBlue, Color.anchorPurple],
+                    colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
             .cornerRadius(16)
-            .shadow(color: Color.anchorBlue.opacity(0.3), radius: 12, x: 0, y: 6)
+            .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), radius: 12, x: 0, y: 6)
         }
         .disabled(isImporting)
     }

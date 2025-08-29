@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct FeatureRow: View {
+    @Environment(\.themeManager) private var themeManager
     let icon: String
     let title: String
     let description: String
@@ -21,11 +22,11 @@ struct FeatureRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(description)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             }
             
             Spacer()

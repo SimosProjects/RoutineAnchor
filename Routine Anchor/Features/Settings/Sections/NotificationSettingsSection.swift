@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct NotificationSettingsSection: View {
+    @Environment(\.themeManager) private var themeManager
+    
     @Binding var notificationsEnabled: Bool
     @Binding var dailyReminderTime: Date
     @Binding var notificationSound: String
@@ -19,7 +21,7 @@ struct NotificationSettingsSection: View {
         SettingsSection(
             title: "Notifications",
             icon: "bell",
-            color: Color.anchorBlue
+            color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
         ) {
             VStack(spacing: 16) {
                 // Master notification toggle
@@ -73,26 +75,26 @@ struct NotificationSettingsSection: View {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.anchorBlue.opacity(0.8))
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.8))
                 
                 Text("Notification Timing")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             }
             
             Text("Time blocks notify 2 minutes before they start. Daily reminders help you review progress and plan ahead.")
                 .font(.system(size: 12, weight: .regular))
-                .foregroundStyle(Color.anchorTextSecondary)
+                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 .lineSpacing(2)
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.anchorBlue.opacity(0.1))
+                .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.anchorBlue.opacity(0.2), lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.2), lineWidth: 1)
         )
     }
 }

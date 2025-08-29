@@ -98,7 +98,7 @@ struct ThemeSettingsRow: View {
                         if themeManager?.currentTheme.isPremium == true {
                             Image(systemName: "crown.fill")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(Color.anchorWarning)
+                                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                         }
                     }
                     

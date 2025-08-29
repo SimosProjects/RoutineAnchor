@@ -135,7 +135,7 @@ struct EditTimeBlockView: View {
         HStack(spacing: 12) {
             Image(systemName: "clock.badge.exclamationmark")
                 .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(Color.anchorBlue)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("Currently Active")
@@ -152,11 +152,11 @@ struct EditTimeBlockView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.anchorBlue.opacity(0.15))
+                .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.15))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), lineWidth: 1)
         )
         .padding(.horizontal, 24)
         .opacity(isVisible ? 1 : 0)
@@ -167,7 +167,7 @@ struct EditTimeBlockView: View {
         FormSection(
             title: "Basic Information",
             icon: "doc.text",
-            color: Color.anchorBlue
+            color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
         ) {
             VStack(spacing: 16) {
                 DesignedTextField(
@@ -194,7 +194,7 @@ struct EditTimeBlockView: View {
         FormSection(
             title: "Schedule",
             icon: "clock",
-            color: Color.anchorGreen
+            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
         ) {
             VStack(spacing: 20) {
                 if originalTimeBlock.status == .inProgress {
@@ -202,18 +202,18 @@ struct EditTimeBlockView: View {
                     HStack(spacing: 12) {
                         Image(systemName: "exclamationmark.triangle")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(Color.anchorWarning)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                         
                         Text("Start time cannot be changed for active blocks")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.anchorWarning)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                         
                         Spacer()
                     }
                     .padding(12)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.anchorWarning.opacity(0.15))
+                            .fill(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.15))
                     )
                 }
                 
@@ -238,7 +238,7 @@ struct EditTimeBlockView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "timer")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.anchorWarning)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                         
                         Text("Quick Duration")
                             .font(.system(size: 14, weight: .semibold))
@@ -270,13 +270,13 @@ struct EditTimeBlockView: View {
     private func color(for minutes: Int) -> Color {
         switch minutes {
         case ..<15:
-            return .anchorError
+            return themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
         case ..<30:
-            return .anchorWarning
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         case ..<60:
-            return .anchorWarning
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         default:
-            return .anchorGreen
+            return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
         }
     }
     
@@ -284,7 +284,7 @@ struct EditTimeBlockView: View {
         FormSection(
             title: "Organization",
             icon: "folder",
-            color: Color.anchorPurple
+            color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
         ) {
             CategorySelector(
                 categories: formData.categories,
@@ -299,7 +299,7 @@ struct EditTimeBlockView: View {
         FormSection(
             title: "Icon",
             icon: "face.smiling",
-            color: Color.anchorTeal
+            color: themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color
         ) {
             IconSelector(
                 icons: formData.icons,

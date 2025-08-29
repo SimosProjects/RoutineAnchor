@@ -1,10 +1,12 @@
 //
-//  DataManagementSection.swift - Updated for Better UI Testing
+//  DataManagementSection.swift
 //  Routine Anchor
 //
 import SwiftUI
 
 struct DataManagementSection: View {
+    @Environment(\.themeManager) private var themeManager
+    
     let onExportData: () -> Void
     let onImportData: () -> Void
     let onShowPrivacyPolicy: () -> Void
@@ -21,7 +23,7 @@ struct DataManagementSection: View {
         SettingsSection(
             title: "Data & Privacy",
             icon: "shield.checkered",
-            color: Color.anchorPurple
+            color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
         ) {
             VStack(spacing: 16) {
                 // Export data button
@@ -29,7 +31,7 @@ struct DataManagementSection: View {
                     title: "Export My Data",
                     subtitle: "Download your routine data",
                     icon: "square.and.arrow.up",
-                    color: Color.anchorBlue,
+                    color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onExportData()
@@ -41,7 +43,7 @@ struct DataManagementSection: View {
                     title: "Import Data",
                     subtitle: "Restore from backup file",
                     icon: "square.and.arrow.down",
-                    color: Color.anchorGreen,
+                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onImportData()
@@ -53,7 +55,7 @@ struct DataManagementSection: View {
                     title: "Privacy Policy",
                     subtitle: "How we protect your data",
                     icon: "hand.raised",
-                    color: Color.anchorGreen,
+                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onShowPrivacyPolicy()
@@ -65,7 +67,7 @@ struct DataManagementSection: View {
                 
                 // Divider
                 Rectangle()
-                    .fill(Color.separatorColor)
+                    .fill(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color)
                     .frame(height: 1)
                     .padding(.vertical, 4)
                 
@@ -74,7 +76,7 @@ struct DataManagementSection: View {
                     title: "Clear Today's Schedule",
                     subtitle: "Delete all time blocks for today",
                     icon: "calendar.badge.minus",
-                    color: Color.anchorWarning,
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
                     action: {
                         HapticManager.shared.warning()
                         showingClearTodayConfirmation = true
@@ -88,7 +90,7 @@ struct DataManagementSection: View {
                     title: "Delete All Data",
                     subtitle: "Permanently remove everything",
                     icon: "trash",
-                    color: Color.anchorError,
+                    color: themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color,
                     action: {
                         HapticManager.shared.warning()
                         showingDeleteConfirmation = true
@@ -145,16 +147,16 @@ struct DataManagementSection: View {
         HStack(spacing: 12) {
             Image(systemName: "internaldrive")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.anchorBlue.opacity(0.8))
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.8))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("Local Storage Only")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text("All data is stored securely on your device")
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(Color.anchorTextSecondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             }
             
             Spacer()
@@ -162,11 +164,11 @@ struct DataManagementSection: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.anchorBlue.opacity(0.1))
+                .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.anchorBlue.opacity(0.2), lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.2), lineWidth: 1)
         )
     }
 }

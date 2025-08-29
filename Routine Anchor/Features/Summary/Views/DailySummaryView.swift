@@ -109,7 +109,7 @@ struct DailySummaryView: View {
                     VStack(spacing: 20) {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 48))
-                            .foregroundStyle(Color.anchorWarning)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                         
                         Text("Premium Features")
                             .font(.title.bold())
@@ -191,15 +191,15 @@ struct DailySummaryView: View {
                 Button(action: { showingShareSheet = true }) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.anchorBlue)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
-                                .fill(Color.anchorBlue.opacity(0.15))
+                                .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.15))
                         )
                         .overlay(
                             Circle()
-                                .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
+                                .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), lineWidth: 1)
                         )
                 }
             }
@@ -211,8 +211,8 @@ struct DailySummaryView: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    Color.anchorGreen.opacity(0.4),
-                                    Color.anchorTeal.opacity(0.2),
+                                    themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.4),
+                                    themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color.opacity(0.2),
                                     Color.clear
                                 ],
                                 center: .center,
@@ -228,7 +228,7 @@ struct DailySummaryView: View {
                         .font(.system(size: 40, weight: .light))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.anchorGreen, Color.anchorTeal],
+                                colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -241,7 +241,7 @@ struct DailySummaryView: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.anchorGreen, Color.anchorTeal],
+                                colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -359,7 +359,7 @@ struct DailySummaryView: View {
                     title: "Completed",
                     value: "\(progress.completedBlocks)",
                     subtitle: progress.completedBlocks == 1 ? "block" : "blocks",
-                    color: Color.anchorGreen,
+                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
                     icon: "checkmark.circle.fill"
                 )
                 
@@ -367,7 +367,7 @@ struct DailySummaryView: View {
                     title: "Skipped",
                     value: "\(progress.skippedBlocks)",
                     subtitle: progress.skippedBlocks == 1 ? "block" : "blocks",
-                    color: Color.anchorWarning,
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
                     icon: "forward.fill"
                 )
                 
@@ -375,7 +375,7 @@ struct DailySummaryView: View {
                     title: "Time Used",
                     value: "\(progress.completedMinutes / 60)h \(progress.completedMinutes % 60)m",
                     subtitle: "planned",
-                    color: Color.anchorBlue,
+                    color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
                     icon: "clock.fill"
                 )
             } else {
@@ -384,7 +384,7 @@ struct DailySummaryView: View {
                     title: "Completed",
                     value: "0",
                     subtitle: "blocks",
-                    color: Color.anchorGreen,
+                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
                     icon: "checkmark.circle.fill"
                 )
                 
@@ -392,7 +392,7 @@ struct DailySummaryView: View {
                     title: "Skipped",
                     value: "0",
                     subtitle: "blocks",
-                    color: Color.anchorWarning,
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
                     icon: "forward.fill"
                 )
                 
@@ -400,7 +400,7 @@ struct DailySummaryView: View {
                     title: "Time Used",
                     value: "0h 0m",
                     subtitle: "planned",
-                    color: Color.anchorBlue,
+                    color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
                     icon: "clock.fill"
                 )
             }
@@ -414,7 +414,7 @@ struct DailySummaryView: View {
                 HStack {
                     Image(systemName: "list.bullet.circle")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(Color.anchorPurple)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color)
                     
                     Text("Task Breakdown")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -444,7 +444,7 @@ struct DailySummaryView: View {
                 HStack {
                     Image(systemName: "lightbulb.circle")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(Color.anchorWarning)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                     
                     Text("Insights & Suggestions")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -476,7 +476,7 @@ struct DailySummaryView: View {
                                 HStack {
                                     Image(systemName: "brain.head.profile")
                                         .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(Color.anchorTeal)
+                                        .foregroundStyle(themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color)
                                     
                                     Text("AI Suggestions")
                                         .font(.system(size: 16, weight: .semibold))
@@ -487,7 +487,7 @@ struct DailySummaryView: View {
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("•")
                                             .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(Color.anchorTeal)
+                                            .foregroundStyle(themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color)
                                         
                                         Text(suggestion)
                                             .font(.system(size: 14))
@@ -519,7 +519,7 @@ struct DailySummaryView: View {
                             HStack {
                                 Image(systemName: "crown.fill")
                                     .font(.system(size: 12))
-                                    .foregroundStyle(Color.anchorWarning)
+                                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                                 
                                 Text("Premium insights include:")
                                     .font(.system(size: 14, weight: .medium))
@@ -580,7 +580,7 @@ struct DailySummaryView: View {
                 HStack {
                     Image(systemName: "star.circle")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(Color.anchorWarning)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                     
                     Text("Rate Your Day")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -601,7 +601,7 @@ struct DailySummaryView: View {
                                 .foregroundStyle(
                                     selectedRating >= rating ?
                                     LinearGradient(
-                                        colors: [Color.anchorWarning, Color.anchorWarning.opacity(0.8)],
+                                        colors: [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color, themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.8)],
                                         startPoint: .top,
                                         endPoint: .bottom
                                     ) :
@@ -622,7 +622,7 @@ struct DailySummaryView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "note.text")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.anchorTeal)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color)
                         
                         Text("Reflection")
                             .font(.system(size: 14, weight: .semibold))
@@ -660,7 +660,7 @@ struct DailySummaryView: View {
             if viewModel.isDayComplete {
                 Text("🎉 Congratulations on completing your day!")
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.anchorGreen)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                     .multilineTextAlignment(.center)
             }
             
@@ -684,8 +684,8 @@ struct DailySummaryView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.anchorGreen.opacity(0.3),
-                                Color.anchorTeal.opacity(0.1),
+                                themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.3),
+                                themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color.opacity(0.1),
                                 Color.clear
                             ],
                             center: .center,
@@ -700,7 +700,7 @@ struct DailySummaryView: View {
                     .font(.system(size: 80, weight: .thin))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.anchorGreen, Color.anchorTeal],
+                            colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -737,7 +737,7 @@ struct DailySummaryView: View {
             ZStack {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(Color.anchorGreen.opacity(0.3))
+                        .fill(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.3))
                         .frame(width: 12, height: 12)
                         .scaleEffect(animationPhase == 0 ? 0.8 : 1.2)
                         .animation(
@@ -813,7 +813,7 @@ struct InsightRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Circle()
-                .fill(Color.anchorWarning.opacity(0.3))
+                .fill(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.3))
                 .frame(width: 6, height: 6)
                 .offset(y: 6)
             

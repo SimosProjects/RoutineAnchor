@@ -64,7 +64,7 @@ struct EmailCaptureView: View {
                     .font(.system(size: 60, weight: .medium))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -125,7 +125,7 @@ struct EmailCaptureView: View {
                     .frame(height: 50)
                     .background(
                         LinearGradient(
-                            colors: [Color.anchorGreen, Color.anchorTeal],
+                            colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -157,7 +157,7 @@ struct EmailCaptureView: View {
             VStack(spacing: 24) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 80, weight: .medium))
-                    .foregroundStyle(Color.anchorGreen)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                 
                 VStack(spacing: 16) {
                     Text("Thank You!")
@@ -180,7 +180,7 @@ struct EmailCaptureView: View {
             .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(Color.anchorGreen)
+            .background(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
             .cornerRadius(12)
         }
     }
@@ -190,7 +190,7 @@ struct EmailCaptureView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.anchorGreen)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                 .frame(width: 20)
             
             Text(text)

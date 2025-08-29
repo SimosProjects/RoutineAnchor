@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct PrimaryButton: View {
+    @Environment(\.themeManager) private var themeManager
+
     // MARK: - Properties
     let title: String
     let action: () -> Void
@@ -81,7 +83,7 @@ struct PrimaryButton: View {
     private var textColor: Color {
         switch style {
         case .filled:
-            return ColorConstants.Palette.onPrimary
+            return themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
         case .outlined:
             return Color.primaryBlue
         }
@@ -287,7 +289,7 @@ extension PrimaryButton {
         }
     }
     .padding(20)
-    .background(Color.appBackgroundSecondary)
+    .background(Theme.defaultTheme.colorScheme.surfaceSecondary.color)
 }
 
 #Preview("Dark Mode") {
@@ -299,6 +301,6 @@ extension PrimaryButton {
             .buttonStyle(.outlined)
     }
     .padding(20)
-    .background(Color.appBackgroundSecondary)
+    .background(Theme.defaultTheme.colorScheme.surfaceSecondary.color)
     .preferredColorScheme(.dark)
 }

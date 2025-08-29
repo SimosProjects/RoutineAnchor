@@ -84,7 +84,7 @@ struct EmailPreferencesView: View {
                 .font(.system(size: 50, weight: .medium))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
+                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -109,7 +109,7 @@ struct EmailPreferencesView: View {
             HStack {
                 Image(systemName: "person.circle")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Email Address")
@@ -125,7 +125,7 @@ struct EmailPreferencesView: View {
                 
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 16))
-                    .foregroundStyle(Color.anchorGreen)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
             }
             .padding(16)
             .background(
@@ -133,7 +133,7 @@ struct EmailPreferencesView: View {
                     .fill(.ultraThinMaterial)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
+                            .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), lineWidth: 1)
                     )
             )
         }
@@ -153,7 +153,7 @@ struct EmailPreferencesView: View {
                     title: "Productivity Tips",
                     description: "Weekly productivity insights",
                     isOn: $coursesAndTips,
-                    color: Color.anchorWarning
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
                 )
                 
                 EmailPreferenceToggle(
@@ -161,7 +161,7 @@ struct EmailPreferencesView: View {
                     title: "Product Updates",
                     description: "New features and announcements",
                     isOn: $productUpdates,
-                    color: Color.anchorBlue
+                    color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
                 )
                 
                 EmailPreferenceToggle(
@@ -169,7 +169,7 @@ struct EmailPreferencesView: View {
                     title: "Development Courses",
                     description: "iOS app building tutorials",
                     isOn: $marketingEmails,
-                    color: Color.anchorGreen
+                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
                 )
             }
         }
@@ -194,7 +194,7 @@ struct EmailPreferencesView: View {
                 .frame(height: 50)
                 .background(
                     LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
+                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -225,7 +225,7 @@ struct EmailPreferencesView: View {
                     showingUnsubscribeConfirmation = true
                 }
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.anchorWarning)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
             }
         }
     }

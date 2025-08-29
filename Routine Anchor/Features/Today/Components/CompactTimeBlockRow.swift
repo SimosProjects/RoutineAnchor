@@ -21,7 +21,7 @@ struct CompactTimeBlockRow: View {
                 // Time
                 Text(timeBlock.startTime, style: .time)
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundStyle(isActive ? Color.anchorBlue : themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                    .foregroundStyle(isActive ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color : themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                     .frame(width: 60, alignment: .leading)
                 
                 // Icon and title
@@ -53,18 +53,18 @@ struct CompactTimeBlockRow: View {
                         Button(action: onComplete) {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(Color.anchorGreen)
+                                .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                                 .frame(width: 28, height: 28)
-                                .background(Color.anchorGreen.opacity(0.15))
+                                .background(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.15))
                                 .cornerRadius(6)
                         }
                         
                         Button(action: onSkip) {
                             Image(systemName: "forward.fill")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(Color.anchorWarning)
+                                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                                 .frame(width: 28, height: 28)
-                                .background(Color.anchorWarning.opacity(0.15))
+                                .background(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.15))
                                 .cornerRadius(6)
                         }
                     }
@@ -74,13 +74,13 @@ struct CompactTimeBlockRow: View {
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(isActive ? Color.anchorBlue.opacity(0.1) :
+                    .fill(isActive ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1) :
                         (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.2))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(
-                        isHighlighted ? Color.anchorBlue : Color.clear,
+                        isHighlighted ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color : Color.clear,
                         lineWidth: isHighlighted ? 2 : 0
                     )
             )
@@ -104,11 +104,11 @@ struct CompactTimeBlockRow: View {
         case .notStarted:
             return themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
         case .inProgress:
-            return Color.anchorBlue
+            return themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
         case .completed:
-            return Color.anchorGreen
+            return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
         case .skipped:
-            return Color.anchorWarning
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         }
     }
 }

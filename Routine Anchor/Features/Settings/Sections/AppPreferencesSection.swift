@@ -23,7 +23,7 @@ struct AppPreferencesSection: View {
         SettingsSection(
             title: "Preferences",
             icon: "slider.horizontal.3",
-            color: Color.anchorGreen
+            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
         ) {
             VStack(spacing: 16) {
                 // Haptic feedback toggle
@@ -49,7 +49,7 @@ struct AppPreferencesSection: View {
                 
                 // Divider
                 Rectangle()
-                    .fill(Color.separatorColor)
+                    .fill(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color)
                     .frame(height: 1)
                     .padding(.vertical, 4)
                 
@@ -86,17 +86,17 @@ struct AppPreferencesSection: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "hand.tap")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.anchorGreen.opacity(0.8))
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.8))
                     .frame(width: 16, height: 16)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Haptic Feedback")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.anchorTextPrimary)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text("Provides tactile feedback for buttons and actions")
                         .font(.system(size: 10, weight: .regular))
-                        .foregroundStyle(Color.anchorTextSecondary)
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 }
                 
                 Spacer()
@@ -106,17 +106,17 @@ struct AppPreferencesSection: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "moon.stars")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.anchorPurple.opacity(0.8))
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color.opacity(0.8))
                     .frame(width: 16, height: 16)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Midnight Reset")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.anchorTextPrimary)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text("Automatically clears progress at 12:00 AM daily")
                         .font(.system(size: 10, weight: .regular))
-                        .foregroundStyle(Color.anchorTextSecondary)
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 }
                 
                 Spacer()

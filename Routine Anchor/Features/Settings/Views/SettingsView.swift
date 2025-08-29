@@ -337,7 +337,7 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundStyle(Color.anchorWarning)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Premium Active")
@@ -358,7 +358,7 @@ struct SettingsView: View {
                         }
                     }
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             } else {
@@ -367,7 +367,7 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "star.circle")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(Color.anchorBlue)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                         
                         Text("Upgrade to Premium")
                             .font(.system(size: 16, weight: .semibold))
@@ -402,11 +402,11 @@ struct SettingsView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 14))
-                            .foregroundStyle(Color.anchorGreen)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                         
                         Text("Verified")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.anchorGreen)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                     }
                 }
                 
@@ -414,7 +414,7 @@ struct SettingsView: View {
                 HStack {
                     Image(systemName: "envelope")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.anchorBlue)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Email Address")
@@ -438,7 +438,7 @@ struct SettingsView: View {
                 HStack {
                     Image(systemName: "slider.horizontal.3")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.anchorBlue)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Email Preferences")

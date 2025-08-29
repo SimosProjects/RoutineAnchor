@@ -27,7 +27,7 @@ struct ShareSummaryView: View {
                             .font(.system(size: 48, weight: .light))
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [Color.anchorBlue, Color.anchorPurple],
+                                    colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -56,11 +56,11 @@ struct ShareSummaryView: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "checkmark.circle.fill")
                                         .font(.system(size: 12))
-                                        .foregroundStyle(Color.anchorGreen)
+                                        .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                                     
                                     Text("Copied!")
                                         .font(.system(size: 12, weight: .medium))
-                                        .foregroundStyle(Color.anchorGreen)
+                                        .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                                 }
                                 .transition(.scale.combined(with: .opacity))
                             }
@@ -117,7 +117,7 @@ struct ShareSummaryView: View {
                         dismiss()
                     }
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 }
             }
         }

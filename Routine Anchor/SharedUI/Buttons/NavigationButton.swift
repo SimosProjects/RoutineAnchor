@@ -54,7 +54,7 @@ struct NavigationButton: View {
             )
         case .success:
             return LinearGradient(
-                colors: [Color.anchorGreen, Color.anchorTeal],
+                colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -74,7 +74,7 @@ struct NavigationButton: View {
         case .accent:
             return theme.accentColor.opacity(0.3)
         case .success:
-            return Color.anchorGreen.opacity(0.3)
+            return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.3)
         }
     }
     

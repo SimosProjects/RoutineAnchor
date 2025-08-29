@@ -28,7 +28,7 @@ struct DesignedTextField: View {
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))

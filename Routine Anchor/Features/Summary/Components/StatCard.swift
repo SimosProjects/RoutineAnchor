@@ -72,35 +72,43 @@ struct StatCard: View {
 
 // MARK: - Preview
 #Preview("Stat Cards") {
-    ZStack {
-        ThemedAnimatedBackground()
-            .ignoresSafeArea()
-        
-        HStack(spacing: 12) {
-            StatCard(
-                title: "Completed",
-                value: "8",
-                subtitle: "blocks",
-                color: Color.anchorGreen,
-                icon: "checkmark.circle.fill"
-            )
+    StatCardsPreviewView()
+}
+
+private struct StatCardsPreviewView: View {
+    @Environment(\.themeManager) private var themeManager
+    
+    var body: some View {
+        ZStack {
+            ThemedAnimatedBackground()
+                .ignoresSafeArea()
             
-            StatCard(
-                title: "Time",
-                value: "5h 30m",
-                subtitle: "tracked",
-                color: Color.anchorBlue,
-                icon: "clock.fill"
-            )
-            
-            StatCard(
-                title: "Skipped",
-                value: "2",
-                subtitle: "blocks",
-                color: Color.anchorWarning,
-                icon: "forward.circle.fill"
-            )
+            HStack(spacing: 12) {
+                StatCard(
+                    title: "Completed",
+                    value: "8",
+                    subtitle: "blocks",
+                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
+                    icon: "checkmark.circle.fill"
+                )
+                
+                StatCard(
+                    title: "Time",
+                    value: "5h 30m",
+                    subtitle: "tracked",
+                    color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                    icon: "clock.fill"
+                )
+                
+                StatCard(
+                    title: "Skipped",
+                    value: "2",
+                    subtitle: "blocks",
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
+                    icon: "forward.circle.fill"
+                )
+            }
+            .padding()
         }
-        .padding()
     }
 }

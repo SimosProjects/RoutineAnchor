@@ -24,7 +24,7 @@ struct PremiumGateView: View {
                 
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.anchorWarning)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                     .offset(x: 20, y: -20)
             }
             
@@ -77,7 +77,7 @@ struct TimeBlockLimitGate: View {
                 }
                 
                 ProgressView(value: Double(currentCount), total: Double(limit))
-                    .progressViewStyle(LinearProgressViewStyle(tint: Color.anchorWarning))
+                    .progressViewStyle(LinearProgressViewStyle(tint: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color))
                     .scaleEffect(y: 2)
             }
             
@@ -106,7 +106,7 @@ struct AnalyticsGate: View {
                 
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.anchorWarning)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                     .offset(x: 20, y: -20)
             }
             
@@ -197,7 +197,7 @@ struct PremiumBadge: View {
             Capsule()
                 .fill(
                     LinearGradient(
-                        colors: [Color.anchorWarning, Color.anchorGreen],
+                        colors: [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color, themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -226,7 +226,7 @@ struct PremiumFeatureCard: View {
                     if isLocked {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.anchorWarning)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                             .offset(x: 12, y: -12)
                     }
                 }
@@ -250,14 +250,14 @@ struct PremiumFeatureCard: View {
                     .fill(
                         isLocked
                         ? Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5)
-                        : Color.anchorBlue.opacity(0.1)
+                        : themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(
                                 isLocked
                                 ? Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color)
-                                : Color.anchorBlue.opacity(0.3),
+                                : themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3),
                                 lineWidth: 1
                             )
                     )
@@ -280,7 +280,7 @@ struct PremiumMiniPrompt: View {
         HStack(spacing: 12) {
             Image(systemName: "crown.fill")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.anchorWarning)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -304,16 +304,16 @@ struct PremiumMiniPrompt: View {
             .padding(.vertical, 6)
             .background(
                 Capsule()
-                    .fill(Color.anchorBlue)
+                    .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
             )
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.anchorBlue.opacity(0.1))
+                .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
+                        .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), lineWidth: 1)
                 )
         )
     }

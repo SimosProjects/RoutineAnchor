@@ -15,6 +15,34 @@ struct HelpView: View {
     @State private var animationTask: Task<Void, Never>?
     @State private var selectedCategory: HelpCategory = .gettingStarted
     
+    // Helper function to get color for category
+    private func categoryColor(for category: HelpCategory) -> Color {
+        guard let theme = themeManager?.currentTheme else {
+            return defaultCategoryColor(for: category)
+        }
+        
+        switch category {
+        case .all: return theme.colorScheme.blue.color
+        case .gettingStarted: return theme.colorScheme.green.color
+        case .timeBlocks: return theme.colorScheme.purple.color
+        case .notifications: return theme.colorScheme.warning.color
+        case .settings: return theme.colorScheme.teal.color
+        case .troubleshooting: return theme.colorScheme.error.color
+        }
+    }
+    
+    private func defaultCategoryColor(for category: HelpCategory) -> Color {
+        let defaultTheme = Theme.defaultTheme
+        switch category {
+        case .all: return defaultTheme.colorScheme.blue.color
+        case .gettingStarted: return defaultTheme.colorScheme.green.color
+        case .timeBlocks: return defaultTheme.colorScheme.purple.color
+        case .notifications: return defaultTheme.colorScheme.warning.color
+        case .settings: return defaultTheme.colorScheme.teal.color
+        case .troubleshooting: return defaultTheme.colorScheme.error.color
+        }
+    }
+    
     var body: some View {
         ZStack {
             ThemedAnimatedBackground()
@@ -39,7 +67,7 @@ struct HelpView: View {
                 ScrollView {
                     LazyVStack(spacing: 16) {
                         ForEach(filteredHelpItems, id: \.id) { item in
-                            HelpItemView(item: item)
+                            HelpItemView(item: item, categoryColor: categoryColor(for: item.category))
                         }
                     }
                     .padding(.horizontal, 24)
@@ -72,13 +100,13 @@ struct HelpView: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                         .frame(width: 32, height: 32)
                         .background(
                             Circle()
                                 .fill(.ultraThinMaterial)
                                 .background(
-                                    Circle().fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
+                                    Circle().fill(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color)
                                 )
                         )
                 }
@@ -92,10 +120,10 @@ struct HelpView: View {
                         Text("Support")
                             .font(.system(size: 14, weight: .medium))
                     }
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color))
+                    .background(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color)
                     .cornerRadius(8)
                 }
             }
@@ -105,7 +133,10 @@ struct HelpView: View {
                     .font(.system(size: 48, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [
+                                themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                                themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -115,12 +146,12 @@ struct HelpView: View {
                 
                 Text("Help & Support")
                     .font(TypographyConstants.Headers.welcome)
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .multilineTextAlignment(.center)
                 
                 Text("Find answers and get the most out of Routine Anchor")
                     .font(TypographyConstants.Body.secondary)
-                    .foregroundStyle(Color.anchorTextSecondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                     .multilineTextAlignment(.center)
             }
         }
@@ -133,18 +164,18 @@ struct HelpView: View {
         HStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.anchorTextSecondary)
+                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             
             TextField("Search help topics...", text: $searchText)
                 .font(TypographyConstants.Body.primary)
-                .foregroundStyle(Color.anchorTextPrimary)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 .textFieldStyle(PlainTextFieldStyle())
             
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.anchorTextSecondary)
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 }
             }
         }
@@ -154,12 +185,12 @@ struct HelpView: View {
                 .fill(.ultraThinMaterial)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
+                        .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
                 )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color, lineWidth: 1)
         )
         .padding(.horizontal, 24)
         .padding(.top, 16)
@@ -172,6 +203,7 @@ struct HelpView: View {
                 ForEach(HelpCategory.allCases, id: \.self) { category in
                     HelpCategoryChip(
                         category: category,
+                        categoryColor: categoryColor(for: category),
                         isSelected: selectedCategory == category,
                         action: { selectedCategory = category }
                     )
@@ -212,6 +244,7 @@ struct HelpView: View {
 struct HelpCategoryChip: View {
     @Environment(\.themeManager) private var themeManager
     let category: HelpCategory
+    let categoryColor: Color
     let isSelected: Bool
     let action: () -> Void
     
@@ -227,17 +260,20 @@ struct HelpCategoryChip: View {
                 Text(category.title)
                     .font(.system(size: 14, weight: .medium))
             }
-            .foregroundStyle(isSelected ? (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) : Color.anchorTextSecondary)
+            .foregroundStyle(
+                isSelected ? (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) :
+                (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+            )
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? category.color : Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
+                    .fill(isSelected ? categoryColor : (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(
-                        isSelected ? Color.clear : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color),
+                        isSelected ? Color.clear : (themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color),
                         lineWidth: 1
                     )
             )
@@ -278,16 +314,7 @@ enum HelpCategory: CaseIterable {
         }
     }
     
-    var color: Color {
-        switch self {
-        case .all: return Color.anchorBlue
-        case .gettingStarted: return Color.anchorGreen
-        case .timeBlocks: return Color.anchorPurple
-        case .notifications: return Color.anchorWarning
-        case .settings: return Color.anchorTeal
-        case .troubleshooting: return Color.anchorError
-        }
-    }
+    // Removed color property - handled in View instead
 }
 
 struct HelpItem {
@@ -401,6 +428,7 @@ private let helpItems: [HelpItem] = [
 struct HelpItemView: View {
     @Environment(\.themeManager) private var themeManager
     let item: HelpItem
+    let categoryColor: Color
     @State private var isExpanded = false
     @State private var isVisible = false
     
@@ -416,19 +444,19 @@ struct HelpItemView: View {
                 HStack(spacing: 12) {
                     Image(systemName: item.category.icon)
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(item.category.color)
+                        .foregroundStyle(categoryColor)
                         .frame(width: 24, height: 24)
                     
                     Text(item.title)
                         .font(TypographyConstants.Headers.cardTitle)
-                        .foregroundStyle(Color.anchorTextPrimary)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         .multilineTextAlignment(.leading)
                     
                     Spacer()
                     
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.anchorTextSecondary)
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                         .rotationEffect(.degrees(isExpanded ? 0 : 0))
                 }
                 .padding(16)
@@ -439,11 +467,11 @@ struct HelpItemView: View {
             if isExpanded {
                 VStack(alignment: .leading, spacing: 12) {
                     Divider()
-                        .background(Color.separatorColor)
+                        .background(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color)
                     
                     Text(item.content)
                         .font(TypographyConstants.Body.secondary)
-                        .foregroundStyle(Color.anchorTextSecondary)
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                         .lineSpacing(2)
                         .padding(.horizontal, 16)
                         .padding(.bottom, 16)
@@ -459,7 +487,7 @@ struct HelpItemView: View {
                 .fill(.ultraThinMaterial)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
+                        .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
                 )
         )
         .overlay(
@@ -467,8 +495,8 @@ struct HelpItemView: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            item.category.color.opacity(0.3),
-                            item.category.color.opacity(0.1)
+                            categoryColor.opacity(0.3),
+                            categoryColor.opacity(0.1)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -476,7 +504,7 @@ struct HelpItemView: View {
                     lineWidth: 1
                 )
         )
-        .shadow(color: item.category.color.opacity(0.1), radius: 8, x: 0, y: 4)
+        .shadow(color: categoryColor.opacity(0.1), radius: 8, x: 0, y: 4)
         .opacity(isVisible ? 1 : 0)
         .offset(y: isVisible ? 0 : 20)
         .onAppear {

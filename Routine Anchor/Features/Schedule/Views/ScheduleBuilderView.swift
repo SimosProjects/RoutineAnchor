@@ -150,7 +150,7 @@ struct ScheduleBuilderView: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.anchorPurple, Color.anchorBlue],
+                                colors: [themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color, themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -202,10 +202,10 @@ struct ScheduleBuilderView: View {
                         Text("Reset All")
                             .font(.system(size: 14, weight: .medium))
                     }
-                    .foregroundStyle(Color.anchorError)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.anchorError.opacity(0.15))
+                    .background(themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color.opacity(0.15))
                     .cornerRadius(8)
                 }
             }
@@ -278,8 +278,8 @@ struct ScheduleBuilderView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.anchorBlue.opacity(0.4),
-                                Color.anchorPurple.opacity(0.2),
+                                themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.4),
+                                themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color.opacity(0.2),
                                 Color.clear
                             ],
                             center: .center,
@@ -294,7 +294,7 @@ struct ScheduleBuilderView: View {
                     .font(.system(size: 80, weight: .thin))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -308,7 +308,7 @@ struct ScheduleBuilderView: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -356,7 +356,7 @@ struct ScheduleBuilderView: View {
             Spacer()
             
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: Color.anchorBlue))
+                .progressViewStyle(CircularProgressViewStyle(tint: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color))
                 .scaleEffect(1.5)
             
             Text("Setting up your schedule...")
@@ -420,13 +420,13 @@ struct SimpleTimeBlockRow: View {
     private var accentColors: [Color] {
         switch timeBlock.status {
         case .notStarted:
-            return [Color.anchorPurple, Color.anchorBlue]
+            return [themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color, themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color]
         case .inProgress:
-            return [Color.anchorBlue, Color.anchorTeal]
+            return [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color]
         case .completed:
-            return [Color.anchorGreen, Color.anchorTeal]
+            return [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color]
         case .skipped:
-            return [Color.anchorError, Color.anchorWarning]
+            return [themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color, themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color]
         }
     }
     
@@ -442,9 +442,9 @@ struct SimpleTimeBlockRow: View {
     private var statusColor: Color {
         switch timeBlock.status {
         case .notStarted: return (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85)
-        case .inProgress: return .anchorBlue
-        case .completed: return .anchorGreen
-        case .skipped: return .anchorWarning
+        case .inProgress: return themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+        case .completed: return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
+        case .skipped: return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         }
     }
     
@@ -508,18 +508,18 @@ struct SimpleTimeBlockRow: View {
                     Button(action: onEdit) {
                         Image(systemName: "pencil")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.anchorBlue)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                             .frame(width: 32, height: 32)
-                            .background(Color.anchorBlue.opacity(0.15))
+                            .background(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.15))
                             .cornerRadius(8)
                     }
                     
                     Button(action: onDelete) {
                         Image(systemName: "trash")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.anchorError)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color)
                             .frame(width: 32, height: 32)
-                            .background(Color.anchorError.opacity(0.15))
+                            .background((themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color).opacity(0.15))
                             .cornerRadius(8)
                     }
                 }

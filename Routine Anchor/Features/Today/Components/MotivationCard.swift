@@ -125,14 +125,14 @@ struct CompletionActions: View {
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [Color.anchorGreen, Color.anchorTeal],
+                        colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(10)
                 .scaleEffect(isViewSummaryPressed ? 0.97 : 1)
-                .shadow(color: Color.anchorGreen.opacity(0.3), radius: 6, x: 0, y: 3)
+                .shadow(color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.3), radius: 6, x: 0, y: 3)
             }
             
             // Plan Tomorrow Button
@@ -160,7 +160,7 @@ struct CompletionActions: View {
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
+                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -171,7 +171,7 @@ struct CompletionActions: View {
                         .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
                 )
                 .scaleEffect(isPlanTomorrowPressed ? 0.97 : 1)
-                .shadow(color: Color.anchorBlue.opacity(0.3), radius: 6, x: 0, y: 3)
+                .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), radius: 6, x: 0, y: 3)
             }
         }
     }

@@ -103,21 +103,21 @@ struct AddTimeBlockView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(Color.anchorWarning)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Time Conflict")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(Color.anchorTextPrimary)
+                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         
                         if conflicts.count == 1 {
                             Text("Overlaps with '\(conflicts.first!.title)'")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.anchorTextSecondary)
+                                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                         } else {
                             Text("Overlaps with \(conflicts.count) time blocks")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.anchorTextSecondary)
+                                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                         }
                     }
                     
@@ -136,7 +136,7 @@ struct AddTimeBlockView: View {
                         Text("Find Next Available Time")
                             .font(.system(size: 14, weight: .semibold))
                     }
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(
@@ -144,7 +144,7 @@ struct AddTimeBlockView: View {
                             .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.anchorBlue.opacity(0.3), lineWidth: 1)
+                                    .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), lineWidth: 1)
                             )
                     )
                 }
@@ -153,14 +153,14 @@ struct AddTimeBlockView: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.cardBackground) // Your app's card background
+                    .fill(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color) // Your app's card background
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.anchorWarning.opacity(0.6),
-                                        Color.anchorWarning.opacity(0.2)
+                                        themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.6),
+                                        themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.2)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -169,7 +169,7 @@ struct AddTimeBlockView: View {
                             )
                     )
             )
-            .shadow(color: Color.anchorWarning.opacity(0.2), radius: 8, x: 0, y: 4)
+            .shadow(color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.2), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 24)
             .transition(.asymmetric(
                 insertion: .scale(scale: 0.95).combined(with: .opacity),
@@ -184,7 +184,7 @@ struct AddTimeBlockView: View {
         FormSection(
             title: "Basic Information",
             icon: "doc.text",
-            color: Color.anchorBlue
+            color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
         ) {
             VStack(spacing: 16) {
                 DesignedTextField(
@@ -211,7 +211,7 @@ struct AddTimeBlockView: View {
         FormSection(
             title: "Schedule",
             icon: "clock",
-            color: Color.anchorGreen
+            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
         ) {
             VStack(spacing: 20) {
                 // Time pickers
@@ -234,7 +234,7 @@ struct AddTimeBlockView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "timer")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.anchorWarning)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                         
                         Text("Quick Duration")
                             .font(.system(size: 14, weight: .semibold))
@@ -266,13 +266,13 @@ struct AddTimeBlockView: View {
     private func color(for minutes: Int) -> Color {
         switch minutes {
         case ..<15:
-            return .anchorError
+            return themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
         case ..<30:
-            return .anchorWarning
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         case ..<60:
-            return .anchorWarning
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         default:
-            return .anchorGreen
+            return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
         }
     }
     
@@ -280,7 +280,7 @@ struct AddTimeBlockView: View {
         FormSection(
             title: "Organization",
             icon: "folder",
-            color: Color.anchorPurple
+            color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
         ) {
             CategorySelector(
                 categories: formData.categories,
@@ -295,7 +295,7 @@ struct AddTimeBlockView: View {
         FormSection(
             title: "Icon",
             icon: "face.smiling",
-            color: Color.anchorTeal
+            color: themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color
         ) {
             IconSelector(
                 icons: formData.icons,

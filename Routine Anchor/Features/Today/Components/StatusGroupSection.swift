@@ -29,9 +29,9 @@ struct StatusGroupSection: View {
                     HStack(spacing: 12) {
                         Image(systemName: status.iconName)
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(status.color)
+                            .foregroundStyle(statusColor(for: status, themeManager: themeManager))
                             .frame(width: 24, height: 24)
-                            .background(status.color.opacity(0.15))
+                            .background(statusColor(for: status, themeManager: themeManager).opacity(0.15))
                             .cornerRadius(6)
                         
                         Text(status.displayName)
@@ -40,7 +40,7 @@ struct StatusGroupSection: View {
                         
                         Text("\(blocks.count) \(blocks.count == 1 ? "block" : "blocks")")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                            .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                     }
                     
                     Spacer()
@@ -48,7 +48,7 @@ struct StatusGroupSection: View {
                     // Expand icon
                     Image(systemName: "chevron.down")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
                 .padding(16)
@@ -87,8 +87,8 @@ struct StatusGroupSection: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.8),
-                                    Color.white.opacity(0.04)
+                                    (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.8),
+                                    (themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color).opacity(0.04)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -101,8 +101,8 @@ struct StatusGroupSection: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            status.color.opacity(0.3),
-                            status.color.opacity(0.1)
+                            statusColor(for: status, themeManager: themeManager).opacity(0.3),
+                            statusColor(for: status, themeManager: themeManager).opacity(0.1)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -110,7 +110,7 @@ struct StatusGroupSection: View {
                     lineWidth: 1
                 )
         )
-        .shadow(color: status.color.opacity(0.2), radius: 8, x: 0, y: 4)
+        .shadow(color: statusColor(for: status, themeManager: themeManager).opacity(0.2), radius: 8, x: 0, y: 4)
         .scaleEffect(sectionAnimation ? 1 : 0.95)
         .opacity(sectionAnimation ? 1 : 0)
         .onAppear {

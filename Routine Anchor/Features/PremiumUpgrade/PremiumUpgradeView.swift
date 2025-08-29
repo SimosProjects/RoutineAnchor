@@ -100,7 +100,7 @@ struct PremiumUpgradeView: View {
                 .font(.system(size: 60, weight: .medium))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [Color.anchorWarning, Color.anchorGreen],
+                        colors: [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color, themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -180,7 +180,7 @@ struct PremiumUpgradeView: View {
                         }
                     }
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 }
                 .padding(20)
                 .background(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
@@ -263,7 +263,7 @@ struct PremiumUpgradeView: View {
                             HapticManager.shared.anchorSelection()
                         }
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.anchorBlue)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     }
                 }
                 .padding(.vertical, 16)
@@ -420,7 +420,7 @@ struct PremiumPricingCard: View {
                             .padding(.vertical, 4)
                             .background(
                                 Capsule()
-                                    .fill(Color.anchorGreen)
+                                    .fill(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                             )
                         Spacer()
                     }
@@ -469,14 +469,14 @@ struct PremiumPricingCard: View {
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
-                        isSelected ? Color.anchorBlue : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color),
+                        isSelected ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color),
                         lineWidth: isSelected ? 2 : 1
                     )
                     .background(
                         RoundedRectangle(cornerRadius: 16)
                             .fill(
                                 isSelected
-                                ? Color.anchorBlue.opacity(0.1)
+                                ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1)
                                 : Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5)
                             )
                     )
@@ -537,17 +537,17 @@ struct PremiumFeatureRow: View {
     private var featureColor: Color {
         switch feature {
         case .unlimitedTimeBlocks:
-            return .anchorBlue
+            return themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
         case .advancedAnalytics:
-            return .anchorPurple
+            return themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
         case .premiumThemes:
-            return .anchorGreen
+            return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
         case .unlimitedTemplates:
-            return .anchorTeal
+            return themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color
         case .widgets:
-            return .anchorWarning
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         default:
-            return .anchorBlue
+            return themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
         }
     }
 }

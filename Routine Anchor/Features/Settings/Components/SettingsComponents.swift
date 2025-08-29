@@ -34,7 +34,7 @@ struct SettingsSection<Content: View>: View {
                 
                 Text(title)
                     .font(TypographyConstants.Headers.cardTitle)
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
@@ -86,6 +86,8 @@ struct SettingsSection<Content: View>: View {
 }
 
 struct SettingsToggle: View {
+    @Environment(\.themeManager) private var themeManager
+    
     let title: String
     let subtitle: String
     @Binding var isOn: Bool
@@ -95,17 +97,17 @@ struct SettingsToggle: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.anchorBlue)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundStyle(Color.anchorTextSecondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             }
             
             Spacer()
@@ -125,11 +127,11 @@ struct DesignedToggleStyle: ToggleStyle {
             configuration.label
             
             RoundedRectangle(cornerRadius: 16)
-                .fill(configuration.isOn ? Color.anchorGreen : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color))
+                .fill(configuration.isOn ? themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color))
                 .frame(width: 44, height: 26)
                 .overlay(
                     Circle()
-                        .fill(.white)
+                        .fill(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                         .frame(width: 22, height: 22)
                         .offset(x: configuration.isOn ? 9 : -9)  // Single offset calculation
                         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isOn)
@@ -142,6 +144,8 @@ struct DesignedToggleStyle: ToggleStyle {
 }
 
 struct SettingsButton: View {
+    @Environment(\.themeManager) private var themeManager
+    
     let title: String
     let subtitle: String
     let icon: String
@@ -162,18 +166,18 @@ struct SettingsButton: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(TypographyConstants.Body.emphasized)
-                        .foregroundStyle(Color.anchorTextPrimary)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text(subtitle)
                         .font(TypographyConstants.UI.caption)
-                        .foregroundStyle(Color.anchorTextSecondary)
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.anchorTextSecondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             }
         }
         .buttonStyle(PlainButtonStyle())
@@ -181,6 +185,7 @@ struct SettingsButton: View {
 }
 
 struct SettingsDatePicker: View {
+    @Environment(\.themeManager) private var themeManager
     let title: String
     let subtitle: String
     @Binding var selection: Date
@@ -190,17 +195,17 @@ struct SettingsDatePicker: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.anchorBlue)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundStyle(Color.anchorTextSecondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             }
             
             Spacer()
@@ -208,12 +213,13 @@ struct SettingsDatePicker: View {
             DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
                 .labelsHidden()
                 .datePickerStyle(.compact)
-                .accentColor(Color.anchorBlue)
+                .accentColor(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
         }
     }
 }
 
 struct SettingsPicker: View {
+    @Environment(\.themeManager) private var themeManager
     let title: String
     let subtitle: String
     let icon: String
@@ -224,17 +230,17 @@ struct SettingsPicker: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.anchorBlue)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundStyle(Color.anchorTextSecondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             }
             
             Spacer()
@@ -245,7 +251,7 @@ struct SettingsPicker: View {
                 }
             }
             .pickerStyle(.menu)
-            .accentColor(Color.anchorBlue)
+            .accentColor(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
         }
     }
 }

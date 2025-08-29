@@ -67,34 +67,6 @@ enum BlockStatus: String, CaseIterable, Codable, Sendable {
         }
     }
     
-    /// Color associated with the status
-    var color: Color {
-        switch self {
-        case .notStarted:
-            return ColorConstants.Status.upcoming
-        case .inProgress:
-            return ColorConstants.Status.inProgress
-        case .completed:
-            return ColorConstants.Status.completed
-        case .skipped:
-            return ColorConstants.Status.skipped
-        }
-    }
-    
-    /// Background color for status indicators
-    var backgroundColor: Color {
-        switch self {
-        case .notStarted:
-            return Color.clear
-        case .inProgress:
-            return ColorConstants.Status.inProgress.opacity(0.1)
-        case .completed:
-            return ColorConstants.Status.completed.opacity(0.1)
-        case .skipped:
-            return ColorConstants.Status.skipped.opacity(0.1)
-        }
-    }
-    
     // MARK: - State Logic
     
     /// Whether this status represents a completed state (for progress calculations)
@@ -173,38 +145,9 @@ enum BlockStatus: String, CaseIterable, Codable, Sendable {
         case .skipped: return 0
         }
     }
-}
-
-// MARK: - SwiftUI Helpers
-extension BlockStatus {
-    /// Status indicator view for use in SwiftUI
-    @ViewBuilder
-    var statusIndicator: some View {
-        Image(systemName: iconName)
-            .foregroundColor(color)
-            .font(.system(size: 16, weight: .medium))
-    }
     
-    /// Status badge view with background
-    @ViewBuilder
-    var statusBadge: some View {
-        HStack(spacing: 4) {
-            Image(systemName: iconName)
-                .font(.system(size: 12, weight: .medium))
-            
-            Text(shortDisplayName)
-                .font(.system(size: 12, weight: .medium))
-        }
-        .foregroundColor(color)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(backgroundColor)
-        .cornerRadius(6)
-    }
-}
-
-// MARK: - Accessibility
-extension BlockStatus {
+    // MARK: - Accessibility
+    
     /// Accessibility label for screen readers
     var accessibilityLabel: String {
         switch self {
@@ -232,10 +175,9 @@ extension BlockStatus {
             return "Task was skipped"
         }
     }
-}
-
-// MARK: - Analytics & Metrics
-extension BlockStatus {
+    
+    // MARK: - Analytics & Metrics
+    
     /// Category for analytics tracking
     var analyticsCategory: String {
         switch self {
@@ -262,5 +204,78 @@ extension BlockStatus {
         case .skipped:
             return 0.0
         }
+    }
+}
+
+// MARK: - Theme-Aware View Extensions
+extension View {
+    /// Helper function to get color for a block status
+    func statusColor(for status: BlockStatus, themeManager: ThemeManager?) -> Color {
+        switch status {
+        case .notStarted:
+            return themeManager?.currentTheme.textTertiaryColor ??
+                   Theme.defaultTheme.textTertiaryColor
+        case .inProgress:
+            return themeManager?.currentTheme.colorScheme.warning.color ??
+                   Theme.defaultTheme.colorScheme.warning.color
+        case .completed:
+            return themeManager?.currentTheme.colorScheme.success.color ??
+                   Theme.defaultTheme.colorScheme.success.color
+        case .skipped:
+            return themeManager?.currentTheme.colorScheme.error.color ??
+                   Theme.defaultTheme.colorScheme.error.color
+        }
+    }
+    
+    /// Helper function to get background color for a block status
+    func statusBackgroundColor(for status: BlockStatus, themeManager: ThemeManager?) -> Color {
+        switch status {
+        case .notStarted:
+            return Color.clear
+        case .inProgress:
+            let color = themeManager?.currentTheme.colorScheme.warning.color ??
+                       Theme.defaultTheme.colorScheme.warning.color
+            return color.opacity(0.1)
+        case .completed:
+            let color = themeManager?.currentTheme.colorScheme.success.color ??
+                       Theme.defaultTheme.colorScheme.success.color
+            return color.opacity(0.1)
+        case .skipped:
+            let color = themeManager?.currentTheme.colorScheme.error.color ??
+                       Theme.defaultTheme.colorScheme.error.color
+            return color.opacity(0.1)
+        }
+    }
+}
+
+// MARK: - SwiftUI View Components
+struct StatusIndicatorView: View {
+    @Environment(\.themeManager) private var themeManager
+    let status: BlockStatus
+    
+    var body: some View {
+        Image(systemName: status.iconName)
+            .foregroundStyle(statusColor(for: status, themeManager: themeManager))
+            .font(.system(size: 16, weight: .medium))
+    }
+}
+
+struct StatusBadgeView: View {
+    @Environment(\.themeManager) private var themeManager
+    let status: BlockStatus
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: status.iconName)
+                .font(.system(size: 12, weight: .medium))
+            
+            Text(status.shortDisplayName)
+                .font(.system(size: 12, weight: .medium))
+        }
+        .foregroundStyle(statusColor(for: status, themeManager: themeManager))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(statusBackgroundColor(for: status, themeManager: themeManager))
+        .cornerRadius(6)
     }
 }

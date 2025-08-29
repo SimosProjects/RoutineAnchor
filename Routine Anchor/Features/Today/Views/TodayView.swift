@@ -200,7 +200,7 @@ struct TodayView: View {
             ZStack {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(Color.anchorBlue.opacity(0.3))
+                        .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3))
                         .frame(width: 12, height: 12)
                         .scaleEffect(refreshTrigger ? 1.5 : 1.0)
                         .offset(x: CGFloat(index - 1) * 25)

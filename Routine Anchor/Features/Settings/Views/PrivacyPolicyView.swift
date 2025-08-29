@@ -52,13 +52,13 @@ struct PrivacyPolicyView: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
                         .frame(width: 32, height: 32)
                         .background(
                             Circle()
                                 .fill(.ultraThinMaterial)
                                 .background(
-                                    Circle().fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
+                                    Circle().fill(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color)
                                 )
                         )
                 }
@@ -71,7 +71,7 @@ struct PrivacyPolicyView: View {
                     .font(.system(size: 48, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -81,12 +81,12 @@ struct PrivacyPolicyView: View {
                 
                 Text("Privacy Policy")
                     .font(TypographyConstants.Headers.welcome)
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     .multilineTextAlignment(.center)
                 
                 Text("Your privacy is our priority")
                     .font(TypographyConstants.Body.secondary)
-                    .foregroundStyle(Color.anchorTextSecondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                     .multilineTextAlignment(.center)
             }
         }
@@ -99,84 +99,67 @@ struct PrivacyPolicyView: View {
                 icon: "iphone",
                 title: "Local Storage First",
                 content: "Your routine data is stored locally on your device by default. We only collect email addresses when you voluntarily provide them for updates and courses.",
-                color: Color.anchorGreen
+                color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
             )
             
             PrivacySection(
                 icon: "envelope",
                 title: "Optional Email Collection",
                 content: "We may ask for your email to send productivity tips, app updates, and information about our app development courses. This is completely optional and you can unsubscribe anytime.",
-                color: Color.anchorBlue
+                color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
             )
             
             PrivacySection(
                 icon: "bell.badge",
                 title: "Notification Permissions",
                 content: "We only request notification permissions to send you helpful reminders about your time blocks. You can disable these at any time in Settings.",
-                color: Color.anchorBlue
+                color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
             )
             
             PrivacySection(
                 icon: "lock.shield",
                 title: "Minimal Data Collection",
                 content: "When you provide your email, we store it securely and only use it for the purposes you agreed to. Your routine data remains private and local to your device.",
-                color: Color.anchorPurple
+                color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
             )
             
             PrivacySection(
                 icon: "externaldrive",
                 title: "No Third Party Sharing",
                 content: "We don't share your email or any personal information with third parties for marketing purposes. Your data is used only to provide you with the services you requested.",
-                color: Color.anchorTeal
+                color: themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color
             )
             
             PrivacySection(
                 icon: "trash",
                 title: "Data Deletion",
                 content: "You can delete your email from our records at any time through the Settings screen. When you delete the app, all local data is permanently removed.",
-                color: Color.anchorWarning
+                color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
             )
         }
     }
     
     // MARK: - Contact Section
     private var contactSection: some View {
-        VStack(spacing: 16) {
-            Text("Questions About Privacy?")
-                .font(TypographyConstants.Headers.cardTitle)
-                .foregroundStyle(Color.anchorTextPrimary)
-            
-            Text("If you have any questions about this privacy policy or how we handle your data, please contact us.")
-                .font(TypographyConstants.Body.secondary)
-                .foregroundStyle(Color.anchorTextSecondary)
-                .multilineTextAlignment(.center)
-            
-            Button(action: contactSupport) {
-                HStack(spacing: 8) {
-                    Image(systemName: "envelope")
-                        .font(.system(size: 16, weight: .medium))
-                    
-                    Text("Contact Support")
-                        .font(TypographyConstants.UI.button)
-                        .fontWeight(.medium)
-                }
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .background(
-                    LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+        ThemedCard(cornerRadius: 16) {
+            VStack(spacing: 16) {
+                Text("Questions About Privacy?")
+                    .font(TypographyConstants.Headers.cardTitle)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                
+                Text("If you have any questions about this privacy policy or how we handle your data, please contact us.")
+                    .font(TypographyConstants.Body.secondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                    .multilineTextAlignment(.center)
+                
+                ThemedButton(
+                    title: "Contact Support",
+                    style: .primary,
+                    action: contactSupport
                 )
-                .cornerRadius(12)
-                .shadow(color: Color.anchorBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+                .padding(.horizontal, 20)
             }
-            .padding(.horizontal, 20)
         }
-        .padding(20)
-        .themedGlassMorphism()
     }
     
     // MARK: - Actions
@@ -217,11 +200,11 @@ struct PrivacySection: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .font(TypographyConstants.Headers.cardTitle)
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(content)
                     .font(TypographyConstants.Body.secondary)
-                    .foregroundStyle(Color.anchorTextSecondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                     .lineSpacing(2)
             }
         }
@@ -234,8 +217,8 @@ struct PrivacySection: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.8),
-                                    Color.white.opacity(0.04)
+                                    (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.8),
+                                    (themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color).opacity(0.04)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing

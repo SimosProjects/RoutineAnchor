@@ -36,7 +36,7 @@ struct DurationChip: View {
         }) {
             Text(displayText)
                 .font(.system(size: 14, weight: isSelected ? .bold : .semibold))
-                .foregroundStyle(isSelected ? (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) : Color.anchorWarning)
+                .foregroundStyle(isSelected ? (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) : themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(
@@ -44,12 +44,12 @@ struct DurationChip: View {
                         .fill(
                             isSelected
                                 ? LinearGradient(
-                                    colors: [Color.anchorWarning, Color.anchorWarning.opacity(0.8)],
+                                    colors: [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color, themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.8)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                   )
                                 : LinearGradient(
-                                    colors: [Color.anchorWarning.opacity(0.15)],
+                                    colors: [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.15)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                   )
@@ -58,12 +58,12 @@ struct DurationChip: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(
-                            isSelected ? Color.anchorWarning : Color.anchorWarning.opacity(0.3),
+                            isSelected ? themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color : themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.3),
                             lineWidth: isSelected ? 2 : 1
                         )
                 )
                 .shadow(
-                    color: isSelected ? Color.anchorWarning.opacity(0.3) : Color.clear,
+                    color: isSelected ? themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.3) : Color.clear,
                     radius: 8,
                     x: 0,
                     y: 4

@@ -22,8 +22,8 @@ struct TabItemView: View {
                     isSelected ?
                     LinearGradient(
                         colors: [
-                            themeManager?.currentTheme.primaryColor ?? Color.anchorBlue,
-                            themeManager?.currentTheme.accentColor ?? Color.anchorPurple
+                            themeManager?.currentTheme.primaryColor ?? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                            themeManager?.currentTheme.accentColor ?? themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -44,7 +44,7 @@ struct TabItemView: View {
                 .font(.system(size: 10, weight: isSelected ? .semibold : .medium))
                 .foregroundStyle(
                     isSelected ?
-                    (themeManager?.currentTheme.primaryColor ?? Color.anchorBlue) :
+                    (themeManager?.currentTheme.primaryColor ?? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color) :
                     (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 )
         }

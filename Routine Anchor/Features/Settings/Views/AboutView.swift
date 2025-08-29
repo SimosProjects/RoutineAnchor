@@ -97,14 +97,14 @@ struct AboutView: View {
                     RoundedRectangle(cornerRadius: 20)
                         .fill(
                             LinearGradient(
-                                colors: [Color.anchorBlue, Color.anchorPurple],
+                                colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .frame(width: 80, height: 80)
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.05)
-                        .shadow(color: Color.anchorBlue.opacity(0.4), radius: 20, x: 0, y: 10)
+                        .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.4), radius: 20, x: 0, y: 10)
                     
                     Image(systemName: "clock.badge.checkmark")
                         .font(.system(size: 32, weight: .medium))
@@ -115,15 +115,15 @@ struct AboutView: View {
                 VStack(spacing: 8) {
                     Text("Routine Anchor")
                         .font(TypographyConstants.Headers.welcome)
-                        .foregroundStyle(Color.anchorTextPrimary)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text("Version \(appVersion)")
                         .font(TypographyConstants.Body.secondary)
-                        .foregroundStyle(Color.anchorTextSecondary)
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                     
                     Text("Time-Blocked Productivity")
                         .font(TypographyConstants.Body.description)
-                        .foregroundStyle(Color.anchorTextSecondary)
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 }
             }
         }
@@ -135,7 +135,7 @@ struct AboutView: View {
             icon: "info.circle",
             title: "About Routine Anchor",
             content: "Routine Anchor helps you build consistent daily routines through time-blocking. Create structured schedules, track your progress, and develop productive habits that stick.",
-            color: Color.anchorBlue
+            color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
         )
     }
     
@@ -145,7 +145,7 @@ struct AboutView: View {
             icon: "target",
             title: "Our Mission",
             content: "We believe everyone deserves to live intentionally. Routine Anchor empowers you to take control of your time, build meaningful habits, and create a life aligned with your values.",
-            color: Color.anchorGreen
+            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
         )
     }
     
@@ -154,7 +154,7 @@ struct AboutView: View {
         VStack(spacing: 16) {
             Text("What Makes Us Different")
                 .font(TypographyConstants.Headers.cardTitle)
-                .foregroundStyle(Color.anchorTextPrimary)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             VStack(spacing: 12) {
                 FeatureRow(icon: "lock.shield", title: "Privacy First", description: "All data stays on your device")
@@ -173,7 +173,7 @@ struct AboutView: View {
             icon: "person.circle",
             title: "Made with ❤️",
             content: "Routine Anchor is crafted by Christopher Simonson, an indie developer passionate about productivity and beautiful software. Built with SwiftUI for iOS.",
-            color: Color.anchorPurple
+            color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
         )
     }
     
@@ -212,18 +212,18 @@ struct AboutView: View {
                 .frame(height: 48)
                 .background(
                     LinearGradient(
-                        colors: [Color.anchorBlue, Color.anchorPurple],
+                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(12)
-                .shadow(color: Color.anchorBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), radius: 8, x: 0, y: 4)
             }
             
             Text("© 2025 Simo's Media & Tech, LLC. All rights reserved.")
                 .font(TypographyConstants.UI.caption)
-                .foregroundStyle(Color.anchorTextTertiary)
+                .foregroundStyle(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor)
                 .multilineTextAlignment(.center)
                 .padding(.top, 8)
         }
@@ -265,6 +265,7 @@ struct AboutView: View {
 // MARK: - Supporting Components
 
 struct InfoCard: View {
+    @Environment(\.themeManager) private var themeManager
     let icon: String
     let title: String
     let content: String
@@ -284,14 +285,14 @@ struct InfoCard: View {
                 
                 Text(title)
                     .font(TypographyConstants.Headers.cardTitle)
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Spacer()
             }
             
             Text(content)
                 .font(TypographyConstants.Body.secondary)
-                .foregroundStyle(Color.anchorTextSecondary)
+                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                 .lineSpacing(2)
         }
         .padding(20)
@@ -307,6 +308,7 @@ struct InfoCard: View {
 }
 
 struct ActionButton: View {
+    @Environment(\.themeManager) private var themeManager
     let icon: String
     let title: String
     let subtitle: String
@@ -315,31 +317,32 @@ struct ActionButton: View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(Color.anchorBlue)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
             
             VStack(spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundStyle(Color.anchorTextPrimary)
+                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                 
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundStyle(Color.anchorTextSecondary)
+                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(16)
-        .background(Color.cardBackground)
+        .background(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.separatorColor, lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color, lineWidth: 1)
         )
     }
 }
 
 // MARK: - Acknowledgments View
 struct AcknowledgmentsView: View {
+    @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -348,7 +351,7 @@ struct AcknowledgmentsView: View {
                 Section {
                     Text("Routine Anchor is built with the help of amazing open source libraries and tools.")
                         .font(TypographyConstants.Body.secondary)
-                        .foregroundStyle(Color.anchorTextSecondary)
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
                         .listRowBackground(Color.clear)
                 }
                 
@@ -370,6 +373,7 @@ struct AcknowledgmentsView: View {
 }
 
 struct AcknowledgmentRow: View {
+    @Environment(\.themeManager) private var themeManager
     let name: String
     let description: String
     
@@ -379,7 +383,7 @@ struct AcknowledgmentRow: View {
                 .font(TypographyConstants.Body.emphasized)
             Text(description)
                 .font(TypographyConstants.UI.caption)
-                .foregroundStyle(Color.anchorTextSecondary)
+                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
         }
         .padding(.vertical, 2)
     }

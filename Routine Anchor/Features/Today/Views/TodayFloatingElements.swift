@@ -8,6 +8,8 @@ import SwiftUI
 
 struct TodayFloatingElements: View {
     let viewModel: TodayViewModel
+    
+    @Environment(\.themeManager) private var themeManager
     @Binding var showingSummary: Bool
     
     // MARK: - State
@@ -44,7 +46,7 @@ struct TodayFloatingElements: View {
                             title: "Up Next",
                             subtitle: nextBlock.title,
                             timeText: timeUntil,
-                            color: Color.anchorBlue
+                            color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     } else if let currentBlock = viewModel.getCurrentBlock(),
@@ -53,7 +55,7 @@ struct TodayFloatingElements: View {
                             title: "Current",
                             subtitle: currentBlock.title,
                             timeText: remainingTime,
-                            color: Color.anchorGreen
+                            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
@@ -120,6 +122,7 @@ struct FloatingActionButtons: View {
     let onQuickAdd: () -> Void
     let onStartNext: () -> Void
     
+    @Environment(\.themeManager) private var themeManager
     @State private var showButtons = false
     @State private var buttonsExpanded = false
     
@@ -132,7 +135,7 @@ struct FloatingActionButtons: View {
                     if viewModel.getNextUpcomingBlock() != nil {
                         MiniFloatingButton(
                             icon: "play.circle",
-                            color: Color.anchorGreen,
+                            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
                             action: onStartNext
                         )
                         .transition(.scale.combined(with: .opacity))
@@ -142,7 +145,7 @@ struct FloatingActionButtons: View {
                     if viewModel.hasScheduledBlocks {
                         MiniFloatingButton(
                             icon: "chart.pie",
-                            color: Color.anchorPurple,
+                            color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color,
                             action: {
                                 // Show quick stats
                             }
@@ -196,7 +199,7 @@ struct MainFloatingButton: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.anchorBlue.opacity(0.3), Color.anchorPurple.opacity(0.2)],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color.opacity(0.2)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -209,7 +212,7 @@ struct MainFloatingButton: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -222,7 +225,7 @@ struct MainFloatingButton: View {
                             .rotationEffect(.degrees(isExpanded ? 45 : 0))
                     )
                     .shadow(
-                        color: Color.anchorBlue.opacity(0.4),
+                        color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.4),
                         radius: 12,
                         x: 0,
                         y: 6

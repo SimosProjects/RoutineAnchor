@@ -209,7 +209,7 @@ struct MigrationProgressView: View {
                     .font(.system(size: 60))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.anchorBlue, Color.anchorPurple],
+                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -236,7 +236,7 @@ struct MigrationProgressView: View {
                 VStack(spacing: 8) {
                     ProgressView(value: migrationService.migrationProgress)
                         .progressViewStyle(LinearProgressViewStyle())
-                        .tint(Color.anchorBlue)
+                        .tint(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                         .scaleEffect(y: 2)
                     
                     Text("\(Int(migrationService.migrationProgress * 100))%")
@@ -319,7 +319,7 @@ struct AppLoadingView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [Color.anchorBlue, Color.anchorPurple],
+                                colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -402,7 +402,7 @@ struct DataErrorView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.anchorBlue)
+                            .background(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                             .cornerRadius(12)
                     }
                     

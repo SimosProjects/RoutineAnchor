@@ -99,7 +99,7 @@ struct StyledAdBanner: View {
                 HStack(spacing: 8) {
                     Image(systemName: "crown.fill")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.anchorWarning)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                     
                     Text("Remove ads with Premium")
                         .font(.system(size: 12, weight: .medium))
@@ -112,10 +112,10 @@ struct StyledAdBanner: View {
                         HapticManager.shared.anchorSelection()
                     }
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color.anchorBlue)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color.anchorBlue.opacity(0.2))
+                    .background(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.2))
                     .cornerRadius(6)
                 }
                 .padding(.horizontal, 16)

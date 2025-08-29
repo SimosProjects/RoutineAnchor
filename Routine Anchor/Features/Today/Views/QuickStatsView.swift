@@ -20,7 +20,7 @@ struct QuickStatsView: View {
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.anchorBlue, Color.anchorPurple],
+                                colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -46,7 +46,7 @@ struct QuickStatsView: View {
                         title: "Total Blocks",
                         value: "\(viewModel.timeBlocks.count)",
                         subtitle: "blocks",
-                        color: .anchorBlue,
+                        color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
                         icon: "square.stack"
                     )
                     
@@ -54,7 +54,7 @@ struct QuickStatsView: View {
                         title: "Completed",
                         value: "\(viewModel.completedBlocksCount)",
                         subtitle: "blocks",
-                        color: .anchorGreen,
+                        color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
                         icon: "checkmark.circle"
                     )
                     
@@ -62,7 +62,7 @@ struct QuickStatsView: View {
                         title: "Progress",
                         value: "\(viewModel.progressPercentage)%",
                         subtitle: "blocks",
-                        color: .anchorPurple,
+                        color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color,
                         icon: "chart.pie"
                     )
                     
@@ -70,7 +70,7 @@ struct QuickStatsView: View {
                         title: "Remaining",
                         value: "\(viewModel.upcomingBlocksCount)",
                         subtitle: "blocks",
-                        color: .anchorTeal,
+                        color: themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color,
                         icon: "clock"
                     )
                 }
@@ -90,7 +90,7 @@ struct QuickStatsView: View {
                         if let remaining = viewModel.remainingTimeForCurrentBlock() {
                             Text(remaining)
                                 .font(.system(size: 14))
-                                .foregroundStyle(Color.anchorGreen)
+                                .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)

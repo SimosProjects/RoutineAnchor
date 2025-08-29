@@ -46,6 +46,43 @@ struct MainTabView: View {
         themeManager?.currentTheme.colorScheme.backgroundPrimary.color ?? Theme.defaultTheme.colorScheme.backgroundPrimary.color
     }
     
+    // Helper function to get gradient colors for a tab
+    private func gradientColors(for tab: Tab) -> [Color] {
+        guard let theme = themeManager?.currentTheme else {
+            return defaultGradientColors(for: tab)
+        }
+        
+        switch tab {
+        case .today:
+            return [theme.colorScheme.blue.color, theme.colorScheme.teal.color]
+        case .schedule:
+            return [theme.colorScheme.purple.color, theme.colorScheme.blue.color]
+        case .summary:
+            return [theme.colorScheme.green.color, theme.colorScheme.teal.color]
+        case .analytics:
+            return [theme.colorScheme.warning.color, theme.colorScheme.purple.color]
+        case .settings:
+            return [theme.textSecondaryColor, theme.textTertiaryColor]
+        }
+    }
+    
+    // Fallback default colors
+    private func defaultGradientColors(for tab: Tab) -> [Color] {
+        let defaultTheme = Theme.defaultTheme
+        switch tab {
+        case .today:
+            return [defaultTheme.colorScheme.blue.color, defaultTheme.colorScheme.teal.color]
+        case .schedule:
+            return [defaultTheme.colorScheme.purple.color, defaultTheme.colorScheme.blue.color]
+        case .summary:
+            return [defaultTheme.colorScheme.green.color, defaultTheme.colorScheme.teal.color]
+        case .analytics:
+            return [defaultTheme.colorScheme.warning.color, defaultTheme.colorScheme.purple.color]
+        case .settings:
+            return [defaultTheme.textSecondaryColor, defaultTheme.textTertiaryColor]
+        }
+    }
+    
     var body: some View {
         ZStack {
             ThemedAnimatedBackground()
@@ -339,6 +376,7 @@ struct MainTabView: View {
                     
                     FloatingActionButton(
                         tab: selectedTab,
+                        tabGradientColors: gradientColors(for: selectedTab),
                         action: floatingActionTapped
                     )
                     .scaleEffect(showFloatingAction ? 1.0 : 0.01)
@@ -610,7 +648,7 @@ struct BasicAnalyticsView: View {
                             title: "Completed",
                             value: "\(progress.completedBlocks)",
                             subtitle: "blocks",
-                            color: Color.anchorGreen,
+                            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
                             icon: "checkmark.circle.fill"
                         )
                         
@@ -618,7 +656,7 @@ struct BasicAnalyticsView: View {
                             title: "Progress",
                             value: "\(Int(progress.completionPercentage * 100))%",
                             subtitle: "today",
-                            color: Color.anchorBlue,
+                            color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
                             icon: "chart.pie.fill"
                         )
                     }
@@ -629,7 +667,7 @@ struct BasicAnalyticsView: View {
                                 title: "This Week",
                                 value: "\(weeklyStats.completedBlocks)",
                                 subtitle: "completed",
-                                color: Color.anchorPurple,
+                                color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color,
                                 icon: "calendar.circle.fill"
                             )
                             
@@ -637,7 +675,7 @@ struct BasicAnalyticsView: View {
                                 title: "Average",
                                 value: "\(Int(weeklyStats.averageCompletion * 100))%",
                                 subtitle: "weekly",
-                                color: Color.anchorTeal,
+                                color: themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color,
                                 icon: "chart.line.uptrend.xyaxis"
                             )
                         }
@@ -681,28 +719,28 @@ struct BasicAnalyticsView: View {
                         icon: "chart.line.uptrend.xyaxis",
                         title: "Productivity Trends",
                         description: "Track your completion rates over time",
-                        color: Color.anchorBlue
+                        color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
                     )
                     
                     PremiumFeaturePreview(
                         icon: "brain.head.profile",
                         title: "Peak Performance Times",
                         description: "Discover when you're most productive",
-                        color: Color.anchorGreen
+                        color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
                     )
                     
                     PremiumFeaturePreview(
                         icon: "lightbulb.fill",
                         title: "AI-Powered Insights",
                         description: "Get personalized recommendations",
-                        color: Color.anchorWarning
+                        color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
                     )
                     
                     PremiumFeaturePreview(
                         icon: "target",
                         title: "Category Performance",
                         description: "Analyze completion by activity type",
-                        color: Color.anchorPurple
+                        color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
                     )
                 }
             }
@@ -777,7 +815,7 @@ struct PremiumFeaturePreview: View {
             
             Image(systemName: "lock.fill")
                 .font(.system(size: 12))
-                .foregroundStyle(Color.anchorWarning)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
         }
         .padding(.vertical, 8)
     }
@@ -786,6 +824,7 @@ struct PremiumFeaturePreview: View {
 // MARK: - Floating Action Button Component
 struct FloatingActionButton: View {
     let tab: MainTabView.Tab
+    let tabGradientColors: [Color]  // Passed in from parent view
     let action: () -> Void
     
     @Environment(\.themeManager) private var themeManager
@@ -803,7 +842,7 @@ struct FloatingActionButton: View {
     
     private var gradientColors: [Color] {
         guard let theme = themeManager?.currentTheme else {
-            return tab.gradientColors
+            return tabGradientColors
         }
         
         // Use theme colors instead of hardcoded tab gradient colors
@@ -910,15 +949,7 @@ extension MainTabView {
             }
         }
         
-        var gradientColors: [Color] {
-            switch self {
-            case .today: return [Color.anchorBlue, Color.anchorTeal]
-            case .schedule: return [Color.anchorPurple, Color.anchorBlue]
-            case .summary: return [Color.anchorGreen, Color.anchorTeal]
-            case .analytics: return [Color.anchorWarning, Color.anchorPurple]
-            case .settings: return [Color.anchorTextSecondary, Color.anchorTextTertiary]
-            }
-        }
+        // Removed gradientColors property - handled in View instead
     }
 }
 
