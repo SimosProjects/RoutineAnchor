@@ -21,6 +21,18 @@ struct NavigationButton: View {
         case secondary
         case accent
         case success
+        
+        // Map to ThemedButton style
+        var themedButtonStyle: ThemedButton.ButtonStyle {
+            switch self {
+            case .primary, .success:
+                return .primary
+            case .secondary:
+                return .secondary
+            case .accent:
+                return .accent
+            }
+        }
     }
     
     // Theme color helpers
@@ -54,7 +66,7 @@ struct NavigationButton: View {
             )
         case .success:
             return LinearGradient(
-                colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
+                colors: [theme.colorScheme.green.color, theme.colorScheme.teal.color],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -74,7 +86,7 @@ struct NavigationButton: View {
         case .accent:
             return theme.accentColor.opacity(0.3)
         case .success:
-            return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.3)
+            return theme.colorScheme.green.color.opacity(0.3)
         }
     }
     

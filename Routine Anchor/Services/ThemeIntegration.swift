@@ -250,6 +250,91 @@ struct ThemedCard<Content: View>: View {
     }
 }
 
+struct ThemedIconButton: View {
+    let icon: String
+    let style: ThemedButton.ButtonStyle
+    let action: () -> Void
+    
+    @Environment(\.themeManager) private var themeManager
+    @State private var isPressed = false
+    
+    var body: some View {
+        Button(action: {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                isPressed = true
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isPressed = false
+                action()
+            }
+        }) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(textColor)
+                .frame(width: 40, height: 40)
+                .background(backgroundGradient)
+                .cornerRadius(12)
+                .shadow(
+                    color: shadowColor,
+                    radius: 8,
+                    x: 0,
+                    y: 4
+                )
+                .scaleEffect(isPressed ? 0.95 : 1)
+        }
+    }
+    
+    private var textColor: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var backgroundGradient: LinearGradient {
+        guard let theme = themeManager?.currentTheme else {
+            return LinearGradient(
+                colors: [Theme.defaultTheme.primaryColor, Theme.defaultTheme.secondaryColor],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        }
+        
+        switch style {
+        case .primary:
+            return LinearGradient(
+                colors: [theme.primaryColor, theme.secondaryColor],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        case .secondary:
+            return LinearGradient(
+                colors: [theme.colorScheme.surfacePrimary.color.opacity(0.3)],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        case .accent:
+            return LinearGradient(
+                colors: [theme.accentColor],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        }
+    }
+    
+    private var shadowColor: Color {
+        switch style {
+        case .primary:
+            return themeManager?.currentTheme.primaryColor.opacity(0.3) ??
+                   Theme.defaultTheme.primaryColor.opacity(0.3)
+        case .secondary:
+            return themeManager?.currentTheme.colorScheme.surfaceSecondary.color.opacity(0.2) ??
+                   Theme.defaultTheme.colorScheme.surfaceSecondary.color.opacity(0.2)
+        case .accent:
+            return themeManager?.currentTheme.accentColor.opacity(0.3) ??
+                   Theme.defaultTheme.accentColor.opacity(0.3)
+        }
+    }
+}
+
 // MARK: - Debug Theme Switcher (Development Only)
 #if DEBUG
 struct DebugThemeSwitcher: View {
@@ -266,46 +351,46 @@ struct DebugThemeSwitcher: View {
     
     var body: some View {
         if let themeManager = themeManager {
-            VStack(spacing: 12) {
-                Text("Debug Theme Switcher")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(themePrimaryText)
-                
-                HStack(spacing: 8) {
-                    Button("Random") {
-                        themeManager.switchToRandomTheme()
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.blue)
-                    .foregroundStyle(themePrimaryText)
-                    .cornerRadius(8)
+            ThemedCard(cornerRadius: 12) {
+                VStack(spacing: 12) {
+                    Text("Debug Theme Switcher")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(themePrimaryText)
                     
-                    Button("Next") {
-                        themeManager.cycleToNextTheme()
+                    HStack(spacing: 8) {
+                        Button("Random") {
+                            themeManager.switchToRandomTheme()
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(themeManager.currentTheme.colorScheme.blue.color)
+                        .foregroundStyle(themePrimaryText)
+                        .cornerRadius(8)
+                        
+                        Button("Next") {
+                            themeManager.cycleToNextTheme()
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(themeManager.currentTheme.colorScheme.green.color)
+                        .foregroundStyle(themePrimaryText)
+                        .cornerRadius(8)
+                        
+                        Button("Default") {
+                            themeManager.resetToDefaultTheme()
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(themeManager.currentTheme.colorScheme.orange.color)
+                        .foregroundStyle(themePrimaryText)
+                        .cornerRadius(8)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.green)
-                    .foregroundStyle(themePrimaryText)
-                    .cornerRadius(8)
                     
-                    Button("Default") {
-                        themeManager.resetToDefaultTheme()
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.orange)
-                    .foregroundStyle(themePrimaryText)
-                    .cornerRadius(8)
+                    Text("Current: \(themeManager.currentTheme.name)")
+                        .font(.system(size: 12))
+                        .foregroundStyle(themeSecondaryText)
                 }
-                
-                Text("Current: \(themeManager.currentTheme.name)")
-                    .font(.system(size: 12))
-                    .foregroundStyle(themeSecondaryText)
             }
-            .padding(16)
-            .themedGlassMorphism(cornerRadius: 12)
         }
     }
 }
@@ -347,19 +432,3 @@ struct ThemeSystemHealthCheck {
         return issues
     }
 }
-
-// MARK: - Performance Optimization Tips
-/*
- Theme Performance Tips:
- 
- 1. Theme changes trigger view updates - use @Environment properly
- 2. Avoid creating Theme objects in view body - use static references
- 3. Cache computed gradients in theme objects for better performance
- 4. Use .animation() selectively on theme-dependent properties
- 5. Consider using @StateObject for ThemeManager at app level
- 
- Memory Management:
- - Themes are lightweight structs - no memory concerns
- - Color objects are cached by SwiftUI automatically
- - ThemeManager observes premium status changes efficiently
- */

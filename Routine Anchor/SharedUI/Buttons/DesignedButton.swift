@@ -16,8 +16,15 @@ struct DesignedButton: View {
     @State private var isPressed = false
     
     enum ButtonStyle {
-        case primary, gradient
-        case secondary
+        case primary, gradient, secondary
+        
+        var themedStyle: ThemedButton.ButtonStyle {
+            switch self {
+            case .primary: return .primary
+            case .gradient: return .accent
+            case .secondary: return .secondary
+            }
+        }
     }
     
     var body: some View {
@@ -35,38 +42,80 @@ struct DesignedButton: View {
         }) {
             Text(title)
                 .font(.system(size: 19, weight: .semibold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(textColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 60)
-                .background(
-                    Group {
-                        if style == .gradient {
-                            LinearGradient(
-                                colors: [Color(red: 0.2, green: 0.8, blue: 0.5), Color(red: 0.2, green: 0.7, blue: 0.7)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        } else {
-                            LinearGradient(
-                                colors: [Color(red: 0.3, green: 0.5, blue: 1.0), Color(red: 0.5, green: 0.3, blue: 1.0)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        }
-                    }
-                )
+                .background(backgroundGradient)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18)
-                        .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
+                        .stroke(borderColor, lineWidth: 1)
                 )
                 .shadow(
-                    color: style == .gradient ? Color(red: 0.2, green: 0.7, blue: 0.5).opacity(0.5) : Color(red: 0.3, green: 0.5, blue: 1.0).opacity(0.5),
+                    color: shadowColor,
                     radius: isPressed ? 15 : 30,
                     x: 0,
                     y: isPressed ? 8 : 15
                 )
                 .scaleEffect(isPressed ? 0.97 : 1)
+        }
+    }
+    
+    // MARK: - Computed Properties for Theme Colors
+    
+    private var textColor: Color {
+        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+    }
+    
+    private var backgroundGradient: LinearGradient {
+        guard let theme = themeManager?.currentTheme else {
+            return LinearGradient(
+                colors: [Theme.defaultTheme.primaryColor, Theme.defaultTheme.secondaryColor],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        }
+        
+        switch style {
+        case .primary:
+            return LinearGradient(
+                colors: [theme.primaryColor, theme.secondaryColor],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        case .gradient:
+            // Use theme's accent colors for gradient style
+            return LinearGradient(
+                colors: [theme.colorScheme.green.color, theme.colorScheme.teal.color],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        case .secondary:
+            return LinearGradient(
+                colors: [theme.colorScheme.blue.color, theme.colorScheme.purple.color],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        }
+    }
+    
+    private var borderColor: Color {
+        themeManager?.currentTheme.colorScheme.surfaceSecondary.color ??
+        Theme.defaultTheme.colorScheme.surfaceSecondary.color
+    }
+    
+    private var shadowColor: Color {
+        guard let theme = themeManager?.currentTheme else {
+            return Theme.defaultTheme.primaryColor.opacity(0.5)
+        }
+        
+        switch style {
+        case .primary:
+            return theme.primaryColor.opacity(0.5)
+        case .gradient:
+            return theme.colorScheme.green.color.opacity(0.5)
+        case .secondary:
+            return theme.colorScheme.blue.color.opacity(0.5)
         }
     }
 }

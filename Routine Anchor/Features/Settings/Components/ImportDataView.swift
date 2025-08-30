@@ -120,11 +120,11 @@ struct ImportDataView: View {
                 VStack(spacing: 8) {
                     Text("Import Data")
                         .font(.system(size: 32, weight: .bold))
-                        .foregroundStyle(Color.white)
+                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
                     
                     Text("Restore from backup")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85)
                 }
             }
         }
@@ -135,7 +135,7 @@ struct ImportDataView: View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Supported Formats")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(Color.white)
+                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
             
             VStack(spacing: 16) {
                 FormatRow(
