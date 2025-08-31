@@ -106,6 +106,14 @@ struct ThemeColorScheme: Codable, Equatable {
     let glassTint: ColorHex
     let glassOpacity: Double
     
+    // Glow effect properties
+    let glowIntensityPrimary: Double      // Main glow opacity (0.0-1.0)
+    let glowIntensitySecondary: Double    // Secondary glow opacity
+    let glowBlurRadius: Double            // Blur amount for glow effects
+    let glowRadiusInner: Double           // Inner radius for radial gradients
+    let glowRadiusOuter: Double           // Outer radius for radial gradients
+    let glowAnimationScale: Double        // Scale factor for animations (1.0-2.0)
+    
     // Gradient colors for backgrounds
     let gradientColors: [ColorHex]
     
@@ -132,6 +140,12 @@ struct ThemeColorScheme: Codable, Equatable {
         orange: ColorHex,
         glassTint: ColorHex,
         glassOpacity: Double = 0.1,
+        glowIntensityPrimary: Double = 0.15,
+        glowIntensitySecondary: Double = 0.08,
+        glowBlurRadius: Double = 10,
+        glowRadiusInner: Double = 20,
+        glowRadiusOuter: Double = 60,
+        glowAnimationScale: Double = 1.15,
         gradientColors: [ColorHex]
     ) {
         self.primary = primary
@@ -156,6 +170,12 @@ struct ThemeColorScheme: Codable, Equatable {
         self.orange = orange
         self.glassTint = glassTint
         self.glassOpacity = glassOpacity
+        self.glowIntensityPrimary = glowIntensityPrimary
+        self.glowIntensitySecondary = glowIntensitySecondary
+        self.glowBlurRadius = glowBlurRadius
+        self.glowRadiusInner = glowRadiusInner
+        self.glowRadiusOuter = glowRadiusOuter
+        self.glowAnimationScale = glowAnimationScale
         self.gradientColors = gradientColors
     }
 }
@@ -192,7 +212,7 @@ extension Color {
         case 8: // ARGB (32-bit)
             (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
         default:
-            (a, r, g, b) = (1, 1, 1, 0)
+            (a, r, g, b) = (255, 255, 255, 255)
         }
 
         self.init(
@@ -228,6 +248,19 @@ extension UIColor {
             green: CGFloat(g) / 255,
             blue: CGFloat(b) / 255,
             alpha: CGFloat(a) / 255
+        )
+    }
+}
+
+extension Theme {
+    var glowEffect: (primary: Double, secondary: Double, blur: Double, innerRadius: Double, outerRadius: Double, animationScale: Double) {
+        return (
+            primary: colorScheme.glowIntensityPrimary,
+            secondary: colorScheme.glowIntensitySecondary,
+            blur: colorScheme.glowBlurRadius,
+            innerRadius: colorScheme.glowRadiusInner,
+            outerRadius: colorScheme.glowRadiusOuter,
+            animationScale: colorScheme.glowAnimationScale
         )
     }
 }

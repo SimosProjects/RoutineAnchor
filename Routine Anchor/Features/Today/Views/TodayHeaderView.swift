@@ -258,11 +258,11 @@ struct StreakIndicator: View {
         .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.15))
+                .fill((themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color).opacity(0.15))
         )
         .overlay(
             Capsule()
-                .stroke(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.3), lineWidth: 1)
+                .stroke((themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color).opacity(0.3), lineWidth: 1)
         )
     }
 }

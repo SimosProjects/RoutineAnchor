@@ -69,13 +69,13 @@ struct TodayTimeBlocksList: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
                     .frame(width: 32, height: 32)
-                    .background(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.15))
+                    .background((themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.15))
                     .cornerRadius(8)
             }
             
             if viewModel.isLoading {
                 ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    .progressViewStyle(CircularProgressViewStyle(tint: themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor))
                     .scaleEffect(0.8)
             }
         }
@@ -167,11 +167,11 @@ struct TodayTimeBlocksList: View {
         VStack(spacing: 16) {
             Image(systemName: "calendar.badge.plus")
                 .font(.system(size: 48, weight: .light))
-                .foregroundStyle(Color(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
+                .foregroundStyle((themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
             
             Text("No blocks scheduled for today")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
             
             Button(action: {
                 NotificationCenter.default.post(name: .navigateToSchedule, object: nil)
@@ -188,13 +188,16 @@ struct TodayTimeBlocksList: View {
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                        colors: [
+                            themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                            themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
+                        ],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(12)
-                .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.3), radius: 8, x: 0, y: 4)
             }
         }
         .padding(.vertical, 40)

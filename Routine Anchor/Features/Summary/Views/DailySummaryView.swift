@@ -211,18 +211,20 @@ struct DailySummaryView: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.4),
-                                    themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color.opacity(0.2),
+                                    (themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                                        .opacity(themeManager?.currentTheme.colorScheme.glowIntensityPrimary ?? 0.15),
+                                    (themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color)
+                                        .opacity(themeManager?.currentTheme.colorScheme.glowIntensitySecondary ?? 0.08),
                                     Color.clear
                                 ],
                                 center: .center,
-                                startRadius: 30,
-                                endRadius: 80
+                                startRadius: themeManager?.currentTheme.colorScheme.glowRadiusInner ?? 20,
+                                endRadius: themeManager?.currentTheme.colorScheme.glowRadiusOuter ?? 60
                             )
                         )
                         .frame(width: 80, height: 80)
-                        .blur(radius: 20)
-                        .scaleEffect(animationPhase == 0 ? 1.0 : 1.3)
+                        .blur(radius: themeManager?.currentTheme.colorScheme.glowBlurRadius ?? 10)
+                        .scaleEffect(animationPhase == 0 ? 1.0 : (themeManager?.currentTheme.colorScheme.glowAnimationScale ?? 1.15))
                     
                     Image(systemName: "chart.pie.fill")
                         .font(.system(size: 40, weight: .light))

@@ -22,7 +22,7 @@ struct FocusCard: View {
             // Focus icon with pulse
             ZStack {
                 Circle()
-                    .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.2))
+                    .fill((themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.2))
                     .frame(width: 50, height: 50)
                     .scaleEffect(pulseScale)
                 
@@ -36,7 +36,7 @@ struct FocusCard: View {
                 HStack {
                     Text("Focus Mode")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
                         .textCase(.uppercase)
                         .tracking(1)
                     
@@ -79,8 +79,8 @@ struct FocusCard: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.4),
-                            themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1)
+                            (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.4),
+                            (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.1)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -105,18 +105,24 @@ struct TimeIndicator: View {
     var body: some View {
         HStack(spacing: 4) {
             Circle()
-                .fill(isActive ? themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color : themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                .fill(isActive ?
+                    (themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color) :
+                    (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color))
                 .frame(width: 6, height: 6)
             
             Text(timeText)
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundStyle(isActive ? themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color : themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                .foregroundStyle(isActive ?
+                    (themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color) :
+                    (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill((isActive ? themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color : themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.15))
+                .fill((isActive ?
+                    (themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color) :
+                    (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)).opacity(0.15))
         )
     }
 }

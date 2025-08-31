@@ -393,8 +393,8 @@ struct TimeBlockRowView: View {
             .fill(
                 LinearGradient(
                     colors: [
-                        Color(red: 0x1a / 255.0, green: 0x1a / 255.0, blue: 0x2e / 255.0),
-                        Color(red: 0x16 / 255.0, green: 0x21 / 255.0, blue: 0x3e / 255.0)
+                        themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color,
+                        themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
