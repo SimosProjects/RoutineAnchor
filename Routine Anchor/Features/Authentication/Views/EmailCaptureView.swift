@@ -15,11 +15,11 @@ struct EmailCaptureView: View {
     @State private var errorMessage: String?
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
 
     private var themeTertiaryText: Color {
-        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
     }
     
     let onEmailCaptured: (String) -> Void
@@ -54,7 +54,7 @@ struct EmailCaptureView: View {
                 }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 24))
-                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                 }
             }
             
@@ -64,7 +64,7 @@ struct EmailCaptureView: View {
                     .font(.system(size: 60, weight: .medium))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -72,12 +72,12 @@ struct EmailCaptureView: View {
                 
                 Text("Stay in the Loop")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     .multilineTextAlignment(.center)
                 
                 Text("Get productivity tips, app updates, and early access to new features")
                     .font(.system(size: 16))
-                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                     .multilineTextAlignment(.center)
             }
             
@@ -114,18 +114,18 @@ struct EmailCaptureView: View {
                         if isLoading {
                             ProgressView()
                                 .scaleEffect(0.8)
-                                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         } else {
                             Text("Stay Updated")
                                 .font(.system(size: 16, weight: .semibold))
                         }
                     }
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
+                            colors: [themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color, themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -139,7 +139,7 @@ struct EmailCaptureView: View {
                     dismiss()
                 }
                 .font(.system(size: 14))
-                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
             }
             
             Text("We respect your privacy. Unsubscribe anytime.")
@@ -157,16 +157,16 @@ struct EmailCaptureView: View {
             VStack(spacing: 24) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 80, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                 
                 VStack(spacing: 16) {
                     Text("Thank You!")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     
                     Text("Check your email for a welcome message with productivity tips to get started.")
                         .font(.system(size: 16))
-                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                         .multilineTextAlignment(.center)
                 }
             }
@@ -177,10 +177,10 @@ struct EmailCaptureView: View {
                 dismiss()
             }
             .font(.system(size: 16, weight: .semibold))
-            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+            .background(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
             .cornerRadius(12)
         }
     }
@@ -190,7 +190,7 @@ struct EmailCaptureView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                 .frame(width: 20)
             
             Text(text)

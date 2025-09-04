@@ -363,12 +363,12 @@ struct DebugPremiumView: View {
         VStack(spacing: 20) {
             Text("🧪 Debug Premium Controls")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             
             VStack(spacing: 12) {
                 HStack {
                     Text("Premium Status:")
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     
                     Spacer()
                     
@@ -379,7 +379,7 @@ struct DebugPremiumView: View {
                         .padding(.vertical, 4)
                         .background(
                             Capsule()
-                                .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
+                                .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
                         )
                 }
                 
@@ -391,7 +391,7 @@ struct DebugPremiumView: View {
                         Text(premiumManager?.userIsPremium == true ? "Disable Premium" : "Enable Premium")
                     }
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
                     .background(
@@ -408,7 +408,7 @@ struct DebugPremiumView: View {
                         Text("Grant 1 Hour Premium")
                     }
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 40)
                     .background(
@@ -424,7 +424,7 @@ struct DebugPremiumView: View {
                 .fill(Color.black.opacity(0.3))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
+                        .stroke(Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), lineWidth: 1)
                 )
         )
         .padding()

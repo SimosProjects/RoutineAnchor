@@ -64,13 +64,13 @@ struct DesignedButton: View {
     // MARK: - Computed Properties for Theme Colors
     
     private var textColor: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var backgroundGradient: LinearGradient {
         guard let theme = themeManager?.currentTheme else {
             return LinearGradient(
-                colors: [Theme.defaultTheme.primaryColor, Theme.defaultTheme.secondaryColor],
+                colors: [Theme.defaultTheme.buttonPrimaryColor, Theme.defaultTheme.buttonSecondaryColor],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -79,20 +79,20 @@ struct DesignedButton: View {
         switch style {
         case .primary:
             return LinearGradient(
-                colors: [theme.primaryColor, theme.secondaryColor],
+                colors: [theme.buttonPrimaryColor, theme.buttonSecondaryColor],
                 startPoint: .leading,
                 endPoint: .trailing
             )
         case .gradient:
             // Use theme's accent colors for gradient style
             return LinearGradient(
-                colors: [theme.colorScheme.green.color, theme.colorScheme.teal.color],
+                colors: [theme.colorScheme.actionSuccess.color, theme.colorScheme.creativeSecondary.color],
                 startPoint: .leading,
                 endPoint: .trailing
             )
         case .secondary:
             return LinearGradient(
-                colors: [theme.colorScheme.blue.color, theme.colorScheme.purple.color],
+                colors: [theme.colorScheme.workflowPrimary.color, theme.colorScheme.organizationAccent.color],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -100,22 +100,22 @@ struct DesignedButton: View {
     }
     
     private var borderColor: Color {
-        themeManager?.currentTheme.colorScheme.surfaceSecondary.color ??
-        Theme.defaultTheme.colorScheme.surfaceSecondary.color
+        themeManager?.currentTheme.colorScheme.uiElementSecondary.color ??
+        Theme.defaultTheme.colorScheme.uiElementSecondary.color
     }
     
     private var shadowColor: Color {
         guard let theme = themeManager?.currentTheme else {
-            return Theme.defaultTheme.primaryColor.opacity(0.5)
+            return Theme.defaultTheme.buttonPrimaryColor.opacity(0.5)
         }
         
         switch style {
         case .primary:
-            return theme.primaryColor.opacity(0.5)
+            return theme.buttonPrimaryColor.opacity(0.5)
         case .gradient:
-            return theme.colorScheme.green.color.opacity(0.5)
+            return theme.colorScheme.actionSuccess.color.opacity(0.5)
         case .secondary:
-            return theme.colorScheme.blue.color.opacity(0.5)
+            return theme.colorScheme.workflowPrimary.color.opacity(0.5)
         }
     }
 }

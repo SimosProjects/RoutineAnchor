@@ -46,7 +46,7 @@ struct TodayFloatingElements: View {
                             title: "Up Next",
                             subtitle: nextBlock.title,
                             timeText: timeUntil,
-                            color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+                            color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     } else if let currentBlock = viewModel.getCurrentBlock(),
@@ -55,7 +55,7 @@ struct TodayFloatingElements: View {
                             title: "Current",
                             subtitle: currentBlock.title,
                             timeText: remainingTime,
-                            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
+                            color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
@@ -135,7 +135,7 @@ struct FloatingActionButtons: View {
                     if viewModel.getNextUpcomingBlock() != nil {
                         MiniFloatingButton(
                             icon: "play.circle",
-                            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
+                            color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
                             action: onStartNext
                         )
                         .transition(.scale.combined(with: .opacity))
@@ -145,7 +145,7 @@ struct FloatingActionButtons: View {
                     if viewModel.hasScheduledBlocks {
                         MiniFloatingButton(
                             icon: "chart.pie",
-                            color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color,
+                            color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
                             action: {
                                 // Show quick stats
                             }
@@ -199,7 +199,7 @@ struct MainFloatingButton: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color.opacity(0.2)],
+                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color.opacity(0.2)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -212,7 +212,7 @@ struct MainFloatingButton: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -221,11 +221,11 @@ struct MainFloatingButton: View {
                     .overlay(
                         Image(systemName: isExpanded ? "xmark" : "plus")
                             .font(.system(size: 24, weight: .semibold))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                             .rotationEffect(.degrees(isExpanded ? 45 : 0))
                     )
                     .shadow(
-                        color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.4),
+                        color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.4),
                         radius: 12,
                         x: 0,
                         y: 6
@@ -272,7 +272,7 @@ struct MiniFloatingButton: View {
                 .overlay(
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 )
                 .shadow(
                     color: color.opacity(0.3),
@@ -315,7 +315,7 @@ struct CompletionCelebrationCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Day Complete!")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     
                     Text(completionMessage)
                         .font(.system(size: 14, weight: .medium))
@@ -332,7 +332,7 @@ struct CompletionCelebrationCard: View {
                 }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
+                        .foregroundStyle(Color(themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor).opacity(0.6))
                 }
             }
             
@@ -345,7 +345,7 @@ struct CompletionCelebrationCard: View {
                     Text("View Summary")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(

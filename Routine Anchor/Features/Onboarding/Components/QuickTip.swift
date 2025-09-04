@@ -19,7 +19,7 @@ struct QuickTip: View {
         HStack(spacing: 12) {
             Text(number)
                 .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .frame(width: 28, height: 28)
                 .background(
                     Circle()
@@ -34,7 +34,7 @@ struct QuickTip: View {
             
             Text(text)
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             
             Spacer()
         }

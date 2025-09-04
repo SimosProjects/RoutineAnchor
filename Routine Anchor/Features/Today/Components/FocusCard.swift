@@ -22,13 +22,13 @@ struct FocusCard: View {
             // Focus icon with pulse
             ZStack {
                 Circle()
-                    .fill((themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.2))
+                    .fill((themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.2))
                     .frame(width: 50, height: 50)
                     .scaleEffect(pulseScale)
                 
                 Image(systemName: "target")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
             }
             
             // Focus content
@@ -36,7 +36,7 @@ struct FocusCard: View {
                 HStack {
                     Text("Focus Mode")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                         .textCase(.uppercase)
                         .tracking(1)
                     
@@ -59,14 +59,14 @@ struct FocusCard: View {
                 
                 Text(text)
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     .lineLimit(2)
                 
                 // Progress bar for current block
                 if let currentBlock = currentBlock, currentBlock.isCurrentlyActive {
                     ProgressBar(
                         progress: currentBlock.currentProgress,
-                        color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                        color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
                         animated: true
                     )
                 }
@@ -79,8 +79,8 @@ struct FocusCard: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.4),
-                            (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.1)
+                            (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.4),
+                            (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.1)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -106,23 +106,23 @@ struct TimeIndicator: View {
         HStack(spacing: 4) {
             Circle()
                 .fill(isActive ?
-                    (themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color) :
-                    (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color))
+                    (themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color) :
+                    (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color))
                 .frame(width: 6, height: 6)
             
             Text(timeText)
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                 .foregroundStyle(isActive ?
-                    (themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color) :
-                    (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color))
+                    (themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color) :
+                    (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             Capsule()
                 .fill((isActive ?
-                    (themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color) :
-                    (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)).opacity(0.15))
+                    (themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color) :
+                    (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)).opacity(0.15))
         )
     }
 }

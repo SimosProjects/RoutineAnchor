@@ -322,7 +322,7 @@ struct SettingsView: View {
             HStack {
                 Text("Premium")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Spacer()
                 
@@ -337,16 +337,16 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Premium Active")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                             
                             Text("Thank you for supporting Routine Anchor!")
                                 .font(.system(size: 14))
-                                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                                .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                         }
                         
                         Spacer()
@@ -358,7 +358,7 @@ struct SettingsView: View {
                         }
                     }
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             } else {
@@ -367,18 +367,18 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "star.circle")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                         
                         Text("Upgrade to Premium")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         
                         Spacer()
                     }
                     
                     Text("Unlock unlimited time blocks, advanced analytics, and premium themes")
                         .font(.system(size: 14))
-                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -394,7 +394,7 @@ struct SettingsView: View {
                 HStack {
                     Text("Account")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     
                     Spacer()
                     
@@ -402,11 +402,11 @@ struct SettingsView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 14))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                         
                         Text("Verified")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                     }
                 }
                 
@@ -414,16 +414,16 @@ struct SettingsView: View {
                 HStack {
                     Image(systemName: "envelope")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Email Address")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                            .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                         
                         Text(authManager.userEmail ?? "No email")
                             .font(.system(size: 16))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     }
                     
                     Spacer()
@@ -431,30 +431,30 @@ struct SettingsView: View {
                 
                 // Divider for visual separation
                 Rectangle()
-                    .fill((themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color).opacity(0.3))
+                    .fill((themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.3))
                     .frame(height: 1)
                 
                 // Email preferences button
                 HStack {
                     Image(systemName: "slider.horizontal.3")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Email Preferences")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         
                         Text("Manage notification settings")
                             .font(.system(size: 14))
-                            .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                            .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                     }
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor)
                 }
                 .onTapGesture {
                     showingEmailPreferences = true
@@ -471,7 +471,7 @@ struct SettingsView: View {
             HStack {
                 Text("🧪 Debug")
                     .font(.headline)
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Spacer()
                 
@@ -483,7 +483,7 @@ struct SettingsView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Color.red)
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .cornerRadius(6)
             }
             
@@ -503,15 +503,15 @@ struct SettingsView: View {
                 
                 Text("isEmailCaptured: \(authManager.isEmailCaptured)")
                     .font(.system(size: 10))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text("userEmail: \(authManager.userEmail ?? "nil")")
                     .font(.system(size: 10))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text("shouldShowEmailCapture: \(authManager.shouldShowEmailCapture)")
                     .font(.system(size: 10))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             }
             .padding(8)
             .background(Color.black.opacity(0.5))
@@ -520,7 +520,7 @@ struct SettingsView: View {
             HStack {
                 Text("Status: \(premiumManager?.userIsPremium == true ? "PREMIUM ✅" : "FREE ❌")")
                     .font(.caption)
-                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                 
                 Spacer()
                 
@@ -532,7 +532,7 @@ struct SettingsView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Color.blue)
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .cornerRadius(6)
             }
         }

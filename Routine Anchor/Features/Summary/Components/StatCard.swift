@@ -17,11 +17,11 @@ struct StatCard: View {
     @State private var isVisible = false
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
 
     private var themeTertiaryText: Color {
-        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
     }
     
     var body: some View {
@@ -33,7 +33,7 @@ struct StatCard: View {
             VStack(spacing: 4) {
                 Text(value)
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
@@ -88,7 +88,7 @@ private struct StatCardsPreviewView: View {
                     title: "Completed",
                     value: "8",
                     subtitle: "blocks",
-                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
+                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
                     icon: "checkmark.circle.fill"
                 )
                 
@@ -96,7 +96,7 @@ private struct StatCardsPreviewView: View {
                     title: "Time",
                     value: "5h 30m",
                     subtitle: "tracked",
-                    color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
                     icon: "clock.fill"
                 )
                 
@@ -104,7 +104,7 @@ private struct StatCardsPreviewView: View {
                     title: "Skipped",
                     value: "2",
                     subtitle: "blocks",
-                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
+                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
                     icon: "forward.circle.fill"
                 )
             }

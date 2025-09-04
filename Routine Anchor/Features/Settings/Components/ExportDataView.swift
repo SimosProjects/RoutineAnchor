@@ -73,9 +73,9 @@ struct ExportDataView: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                         .frame(width: 30, height: 30)
-                        .background((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
+                        .background((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.3))
                         .clipShape(Circle())
                 }
                 
@@ -87,7 +87,7 @@ struct ExportDataView: View {
                     .font(.system(size: 56, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -95,11 +95,11 @@ struct ExportDataView: View {
                 
                 Text("Export Your Data")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text("Download your routines and progress")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
             }
         }
     }
@@ -109,7 +109,7 @@ struct ExportDataView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Export Format")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             
             VStack(spacing: 12) {
                 ForEach(ExportService.ExportFormat.allCases, id: \.self) { format in
@@ -124,20 +124,20 @@ struct ExportDataView: View {
             HStack(spacing: 16) {
                 Image(systemName: iconForFormat(format))
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(selectedFormat == format ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color :
-                        (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                    .foregroundStyle(selectedFormat == format ? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color :
+                        (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
                     .frame(width: 24, height: 24)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(format.rawValue)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(selectedFormat == format ?
-                            (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) :
-                            (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                            (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor) :
+                            (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
                     
                     Text(descriptionForFormat(format))
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                 }
                 
                 Spacer()
@@ -145,19 +145,19 @@ struct ExportDataView: View {
                 if selectedFormat == format {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                 }
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
                     .fill(selectedFormat == format ?
-                        (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5) :
-                        (themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
+                        (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5) :
+                        (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.3))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(selectedFormat == format ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.5) : Color.clear, lineWidth: 2)
+                    .stroke(selectedFormat == format ? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.5) : Color.clear, lineWidth: 2)
             )
         }
     }
@@ -167,7 +167,7 @@ struct ExportDataView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Include in Export")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             
             VStack(spacing: 12) {
                 ToggleOption(
@@ -193,7 +193,7 @@ struct ExportDataView: View {
             HStack(spacing: 12) {
                 if isExporting {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor))
+                        .progressViewStyle(CircularProgressViewStyle(tint: themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor))
                         .scaleEffect(0.8)
                 } else {
                     Image(systemName: "square.and.arrow.up")
@@ -203,18 +203,18 @@ struct ExportDataView: View {
                 Text(isExporting ? "Exporting..." : "Export Data")
                     .font(.system(size: 18, weight: .semibold))
             }
-            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(
                 LinearGradient(
-                    colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                    colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
             .cornerRadius(16)
-            .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), radius: 12, x: 0, y: 6)
+            .shadow(color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), radius: 12, x: 0, y: 6)
         }
         .disabled(isExporting)
     }
@@ -225,26 +225,26 @@ struct ExportDataView: View {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.8))
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.8))
                 
                 Text("About Your Data")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             }
             
             Text("Your exported data includes all time blocks\(includeProgress ? ", daily progress records" : "")\(includeSettings ? ", and app settings" : ""). The file will be saved to your device and can be shared or stored as a backup.")
                 .font(.system(size: 12, weight: .regular))
-                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                 .lineSpacing(2)
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1))
+                .fill(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.2), lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.2), lineWidth: 1)
         )
     }
     
@@ -348,17 +348,17 @@ struct ToggleOption: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(isOn ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color : (themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                .foregroundStyle(isOn ? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color : (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
             }
             
             Spacer()
@@ -370,7 +370,7 @@ struct ToggleOption: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.3))
+                .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.3))
         )
     }
 }

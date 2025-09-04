@@ -32,17 +32,17 @@ struct AnalyticsCard: View {
             
             Text(value)
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                 
                 Text(subtitle)
                     .font(.system(size: 10))
-                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ??
-                                     Theme.defaultTheme.textSecondaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ??
+                                     Theme.defaultTheme.secondaryTextColor)
             }
         }
         .padding(16)
@@ -70,12 +70,12 @@ struct CategoryPerformanceRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(category)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text(totalTime)
                     .font(.system(size: 12))
-                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ??
-                                     Theme.defaultTheme.textSecondaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ??
+                                     Theme.defaultTheme.secondaryTextColor)
             }
             
             Spacer()
@@ -83,7 +83,7 @@ struct CategoryPerformanceRow: View {
             VStack(alignment: .trailing, spacing: 4) {
                 Text("\(Int(completionRate * 100))%")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 ProgressView(value: completionRate)
                     .progressViewStyle(LinearProgressViewStyle(tint: color))
@@ -108,7 +108,7 @@ struct TimeSlotRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(timeSlot)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text(label)
                     .font(.system(size: 12))
@@ -120,7 +120,7 @@ struct TimeSlotRow: View {
             HStack(spacing: 8) {
                 Text("\(Int(performance * 100))%")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Circle()
                     .fill(color)

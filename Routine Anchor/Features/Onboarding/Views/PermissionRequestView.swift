@@ -59,7 +59,7 @@ struct PermissionView: View {
                             .overlay(
                                 Image(systemName: "bell.badge.fill")
                                     .font(.system(size: 40, weight: .medium))
-                                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                             )
                             .rotation3DEffect(
                                 .degrees(appearAnimation ? 0 : 180),
@@ -85,7 +85,7 @@ struct PermissionView: View {
                             
                             Text("Gentle nudges at just the right moments keep you focused without the stress")
                                 .font(.system(size: 18, weight: .regular, design: .rounded))
-                                .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                                .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(4)
                                 .padding(.horizontal, 20)
@@ -119,7 +119,7 @@ struct PermissionView: View {
                         }) {
                             Text("I'll set this up later")
                                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                                .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                         }
                         .opacity(appearAnimation ? 1 : 0)
                     }

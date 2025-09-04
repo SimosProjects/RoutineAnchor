@@ -17,19 +17,19 @@ struct ScheduleBlockRowView: View {
     
     // Theme color helpers
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
     
     private var themeTertiaryText: Color {
-        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
     }
     
     private var cardShadowColor: Color {
-        themeManager?.currentTheme.colorScheme.backgroundPrimary.color.opacity(0.1) ?? Theme.defaultTheme.colorScheme.backgroundPrimary.color.opacity(0.1)
+        themeManager?.currentTheme.colorScheme.appBackground.color.opacity(0.1) ?? Theme.defaultTheme.colorScheme.appBackground.color.opacity(0.1)
     }
     
     var body: some View {
@@ -145,26 +145,26 @@ struct ScheduleBlockRowView: View {
     private var statusColor: Color {
         guard let theme = themeManager?.currentTheme else {
             switch timeBlock.status {
-            case .notStarted: return Theme.defaultTheme.textSecondaryColor
-            case .inProgress: return Theme.defaultTheme.colorScheme.blue.color
-            case .completed: return Theme.defaultTheme.colorScheme.success.color
-            case .skipped: return Theme.defaultTheme.colorScheme.warning.color
+            case .notStarted: return Theme.defaultTheme.secondaryTextColor
+            case .inProgress: return Theme.defaultTheme.colorScheme.workflowPrimary.color
+            case .completed: return Theme.defaultTheme.colorScheme.successColor.color
+            case .skipped: return Theme.defaultTheme.colorScheme.warningColor.color
             }
         }
         
         switch timeBlock.status {
-        case .notStarted: return theme.textSecondaryColor
-        case .inProgress: return theme.colorScheme.blue.color
-        case .completed: return theme.colorScheme.success.color
-        case .skipped: return theme.colorScheme.warning.color
+        case .notStarted: return theme.secondaryTextColor
+        case .inProgress: return theme.colorScheme.workflowPrimary.color
+        case .completed: return theme.colorScheme.successColor.color
+        case .skipped: return theme.colorScheme.warningColor.color
         }
     }
     
     private var editButtonColor: Color {
-        themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+        themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
     }
     
     private var deleteButtonColor: Color {
-        themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
+        themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color
     }
 }

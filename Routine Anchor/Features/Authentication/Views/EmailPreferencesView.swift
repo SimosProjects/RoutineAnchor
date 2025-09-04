@@ -52,7 +52,7 @@ struct EmailPreferencesView: View {
                 Button("Cancel") {
                     dismiss()
                 }
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             }
         }
         .onAppear {
@@ -84,7 +84,7 @@ struct EmailPreferencesView: View {
                 .font(.system(size: 50, weight: .medium))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -93,11 +93,11 @@ struct EmailPreferencesView: View {
             VStack(spacing: 8) {
                 Text("Email Preferences")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text("Choose what you'd like to receive from us")
                     .font(.system(size: 16))
-                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                     .multilineTextAlignment(.center)
             }
         }
@@ -109,23 +109,23 @@ struct EmailPreferencesView: View {
             HStack {
                 Image(systemName: "person.circle")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Email Address")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                     
                     Text(authManager.userEmail ?? "No email")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 16))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
             }
             .padding(16)
             .background(
@@ -133,7 +133,7 @@ struct EmailPreferencesView: View {
                     .fill(.ultraThinMaterial)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), lineWidth: 1)
+                            .stroke(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), lineWidth: 1)
                     )
             )
         }
@@ -144,7 +144,7 @@ struct EmailPreferencesView: View {
         VStack(spacing: 20) {
             Text("Email Types")
                 .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             VStack(spacing: 16) {
@@ -153,7 +153,7 @@ struct EmailPreferencesView: View {
                     title: "Productivity Tips",
                     description: "Weekly productivity insights",
                     isOn: $coursesAndTips,
-                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
+                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
                 )
                 
                 EmailPreferenceToggle(
@@ -161,7 +161,7 @@ struct EmailPreferencesView: View {
                     title: "Product Updates",
                     description: "New features and announcements",
                     isOn: $productUpdates,
-                    color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
                 )
                 
                 EmailPreferenceToggle(
@@ -169,7 +169,7 @@ struct EmailPreferencesView: View {
                     title: "Development Courses",
                     description: "iOS app building tutorials",
                     isOn: $marketingEmails,
-                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
+                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
                 )
             }
         }
@@ -183,18 +183,18 @@ struct EmailPreferencesView: View {
                     if isLoading {
                         ProgressView()
                             .scaleEffect(0.8)
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     } else {
                         Text("Save Preferences")
                             .font(.system(size: 16, weight: .semibold))
                     }
                 }
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -205,7 +205,7 @@ struct EmailPreferencesView: View {
             
             Text("We respect your privacy and will never spam you. You can change these preferences anytime.")
                 .font(.system(size: 12))
-                .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                 .multilineTextAlignment(.center)
         }
     }
@@ -214,18 +214,18 @@ struct EmailPreferencesView: View {
     private var unsubscribeSection: some View {
         VStack(spacing: 16) {
             Divider()
-                .background((themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color))
+                .background((themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color))
             
             VStack(spacing: 12) {
                 Text("Don't want any emails?")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                 
                 Button("Unsubscribe from All") {
                     showingUnsubscribeConfirmation = true
                 }
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
             }
         }
     }
@@ -303,7 +303,7 @@ struct EmailPreferenceToggle: View {
                 // Title - allow it to expand and shrink as needed
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     .lineLimit(1)
                     .layoutPriority(1) // Give title priority over spacer
                     .minimumScaleFactor(0.8) // Allow slight text scaling if needed
@@ -321,7 +321,7 @@ struct EmailPreferenceToggle: View {
                 HStack {
                     Text(description)
                         .font(.system(size: 13))
-                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                     
@@ -338,7 +338,7 @@ struct EmailPreferenceToggle: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(
-                            isOn ? color.opacity(0.3) : Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color),
+                            isOn ? color.opacity(0.3) : Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color),
                             lineWidth: 1
                         )
                 )

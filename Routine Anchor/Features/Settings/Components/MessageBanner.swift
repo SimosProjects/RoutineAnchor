@@ -12,16 +12,16 @@ struct MessageBanner: View {
     let type: MessageType
     
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     // Computed property to get the color based on type
     private var typeColor: Color {
         switch type {
         case .success:
-            return themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
+            return themeManager?.currentTheme.colorScheme.successColor.color ?? Theme.defaultTheme.colorScheme.successColor.color
         case .error:
-            return themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
+            return themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color
         }
     }
     

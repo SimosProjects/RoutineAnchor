@@ -26,13 +26,13 @@ struct TaskBreakdownRow: View {
                     
                     Text(timeBlock.title)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         .lineLimit(1)
                 }
                 
                 Text(timeBlock.shortFormattedTimeRange)
                     .font(.system(size: 12, weight: .medium, design: .monospaced))
-                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                    .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
             }
             
             Spacer()
@@ -41,7 +41,7 @@ struct TaskBreakdownRow: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(timeBlock.formattedDuration)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                    .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                 
                 Text(timeBlock.status.shortDisplayName)
                     .font(.system(size: 11, weight: .semibold))
@@ -51,7 +51,7 @@ struct TaskBreakdownRow: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill((themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
+                .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)

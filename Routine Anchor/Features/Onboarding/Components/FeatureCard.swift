@@ -19,35 +19,35 @@ struct FeatureCard: View {
     
     // Theme color helpers
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
     
     private var iconGradient: LinearGradient {
         guard let theme = themeManager?.currentTheme else {
             return LinearGradient(
-                colors: [Theme.defaultTheme.primaryColor, Theme.defaultTheme.accentColor],
+                colors: [Theme.defaultTheme.buttonPrimaryColor, Theme.defaultTheme.buttonAccentColor],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         }
         
         return LinearGradient(
-            colors: [theme.primaryColor, theme.accentColor],
+            colors: [theme.buttonPrimaryColor, theme.buttonAccentColor],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
     }
     
     private var iconShadowColor: Color {
-        themeManager?.currentTheme.primaryColor.opacity(0.5) ?? Theme.defaultTheme.primaryColor.opacity(0.5)
+        themeManager?.currentTheme.buttonPrimaryColor.opacity(0.5) ?? Theme.defaultTheme.buttonPrimaryColor.opacity(0.5)
     }
     
     private var cardShadowColor: Color {
-        themeManager?.currentTheme.colorScheme.backgroundPrimary.color.opacity(0.3) ?? Theme.defaultTheme.colorScheme.backgroundPrimary.color.opacity(0.3)
+        themeManager?.currentTheme.colorScheme.appBackground.color.opacity(0.3) ?? Theme.defaultTheme.colorScheme.appBackground.color.opacity(0.3)
     }
     
     var body: some View {

@@ -35,15 +35,15 @@ struct MainTabView: View {
     
     // Theme color helpers
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var themeAccent: Color {
-        themeManager?.currentTheme.accentColor ?? Theme.defaultTheme.accentColor
+        themeManager?.currentTheme.buttonAccentColor ?? Theme.defaultTheme.buttonAccentColor
     }
     
     private var themeBackground: Color {
-        themeManager?.currentTheme.colorScheme.backgroundPrimary.color ?? Theme.defaultTheme.colorScheme.backgroundPrimary.color
+        themeManager?.currentTheme.colorScheme.appBackground.color ?? Theme.defaultTheme.colorScheme.appBackground.color
     }
     
     // Helper function to get gradient colors for a tab
@@ -54,15 +54,15 @@ struct MainTabView: View {
         
         switch tab {
         case .today:
-            return [theme.colorScheme.blue.color, theme.colorScheme.teal.color]
+            return [theme.colorScheme.workflowPrimary.color, theme.colorScheme.creativeSecondary.color]
         case .schedule:
-            return [theme.colorScheme.purple.color, theme.colorScheme.blue.color]
+            return [theme.colorScheme.organizationAccent.color, theme.colorScheme.workflowPrimary.color]
         case .summary:
-            return [theme.colorScheme.green.color, theme.colorScheme.teal.color]
+            return [theme.colorScheme.actionSuccess.color, theme.colorScheme.creativeSecondary.color]
         case .analytics:
-            return [theme.colorScheme.warning.color, theme.colorScheme.purple.color]
+            return [theme.colorScheme.warningColor.color, theme.colorScheme.organizationAccent.color]
         case .settings:
-            return [theme.textSecondaryColor, theme.textTertiaryColor]
+            return [theme.secondaryTextColor, theme.subtleTextColor]
         }
     }
     
@@ -71,15 +71,15 @@ struct MainTabView: View {
         let defaultTheme = Theme.defaultTheme
         switch tab {
         case .today:
-            return [defaultTheme.colorScheme.blue.color, defaultTheme.colorScheme.teal.color]
+            return [defaultTheme.colorScheme.workflowPrimary.color, defaultTheme.colorScheme.creativeSecondary.color]
         case .schedule:
-            return [defaultTheme.colorScheme.purple.color, defaultTheme.colorScheme.blue.color]
+            return [defaultTheme.colorScheme.organizationAccent.color, defaultTheme.colorScheme.workflowPrimary.color]
         case .summary:
-            return [defaultTheme.colorScheme.green.color, defaultTheme.colorScheme.teal.color]
+            return [defaultTheme.colorScheme.actionSuccess.color, defaultTheme.colorScheme.creativeSecondary.color]
         case .analytics:
-            return [defaultTheme.colorScheme.warning.color, defaultTheme.colorScheme.purple.color]
+            return [defaultTheme.colorScheme.warningColor.color, defaultTheme.colorScheme.organizationAccent.color]
         case .settings:
-            return [defaultTheme.textSecondaryColor, defaultTheme.textTertiaryColor]
+            return [defaultTheme.secondaryTextColor, defaultTheme.subtleTextColor]
         }
     }
     
@@ -564,15 +564,15 @@ struct BasicAnalyticsView: View {
     
     // Theme color helpers
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
     
     private var themeTertiaryText: Color {
-        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
     }
     
     var body: some View {
@@ -648,7 +648,7 @@ struct BasicAnalyticsView: View {
                             title: "Completed",
                             value: "\(progress.completedBlocks)",
                             subtitle: "blocks",
-                            color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
+                            color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
                             icon: "checkmark.circle.fill"
                         )
                         
@@ -656,7 +656,7 @@ struct BasicAnalyticsView: View {
                             title: "Progress",
                             value: "\(Int(progress.completionPercentage * 100))%",
                             subtitle: "today",
-                            color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                            color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
                             icon: "chart.pie.fill"
                         )
                     }
@@ -667,7 +667,7 @@ struct BasicAnalyticsView: View {
                                 title: "This Week",
                                 value: "\(weeklyStats.completedBlocks)",
                                 subtitle: "completed",
-                                color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color,
+                                color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
                                 icon: "calendar.circle.fill"
                             )
                             
@@ -675,7 +675,7 @@ struct BasicAnalyticsView: View {
                                 title: "Average",
                                 value: "\(Int(weeklyStats.averageCompletion * 100))%",
                                 subtitle: "weekly",
-                                color: themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color,
+                                color: themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color,
                                 icon: "chart.line.uptrend.xyaxis"
                             )
                         }
@@ -719,28 +719,28 @@ struct BasicAnalyticsView: View {
                         icon: "chart.line.uptrend.xyaxis",
                         title: "Productivity Trends",
                         description: "Track your completion rates over time",
-                        color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+                        color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
                     )
                     
                     PremiumFeaturePreview(
                         icon: "brain.head.profile",
                         title: "Peak Performance Times",
                         description: "Discover when you're most productive",
-                        color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
+                        color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
                     )
                     
                     PremiumFeaturePreview(
                         icon: "lightbulb.fill",
                         title: "AI-Powered Insights",
                         description: "Get personalized recommendations",
-                        color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
+                        color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
                     )
                     
                     PremiumFeaturePreview(
                         icon: "target",
                         title: "Category Performance",
                         description: "Analyze completion by activity type",
-                        color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
+                        color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
                     )
                 }
             }
@@ -786,7 +786,7 @@ struct PremiumFeaturePreview: View {
     @Environment(\.themeManager) private var themeManager
     
     private var themeTertiaryText: Color {
-        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
     }
     
     var body: some View {
@@ -815,7 +815,7 @@ struct PremiumFeaturePreview: View {
             
             Image(systemName: "lock.fill")
                 .font(.system(size: 12))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
         }
         .padding(.vertical, 8)
     }
@@ -846,15 +846,15 @@ struct FloatingActionButton: View {
         }
         
         // Use theme colors instead of hardcoded tab gradient colors
-        return [theme.primaryColor, theme.accentColor]
+        return [theme.buttonPrimaryColor, theme.buttonAccentColor]
     }
     
     private var shadowColor: Color {
-        themeManager?.currentTheme.primaryColor.opacity(0.4) ?? Theme.defaultTheme.primaryColor.opacity(0.4)
+        themeManager?.currentTheme.buttonPrimaryColor.opacity(0.4) ?? Theme.defaultTheme.buttonPrimaryColor.opacity(0.4)
     }
     
     private var backgroundShadowColor: Color {
-        themeManager?.currentTheme.colorScheme.backgroundPrimary.color.opacity(0.2) ?? Theme.defaultTheme.colorScheme.backgroundPrimary.color.opacity(0.2)
+        themeManager?.currentTheme.colorScheme.appBackground.color.opacity(0.2) ?? Theme.defaultTheme.colorScheme.appBackground.color.opacity(0.2)
     }
     
     var body: some View {
@@ -895,7 +895,7 @@ struct FloatingActionButton: View {
                 
                 Image(systemName: icon)
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     .rotationEffect(.degrees(isPressed ? 90 : 0))
             }
             .shadow(color: shadowColor, radius: 12, x: 0, y: 6)

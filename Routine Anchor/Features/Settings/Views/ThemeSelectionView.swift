@@ -60,7 +60,7 @@ struct ThemeSelectionView: View {
                         Button("Cancel") {
                             dismiss()
                         }
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         .font(.system(size: 17))
                         
                         Spacer()
@@ -69,7 +69,7 @@ struct ThemeSelectionView: View {
                             themeManager?.saveThemePreferences()
                             dismiss()
                         }
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         .font(.system(size: 17, weight: .semibold))
                     }
                     .padding(.horizontal, 20)
@@ -102,11 +102,11 @@ struct ThemeSelectionView: View {
             HStack {
                 Image(systemName: "paintbrush.fill")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text("Themes")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Spacer()
             }
@@ -114,7 +114,7 @@ struct ThemeSelectionView: View {
             HStack {
                 Text("Customize your Routine Anchor experience")
                     .font(.system(size: 16))
-                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                 
                 Spacer()
             }
@@ -130,7 +130,7 @@ struct ThemeSelectionView: View {
             HStack {
                 Text("Current Theme")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Spacer()
             }
@@ -145,7 +145,7 @@ struct ThemeSelectionView: View {
                     // Already selected - no action needed
                 }
                 .scaleEffect(1.02)
-                .shadow(color: themeManager.currentTheme.accentColor.opacity(0.3), radius: 12, x: 0, y: 6)
+                .shadow(color: themeManager.currentTheme.buttonAccentColor.opacity(0.3), radius: 12, x: 0, y: 6)
             }
         }
         .opacity(animationPhase)
@@ -208,18 +208,18 @@ struct ThemeSelectionView: View {
             HStack {
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
                 
                 Text("Premium Themes")
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Spacer()
             }
             
             Text("Unlock beautiful premium themes and customize your experience")
                 .font(.system(size: 14))
-                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
@@ -233,12 +233,12 @@ struct ThemeSelectionView: View {
                     Image(systemName: "arrow.right")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -302,12 +302,12 @@ struct CategoryPill: View {
         Button(action: action) {
             Text(category.displayName)
                 .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
-                .foregroundStyle(isSelected ? .black : (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                .foregroundStyle(isSelected ? .black : (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(
                     Capsule()
-                        .fill(isSelected ? (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color))
+                        .fill(isSelected ? (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor) : Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color))
                 )
         }
         .scaleEffect(isSelected ? 1.05 : 1.0)
@@ -368,8 +368,8 @@ struct ThemePreviewCard: View {
                         
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
-                            .background(Circle().fill(theme.accentColor))
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                            .background(Circle().fill(theme.buttonAccentColor))
                             .offset(x: size.dimensions/2 - 10, y: -size.dimensions/2 + 10)
                     }
                     
@@ -383,11 +383,11 @@ struct ThemePreviewCard: View {
                             VStack(spacing: 4) {
                                 Image(systemName: "lock.fill")
                                     .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                                 
                                 Image(systemName: "crown.fill")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
+                                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
                             }
                         }
                     }
@@ -397,14 +397,14 @@ struct ThemePreviewCard: View {
                 VStack(spacing: 2) {
                     Text(theme.name)
                         .font(.system(size: size == .large ? 16 : 14, weight: .semibold))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         .multilineTextAlignment(.center)
                         .lineLimit(1)
                     
                     if size != .small {
                         Text(theme.description)
                             .font(.system(size: 11))
-                            .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                            .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
                     }

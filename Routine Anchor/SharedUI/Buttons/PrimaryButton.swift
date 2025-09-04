@@ -83,7 +83,7 @@ struct PrimaryButton: View {
     private var textColor: Color {
         switch style {
         case .filled:
-            return themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+            return themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
         case .outlined:
             return Color.primaryBlue
         }
@@ -289,7 +289,7 @@ extension PrimaryButton {
         }
     }
     .padding(20)
-    .background(Theme.defaultTheme.colorScheme.surfaceSecondary.color)
+    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
 }
 
 #Preview("Dark Mode") {
@@ -301,6 +301,6 @@ extension PrimaryButton {
             .buttonStyle(.outlined)
     }
     .padding(20)
-    .background(Theme.defaultTheme.colorScheme.surfaceSecondary.color)
+    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
     .preferredColorScheme(.dark)
 }

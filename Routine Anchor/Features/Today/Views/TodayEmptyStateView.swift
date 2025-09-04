@@ -33,8 +33,8 @@ struct TodayEmptyStateView: View {
                                 .fill(
                                     RadialGradient(
                                         colors: [
-                                            themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.4),
-                                            themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color.opacity(0.2),
+                                            themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.4),
+                                            themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color.opacity(0.2),
                                             Color.clear
                                         ],
                                         center: .center,
@@ -63,7 +63,7 @@ struct TodayEmptyStateView: View {
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
                                 .foregroundStyle(
                                     LinearGradient(
-                                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -73,7 +73,7 @@ struct TodayEmptyStateView: View {
                             
                             Text("Transform your day with intentional time blocks that keep you focused and productive")
                                 .font(.system(size: 18, weight: .regular, design: .rounded))
-                                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(4)
                                 .padding(.horizontal, 20)
@@ -87,7 +87,7 @@ struct TodayEmptyStateView: View {
                                 icon: "brain.head.profile",
                                 title: "Focused Mind",
                                 description: "Clear time boundaries eliminate decision fatigue",
-                                color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                                color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
                                 delay: 0.2
                             )
                             
@@ -95,7 +95,7 @@ struct TodayEmptyStateView: View {
                                 icon: "chart.line.uptrend.xyaxis",
                                 title: "Visible Progress",
                                 description: "Watch your consistency build momentum",
-                                color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
+                                color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
                                 delay: 0.3
                             )
                             
@@ -103,7 +103,7 @@ struct TodayEmptyStateView: View {
                                 icon: "heart.fill",
                                 title: "Balanced Life",
                                 description: "Protect time for what matters most",
-                                color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color,
+                                color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
                                 delay: 0.4
                             )
                         }
@@ -136,11 +136,11 @@ struct TodayEmptyStateView: View {
                         VStack(spacing: 8) {
                             Text("✨ Start small, think big")
                                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                             
                             Text("Most people begin with just 3-4 time blocks")
                                 .font(.system(size: 12, weight: .regular))
-                                .foregroundStyle(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor)
+                                .foregroundStyle(themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor)
                         }
                         .opacity(appearAnimation ? 1 : 0)
                     }
@@ -224,7 +224,7 @@ struct CalendarIllustrationView: View {
                 HStack(spacing: 8) {
                     ForEach(0..<3) { _ in
                         Circle()
-                            .fill((themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.6))
+                            .fill((themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.6))
                             .frame(width: 6, height: 6)
                     }
                 }
@@ -255,16 +255,16 @@ struct CalendarIllustrationView: View {
     }
     
     private var surfaceColor: Color {
-        themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color
+        themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color
     }
     
     // Changed from 'let' to computed 'var'
     private var blockColors: [Color] {
         [
-            themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
-            themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
-            themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color,
-            themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color
+            themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+            themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+            themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
+            themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
         ]
     }
     
@@ -360,9 +360,9 @@ struct FloatingParticle: Identifiable, Sendable {
         
         // Use provided theme colors or fall back to defaults
         let availableColors = themeColors ?? [
-            Theme.defaultTheme.colorScheme.blue.color,
-            Theme.defaultTheme.colorScheme.purple.color,
-            Theme.defaultTheme.colorScheme.green.color
+            Theme.defaultTheme.colorScheme.workflowPrimary.color,
+            Theme.defaultTheme.colorScheme.organizationAccent.color,
+            Theme.defaultTheme.colorScheme.actionSuccess.color
         ]
         
         self.color = availableColors.randomElement()!
@@ -400,11 +400,11 @@ struct BenefitCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text(description)
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                     .lineLimit(2)
             }
             
@@ -434,7 +434,7 @@ struct SecondaryActionButton: View {
     @State private var isPressed = false
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
     
     var body: some View {

@@ -71,36 +71,36 @@ enum GradientStyle: String, Codable {
 // MARK: - Theme Color Scheme
 struct ThemeColorScheme: Codable, Equatable {
     // Primary Colors
-    let primary: ColorHex
-    let secondary: ColorHex
+    let buttonPrimary: ColorHex
+    let buttonSecondary: ColorHex
     let tertiary: ColorHex
     
     // Background Colors
-    let backgroundPrimary: ColorHex
-    let backgroundSecondary: ColorHex
-    let backgroundTertiary: ColorHex
+    let appBackground: ColorHex
+    let cardBackground: ColorHex
+    let overlayBackground: ColorHex
     
-    // Surface Colors
-    let surfacePrimary: ColorHex
-    let surfaceSecondary: ColorHex
+    // UI Element Colors
+    let uiElementPrimary: ColorHex
+    let uiElementSecondary: ColorHex
     
     // Text Colors
-    let textPrimary: ColorHex
-    let textSecondary: ColorHex
-    let textTertiary: ColorHex
+    let primaryText: ColorHex
+    let secondaryText: ColorHex
+    let subtleText: ColorHex
     
     // Accent Colors
-    let accent: ColorHex
-    let warning: ColorHex
-    let success: ColorHex
-    let error: ColorHex
+    let buttonAccent: ColorHex
+    let warningColor: ColorHex
+    let successColor: ColorHex
+    let errorColor: ColorHex
     
     // Special Colors
-    let blue: ColorHex
-    let green: ColorHex
-    let purple: ColorHex
-    let teal: ColorHex
-    let orange: ColorHex
+    let workflowPrimary: ColorHex
+    let actionSuccess: ColorHex
+    let organizationAccent: ColorHex
+    let creativeSecondary: ColorHex
+    let socialAccent: ColorHex
     
     // Glass morphism effect
     let glassTint: ColorHex
@@ -118,26 +118,26 @@ struct ThemeColorScheme: Codable, Equatable {
     let gradientColors: [ColorHex]
     
     init(
-        primary: ColorHex,
-        secondary: ColorHex,
+        buttonPrimary: ColorHex,
+        buttonSecondary: ColorHex,
         tertiary: ColorHex,
-        backgroundPrimary: ColorHex,
-        backgroundSecondary: ColorHex,
-        backgroundTertiary: ColorHex,
-        surfacePrimary: ColorHex,
-        surfaceSecondary: ColorHex,
-        textPrimary: ColorHex,
-        textSecondary: ColorHex,
-        textTertiary: ColorHex,
-        accent: ColorHex,
-        warning: ColorHex,
-        success: ColorHex,
-        error: ColorHex,
-        blue: ColorHex,
-        green: ColorHex,
-        purple: ColorHex,
-        teal: ColorHex,
-        orange: ColorHex,
+        appBackground: ColorHex,
+        cardBackground: ColorHex,
+        overlayBackground: ColorHex,
+        uiElementPrimary: ColorHex,
+        uiElementSecondary: ColorHex,
+        primaryText: ColorHex,
+        secondaryText: ColorHex,
+        subtleText: ColorHex,
+        buttonAccent: ColorHex,
+        warningColor: ColorHex,
+        successColor: ColorHex,
+        errorColor: ColorHex,
+        workflowPrimary: ColorHex,
+        actionSuccess: ColorHex,
+        organizationAccent: ColorHex,
+        creativeSecondary: ColorHex,
+        socialAccent: ColorHex,
         glassTint: ColorHex,
         glassOpacity: Double = 0.1,
         glowIntensityPrimary: Double = 0.15,
@@ -148,26 +148,26 @@ struct ThemeColorScheme: Codable, Equatable {
         glowAnimationScale: Double = 1.15,
         gradientColors: [ColorHex]
     ) {
-        self.primary = primary
-        self.secondary = secondary
+        self.buttonPrimary = buttonPrimary
+        self.buttonSecondary = buttonSecondary
         self.tertiary = tertiary
-        self.backgroundPrimary = backgroundPrimary
-        self.backgroundSecondary = backgroundSecondary
-        self.backgroundTertiary = backgroundTertiary
-        self.surfacePrimary = surfacePrimary
-        self.surfaceSecondary = surfaceSecondary
-        self.textPrimary = textPrimary
-        self.textSecondary = textSecondary
-        self.textTertiary = textTertiary
-        self.accent = accent
-        self.warning = warning
-        self.success = success
-        self.error = error
-        self.blue = blue
-        self.green = green
-        self.purple = purple
-        self.teal = teal
-        self.orange = orange
+        self.appBackground = appBackground
+        self.cardBackground = cardBackground
+        self.overlayBackground = overlayBackground
+        self.uiElementPrimary = uiElementPrimary
+        self.uiElementSecondary = uiElementSecondary
+        self.primaryText = primaryText
+        self.secondaryText = secondaryText
+        self.subtleText = subtleText
+        self.buttonAccent = buttonAccent
+        self.warningColor = warningColor
+        self.successColor = successColor
+        self.errorColor = errorColor
+        self.workflowPrimary = workflowPrimary
+        self.actionSuccess = actionSuccess
+        self.organizationAccent = organizationAccent
+        self.creativeSecondary = creativeSecondary
+        self.socialAccent = socialAccent
         self.glassTint = glassTint
         self.glassOpacity = glassOpacity
         self.glowIntensityPrimary = glowIntensityPrimary
@@ -268,18 +268,18 @@ extension Theme {
 // MARK: - Theme Extensions
 extension Theme {
     // Computed properties for easy access to colors
-    var primaryColor: Color { colorScheme.primary.color }
-    var secondaryColor: Color { colorScheme.secondary.color }
+    var buttonPrimaryColor: Color { colorScheme.buttonPrimary.color }
+    var buttonSecondaryColor: Color { colorScheme.buttonSecondary.color }
     var tertiaryColor: Color { colorScheme.tertiary.color }
-    var accentColor: Color { colorScheme.accent.color }
+    var buttonAccentColor: Color { colorScheme.buttonAccent.color }
     
     var backgroundColors: [Color] {
         colorScheme.gradientColors.map { $0.color }
     }
     
-    var textPrimaryColor: Color { colorScheme.textPrimary.color }
-    var textSecondaryColor: Color { colorScheme.textSecondary.color }
-    var textTertiaryColor: Color { colorScheme.textTertiary.color }
+    var primaryTextColor: Color { colorScheme.primaryText.color }
+    var secondaryTextColor: Color { colorScheme.secondaryText.color }
+    var subtleTextColor: Color { colorScheme.subtleText.color }
     
     // Gradient creation
     var backgroundGradient: LinearGradient {
@@ -320,7 +320,7 @@ extension Theme {
     
     var isLight: Bool {
         // Simple heuristic to determine if theme is light or dark
-        let bg = colorScheme.backgroundPrimary.color
+        let bg = colorScheme.appBackground.color
         return bg.luminance > 0.5
     }
 }

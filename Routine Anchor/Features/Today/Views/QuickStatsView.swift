@@ -20,7 +20,7 @@ struct QuickStatsView: View {
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                                colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -31,7 +31,7 @@ struct QuickStatsView: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundStyle(Color(themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
+                            .foregroundStyle(Color(themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor).opacity(0.6))
                     }
                 }
                 .padding(.horizontal, 24)
@@ -46,7 +46,7 @@ struct QuickStatsView: View {
                         title: "Total Blocks",
                         value: "\(viewModel.timeBlocks.count)",
                         subtitle: "blocks",
-                        color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                        color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
                         icon: "square.stack"
                     )
                     
@@ -54,7 +54,7 @@ struct QuickStatsView: View {
                         title: "Completed",
                         value: "\(viewModel.completedBlocksCount)",
                         subtitle: "blocks",
-                        color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
+                        color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
                         icon: "checkmark.circle"
                     )
                     
@@ -62,7 +62,7 @@ struct QuickStatsView: View {
                         title: "Progress",
                         value: "\(viewModel.progressPercentage)%",
                         subtitle: "blocks",
-                        color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color,
+                        color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
                         icon: "chart.pie"
                     )
                     
@@ -70,7 +70,7 @@ struct QuickStatsView: View {
                         title: "Remaining",
                         value: "\(viewModel.upcomingBlocksCount)",
                         subtitle: "blocks",
-                        color: themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color,
+                        color: themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color,
                         icon: "clock"
                     )
                 }
@@ -81,21 +81,21 @@ struct QuickStatsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Currently Working On")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                            .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                         
                         Text(currentBlock.title)
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         
                         if let remaining = viewModel.remainingTimeForCurrentBlock() {
                             Text(remaining)
                                 .font(.system(size: 14))
-                                .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                                .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
-                    .background(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
+                    .background(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
                     .cornerRadius(12)
                     .padding(.horizontal, 24)
                 }

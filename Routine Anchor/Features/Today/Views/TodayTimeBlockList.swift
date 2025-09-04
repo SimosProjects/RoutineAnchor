@@ -41,7 +41,7 @@ struct TodayTimeBlocksList: View {
         HStack {
             Text("Today's Schedule")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             
             Spacer()
             
@@ -67,15 +67,15 @@ struct TodayTimeBlocksList: View {
             } label: {
                 Image(systemName: useGroupedView ? "square.grid.2x2" : "list.bullet")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                     .frame(width: 32, height: 32)
-                    .background((themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.15))
+                    .background((themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.15))
                     .cornerRadius(8)
             }
             
             if viewModel.isLoading {
                 ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor))
+                    .progressViewStyle(CircularProgressViewStyle(tint: themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor))
                     .scaleEffect(0.8)
             }
         }
@@ -167,11 +167,11 @@ struct TodayTimeBlocksList: View {
         VStack(spacing: 16) {
             Image(systemName: "calendar.badge.plus")
                 .font(.system(size: 48, weight: .light))
-                .foregroundStyle((themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor).opacity(0.6))
+                .foregroundStyle((themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor).opacity(0.6))
             
             Text("No blocks scheduled for today")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
             
             Button(action: {
                 NotificationCenter.default.post(name: .navigateToSchedule, object: nil)
@@ -183,21 +183,21 @@ struct TodayTimeBlocksList: View {
                     Text("Add Time Blocks")
                         .font(.system(size: 16, weight: .semibold))
                 }
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
                         colors: [
-                            themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
-                            themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
+                            themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                            themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(12)
-                .shadow(color: (themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color).opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.3), radius: 8, x: 0, y: 4)
             }
         }
         .padding(.vertical, 40)

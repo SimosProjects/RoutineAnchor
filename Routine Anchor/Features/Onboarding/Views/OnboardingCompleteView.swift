@@ -51,7 +51,7 @@ struct SetupCompleteView: View {
                                 .overlay(
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 50, weight: .bold))
-                                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                                 )
                                 .shadow(color: Color(red: 0.2, green: 0.7, blue: 0.5).opacity(0.4), radius: 30, x: 0, y: 15)
                         }
@@ -74,7 +74,7 @@ struct SetupCompleteView: View {
                             
                             Text("Your journey to a more\nbalanced life starts now")
                                 .font(.system(size: 20, weight: .regular, design: .rounded))
-                                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(4)
                         }
@@ -118,7 +118,7 @@ struct SetupCompleteView: View {
                         
                         Text("Let's make today count 🚀")
                             .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                             .opacity(appearAnimation ? 1 : 0)
                     }
                     .padding(.horizontal, 24)

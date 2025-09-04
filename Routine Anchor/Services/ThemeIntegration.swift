@@ -24,7 +24,7 @@ struct ThemedAnimatedBackground: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    themeManager.currentTheme.accentColor.opacity(0.1),
+                                    themeManager.currentTheme.buttonAccentColor.opacity(0.1),
                                     Color.clear
                                 ],
                                 center: .center,
@@ -62,15 +62,15 @@ struct ThemeSettingsRow: View {
     
     // Theme color helpers
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
     
     private var themeTertiaryText: Color {
-        themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor
+        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
     }
     
     var body: some View {
@@ -98,7 +98,7 @@ struct ThemeSettingsRow: View {
                         if themeManager?.currentTheme.isPremium == true {
                             Image(systemName: "crown.fill")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
+                                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
                         }
                     }
                     
@@ -160,11 +160,11 @@ struct ThemedButton: View {
     
     // Theme color helpers
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
     
     var body: some View {
@@ -191,7 +191,7 @@ struct ThemedButton: View {
     private var backgroundGradient: LinearGradient {
         guard let theme = themeManager?.currentTheme else {
             return LinearGradient(
-                colors: [Theme.defaultTheme.primaryColor, Theme.defaultTheme.secondaryColor],
+                colors: [Theme.defaultTheme.buttonPrimaryColor, Theme.defaultTheme.buttonSecondaryColor],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -200,19 +200,19 @@ struct ThemedButton: View {
         switch style {
         case .primary:
             return LinearGradient(
-                colors: [theme.primaryColor, theme.secondaryColor],
+                colors: [theme.buttonPrimaryColor, theme.buttonSecondaryColor],
                 startPoint: .leading,
                 endPoint: .trailing
             )
         case .secondary:
             return LinearGradient(
-                colors: [theme.colorScheme.surfacePrimary.color.opacity(0.3)],
+                colors: [theme.colorScheme.uiElementPrimary.color.opacity(0.3)],
                 startPoint: .leading,
                 endPoint: .trailing
             )
         case .accent:
             return LinearGradient(
-                colors: [theme.accentColor],
+                colors: [theme.buttonAccentColor],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -286,13 +286,13 @@ struct ThemedIconButton: View {
     }
     
     private var textColor: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var backgroundGradient: LinearGradient {
         guard let theme = themeManager?.currentTheme else {
             return LinearGradient(
-                colors: [Theme.defaultTheme.primaryColor, Theme.defaultTheme.secondaryColor],
+                colors: [Theme.defaultTheme.buttonPrimaryColor, Theme.defaultTheme.buttonSecondaryColor],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -301,19 +301,19 @@ struct ThemedIconButton: View {
         switch style {
         case .primary:
             return LinearGradient(
-                colors: [theme.primaryColor, theme.secondaryColor],
+                colors: [theme.buttonPrimaryColor, theme.buttonSecondaryColor],
                 startPoint: .leading,
                 endPoint: .trailing
             )
         case .secondary:
             return LinearGradient(
-                colors: [theme.colorScheme.surfacePrimary.color.opacity(0.3)],
+                colors: [theme.colorScheme.uiElementPrimary.color.opacity(0.3)],
                 startPoint: .leading,
                 endPoint: .trailing
             )
         case .accent:
             return LinearGradient(
-                colors: [theme.accentColor],
+                colors: [theme.buttonAccentColor],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -323,14 +323,14 @@ struct ThemedIconButton: View {
     private var shadowColor: Color {
         switch style {
         case .primary:
-            return themeManager?.currentTheme.primaryColor.opacity(0.3) ??
-                   Theme.defaultTheme.primaryColor.opacity(0.3)
+            return themeManager?.currentTheme.buttonPrimaryColor.opacity(0.3) ??
+                   Theme.defaultTheme.buttonPrimaryColor.opacity(0.3)
         case .secondary:
-            return themeManager?.currentTheme.colorScheme.surfaceSecondary.color.opacity(0.2) ??
-                   Theme.defaultTheme.colorScheme.surfaceSecondary.color.opacity(0.2)
+            return themeManager?.currentTheme.colorScheme.uiElementSecondary.color.opacity(0.2) ??
+                   Theme.defaultTheme.colorScheme.uiElementSecondary.color.opacity(0.2)
         case .accent:
-            return themeManager?.currentTheme.accentColor.opacity(0.3) ??
-                   Theme.defaultTheme.accentColor.opacity(0.3)
+            return themeManager?.currentTheme.buttonAccentColor.opacity(0.3) ??
+                   Theme.defaultTheme.buttonAccentColor.opacity(0.3)
         }
     }
 }
@@ -342,11 +342,11 @@ struct DebugThemeSwitcher: View {
     
     // Theme color helpers
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
     
     var body: some View {
@@ -363,7 +363,7 @@ struct DebugThemeSwitcher: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(themeManager.currentTheme.colorScheme.blue.color)
+                        .background(themeManager.currentTheme.colorScheme.workflowPrimary.color)
                         .foregroundStyle(themePrimaryText)
                         .cornerRadius(8)
                         
@@ -372,7 +372,7 @@ struct DebugThemeSwitcher: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(themeManager.currentTheme.colorScheme.green.color)
+                        .background(themeManager.currentTheme.colorScheme.actionSuccess.color)
                         .foregroundStyle(themePrimaryText)
                         .cornerRadius(8)
                         
@@ -381,7 +381,7 @@ struct DebugThemeSwitcher: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(themeManager.currentTheme.colorScheme.orange.color)
+                        .background(themeManager.currentTheme.colorScheme.actionSuccess.color)
                         .foregroundStyle(themePrimaryText)
                         .cornerRadius(8)
                     }

@@ -14,11 +14,11 @@ struct TimePicker: View {
     let isDisabled: Bool
     
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var themeSecondaryText: Color {
-        themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor
+        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
 
     init(title: String, selection: Binding<Date>, icon: String, isDisabled: Bool = false) {
@@ -33,7 +33,7 @@ struct TimePicker: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(isDisabled ? themeSecondaryText.opacity(0.6) : themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                    .foregroundStyle(isDisabled ? themeSecondaryText.opacity(0.6) : themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
@@ -43,7 +43,7 @@ struct TimePicker: View {
             DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
                 .datePickerStyle(.compact)
                 .labelsHidden()
-                .accentColor(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                .accentColor(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                 .colorScheme(.dark)
                 .disabled(isDisabled)
                 .opacity(isDisabled ? 0.6 : 1.0)

@@ -19,15 +19,15 @@ struct ProgressOverviewCard: View {
                 // Circular progress
                 ZStack {
                     Circle()
-                        .stroke((themeManager?.currentTheme.textTertiaryColor ??
-                                 Theme.defaultTheme.textTertiaryColor).opacity(0.4), lineWidth: 4)
+                        .stroke((themeManager?.currentTheme.subtleTextColor ??
+                                 Theme.defaultTheme.subtleTextColor).opacity(0.4), lineWidth: 4)
                         .frame(width: 60, height: 60)
                     
                     Circle()
                         .trim(from: 0, to: animateProgress ? CGFloat(viewModel.progressPercentage) : 0)
                         .stroke(
                             LinearGradient(
-                                colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
+                                colors: [themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color, themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color],
                                 startPoint: .topTrailing,
                                 endPoint: .bottomLeading
                             ),
@@ -38,19 +38,19 @@ struct ProgressOverviewCard: View {
                     
                     Text(viewModel.formattedProgressPercentage)
                         .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 }
                 
                 // Progress details
                 VStack(alignment: .leading, spacing: 4) {
                     Text(viewModel.completionSummary)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     
                     Text(viewModel.timeSummary)
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ??
-                                         Theme.defaultTheme.textSecondaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ??
+                                         Theme.defaultTheme.secondaryTextColor)
                     
                     // Performance indicator
                     HStack(spacing: 6) {

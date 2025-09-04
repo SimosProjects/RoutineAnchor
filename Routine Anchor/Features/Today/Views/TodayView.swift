@@ -200,7 +200,7 @@ struct TodayView: View {
             ZStack {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3))
+                        .fill(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3))
                         .frame(width: 12, height: 12)
                         .scaleEffect(refreshTrigger ? 1.5 : 1.0)
                         .offset(x: CGFloat(index - 1) * 25)
@@ -215,7 +215,7 @@ struct TodayView: View {
             
             Text("Loading your day...")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
             
             Spacer()
         }

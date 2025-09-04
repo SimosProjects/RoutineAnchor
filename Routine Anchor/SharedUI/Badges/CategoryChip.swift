@@ -22,7 +22,7 @@ struct CategoryChip: View {
             Text(title)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(isSelected ?
-                    (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor) :
+                    (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor) :
                     color)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -30,8 +30,8 @@ struct CategoryChip: View {
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(isSelected ? color :
-                            (themeManager?.currentTheme.colorScheme.surfacePrimary.color.opacity(0.3) ??
-                             Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color)))
+                            (themeManager?.currentTheme.colorScheme.uiElementPrimary.color.opacity(0.3) ??
+                             Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)

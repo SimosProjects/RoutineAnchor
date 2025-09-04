@@ -21,13 +21,13 @@ struct MotivationalCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Daily Reflection")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                        .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                         .textCase(.uppercase)
                         .tracking(1)
                     
                     Text(viewModel.motivationalMessage)
                         .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         .multilineTextAlignment(.leading)
                 }
                 
@@ -120,19 +120,19 @@ struct CompletionActions: View {
                     Text("View Summary")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color, themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color],
+                        colors: [themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color, themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(10)
                 .scaleEffect(isViewSummaryPressed ? 0.97 : 1)
-                .shadow(color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color.opacity(0.3), radius: 6, x: 0, y: 3)
+                .shadow(color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color.opacity(0.3), radius: 6, x: 0, y: 3)
             }
             
             // Plan Tomorrow Button
@@ -155,12 +155,12 @@ struct CompletionActions: View {
                     Text("Plan Tomorrow")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -168,10 +168,10 @@ struct CompletionActions: View {
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
+                        .stroke(Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), lineWidth: 1)
                 )
                 .scaleEffect(isPlanTomorrowPressed ? 0.97 : 1)
-                .shadow(color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.3), radius: 6, x: 0, y: 3)
+                .shadow(color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), radius: 6, x: 0, y: 3)
             }
         }
     }

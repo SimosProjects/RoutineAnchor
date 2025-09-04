@@ -73,7 +73,7 @@ struct PremiumUpgradeView: View {
             
             Text("Loading Premium Plans...")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
             
             Spacer()
         }
@@ -88,7 +88,7 @@ struct PremiumUpgradeView: View {
                 Button(action: { closeView() }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 28))
-                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
                 .background(Color.clear)
@@ -100,7 +100,7 @@ struct PremiumUpgradeView: View {
                 .font(.system(size: 60, weight: .medium))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color, themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color],
+                        colors: [themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color, themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -111,12 +111,12 @@ struct PremiumUpgradeView: View {
             VStack(spacing: 12) {
                 Text("Upgrade to Premium")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                     .multilineTextAlignment(.center)
                 
                 Text("Unlock the full potential of Routine Anchor")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                     .multilineTextAlignment(.center)
             }
         }
@@ -127,7 +127,7 @@ struct PremiumUpgradeView: View {
         VStack(spacing: 20) {
             Text("Premium Features")
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             
             VStack(spacing: 16) {
                 PremiumFeatureRow(
@@ -165,14 +165,14 @@ struct PremiumUpgradeView: View {
         VStack(spacing: 16) {
             Text("Choose Your Plan")
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             
             if premiumManager.products.isEmpty {
                 // Fallback when products aren't loaded
                 VStack(spacing: 12) {
                     Text("Unable to load pricing")
                         .font(.system(size: 16))
-                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                     
                     Button("Retry") {
                         Task {
@@ -180,10 +180,10 @@ struct PremiumUpgradeView: View {
                         }
                     }
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                 }
                 .padding(20)
-                .background(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color))
+                .background(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
                 .cornerRadius(12)
             } else {
                 VStack(spacing: 12) {
@@ -238,23 +238,23 @@ struct PremiumUpgradeView: View {
                     VStack(spacing: 4) {
                         Text("• Billed annually")
                             .font(.system(size: 14))
-                            .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                            .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                         
                         Text("• Cancel anytime in Settings")
                             .font(.system(size: 14))
-                            .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                            .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                     }
                 } else {
                     Text("• Billed monthly, cancel anytime")
                         .font(.system(size: 14))
-                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                 }
                 
             } else {
                 VStack(spacing: 8) {
                     Text("Select a plan to continue")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                     
                     // Auto-select recommended plan button
                     if let yearlyProduct = premiumManager.yearlyProduct {
@@ -263,7 +263,7 @@ struct PremiumUpgradeView: View {
                             HapticManager.shared.anchorSelection()
                         }
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                     }
                 }
                 .padding(.vertical, 16)
@@ -277,7 +277,7 @@ struct PremiumUpgradeView: View {
                         .tint(.white)
                     Text("Processing...")
                         .font(.system(size: 14))
-                        .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                 }
             }
             
@@ -294,7 +294,7 @@ struct PremiumUpgradeView: View {
                         premiumManager.clearError()
                     }
                     .font(.system(size: 14))
-                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                 }
             }
         }
@@ -309,7 +309,7 @@ struct PremiumUpgradeView: View {
                 }
             }
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+            .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
             .disabled(premiumManager.isLoading)
             
             // Terms and privacy
@@ -327,7 +327,7 @@ struct PremiumUpgradeView: View {
                 }
             }
             .font(.system(size: 12))
-            .foregroundStyle((themeManager?.currentTheme.textTertiaryColor ?? Theme.defaultTheme.textTertiaryColor))
+            .foregroundStyle((themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor))
         }
     }
     
@@ -415,12 +415,12 @@ struct PremiumPricingCard: View {
                         Spacer()
                         Text("MOST POPULAR")
                             .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 4)
                             .background(
                                 Capsule()
-                                    .fill(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                                    .fill(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                             )
                         Spacer()
                     }
@@ -431,7 +431,7 @@ struct PremiumPricingCard: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(product.displayName)
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         
                         if let savings = savings, !savings.isEmpty {
                             Text("Save \(savings)")
@@ -445,12 +445,12 @@ struct PremiumPricingCard: View {
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(product.displayPrice)
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         
                         // Show billing period
                         Text(product.id.contains("yearly") ? "per year" : "per month")
                             .font(.system(size: 12))
-                            .foregroundStyle((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                            .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                     }
                 }
                 
@@ -460,7 +460,7 @@ struct PremiumPricingCard: View {
                         let monthlyEquivalent = NSDecimalNumber(decimal: product.price).doubleValue / 12.0
                         Text("Just $\(String(format: "%.2f", monthlyEquivalent)) per month")
                             .font(.system(size: 14))
-                            .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                            .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                         Spacer()
                     }
                 }
@@ -469,15 +469,15 @@ struct PremiumPricingCard: View {
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
-                        isSelected ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color : Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color),
+                        isSelected ? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color : Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color),
                         lineWidth: isSelected ? 2 : 1
                     )
                     .background(
                         RoundedRectangle(cornerRadius: 16)
                             .fill(
                                 isSelected
-                                ? themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color.opacity(0.1)
-                                : Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5)
+                                ? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.1)
+                                : Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5)
                             )
                     )
             )
@@ -510,11 +510,11 @@ struct PremiumFeatureRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(feature.displayName)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text(feature.description)
                     .font(.system(size: 14))
-                    .foregroundStyle((themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.7))
+                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                     .lineLimit(2)
             }
             
@@ -537,17 +537,17 @@ struct PremiumFeatureRow: View {
     private var featureColor: Color {
         switch feature {
         case .unlimitedTimeBlocks:
-            return themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
         case .advancedAnalytics:
-            return themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color
+            return themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
         case .premiumThemes:
-            return themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color
+            return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
         case .unlimitedTemplates:
-            return themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color
+            return themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
         case .widgets:
-            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
+            return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
         default:
-            return themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color
+            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
         }
     }
 }

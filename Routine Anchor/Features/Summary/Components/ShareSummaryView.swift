@@ -27,7 +27,7 @@ struct ShareSummaryView: View {
                             .font(.system(size: 48, weight: .light))
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                                    colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -35,11 +35,11 @@ struct ShareSummaryView: View {
                         
                         Text("Share Your Progress")
                             .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         
                         Text("Inspire others with your journey")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(Color(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                            .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
                     }
                     .padding(.top, 20)
                     
@@ -48,7 +48,7 @@ struct ShareSummaryView: View {
                         HStack {
                             Text("Preview")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(Color(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8))
+                                .foregroundStyle(Color(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
                             
                             Spacer()
                             
@@ -56,11 +56,11 @@ struct ShareSummaryView: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "checkmark.circle.fill")
                                         .font(.system(size: 12))
-                                        .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                                        .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                                     
                                     Text("Copied!")
                                         .font(.system(size: 12, weight: .medium))
-                                        .foregroundStyle(themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color)
+                                        .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                                 }
                                 .transition(.scale.combined(with: .opacity))
                             }
@@ -69,7 +69,7 @@ struct ShareSummaryView: View {
                         ScrollView {
                             Text(viewModel.generateShareableText())
                                 .font(.system(size: 14, weight: .medium, design: .monospaced))
-                                .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                                 .padding(20)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(
@@ -77,12 +77,12 @@ struct ShareSummaryView: View {
                                         .fill(.ultraThinMaterial)
                                         .background(
                                             RoundedRectangle(cornerRadius: 16)
-                                                .fill(Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color).opacity(0.5))
+                                                .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
                                         )
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .stroke(Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color), lineWidth: 1)
+                                        .stroke(Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), lineWidth: 1)
                                 )
                         }
                         .frame(maxHeight: 300)
@@ -117,7 +117,7 @@ struct ShareSummaryView: View {
                         dismiss()
                     }
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                 }
             }
         }

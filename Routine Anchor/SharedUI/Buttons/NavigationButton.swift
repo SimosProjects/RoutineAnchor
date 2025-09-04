@@ -37,7 +37,7 @@ struct NavigationButton: View {
     
     // Theme color helpers
     private var themePrimaryText: Color {
-        themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor
+        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
     private var themeGradient: LinearGradient {
@@ -48,25 +48,25 @@ struct NavigationButton: View {
         switch style {
         case .primary:
             return LinearGradient(
-                colors: [theme.primaryColor, theme.secondaryColor],
+                colors: [theme.buttonPrimaryColor, theme.buttonSecondaryColor],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         case .secondary:
             return LinearGradient(
-                colors: [theme.colorScheme.surfacePrimary.color, theme.colorScheme.surfaceSecondary.color],
+                colors: [theme.colorScheme.uiElementPrimary.color, theme.colorScheme.uiElementSecondary.color],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         case .accent:
             return LinearGradient(
-                colors: [theme.accentColor, theme.primaryColor],
+                colors: [theme.buttonAccentColor, theme.buttonPrimaryColor],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         case .success:
             return LinearGradient(
-                colors: [theme.colorScheme.green.color, theme.colorScheme.teal.color],
+                colors: [theme.colorScheme.actionSuccess.color, theme.colorScheme.creativeSecondary.color],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -75,18 +75,18 @@ struct NavigationButton: View {
     
     private var shadowColor: Color {
         guard let theme = themeManager?.currentTheme else {
-            return Theme.defaultTheme.primaryColor.opacity(0.3)
+            return Theme.defaultTheme.buttonPrimaryColor.opacity(0.3)
         }
         
         switch style {
         case .primary:
-            return theme.primaryColor.opacity(0.3)
+            return theme.buttonPrimaryColor.opacity(0.3)
         case .secondary:
-            return theme.colorScheme.surfacePrimary.color.opacity(0.3)
+            return theme.colorScheme.uiElementPrimary.color.opacity(0.3)
         case .accent:
-            return theme.accentColor.opacity(0.3)
+            return theme.buttonAccentColor.opacity(0.3)
         case .success:
-            return theme.colorScheme.green.color.opacity(0.3)
+            return theme.colorScheme.actionSuccess.color.opacity(0.3)
         }
     }
     

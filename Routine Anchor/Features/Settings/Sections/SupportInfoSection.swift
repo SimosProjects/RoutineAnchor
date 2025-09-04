@@ -21,7 +21,7 @@ struct SupportInfoSection: View {
         SettingsSection(
             title: "Support & Info",
             icon: "questionmark.circle",
-            color: themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color
+            color: themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
         ) {
             VStack(spacing: 16) {
                 // Help & FAQ button
@@ -29,7 +29,7 @@ struct SupportInfoSection: View {
                     title: "Help & FAQ",
                     subtitle: "Get answers to common questions",
                     icon: "questionmark.circle",
-                    color: themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color,
+                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onShowHelp()
@@ -41,7 +41,7 @@ struct SupportInfoSection: View {
                     title: "About Routine Anchor",
                     subtitle: "App info and acknowledgments",
                     icon: "info.circle",
-                    color: themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color,
+                    color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onShowAbout()
@@ -56,7 +56,7 @@ struct SupportInfoSection: View {
                     title: "Rate the App",
                     subtitle: showThankYou ? "Thank you! ❤️" : "Support development",
                     icon: "star",
-                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
+                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
                     action: {
                         HapticManager.shared.anchorSuccess()
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
@@ -91,7 +91,7 @@ struct SupportInfoSection: View {
                     title: "Contact Support",
                     subtitle: "Get help from our team",
                     icon: "envelope",
-                    color: themeManager?.currentTheme.colorScheme.green.color ?? Theme.defaultTheme.colorScheme.green.color,
+                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onContactSupport()
@@ -108,16 +108,16 @@ struct SupportInfoSection: View {
     private var supportDivider: some View {
         HStack(spacing: 12) {
             Rectangle()
-                .fill(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color)
+                .fill(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color)
                 .frame(height: 1)
             
             Text("SUPPORT")
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                 .tracking(1)
             
             Rectangle()
-                .fill(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color)
+                .fill(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color)
                 .frame(height: 1)
         }
         .padding(.vertical, 4)
@@ -129,11 +129,11 @@ struct SupportInfoSection: View {
             HStack(spacing: 8) {
                 Image(systemName: "lightbulb")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
                 
                 Text("Quick Tips")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             }
             
             VStack(alignment: .leading, spacing: 8) {
@@ -156,11 +156,11 @@ struct SupportInfoSection: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color.opacity(0.1))
+                .fill(themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color.opacity(0.2), lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color.opacity(0.2), lineWidth: 1)
         )
     }
 }
@@ -175,16 +175,16 @@ struct SupportingInfoQuickTip: View {
         HStack(alignment: .top, spacing: 8) {
             Text(number)
                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color)
                 .frame(width: 16, height: 16)
                 .background(
                     Circle()
-                        .fill(themeManager?.currentTheme.colorScheme.teal.color ?? Theme.defaultTheme.colorScheme.teal.color.opacity(0.2))
+                        .fill(themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color.opacity(0.2))
                 )
             
             Text(text)
                 .font(.system(size: 11, weight: .regular))
-                .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor)
+                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                 .lineLimit(2)
             
             Spacer()

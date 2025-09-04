@@ -35,12 +35,12 @@ struct QuickInsightCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.textSecondaryColor ??
-                                         Theme.defaultTheme.textSecondaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ??
+                                         Theme.defaultTheme.secondaryTextColor)
                     
                     Text(subtitle)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor)
+                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
                         .lineLimit(1)
                 }
                 

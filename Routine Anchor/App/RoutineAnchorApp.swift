@@ -209,7 +209,7 @@ struct MigrationProgressView: View {
                     .font(.system(size: 60))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -228,7 +228,7 @@ struct MigrationProgressView: View {
                 // Description
                 Text("We're migrating your data to the latest format. This will only take a moment.")
                     .font(.system(size: 14))
-                    .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                    .foregroundColor((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
@@ -236,12 +236,12 @@ struct MigrationProgressView: View {
                 VStack(spacing: 8) {
                     ProgressView(value: migrationService.migrationProgress)
                         .progressViewStyle(LinearProgressViewStyle())
-                        .tint(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                        .tint(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                         .scaleEffect(y: 2)
                     
                     Text("\(Int(migrationService.migrationProgress * 100))%")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor).opacity(0.85))
+                        .foregroundColor((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
                 }
                 .padding(.horizontal)
                 
@@ -254,7 +254,7 @@ struct MigrationProgressView: View {
                         
                         Text(error.localizedDescription)
                             .font(.system(size: 12))
-                            .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                            .foregroundColor((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
                             .multilineTextAlignment(.center)
                         
                         Button(action: {
@@ -283,8 +283,8 @@ struct MigrationProgressView: View {
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color(themeManager?.currentTheme.colorScheme.surfaceSecondary.color ?? Theme.defaultTheme.colorScheme.surfaceSecondary.color),
-                                        Color(themeManager?.currentTheme.colorScheme.surfacePrimary.color ?? Theme.defaultTheme.colorScheme.surfacePrimary.color)
+                                        Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color),
+                                        Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -319,7 +319,7 @@ struct AppLoadingView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color, themeManager?.currentTheme.colorScheme.purple.color ?? Theme.defaultTheme.colorScheme.purple.color],
+                                colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -345,7 +345,7 @@ struct AppLoadingView: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.white, (themeManager?.currentTheme.textPrimaryColor ?? Theme.defaultTheme.textPrimaryColor).opacity(0.8)],
+                            colors: [.white, (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -390,7 +390,7 @@ struct DataErrorView: View {
                 // Error message
                 Text(error.localizedDescription)
                     .font(.system(size: 14))
-                    .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                    .foregroundColor((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
@@ -402,7 +402,7 @@ struct DataErrorView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(themeManager?.currentTheme.colorScheme.blue.color ?? Theme.defaultTheme.colorScheme.blue.color)
+                            .background(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
                             .cornerRadius(12)
                     }
                     
@@ -414,7 +414,7 @@ struct DataErrorView: View {
                     }) {
                         Text("Check Settings")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor((themeManager?.currentTheme.textSecondaryColor ?? Theme.defaultTheme.textSecondaryColor))
+                            .foregroundColor((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
                     }
                 }
                 .padding(.horizontal, 40)
