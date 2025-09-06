@@ -20,40 +20,41 @@ struct ScheduleBuilderView: View {
     @State private var showingQuickAdd = false
     @State private var showingResetConfirmation = false
     
+    // Convenience
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    
     var body: some View {
         ZStack {
             ThemedAnimatedBackground()
                 .ignoresSafeArea()
-            .ignoresSafeArea()
-            .overlay(
-                RadialGradient(
-                    colors: [
-                        Color(red: 0.2, green: 0.3, blue: 0.8).opacity(0.3),
-                        Color.clear
-                    ],
-                    center: .top,
-                    startRadius: 100,
-                    endRadius: 400
+                .overlay(
+                    // Subtle vignette from theme
+                    RadialGradient(
+                        colors: [
+                            theme.colorScheme.todayHeroVignette.color,
+                            .clear
+                        ],
+                        center: .top,
+                        startRadius: 0,
+                        endRadius: 520
+                    )
+                    .opacity(theme.colorScheme.todayHeroVignetteOpacity)
+                    .blendMode(.softLight)
+                    .ignoresSafeArea()
                 )
-                .ignoresSafeArea()
-            )
             
-            // Static mesh background
+            // Static mesh + particles tinted from theme
             StaticMeshBackground()
-                .opacity(0.3)
+                .opacity(0.35)
                 .allowsHitTesting(false)
-            
-            // Static particles
             StaticParticles()
                 .allowsHitTesting(false)
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    // Header section
                     headerSection
                     
-                    // Content based on state
-                    if let viewModel = viewModel {
+                    if let viewModel {
                         if viewModel.hasTimeBlocks {
                             mainContent(viewModel: viewModel)
                         } else {
@@ -64,14 +65,10 @@ struct ScheduleBuilderView: View {
                     }
                 }
             }
-            .refreshable {
-                viewModel?.loadTimeBlocks()
-            }
+            .refreshable { viewModel?.loadTimeBlocks() }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .onAppear {
-            setupViewModel()
-        }
+        .onAppear { setupViewModel() }
         .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlockFromTab)) { _ in
             showingAddBlock = true
         }
@@ -81,46 +78,34 @@ struct ScheduleBuilderView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showAddTimeBlock)) { _ in
             showingAddBlock = true
         }
-        .confirmationDialog(
-            "Reset Today's Progress",
-            isPresented: $showingResetConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Reset Progress", role: .destructive) {
-                viewModel?.resetTodaysProgress()
-            }
+        .confirmationDialog("Reset Today's Progress",
+                            isPresented: $showingResetConfirmation,
+                            titleVisibility: .visible) {
+            Button("Reset Progress", role: .destructive) { viewModel?.resetTodaysProgress() }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This will reset all time blocks back to 'Not Started' for today. This action cannot be undone.")
         }
-        .confirmationDialog(
-            "Delete Time Block",
-            isPresented: $showingDeleteConfirmation,
-            titleVisibility: .visible
-        ) {
+        .confirmationDialog("Delete Time Block",
+                            isPresented: $showingDeleteConfirmation,
+                            titleVisibility: .visible) {
             Button("Delete", role: .destructive) {
                 if let block = blockToDelete {
                     viewModel?.deleteTimeBlock(block)
                     blockToDelete = nil
                 }
             }
-            Button("Cancel", role: .cancel) {
-                blockToDelete = nil
-            }
+            Button("Cancel", role: .cancel) { blockToDelete = nil }
         } message: {
             Text("Are you sure you want to delete this time block?")
         }
         .sheet(isPresented: $showingAddBlock) {
-            AddTimeBlockView(
-                existingTimeBlocks: viewModel!.timeBlocks
-            ) { title, startTime, endTime, notes, category in
-                viewModel?.addTimeBlock(
-                    title: title,
-                    startTime: startTime,
-                    endTime: endTime,
-                    notes: notes,
-                    category: category
-                )
+            AddTimeBlockView(existingTimeBlocks: viewModel!.timeBlocks) { title, startTime, endTime, notes, category in
+                viewModel?.addTimeBlock(title: title,
+                                        startTime: startTime,
+                                        endTime: endTime,
+                                        notes: notes,
+                                        category: category)
             }
             .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
@@ -128,29 +113,30 @@ struct ScheduleBuilderView: View {
         }
         .sheet(isPresented: $showingEditBlock) {
             if let block = selectedBlock {
-                EditTimeBlockView(timeBlock: block, existingTimeBlocks: viewModel!.timeBlocks) { updatedBlock in
-                    viewModel?.updateTimeBlock(updatedBlock)
+                EditTimeBlockView(timeBlock: block, existingTimeBlocks: viewModel!.timeBlocks) { updated in
+                    viewModel?.updateTimeBlock(updated)
                 }
                 .environment(\.themeManager, themeManager)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }
         }
-        .actionSheet(isPresented: $showingQuickAdd) {
-            quickAddActionSheet
-        }
+        .actionSheet(isPresented: $showingQuickAdd) { quickAddActionSheet }
     }
     
-    // MARK: - Header Section
+    // MARK: - Header
     private var headerSection: some View {
-        VStack(spacing: 20) {
+        let hasBlocks = viewModel?.hasTimeBlocks ?? false
+        
+        return VStack(spacing: 20) {
             HStack {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Schedule Builder")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color, themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color],
+                                colors: [theme.colorScheme.workflowPrimary.color,
+                                         theme.colorScheme.organizationAccent.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -158,60 +144,65 @@ struct ScheduleBuilderView: View {
                     
                     Text("Design your perfect routine")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                        .foregroundStyle(theme.secondaryTextColor)
                 }
-                
                 Spacer()
+                
+                // Only show when there is something to reset
+                if hasBlocks {
+                    Button {
+                        HapticManager.shared.lightImpact()
+                        showingResetConfirmation = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 12, weight: .medium))
+                            Text("Reset All")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundStyle(theme.colorScheme.errorColor.color)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule(style: .continuous)
+                                .fill(theme.colorScheme.errorColor.color.opacity(0.12))
+                        )
+                        .overlay(
+                            Capsule(style: .continuous)
+                                .stroke(theme.colorScheme.border.color.opacity(0.6), lineWidth: 1)
+                        )
+                    }
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                }
             }
             .padding(.horizontal, 24)
             .padding(.top, 60)
+            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: hasBlocks)
         }
     }
+
     
     // MARK: - Main Content
     private func mainContent(viewModel: ScheduleBuilderViewModel) -> some View {
         VStack(spacing: 24) {
-            // Time blocks section
             timeBlocksSection(viewModel: viewModel)
-            
-            // Action buttons
             actionButtonsSection(viewModel: viewModel)
-                .padding(.bottom, 100) // Space for tab bar
+                .padding(.bottom, 100)
         }
         .padding(.top, 32)
     }
     
-    // MARK: - Time Blocks Section
+    // MARK: - Time Blocks
     private func timeBlocksSection(viewModel: ScheduleBuilderViewModel) -> some View {
         VStack(spacing: 16) {
-            // Section header
             HStack {
                 Text("Your Schedule")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                
+                    .foregroundStyle(theme.primaryTextColor)
                 Spacer()
-                
-                Button(action: {
-                    HapticManager.shared.lightImpact()
-                    showingResetConfirmation = true
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 12, weight: .medium))
-                        Text("Reset All")
-                            .font(.system(size: 14, weight: .medium))
-                    }
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color.opacity(0.15))
-                    .cornerRadius(8)
-                }
             }
             .padding(.horizontal, 24)
             
-            // Time blocks list - Using custom non-animated rows
             VStack(spacing: 12) {
                 ForEach(viewModel.sortedTimeBlocks) { timeBlock in
                     SimpleTimeBlockRow(
@@ -231,12 +222,13 @@ struct ScheduleBuilderView: View {
         }
     }
     
-    // MARK: - Action Buttons Section
+    // MARK: - Actions
     private func actionButtonsSection(viewModel: ScheduleBuilderViewModel) -> some View {
         VStack(spacing: 16) {
+            // Use cyan→purple accent gradient to match Today
             DesignedButton(
                 title: "Add Time Block",
-                style: .gradient,
+                style: .secondary, // <— was .gradient (green); now accent (cyan→purple)
                 action: {
                     HapticManager.shared.impact()
                     showingAddBlock = true
@@ -272,15 +264,14 @@ struct ScheduleBuilderView: View {
         VStack(spacing: 32) {
             Spacer()
             
-            // Illustration
             ZStack {
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.4),
-                                themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color.opacity(0.2),
-                                Color.clear
+                                theme.colorScheme.workflowPrimary.color.opacity(0.4),
+                                theme.colorScheme.organizationAccent.color.opacity(0.2),
+                                .clear
                             ],
                             center: .center,
                             startRadius: 50,
@@ -294,7 +285,8 @@ struct ScheduleBuilderView: View {
                     .font(.system(size: 80, weight: .thin))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                            colors: [theme.colorScheme.workflowPrimary.color,
+                                     theme.colorScheme.organizationAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -302,13 +294,13 @@ struct ScheduleBuilderView: View {
             }
             .frame(height: 200)
             
-            // Content
             VStack(spacing: 16) {
                 Text("Build Your Perfect Day")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                            colors: [theme.colorScheme.workflowPrimary.color,
+                                     theme.colorScheme.organizationAccent.color],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -317,7 +309,7 @@ struct ScheduleBuilderView: View {
                 
                 Text("Create time blocks to structure your day and build consistent, productive habits.")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                    .foregroundStyle(theme.secondaryTextColor)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -325,11 +317,10 @@ struct ScheduleBuilderView: View {
             
             Spacer()
             
-            // Action buttons
             VStack(spacing: 16) {
                 DesignedButton(
                     title: "Add Your First Block",
-                    style: .gradient,
+                    style: .secondary,
                     action: {
                         HapticManager.shared.impact()
                         showingAddBlock = true
@@ -350,48 +341,39 @@ struct ScheduleBuilderView: View {
         }
     }
     
-    // MARK: - Loading State
+    // MARK: - Loading
     private var loadingState: some View {
         VStack(spacing: 20) {
             Spacer()
             
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color))
+                .progressViewStyle(CircularProgressViewStyle(tint: theme.colorScheme.workflowPrimary.color))
                 .scaleEffect(1.5)
             
             Text("Setting up your schedule...")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                .foregroundStyle(theme.secondaryTextColor)
             
             Spacer()
         }
     }
     
-    // MARK: - Quick Add Action Sheet
+    // MARK: - Quick Add Sheet
     private var quickAddActionSheet: ActionSheet {
         ActionSheet(
             title: Text("Quick Add Templates"),
             message: Text("Choose a common time block to add"),
             buttons: [
-                .default(Text("🌅 Morning Routine (7:00-8:00 AM)")) {
-                    viewModel?.addMorningRoutine()
-                },
-                .default(Text("💼 Work Session (9:00 AM-12:00 PM)")) {
-                    viewModel?.addWorkBlock()
-                },
-                .default(Text("🍽️ Lunch Break (12:00-1:00 PM)")) {
-                    viewModel?.addBreak()
-                },
-                .default(Text("✨ Custom Time Block")) {
-                    showingAddBlock = true
-                },
+                .default(Text("🌅 Morning Routine (7:00-8:00 AM)")) { viewModel?.addMorningRoutine() },
+                .default(Text("💼 Work Session (9:00 AM-12:00 PM)")) { viewModel?.addWorkBlock() },
+                .default(Text("🍽️ Lunch Break (12:00-1:00 PM)")) { viewModel?.addBreak() },
+                .default(Text("✨ Custom Time Block")) { showingAddBlock = true },
                 .cancel()
             ]
         )
     }
     
-    // MARK: - Helper Methods
-    
+    // MARK: - Helpers
     private func setupViewModel() {
         guard viewModel == nil else {
             viewModel?.loadTimeBlocks()
@@ -400,15 +382,9 @@ struct ScheduleBuilderView: View {
         let dataManager = DataManager(modelContext: modelContext)
         viewModel = ScheduleBuilderViewModel(dataManager: dataManager)
     }
-    
-    private func saveAndDismiss() {
-        viewModel?.saveRoutine()
-        HapticManager.shared.anchorSuccess()
-        dismiss()
-    }
 }
 
-// MARK: - Simple Time Block Row (No Animations)
+// MARK: - Simple Time Block Row
 struct SimpleTimeBlockRow: View {
     let timeBlock: TimeBlock
     let onEdit: () -> Void
@@ -417,34 +393,32 @@ struct SimpleTimeBlockRow: View {
     @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
     
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    
     private var accentColors: [Color] {
         switch timeBlock.status {
-        case .notStarted:
-            return [themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color, themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color]
-        case .inProgress:
-            return [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color]
-        case .completed:
-            return [themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color, themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color]
-        case .skipped:
-            return [themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color, themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color]
+        case .notStarted: return [theme.colorScheme.organizationAccent.color, theme.colorScheme.workflowPrimary.color]
+        case .inProgress: return [theme.colorScheme.workflowPrimary.color, theme.colorScheme.creativeSecondary.color]
+        case .completed:  return [theme.colorScheme.actionSuccess.color, theme.colorScheme.creativeSecondary.color]
+        case .skipped:    return [theme.colorScheme.errorColor.color, theme.colorScheme.warningColor.color]
         }
     }
     
     private var statusIcon: String {
         switch timeBlock.status {
-        case .notStarted: return "clock"
-        case .inProgress: return "play.fill"
-        case .completed: return "checkmark"
-        case .skipped: return "forward.fill"
+        case .notStarted: "clock"
+        case .inProgress: "play.fill"
+        case .completed:  "checkmark"
+        case .skipped:    "forward.fill"
         }
     }
     
     private var statusColor: Color {
         switch timeBlock.status {
-        case .notStarted: return (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85)
-        case .inProgress: return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
-        case .completed: return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
-        case .skipped: return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+        case .notStarted: return theme.secondaryTextColor.opacity(0.85)
+        case .inProgress: return theme.colorScheme.workflowPrimary.color
+        case .completed:  return theme.colorScheme.actionSuccess.color
+        case .skipped:    return theme.colorScheme.warningColor.color
         }
     }
     
@@ -452,13 +426,7 @@ struct SimpleTimeBlockRow: View {
         HStack(spacing: 0) {
             // Left accent bar
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: accentColors,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(LinearGradient(colors: accentColors, startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: 5)
             
             HStack(spacing: 16) {
@@ -466,36 +434,36 @@ struct SimpleTimeBlockRow: View {
                 VStack(spacing: 2) {
                     Text(timeBlock.startTime.formatted(date: .omitted, time: .shortened))
                         .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                        .foregroundStyle(theme.primaryTextColor)
                     
                     Text(timeBlock.formattedDuration)
                         .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                        .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)
+                        .fill(theme.colorScheme.surface3.color)
                 )
                 
-                // Title and notes
+                // Title & notes
                 VStack(alignment: .leading, spacing: 4) {
                     Text(timeBlock.title)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                        .foregroundStyle(theme.primaryTextColor)
                     
                     if let notes = timeBlock.notes, !notes.isEmpty {
                         Text(notes)
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                            .font(.system(size: 12))
+                            .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                             .lineLimit(1)
                     }
                 }
                 
                 Spacer()
                 
-                // Status Indicator
+                // Status
                 Image(systemName: statusIcon)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(statusColor)
@@ -503,23 +471,23 @@ struct SimpleTimeBlockRow: View {
                     .background(statusColor.opacity(0.15))
                     .cornerRadius(6)
                 
-                // Action buttons
+                // Actions
                 HStack(spacing: 8) {
                     Button(action: onEdit) {
                         Image(systemName: "pencil")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                            .foregroundStyle(theme.colorScheme.workflowPrimary.color)
                             .frame(width: 32, height: 32)
-                            .background(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.15))
+                            .background(theme.colorScheme.workflowPrimary.color.opacity(0.15))
                             .cornerRadius(8)
                     }
                     
                     Button(action: onDelete) {
                         Image(systemName: "trash")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color)
+                            .foregroundStyle(theme.colorScheme.errorColor.color)
                             .frame(width: 32, height: 32)
-                            .background((themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color).opacity(0.15))
+                            .background(theme.colorScheme.errorColor.color.opacity(0.15))
                             .cornerRadius(8)
                     }
                 }
@@ -529,21 +497,18 @@ struct SimpleTimeBlockRow: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
+                .fill(theme.colorScheme.surface2.color.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color, lineWidth: 1)
+                .stroke(theme.colorScheme.divider.color, lineWidth: 1)
         )
+        .shadow(color: .black.opacity(0.25), radius: isPressed ? 8 : 14, x: 0, y: isPressed ? 4 : 8)
         .scaleEffect(isPressed ? 0.97 : 1.0)
         .onTapGesture {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                isPressed = true
-            }
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { isPressed = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    isPressed = false
-                }
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { isPressed = false }
             }
         }
     }
@@ -553,20 +518,18 @@ struct SimpleTimeBlockRow: View {
 
 struct StaticMeshBackground: View {
     @Environment(\.themeManager) private var themeManager
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
     
     var body: some View {
         Canvas { context, size in
-            let gridSize = 30
-            let dotSize: CGFloat = 2
+            let grid = 30
+            let dot: CGFloat = 2
             
-            for x in stride(from: 0, to: Int(size.width), by: gridSize) {
-                for y in stride(from: 0, to: Int(size.height), by: gridSize) {
-                    let xPos = CGFloat(x)
-                    let yPos = CGFloat(y)
-                    
+            for x in stride(from: 0, to: Int(size.width), by: grid) {
+                for y in stride(from: 0, to: Int(size.height), by: grid) {
                     context.fill(
-                        Path(ellipseIn: CGRect(x: xPos - dotSize/2, y: yPos - dotSize/2, width: dotSize, height: dotSize)),
-                        with: .color((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
+                        Path(ellipseIn: CGRect(x: CGFloat(x) - dot/2, y: CGFloat(y) - dot/2, width: dot, height: dot)),
+                        with: .color(theme.colorScheme.divider.color.opacity(0.35))
                     )
                 }
             }
@@ -575,11 +538,14 @@ struct StaticMeshBackground: View {
 }
 
 struct StaticParticles: View {
+    @Environment(\.themeManager) private var themeManager
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    
     var body: some View {
         GeometryReader { geometry in
             ForEach(0..<10, id: \.self) { index in
                 Circle()
-                    .fill(Color.blue.opacity(0.1))
+                    .fill(theme.colorScheme.workflowPrimary.color.opacity(0.12))
                     .frame(width: 4, height: 4)
                     .position(
                         x: CGFloat(20 + index * 40).truncatingRemainder(dividingBy: geometry.size.width),

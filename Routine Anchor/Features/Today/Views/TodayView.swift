@@ -39,28 +39,10 @@ struct TodayView: View {
     }
     
     var body: some View {
-        // Pull the scheme once; if themeManager is missing (e.g., preview),
-        // use the default theme to avoid crashes.
-        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
-        
-        return ZStack {
-            ZStack {
-                LinearGradient(
-                    colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                RadialGradient(
-                    colors: [
-                        scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
-                        .clear
-                    ],
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: 520
-                )
-            }
-            .ignoresSafeArea()
+        ZStack {
+            // Shared hero background
+            ThemedAnimatedBackground(kind: .hero)
+                .ignoresSafeArea()
             
             GeometryReader { geometry in
                 ScrollViewReader { proxy in

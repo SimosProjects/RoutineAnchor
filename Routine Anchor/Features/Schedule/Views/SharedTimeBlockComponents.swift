@@ -161,37 +161,21 @@ struct TimeBlockFormView<Content: View>: View {
     var body: some View {
         let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
         let scheme = theme.colorScheme
-        
+
         return ZStack {
-            // Animated background (hero tokens + vignette)
-            ZStack {
-                LinearGradient(
-                    colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
-                    startPoint: .top, endPoint: .bottom
-                )
-                RadialGradient(
-                    colors: [
-                        scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
-                        .clear
-                    ],
-                    center: .center, startRadius: 0, endRadius: 520
-                )
-            }
-            .ignoresSafeArea()
-            
+            ThemedHeroBackground()
+
+            // Keep your overlays
             AnimatedMeshBackground()
                 .opacity(0.3)
                 .allowsHitTesting(false)
-            
+
             ParticleEffectView()
                 .allowsHitTesting(false)
-            
+
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    // Header
                     headerSection(theme: theme, scheme: scheme)
-                    
-                    // Form content
                     content
                         .padding(.bottom, 40)
                 }
@@ -202,6 +186,7 @@ struct TimeBlockFormView<Content: View>: View {
         .navigationBarHidden(true)
         .task { await startAnimations() }
     }
+
     
     private func headerSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
         VStack(spacing: 16) {

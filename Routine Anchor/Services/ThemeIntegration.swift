@@ -8,52 +8,118 @@ import SwiftUI
 
 // MARK: - Themed Animated Background
 struct ThemedAnimatedBackground: View {
+    enum Kind { case hero, generic }
+    var kind: Kind = .hero
+    var showGlow: Bool = true
+    var showOrbs: Bool = true
+
     @Environment(\.themeManager) private var themeManager
-    @State private var animationPhase = 0.0
-    @State private var pulsePhase = 0.0
-    
+    @State private var orbitPhase: CGFloat = 0
+    @State private var pulsePhase: CGFloat = 0
+
+    private var theme: Theme {
+        themeManager?.currentTheme ?? Theme.defaultTheme
+    }
+
     var body: some View {
         ZStack {
-            if let themeManager = themeManager {
-                // Main background gradient
-                themeManager.backgroundGradient
-                
-                // Animated overlay effects based on theme
-                ForEach(0..<3, id: \.self) { index in
+            // Base gradient
+            backgroundLayer
+                .ignoresSafeArea()
+
+            // Optional vignette/glow
+            if showGlow {
+                RadialGradient(
+                    colors: [
+                        theme.colorScheme.todayHeroVignette.color,
+                        .clear
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 620
+                )
+                .opacity(theme.colorScheme.todayHeroVignetteOpacity)
+                .blendMode(.softLight)
+                .ignoresSafeArea()
+            }
+
+            // Animated “orbs” (subtle)
+            if showOrbs {
+                ForEach(0..<3, id: \.self) { i in
                     Circle()
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    themeManager.currentTheme.buttonAccentColor.opacity(0.1),
-                                    Color.clear
+                                    theme.colorScheme.workflowPrimary.color.opacity(0.12),
+                                    .clear
                                 ],
                                 center: .center,
                                 startRadius: 0,
-                                endRadius: 200
+                                endRadius: 220
                             )
                         )
-                        .frame(width: 400, height: 400)
+                        .frame(width: 380, height: 380)
                         .offset(
-                            x: cos(animationPhase + Double(index) * 2.0) * 100,
-                            y: sin(animationPhase + Double(index) * 1.5) * 120
+                            x: cos(Double(i) * 1.7 + Double(orbitPhase)) * 110,
+                            y: sin(Double(i) * 1.3 + Double(orbitPhase)) * 120
                         )
-                        .scaleEffect(1.0 + sin(pulsePhase + Double(index)) * 0.1)
-                        .blur(radius: 40)
-                        .animation(.linear(duration: 20).repeatForever(autoreverses: false), value: animationPhase)
-                        .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: pulsePhase)
+                        .scaleEffect(1 + 0.08 * CGFloat(sin(Double(pulsePhase) + Double(i))))
+                        .blur(radius: 36)
                 }
-            } else {
-                // Fallback to default theme
-                Theme.defaultTheme.backgroundGradient
             }
         }
         .onAppear {
-            animationPhase = 2 * .pi
-            pulsePhase = .pi
+            withAnimation(.linear(duration: 24).repeatForever(autoreverses: false)) {
+                orbitPhase = .pi * 2
+            }
+            withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
+                pulsePhase = .pi
+            }
         }
-        .animation(.easeInOut(duration: 1.0), value: themeManager?.currentTheme.id)
+        .animation(.easeInOut(duration: 0.3), value: theme.id)
+    }
+
+    // MARK: - Layers
+    @ViewBuilder private var backgroundLayer: some View {
+        switch kind {
+        case .hero:
+            LinearGradient(
+                colors: [
+                    theme.colorScheme.todayHeroTop.color,
+                    theme.colorScheme.todayHeroBottom.color
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .generic:
+            // Keep using a theme’s general gradient when requested
+            theme.backgroundGradient
+        }
     }
 }
+
+// MARK: - Shared hero background
+struct ThemedHeroBackground: View {
+    @Environment(\.themeManager) private var themeManager
+    var body: some View {
+        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
+        ZStack {
+            LinearGradient(
+                colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
+                startPoint: .top, endPoint: .bottom
+            )
+            RadialGradient(
+                colors: [
+                    scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
+                    .clear
+                ],
+                center: .center, startRadius: 0, endRadius: 520
+            )
+        }
+        .ignoresSafeArea()
+    }
+}
+
 
 // MARK: - Settings Integration Component
 struct ThemeSettingsRow: View {
