@@ -48,10 +48,11 @@ struct AnalyticsCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(color.opacity(0.1))
+                .fill(themeManager?.currentTheme.colorScheme.uiElementPrimary.color
+                      ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(color.opacity(0.3), lineWidth: 1)
+                        .stroke(color.opacity(0.35), lineWidth: 1)
                 )
         )
     }

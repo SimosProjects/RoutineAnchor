@@ -790,7 +790,10 @@ struct ProductiveDayRow: View {
             
             Text("\(Int(productiveDay.completionRate * 100))%")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(.green)
+                .foregroundStyle(
+                    themeManager?.currentTheme.colorScheme.successColor.color
+                    ?? Theme.defaultTheme.colorScheme.successColor.color
+                )
         }
         .padding(.vertical, 8)
     }
@@ -869,12 +872,14 @@ enum TrendDisplayDirection {
     }
     
     func color(theme: Theme? = nil) -> Color {
+        let t = theme ?? Theme.defaultTheme
         switch self {
-        case .up: return .green
-        case .down: return .red
+        case .up:
+            return t.colorScheme.successColor.color
+        case .down:
+            return t.colorScheme.errorColor.color
         case .neutral:
-            let themeToUse = theme ?? Theme.defaultTheme
-            return themeToUse.secondaryTextColor.opacity(0.85)
+            return t.secondaryTextColor.opacity(0.85)
         }
     }
 }

@@ -179,7 +179,7 @@ struct MainTabView: View {
                 }
         }
         .sheet(isPresented: $showingPremiumUpgrade) {
-            PremiumUpgradeView(premiumManager: safePremiumManager)
+            PremiumUpgradeView()
                 .environment(\.themeManager, themeManager)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)

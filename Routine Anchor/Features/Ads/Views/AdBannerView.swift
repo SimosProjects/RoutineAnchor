@@ -88,14 +88,12 @@ struct StyledAdBanner: View {
     var body: some View {
         if premiumManager?.shouldShowAds == true {
             VStack(spacing: 12) {
-                // Ad Banner with error boundary
                 AdBannerView()
                     .frame(height: 50)
                     .background(Color.black.opacity(0.1))
                     .cornerRadius(8)
-                    .clipped() // Prevent overflow issues
+                    .clipped()
                 
-                // Upgrade prompt
                 HStack(spacing: 8) {
                     Image(systemName: "crown.fill")
                         .font(.system(size: 12))
@@ -115,7 +113,7 @@ struct StyledAdBanner: View {
                     .foregroundStyle(themeManager?.currentTheme.colorScheme.primaryText.color ?? Theme.defaultTheme.colorScheme.primaryText.color)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.2))
+                    .background((themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.2))
                     .cornerRadius(6)
                 }
                 .padding(.horizontal, 16)
@@ -125,10 +123,13 @@ struct StyledAdBanner: View {
             }
             .padding(.horizontal, 20)
             .sheet(isPresented: $showUpgrade) {
-                if let premiumManager = premiumManager {
-                    PremiumUpgradeView(premiumManager: premiumManager)
-                }
+                PremiumUpgradeView()
+                    .environment(\.premiumManager, premiumManager)
+                    .environment(\.themeManager, themeManager)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
 }
+

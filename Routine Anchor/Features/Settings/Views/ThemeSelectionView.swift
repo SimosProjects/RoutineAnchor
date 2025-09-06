@@ -30,7 +30,7 @@ struct ThemeSelectionView: View {
                     VStack(spacing: 24) {
                         // Header
                         headerSection
-                            .padding(.top, 50) // Add space for custom navigation bar
+                            .padding(.top, 50)
                         
                         // Current Theme Preview
                         currentThemePreview
@@ -41,7 +41,7 @@ struct ThemeSelectionView: View {
                         // Theme Grid
                         themeGrid
                         
-                        // Premium Promotion (if needed)
+                        // Premium Promotion
                         if hasLockedThemes {
                             premiumPromotionSection
                         }
@@ -73,7 +73,7 @@ struct ThemeSelectionView: View {
                         .font(.system(size: 17, weight: .semibold))
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 15) // Increased padding from navigation bar
+                    .padding(.top, 15)
                     .background(
                         // Add a subtle background to ensure buttons are visible
                         Rectangle()
@@ -90,9 +90,9 @@ struct ThemeSelectionView: View {
             startAnimations()
         }
         .sheet(isPresented: $showPremiumUpgrade) {
-            if let premiumManager = themeManager?.premiumManager {
-                PremiumUpgradeView(premiumManager: premiumManager)
-            }
+            PremiumUpgradeView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
     }
     

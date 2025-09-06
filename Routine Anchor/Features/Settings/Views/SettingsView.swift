@@ -17,6 +17,7 @@ struct SettingsView: View {
     // MARK: - State
     @State private var viewModel: SettingsViewModel?
     @State private var showingEmailPreferences = false
+    @State private var showingPremiumUpgrade = false
     @State private var animationPhase = 0
     @State private var animationTask: Task<Void, Never>?
     
@@ -163,6 +164,13 @@ struct SettingsView: View {
             .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingPremiumUpgrade) {
+            PremiumUpgradeView()
+                .environment(\.themeManager, themeManager)
+                .environment(\.premiumManager, premiumManager)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingAbout) {
             NavigationStack {
@@ -363,24 +371,31 @@ struct SettingsView: View {
                 }
             } else {
                 // Free user content
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
                     HStack {
                         Image(systemName: "star.circle")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
-                        
+
                         Text("Upgrade to Premium")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                        
+
                         Spacer()
                     }
-                    
+
                     Text("Unlock unlimited time blocks, advanced analytics, and premium themes")
                         .font(.system(size: 14))
                         .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .leading)
+
+                    DesignedButton(title: "Upgrade Now", style: .gradient) {
+                        HapticManager.shared.anchorSelection()
+                        showingPremiumUpgrade = true
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+
             }
         }
         .padding(20)

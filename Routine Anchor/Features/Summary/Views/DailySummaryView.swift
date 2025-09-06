@@ -81,8 +81,11 @@ struct DailySummaryView: View {
         .navigationBarHidden(true)
         .task { await setupInitialState() }
         .sheet(isPresented: $showingPremiumUpgrade) {
-            if let premiumManager = premiumManager {
-                PremiumUpgradeView(premiumManager: premiumManager)
+            if premiumManager != nil {
+                PremiumUpgradeView()
+                    .environment(\.themeManager, themeManager)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             } else {
                 ThemedCard {
                     VStack(spacing: 20) {
