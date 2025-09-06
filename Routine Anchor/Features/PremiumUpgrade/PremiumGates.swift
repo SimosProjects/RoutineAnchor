@@ -2,8 +2,6 @@
 //  PremiumGates.swift
 //  Routine Anchor
 //
-//  Premium gating components and views
-//
 import SwiftUI
 
 // MARK: - Premium Gate View
@@ -13,42 +11,48 @@ struct PremiumGateView: View {
     let description: String
     let icon: String
     let onUpgrade: () -> Void
-    
+
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+
     var body: some View {
         VStack(spacing: 20) {
-            // Icon and crown
             ZStack {
                 Image(systemName: icon)
                     .font(.system(size: 40, weight: .light))
-                    .foregroundStyle((themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor).opacity(0.6))
-                
+                    .foregroundStyle(theme.subtleTextColor.opacity(0.6))
+
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                    .foregroundStyle(scheme.warningColor.color)
                     .offset(x: 20, y: -20)
             }
-            
+
             VStack(spacing: 12) {
                 Text(feature)
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                    .foregroundStyle(theme.primaryTextColor)
                     .multilineTextAlignment(.center)
-                
+
                 Text(description)
                     .font(.system(size: 16))
-                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
+                    .foregroundStyle(theme.primaryTextColor.opacity(0.7))
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
             }
-            
-            DesignedButton(
-                title: "Upgrade to Premium",
-                style: .gradient,
-                action: onUpgrade
-            )
+
+            DesignedButton(title: "Upgrade to Premium", style: .gradient, action: onUpgrade)
         }
         .padding(24)
-        .themedGlassMorphism(cornerRadius: 20)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(scheme.surface2.color.opacity(0.9))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(scheme.border.color.opacity(0.85), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.25), radius: 12, x: 0, y: 6)
         .padding(.horizontal)
     }
 }
@@ -59,28 +63,28 @@ struct TimeBlockLimitGate: View {
     let currentCount: Int
     let limit: Int
     let onUpgrade: () -> Void
-    
+
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+
     var body: some View {
         VStack(spacing: 16) {
-            // Progress indicator
             VStack(spacing: 8) {
                 HStack {
                     Text("Daily Time Blocks")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                    
+                        .foregroundStyle(theme.primaryTextColor)
                     Spacer()
-                    
                     Text("\(currentCount)/\(limit)")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
+                        .foregroundStyle(theme.primaryTextColor.opacity(0.85))
                 }
-                
+
                 ProgressView(value: Double(currentCount), total: Double(limit))
-                    .progressViewStyle(LinearProgressViewStyle(tint: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color))
-                    .scaleEffect(y: 2)
+                    .tint(scheme.warningColor.color)
+                    .scaleEffect(y: 1.6)
             }
-            
+
             PremiumGateView(
                 feature: "Unlimited Time Blocks",
                 description: "You've reached your daily limit of \(limit) time blocks. Upgrade to create unlimited blocks and supercharge your productivity.",
@@ -95,52 +99,51 @@ struct TimeBlockLimitGate: View {
 struct AnalyticsGate: View {
     @Environment(\.themeManager) private var themeManager
     let onUpgrade: () -> Void
-    
+
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+
     var body: some View {
         VStack(spacing: 20) {
-            // Icon and crown
             ZStack {
                 Image(systemName: "chart.line.uptrend.xyaxis")
                     .font(.system(size: 40, weight: .light))
-                    .foregroundStyle((themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor).opacity(0.6))
-                
+                    .foregroundStyle(theme.subtleTextColor.opacity(0.6))
+
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                    .foregroundStyle(scheme.warningColor.color)
                     .offset(x: 20, y: -20)
             }
-            
+
             VStack(spacing: 12) {
                 Text("Advanced Analytics")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                    .foregroundStyle(theme.primaryTextColor)
                     .multilineTextAlignment(.center)
-                
+
                 Text("Unlock detailed insights, productivity trends, and personalized recommendations to optimize your routine.")
                     .font(.system(size: 16))
-                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
+                    .foregroundStyle(theme.primaryTextColor.opacity(0.7))
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
             }
-            
-            DesignedButton(
-                title: "Upgrade to Premium",
-                style: .gradient,
-                action: onUpgrade
-            )
+
+            DesignedButton(title: "Upgrade to Premium", style: .gradient, action: onUpgrade)
         }
         .padding(24)
-        .themedGlassMorphism(cornerRadius: 20)
+        .background(RoundedRectangle(cornerRadius: 20).fill(scheme.surface2.color.opacity(0.9)))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(scheme.border.color.opacity(0.85), lineWidth: 1))
+        .shadow(color: .black.opacity(0.25), radius: 12, x: 0, y: 6)
         .padding(.horizontal)
     }
 }
 
-// MARK: - Templates Gate
+// MARK: - Templates / Themes / Widgets Gates
 struct TemplatesGate: View {
     let currentCount: Int
     let limit: Int
     let onUpgrade: () -> Void
-    
     var body: some View {
         PremiumGateView(
             feature: "Unlimited Templates",
@@ -151,10 +154,8 @@ struct TemplatesGate: View {
     }
 }
 
-// MARK: - Themes Gate
 struct ThemesGate: View {
     let onUpgrade: () -> Void
-    
     var body: some View {
         PremiumGateView(
             feature: "Premium Themes",
@@ -165,10 +166,8 @@ struct ThemesGate: View {
     }
 }
 
-// MARK: - Widgets Gate
 struct WidgetsGate: View {
     let onUpgrade: () -> Void
-    
     var body: some View {
         PremiumGateView(
             feature: "Widgets & Complications",
@@ -182,26 +181,22 @@ struct WidgetsGate: View {
 // MARK: - Premium Badge
 struct PremiumBadge: View {
     @Environment(\.themeManager) private var themeManager
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: "crown.fill")
-                .font(.system(size: 12, weight: .medium))
-            
-            Text("PRO")
-                .font(.system(size: 12, weight: .bold))
+            Image(systemName: "crown.fill").font(.system(size: 12, weight: .medium))
+            Text("PRO").font(.system(size: 12, weight: .bold))
         }
-        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+        .foregroundStyle(theme.primaryTextColor)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
-            Capsule()
-                .fill(
-                    LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color, themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+            Capsule().fill(
+                LinearGradient(colors: [scheme.warningColor.color, scheme.actionSuccess.color],
+                               startPoint: .leading, endPoint: .trailing)
+            )
         )
     }
 }
@@ -209,38 +204,36 @@ struct PremiumBadge: View {
 // MARK: - Premium Feature Card
 struct PremiumFeatureCard: View {
     @Environment(\.themeManager) private var themeManager
-    
+
     let feature: PremiumManager.PremiumFeature
     let isLocked: Bool
     let onTap: () -> Void
-    
+
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 12) {
-                // Icon with lock overlay
                 ZStack {
                     Image(systemName: feature.icon)
                         .font(.system(size: 24, weight: .medium))
-                        .foregroundStyle(isLocked ? (themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor).opacity(0.6) : .white)
-                    
+                        .foregroundStyle(isLocked ? theme.subtleTextColor.opacity(0.65) : theme.primaryTextColor)
                     if isLocked {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                            .foregroundStyle(scheme.warningColor.color)
                             .offset(x: 12, y: -12)
                     }
                 }
-                
+
                 VStack(spacing: 4) {
                     Text(feature.displayName)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(isLocked ? (themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor) : .white)
+                        .foregroundStyle(isLocked ? theme.subtleTextColor : theme.primaryTextColor)
                         .multilineTextAlignment(.center)
-                    
-                    if isLocked {
-                        PremiumBadge()
-                            .scaleEffect(0.8)
-                    }
+
+                    if isLocked { PremiumBadge().scaleEffect(0.8) }
                 }
             }
             .frame(maxWidth: .infinity)
@@ -249,22 +242,20 @@ struct PremiumFeatureCard: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(
                         isLocked
-                        ? Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5)
-                        : themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.1)
+                        ? scheme.surface2.color.opacity(0.85)
+                        : scheme.surface3.color.opacity(0.9)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(
-                                isLocked
-                                ? Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)
-                                : themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3),
+                                isLocked ? scheme.border.color.opacity(0.85) : scheme.workflowPrimary.color.opacity(0.35),
                                 lineWidth: 1
                             )
                     )
             )
         }
         .disabled(isLocked)
-        .scaleEffect(isLocked ? 0.95 : 1.0)
+        .scaleEffect(isLocked ? 0.98 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isLocked)
     }
 }
@@ -275,49 +266,50 @@ struct PremiumMiniPrompt: View {
     let title: String
     let subtitle: String
     let onUpgrade: () -> Void
-    
+
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "crown.fill")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
-            
+                .foregroundStyle(scheme.warningColor.color)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                
+                    .foregroundStyle(theme.primaryTextColor)
+
                 Text(subtitle)
                     .font(.system(size: 12))
-                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
+                    .foregroundStyle(theme.primaryTextColor.opacity(0.7))
             }
-            
+
             Spacer()
-            
+
             Button("Upgrade") {
                 onUpgrade()
                 HapticManager.shared.anchorSelection()
             }
             .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+            .foregroundStyle(theme.primaryTextColor)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
-            )
+            .background(Capsule().fill(scheme.workflowPrimary.color))
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.1))
+                .fill(scheme.surface2.color.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), lineWidth: 1)
+                        .stroke(scheme.workflowPrimary.color.opacity(0.35), lineWidth: 1)
                 )
         )
     }
 }
+
 
 // MARK: - Usage Examples and View Modifiers
 extension View {

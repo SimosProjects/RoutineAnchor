@@ -448,6 +448,40 @@ struct ThemedIconButton: View {
     }
 }
 
+extension UINavigationBar {
+    static func applyThemedAppearance(_ theme: Theme) {
+        let c = UIColor(theme.primaryTextColor)
+        let app = UINavigationBarAppearance()
+        app.configureWithTransparentBackground()
+        app.backgroundEffect = nil
+        app.backgroundColor = .clear
+        app.titleTextAttributes      = [.foregroundColor: c]
+        app.largeTitleTextAttributes = [.foregroundColor: c]
+
+        let nav = UINavigationBar.appearance()
+        nav.standardAppearance   = app
+        nav.scrollEdgeAppearance = app
+        nav.compactAppearance    = app
+    }
+}
+
+struct ThemedNavBarModifier: ViewModifier {
+    let theme: Theme
+    func body(content: Content) -> some View {
+        content
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .onAppear { UINavigationBar.applyThemedAppearance(theme) }
+            .onChange(of: theme.id) { _, _ in
+                UINavigationBar.applyThemedAppearance(theme)
+            }
+    }
+}
+
+extension View {
+    func themedNavBar(_ theme: Theme) -> some View { modifier(ThemedNavBarModifier(theme: theme)) }
+}
+
 // MARK: - Debug Theme Switcher (Development Only)
 #if DEBUG
 struct DebugThemeSwitcher: View {

@@ -2,8 +2,6 @@
 //  MainTabView.swift
 //  Routine Anchor
 //
-//  Consolidated tab view with premium, ads, and email integration
-//
 import SwiftUI
 import SwiftData
 
@@ -13,6 +11,7 @@ struct MainTabView: View {
     @Environment(\.themeManager) private var themeManager
     @EnvironmentObject private var authManager: AuthenticationManager
     @EnvironmentObject private var adManager: AdManager
+
     @State private var tabViewModel = MainTabViewModel()
     @State private var selectedTab: Tab = .today
     @State private var tabBarOffset: CGFloat = 0
@@ -21,75 +20,41 @@ struct MainTabView: View {
     @State private var existingTimeBlocks: [TimeBlock] = []
     @State private var showingEmailCapture = false
     @State private var showingPremiumUpgrade = false
-    
+
     // Track if we're programmatically changing tabs to prevent loops
     @State private var isInternalTabChange = false
-    
     // Track if we've already handled email capture on this app launch
     @State private var hasHandledEmailCaptureThisSession = false
-    
+
     // Use fallback if premiumManager is nil
-    private var safePremiumManager: PremiumManager {
-        premiumManager ?? PremiumManager()
-    }
-    
-    // Theme color helpers
-    private var themePrimaryText: Color {
-        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-    }
-    
-    private var themeAccent: Color {
-        themeManager?.currentTheme.buttonAccentColor ?? Theme.defaultTheme.buttonAccentColor
-    }
-    
-    private var themeBackground: Color {
-        themeManager?.currentTheme.colorScheme.appBackground.color ?? Theme.defaultTheme.colorScheme.appBackground.color
-    }
-    
-    // Helper function to get gradient colors for a tab
+    private var safePremiumManager: PremiumManager { premiumManager ?? PremiumManager() }
+
+    // Theme helpers
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+
+    private var themePrimaryText: Color { theme.primaryTextColor }
+    private var themeAccent: Color { theme.buttonAccentColor }
+    private var themeBackground: Color { scheme.appBackground.color }
+
+    // Helper gradient per tab
     private func gradientColors(for tab: Tab) -> [Color] {
-        guard let theme = themeManager?.currentTheme else {
-            return defaultGradientColors(for: tab)
-        }
-        
         switch tab {
-        case .today:
-            return [theme.colorScheme.workflowPrimary.color, theme.colorScheme.creativeSecondary.color]
-        case .schedule:
-            return [theme.colorScheme.organizationAccent.color, theme.colorScheme.workflowPrimary.color]
-        case .summary:
-            return [theme.colorScheme.actionSuccess.color, theme.colorScheme.creativeSecondary.color]
-        case .analytics:
-            return [theme.colorScheme.warningColor.color, theme.colorScheme.organizationAccent.color]
-        case .settings:
-            return [theme.secondaryTextColor, theme.subtleTextColor]
+        case .today:    return [scheme.workflowPrimary.color, scheme.creativeSecondary.color]
+        case .schedule: return [scheme.organizationAccent.color, scheme.workflowPrimary.color]
+        case .summary:  return [scheme.actionSuccess.color, scheme.creativeSecondary.color]
+        case .analytics:return [scheme.warningColor.color, scheme.organizationAccent.color]
+        case .settings: return [theme.secondaryTextColor, theme.subtleTextColor]
         }
     }
-    
-    // Fallback default colors
-    private func defaultGradientColors(for tab: Tab) -> [Color] {
-        let defaultTheme = Theme.defaultTheme
-        switch tab {
-        case .today:
-            return [defaultTheme.colorScheme.workflowPrimary.color, defaultTheme.colorScheme.creativeSecondary.color]
-        case .schedule:
-            return [defaultTheme.colorScheme.organizationAccent.color, defaultTheme.colorScheme.workflowPrimary.color]
-        case .summary:
-            return [defaultTheme.colorScheme.actionSuccess.color, defaultTheme.colorScheme.creativeSecondary.color]
-        case .analytics:
-            return [defaultTheme.colorScheme.warningColor.color, defaultTheme.colorScheme.organizationAccent.color]
-        case .settings:
-            return [defaultTheme.secondaryTextColor, defaultTheme.subtleTextColor]
-        }
-    }
-    
+
     var body: some View {
         ZStack {
             ThemedAnimatedBackground()
                 .ignoresSafeArea()
-            
+
             TabView(selection: tabSelectionBinding) {
-                // Today Tab
+                // Today
                 NavigationStack {
                     TodayView(modelContext: modelContext)
                         .environment(\.themeManager, themeManager)
@@ -104,8 +69,8 @@ struct MainTabView: View {
                     )
                 }
                 .tag(Tab.today)
-                
-                // Schedule Tab
+
+                // Schedule
                 NavigationStack {
                     ScheduleBuilderView()
                         .environment(\.themeManager, themeManager)
@@ -120,11 +85,11 @@ struct MainTabView: View {
                     )
                 }
                 .tag(Tab.schedule)
-                
-                // Summary Tab
+
+                // Insights (Daily Summary)
                 NavigationStack {
                     DailySummaryView(modelContext: modelContext)
-                        .environment(safePremiumManager)
+                        .environment(\.premiumManager, safePremiumManager)
                         .environment(\.themeManager, themeManager)
                         .background(Color.clear)
                 }
@@ -138,14 +103,15 @@ struct MainTabView: View {
                     .badge(tabViewModel.shouldShowSummaryBadge ? "" : nil)
                 }
                 .tag(Tab.summary)
-                
-                // Analytics Tab (Premium gated)
+
+                // Analytics (gated)
                 NavigationStack {
                     analyticsTab
-                        .environment(safePremiumManager)
+                        .environment(\.premiumManager, safePremiumManager)
                         .environment(\.themeManager, themeManager)
                         .background(Color.clear)
                 }
+                .themedNavBar(theme)
                 .tabItem {
                     TabItemView(
                         icon: "chart.bar",
@@ -155,8 +121,8 @@ struct MainTabView: View {
                     )
                 }
                 .tag(Tab.analytics)
-                
-                // Settings Tab
+
+                // Settings
                 NavigationStack {
                     SettingsView()
                         .environmentObject(authManager)
@@ -177,21 +143,24 @@ struct MainTabView: View {
             .background(Color.clear)
             .onAppear {
                 setupTabBarAppearance()
+                setupTabBar()
             }
-            .task {
-                await setupInitialState()
+            .onChange(of: theme.id) { oldValue, newValue in
+                guard oldValue != newValue else { return }
+                setupTabBarAppearance()
+                setupTabBar()
             }
-            .task {
-                await monitorTabChangeRequests()
-            }
-            .task {
-                await monitorNavigationNotifications()
-            }
-            
+
+            .task { await setupInitialState() }
+            .task { await monitorTabChangeRequests() }
+            .task { await monitorNavigationNotifications() }
+
             // Floating action button
             floatingActionButton
         }
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showingPremiumUpgrade)
+
+        // Sheets
         .sheet(isPresented: $showingAddTimeBlock) {
             AddTimeBlockView(
                 existingTimeBlocks: existingTimeBlocks
@@ -202,18 +171,12 @@ struct MainTabView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
-
         .sheet(isPresented: $showingEmailCapture) {
-            EmailCaptureView { email in
-                authManager.captureEmail(email)
-            }
-            .environment(\.themeManager, themeManager)
-            .onDisappear {
-                // Ensure dismissal is properly tracked when sheet is dismissed
-                if !authManager.isEmailCaptured {
-                    authManager.dismissEmailCapture()
+            EmailCaptureView { email in authManager.captureEmail(email) }
+                .environment(\.themeManager, themeManager)
+                .onDisappear {
+                    if !authManager.isEmailCaptured { authManager.dismissEmailCapture() }
                 }
-            }
         }
         .sheet(isPresented: $showingPremiumUpgrade) {
             PremiumUpgradeView(premiumManager: safePremiumManager)
@@ -221,8 +184,9 @@ struct MainTabView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
+
+        // Email capture trigger + initial data load
         .onAppear {
-            // Only check for email capture once per session and after a delay
             if !hasHandledEmailCaptureThisSession {
                 hasHandledEmailCaptureThisSession = true
                 checkForEmailCapture()
@@ -230,7 +194,6 @@ struct MainTabView: View {
             loadExistingTimeBlocks()
         }
         .onReceive(authManager.$shouldShowEmailCapture) { shouldShow in
-            // Only show if not already handled and conditions are met
             if shouldShow && !showingEmailCapture && !authManager.isEmailCaptured {
                 showingEmailCapture = true
             }
@@ -239,12 +202,11 @@ struct MainTabView: View {
             showingEmailCapture = true
         }
         .onChange(of: selectedTab) { oldTab, newTab in
-            // Handle tab changes with proper ad integration
             handleTabChangeWithAds(from: oldTab, to: newTab)
         }
     }
-    
-    // MARK: - Analytics Tab with Premium Gating
+
+    // MARK: - Analytics Tab (gated)
     @ViewBuilder
     private var analyticsTab: some View {
         if safePremiumManager.canAccessAdvancedAnalytics {
@@ -255,36 +217,20 @@ struct MainTabView: View {
             }
         }
     }
-    
-    // MARK: - Helper Methods
-    
+
+    // MARK: - Helpers
+
     private func handleTabChangeWithAds(from oldTab: Tab, to newTab: Tab) {
-        // Ensure we don't show ads during ad presentation
-        guard !adManager.isShowingAd else {
-            print("⚠️ Ad currently showing, deferring tab change handling")
-            return
-        }
-        
-        // Check if we should show an interstitial ad
+        guard !adManager.isShowingAd else { return }
         if shouldShowInterstitialAd() {
             adManager.showInterstitialIfAllowed(premiumManager: safePremiumManager)
         }
-        
-        // Continue with normal tab change handling
         loadExistingTimeBlocks()
     }
-    
+
     private func createTimeBlock(title: String, startTime: Date, endTime: Date, notes: String, category: String) {
-        let newBlock = TimeBlock(
-            title: title,
-            startTime: startTime,
-            endTime: endTime,
-            notes: notes,
-            category: category
-        )
-        
+        let newBlock = TimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes, category: category)
         modelContext.insert(newBlock)
-        
         do {
             try modelContext.save()
             HapticManager.shared.success()
@@ -294,86 +240,53 @@ struct MainTabView: View {
             HapticManager.shared.error()
         }
     }
-    
+
     private func loadExistingTimeBlocks() {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today) ?? today
-        
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let tomorrow = cal.date(byAdding: .day, value: 1, to: today) ?? today
+
         let descriptor = FetchDescriptor<TimeBlock>(
-            predicate: #Predicate<TimeBlock> { timeBlock in
-                timeBlock.startTime >= today && timeBlock.startTime < tomorrow
-            },
+            predicate: #Predicate<TimeBlock> { tb in tb.startTime >= today && tb.startTime < tomorrow },
             sortBy: [SortDescriptor(\.startTime)]
         )
-        
-        do {
-            existingTimeBlocks = try modelContext.fetch(descriptor)
-        } catch {
-            print("Failed to fetch existing time blocks: \(error)")
-            existingTimeBlocks = []
-        }
+        do { existingTimeBlocks = try modelContext.fetch(descriptor) }
+        catch { existingTimeBlocks = [] }
     }
-    
+
     private func shouldShowInterstitialAd() -> Bool {
-        // Don't show ads if user has premium
-        guard safePremiumManager.shouldShowAds else {
-            return false
-        }
-        
-        // Don't show if ad is currently being shown or not loaded
-        guard !adManager.isShowingAd && adManager.isAdLoaded else {
-            return false
-        }
-        
-        // Track tab switches and show ad every 5th switch
-        let tabSwitchCount = UserDefaults.standard.integer(forKey: "tabSwitchCount") + 1
-        UserDefaults.standard.set(tabSwitchCount, forKey: "tabSwitchCount")
-        
-        let shouldShow = tabSwitchCount % 5 == 0
-        
-        if shouldShow {
-            print("📊 Tab switch #\(tabSwitchCount) - showing interstitial ad")
-        }
-        
-        return shouldShow
+        guard safePremiumManager.shouldShowAds else { return false }
+        guard !adManager.isShowingAd && adManager.isAdLoaded else { return false }
+        let count = UserDefaults.standard.integer(forKey: "tabSwitchCount") + 1
+        UserDefaults.standard.set(count, forKey: "tabSwitchCount")
+        return count % 5 == 0
     }
-    
-    // MARK: - Email Capture
-    
+
     private func checkForEmailCapture() {
-        // Add a delay and pass premium manager for proper checking
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             authManager.checkShouldShowEmailCapture(premiumManager: safePremiumManager)
         }
     }
-    
-    // MARK: - Computed Properties
-    
+
     private var tabSelectionBinding: Binding<Tab> {
         Binding(
             get: { selectedTab },
             set: { newValue in
-                guard !isInternalTabChange else { return }
-                guard newValue != selectedTab else { return }
-                
+                guard !isInternalTabChange, newValue != selectedTab else { return }
                 selectedTab = newValue
                 handleTabChange(to: newValue)
             }
         )
     }
-    
-    // MARK: - Floating Action Button
-    
+
+    // Floating Action Button
     @ViewBuilder
     private var floatingActionButton: some View {
         if shouldShowFloatingButton(for: selectedTab) {
             VStack {
                 Spacer()
-                
                 HStack {
                     Spacer()
-                    
                     FloatingActionButton(
                         tab: selectedTab,
                         tabGradientColors: gradientColors(for: selectedTab),
@@ -392,83 +305,68 @@ struct MainTabView: View {
             ))
         }
     }
-    
-    private func shouldShowFloatingButton(for tab: Tab) -> Bool {
-        if tab == .today {
-            return true
-        }
-        else {
-            return false
-        }
-    }
-    
+
+    private func shouldShowFloatingButton(for tab: Tab) -> Bool { tab == .today }
+
     private func floatingActionTapped() {
         HapticManager.shared.mediumImpact()
-        
-        switch selectedTab {
-        case .today:
+        if selectedTab == .today {
             loadExistingTimeBlocks()
             showingAddTimeBlock = true
-        default:
-            break
         }
     }
-    
-    // MARK: - Setup Methods
-    
+
+    // Setup
     @MainActor
     private func setupInitialState() async {
         setupTabBar()
         tabViewModel.setup(with: modelContext)
-        
         withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.5)) {
             showFloatingAction = shouldShowFloatingButton(for: selectedTab)
         }
     }
-    
+
     private func setupTabBarAppearance() {
         UITabBar.appearance().isTranslucent = true
         UITabBar.appearance().backgroundImage = UIImage()
-        
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.configureWithTransparentBackground()
-        tabBarAppearance.backgroundColor = UIColor.clear
-        tabBarAppearance.backgroundEffect = UIBlurEffect(style: .systemMaterialDark)
-        
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+
+        let app = UITabBarAppearance()
+        app.configureWithTransparentBackground()
+        app.backgroundColor = .clear
+        app.backgroundEffect = UIBlurEffect(style: .systemMaterialDark)
+
+        UITabBar.appearance().standardAppearance = app
+        UITabBar.appearance().scrollEdgeAppearance = app
     }
-    
+
     private func setupTabBar() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = UIColor(themeBackground).withAlphaComponent(0.95)
         appearance.backgroundEffect = UIBlurEffect(style: .systemMaterialDark)
-        
+
         appearance.shadowImage = UIImage()
         appearance.shadowColor = .clear
-        
+
         let normalIconColor = themePrimaryText.opacity(0.5)
         let selectedIconColor = themeAccent
-        
+
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor(normalIconColor)
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
             .foregroundColor: UIColor(normalIconColor),
             .font: UIFont.systemFont(ofSize: 11, weight: .medium)
         ]
-        
         appearance.stackedLayoutAppearance.selected.iconColor = UIColor(selectedIconColor)
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
             .foregroundColor: UIColor(selectedIconColor),
             .font: UIFont.systemFont(ofSize: 11, weight: .semibold)
         ]
-        
+
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
     }
-    
-    // MARK: - Tab Change Monitoring
-    
+
+    // Tab change events
     @MainActor
     private func monitorTabChangeRequests() async {
         for await notification in NotificationCenter.default.notifications(named: .requestTabChange) {
@@ -477,7 +375,7 @@ struct MainTabView: View {
             }
         }
     }
-    
+
     @MainActor
     private func monitorNavigationNotifications() async {
         await withTaskGroup(of: Void.self) { group in
@@ -486,13 +384,11 @@ struct MainTabView: View {
                     await self.changeTab(to: .schedule, animated: true)
                 }
             }
-            
             group.addTask {
                 for await _ in NotificationCenter.default.notifications(named: .navigateToToday) {
                     await self.changeTab(to: .today, animated: true)
                 }
             }
-            
             group.addTask {
                 for await _ in NotificationCenter.default.notifications(named: .showTemplates) {
                     await self.changeTab(to: .schedule, animated: true)
@@ -502,13 +398,11 @@ struct MainTabView: View {
             }
         }
     }
-    
+
     @MainActor
     private func changeTab(to tab: Tab, animated: Bool) async {
         guard tab != selectedTab else { return }
-        
         isInternalTabChange = true
-        
         if animated {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 selectedTab = tab
@@ -516,38 +410,26 @@ struct MainTabView: View {
         } else {
             selectedTab = tab
         }
-        
         handleTabChange(to: tab)
-        
         try? await Task.sleep(nanoseconds: 100_000_000)
         isInternalTabChange = false
     }
-    
+
     private func handleTabChange(to newTab: Tab) {
         tabViewModel.didSelectTab(newTab)
-        updateFloatingAction(for: newTab)
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+            showFloatingAction = shouldShowFloatingButton(for: newTab)
+        }
         broadcastTabChange(newTab)
     }
-    
-    private func updateFloatingAction(for tab: Tab) {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-            showFloatingAction = shouldShowFloatingButton(for: tab)
-        }
-    }
-    
+
     private func broadcastTabChange(_ tab: Tab) {
-        let userInfo: [String: Any] = ["tab": tab.rawValue]
-        NotificationCenter.default.post(name: .tabDidChange, object: nil, userInfo: userInfo)
-        
+        NotificationCenter.default.post(name: .tabDidChange, object: nil, userInfo: ["tab": tab.rawValue])
         switch tab {
-        case .today:
-            NotificationCenter.default.post(name: .refreshTodayView, object: nil)
-        case .schedule:
-            NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
-        case .summary:
-            NotificationCenter.default.post(name: .refreshSummaryView, object: nil)
-        default:
-            break
+        case .today:    NotificationCenter.default.post(name: .refreshTodayView, object: nil)
+        case .schedule: NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
+        case .summary:  NotificationCenter.default.post(name: .refreshSummaryView, object: nil)
+        default: break
         }
     }
 }
@@ -556,31 +438,25 @@ struct MainTabView: View {
 struct BasicAnalyticsView: View {
     @Environment(\.themeManager) private var themeManager
     @Environment(\.modelContext) private var modelContext
+
     @State private var dataManager: DataManager?
     @State private var todaysProgress: DailyProgress?
     @State private var weeklyStats: (totalBlocks: Int, completedBlocks: Int, averageCompletion: Double)?
-    
+
     let onUpgrade: () -> Void
-    
-    // Theme color helpers
-    private var themePrimaryText: Color {
-        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-    }
-    
-    private var themeSecondaryText: Color {
-        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
-    }
-    
-    private var themeTertiaryText: Color {
-        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
-    }
-    
+
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+    private var themePrimaryText: Color { theme.primaryTextColor }
+    private var themeSecondaryText: Color { theme.secondaryTextColor }
+    private var themeTertiaryText: Color { theme.subtleTextColor }
+
     var body: some View {
         ZStack {
             ThemedAnimatedBackground()
                 .ignoresSafeArea()
-            
-            ScrollView {
+
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     headerSection
                     basicStatsSection
@@ -593,47 +469,63 @@ struct BasicAnalyticsView: View {
         }
         .navigationTitle("Analytics")
         .navigationBarTitleDisplayMode(.large)
-        .onAppear {
-            setupNavigationBarAppearance()
-        }
-        .task {
-            await loadBasicAnalytics()
-        }
-    }
-    
-    private func setupNavigationBarAppearance() {
-        // Set navigation title color using theme
-        UINavigationBar.appearance().largeTitleTextAttributes = [
-            .foregroundColor: UIColor(themePrimaryText.opacity(0.8))
-        ]
-        UINavigationBar.appearance().titleTextAttributes = [
-            .foregroundColor: UIColor(themePrimaryText.opacity(0.8))
-        ]
-    }
-    
-    private var headerSection: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Your Progress")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(themePrimaryText)
-                
-                Spacer()
-                
-                ThemedButton(title: "Upgrade", style: .accent) {
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
                     onUpgrade()
                     HapticManager.shared.anchorSelection()
+                } label: {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(scheme.warningColor.color)
+                        .padding(8)
+                        .background(
+                            Circle()
+                                .fill(scheme.surface2.color)
+                                .overlay(Circle().stroke(scheme.border.color.opacity(0.85), lineWidth: 1))
+                        )
                 }
+                .accessibilityLabel("Upgrade to Premium")
             }
-            
-            Text("Unlock advanced insights and detailed analytics with Premium")
+        }
+        .onAppear {
+            applyTransparentNavBarAppearance()
+        }
+        // Re-apply when the theme changes
+        .onChange(of: theme.id) { _, _ in
+            applyTransparentNavBarAppearance()
+        }
+        .task { await loadBasicAnalytics() }
+    }
+
+    // Make the UINavigationBar fully transparent so it doesn’t go gray when scrolling
+    private func applyTransparentNavBarAppearance() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundEffect = nil
+        appearance.backgroundColor = .clear
+        appearance.titleTextAttributes       = [.foregroundColor: UIColor(themePrimaryText.opacity(0.9))]
+        appearance.largeTitleTextAttributes  = [.foregroundColor: UIColor(themePrimaryText.opacity(0.9))]
+
+        UINavigationBar.appearance().standardAppearance   = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().compactAppearance    = appearance
+    }
+
+    private var headerSection: some View {
+        VStack(spacing: 8) {
+            Text("Your Progress")
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundStyle(themePrimaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text("A quick snapshot of today and this week.")
                 .font(.system(size: 16))
                 .foregroundStyle(themeSecondaryText)
-                .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-    
+
     private var basicStatsSection: some View {
         ThemedCard(cornerRadius: 20) {
             VStack(spacing: 16) {
@@ -641,41 +533,39 @@ struct BasicAnalyticsView: View {
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .foregroundStyle(themePrimaryText)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                
+
                 if let progress = todaysProgress {
                     HStack(spacing: 16) {
                         StatCard(
                             title: "Completed",
                             value: "\(progress.completedBlocks)",
                             subtitle: "blocks",
-                            color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                            color: scheme.actionSuccess.color,
                             icon: "checkmark.circle.fill"
                         )
-                        
                         StatCard(
                             title: "Progress",
                             value: "\(Int(progress.completionPercentage * 100))%",
                             subtitle: "today",
-                            color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                            color: scheme.workflowPrimary.color,
                             icon: "chart.pie.fill"
                         )
                     }
-                    
-                    if let weeklyStats = weeklyStats {
+
+                    if let weeklyStats {
                         HStack(spacing: 16) {
                             StatCard(
                                 title: "This Week",
                                 value: "\(weeklyStats.completedBlocks)",
                                 subtitle: "completed",
-                                color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
+                                color: scheme.organizationAccent.color,
                                 icon: "calendar.circle.fill"
                             )
-                            
                             StatCard(
                                 title: "Average",
                                 value: "\(Int(weeklyStats.averageCompletion * 100))%",
                                 subtitle: "weekly",
-                                color: themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color,
+                                color: scheme.creativeSecondary.color,
                                 icon: "chart.line.uptrend.xyaxis"
                             )
                         }
@@ -685,11 +575,9 @@ struct BasicAnalyticsView: View {
                         Image(systemName: "chart.bar.fill")
                             .font(.system(size: 40))
                             .foregroundStyle(themeTertiaryText)
-                        
                         Text("No data yet")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundStyle(themeSecondaryText)
-                        
                         Text("Create and complete time blocks to see your progress!")
                             .font(.system(size: 14))
                             .foregroundStyle(themeTertiaryText)
@@ -700,7 +588,7 @@ struct BasicAnalyticsView: View {
             }
         }
     }
-    
+
     private var premiumFeaturesShowcase: some View {
         ThemedCard(cornerRadius: 20) {
             VStack(spacing: 16) {
@@ -708,73 +596,68 @@ struct BasicAnalyticsView: View {
                     Text("Premium Analytics")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
                         .foregroundStyle(themePrimaryText)
-                    
                     Spacer()
-                    
                     PremiumBadge()
                 }
-                
+
                 VStack(spacing: 12) {
                     PremiumFeaturePreview(
                         icon: "chart.line.uptrend.xyaxis",
                         title: "Productivity Trends",
                         description: "Track your completion rates over time",
-                        color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+                        color: scheme.workflowPrimary.color
                     )
-                    
                     PremiumFeaturePreview(
                         icon: "brain.head.profile",
                         title: "Peak Performance Times",
                         description: "Discover when you're most productive",
-                        color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+                        color: scheme.actionSuccess.color
                     )
-                    
                     PremiumFeaturePreview(
                         icon: "lightbulb.fill",
                         title: "AI-Powered Insights",
                         description: "Get personalized recommendations",
-                        color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+                        color: scheme.warningColor.color
                     )
-                    
                     PremiumFeaturePreview(
                         icon: "target",
                         title: "Category Performance",
                         description: "Analyze completion by activity type",
-                        color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
+                        color: scheme.organizationAccent.color
                     )
                 }
             }
         }
     }
-    
+
     private var upgradePromptSection: some View {
-        AnalyticsGate(onUpgrade: onUpgrade)
+        PremiumMiniPrompt(
+            title: "Unlock advanced analytics",
+            subtitle: "Trends, AI insights, and more",
+            onUpgrade: onUpgrade
+        )
     }
-    
+
     @MainActor
     private func loadBasicAnalytics() async {
         guard dataManager == nil else { return }
-        
         dataManager = DataManager(modelContext: modelContext)
-        
+
         let today = Calendar.current.startOfDay(for: Date())
         let progressArray = dataManager!.loadDailyProgressRangeSafely(from: today, to: today)
         todaysProgress = progressArray.first
-        
+
         let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
         let timeBlocks = dataManager!.loadAllTimeBlocksSafely().filter { $0.startTime >= weekAgo }
-        
-        let totalWeeklyBlocks = timeBlocks.count
-        let completedWeeklyBlocks = timeBlocks.filter { $0.status == .completed }.count
-        let averageCompletion = totalWeeklyBlocks > 0 ? Double(completedWeeklyBlocks) / Double(totalWeeklyBlocks) : 0
-        
-        weeklyStats = (
-            totalBlocks: totalWeeklyBlocks,
-            completedBlocks: completedWeeklyBlocks,
-            averageCompletion: averageCompletion
-        )
+
+        let total = timeBlocks.count
+        let completed = timeBlocks.filter { $0.status == .completed }.count
+        let avg = total > 0 ? Double(completed) / Double(total) : 0
+
+        weeklyStats = (totalBlocks: total, completedBlocks: completed, averageCompletion: avg)
     }
 }
+
 
 // MARK: - Premium Feature Preview
 struct PremiumFeaturePreview: View {
@@ -782,120 +665,77 @@ struct PremiumFeaturePreview: View {
     let title: String
     let description: String
     let color: Color
-    
+
     @Environment(\.themeManager) private var themeManager
-    
-    private var themeTertiaryText: Color {
-        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
-    }
-    
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(color)
                 .frame(width: 32, height: 32)
-                .background(
-                    Circle()
-                        .fill(color.opacity(0.15))
-                )
-            
+                .background(Circle().fill(color.opacity(0.15)))
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(themeTertiaryText)
-                
+                    .foregroundStyle(theme.subtleTextColor)
                 Text(description)
                     .font(.system(size: 12))
-                    .foregroundStyle(themeTertiaryText.opacity(0.8))
+                    .foregroundStyle(theme.subtleTextColor.opacity(0.8))
                     .lineLimit(2)
             }
-            
+
             Spacer()
-            
             Image(systemName: "lock.fill")
                 .font(.system(size: 12))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                .foregroundStyle(theme.colorScheme.warningColor.color)
         }
         .padding(.vertical, 8)
     }
 }
 
-// MARK: - Floating Action Button Component
+// MARK: - Floating Action Button
 struct FloatingActionButton: View {
     let tab: MainTabView.Tab
-    let tabGradientColors: [Color]  // Passed in from parent view
+    let tabGradientColors: [Color]
     let action: () -> Void
-    
+
     @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
     @State private var pulseScale: CGFloat = 1.0
-    
-    private var icon: String {
-        switch tab {
-        case .today, .schedule:
-            return "plus"
-        default:
-            return "plus"
-        }
-    }
-    
+
+    private var icon: String { "plus" }
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+
     private var gradientColors: [Color] {
-        guard let theme = themeManager?.currentTheme else {
-            return tabGradientColors
-        }
-        
-        // Use theme colors instead of hardcoded tab gradient colors
-        return [theme.buttonPrimaryColor, theme.buttonAccentColor]
+        [theme.buttonPrimaryColor, theme.buttonAccentColor]
     }
-    
-    private var shadowColor: Color {
-        themeManager?.currentTheme.buttonPrimaryColor.opacity(0.4) ?? Theme.defaultTheme.buttonPrimaryColor.opacity(0.4)
-    }
-    
-    private var backgroundShadowColor: Color {
-        themeManager?.currentTheme.colorScheme.appBackground.color.opacity(0.2) ?? Theme.defaultTheme.colorScheme.appBackground.color.opacity(0.2)
-    }
-    
+    private var shadowColor: Color { theme.buttonPrimaryColor.opacity(0.4) }
+    private var backgroundShadowColor: Color { theme.colorScheme.appBackground.color.opacity(0.2) }
+
     var body: some View {
         Button(action: {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                isPressed = true
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                isPressed = false
-            }
-            
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isPressed = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { isPressed = false }
             action()
         }) {
             ZStack {
                 Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [gradientColors[0].opacity(0.3), Color.clear],
-                            center: .center,
-                            startRadius: 20,
-                            endRadius: 40
-                        )
-                    )
+                    .fill(RadialGradient(colors: [gradientColors[0].opacity(0.3), .clear],
+                                         center: .center, startRadius: 20, endRadius: 40))
                     .frame(width: 80, height: 80)
                     .scaleEffect(pulseScale)
                     .opacity(0.5)
-                
+
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: gradientColors,
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(LinearGradient(colors: gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 56, height: 56)
-                
+
                 Image(systemName: icon)
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                    .foregroundStyle(theme.primaryTextColor)
                     .rotationEffect(.degrees(isPressed ? 90 : 0))
             }
             .shadow(color: shadowColor, radius: 12, x: 0, y: 6)
@@ -913,12 +753,8 @@ struct FloatingActionButton: View {
 // MARK: - Tab Enum
 extension MainTabView {
     enum Tab: String, CaseIterable, Equatable {
-        case today = "today"
-        case schedule = "schedule"
-        case summary = "summary"
-        case analytics = "analytics"
-        case settings = "settings"
-        
+        case today, schedule, summary, analytics, settings
+
         var title: String {
             switch self {
             case .today: return "Today"
@@ -928,7 +764,6 @@ extension MainTabView {
             case .settings: return "Settings"
             }
         }
-        
         var systemImage: String {
             switch self {
             case .today: return "calendar.circle"
@@ -938,7 +773,6 @@ extension MainTabView {
             case .settings: return "gearshape"
             }
         }
-        
         var filledSystemImage: String {
             switch self {
             case .today: return "calendar.circle.fill"
@@ -948,12 +782,9 @@ extension MainTabView {
             case .settings: return "gearshape.fill"
             }
         }
-        
-        // Removed gradientColors property - handled in View instead
     }
 }
 
-// MARK: - Preview
 #Preview {
     MainTabView()
         .modelContainer(for: [TimeBlock.self, DailyProgress.self, RoutineTemplate.self], inMemory: true)
