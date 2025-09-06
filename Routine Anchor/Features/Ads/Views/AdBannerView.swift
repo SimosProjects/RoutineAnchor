@@ -112,7 +112,7 @@ struct StyledAdBanner: View {
                         HapticManager.shared.anchorSelection()
                     }
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.primaryText.color ?? Theme.defaultTheme.colorScheme.primaryText.color)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.2))

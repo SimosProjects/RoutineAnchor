@@ -16,12 +16,15 @@ struct CompactTimeBlockRow: View {
     let onSkip: () -> Void
     
     var body: some View {
+        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
+        let scheme = theme.colorScheme
+        
         Button(action: onTap) {
             HStack(spacing: 12) {
                 // Time
                 Text(timeBlock.startTime, style: .time)
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundStyle(isActive ? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color : themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                    .foregroundStyle(isActive ? scheme.workflowPrimary.color : theme.secondaryTextColor)
                     .frame(width: 60, alignment: .leading)
                 
                 // Icon and title
@@ -33,7 +36,7 @@ struct CompactTimeBlockRow: View {
                     
                     Text(timeBlock.title)
                         .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                        .foregroundStyle(theme.primaryTextColor)
                         .lineLimit(1)
                 }
                 
@@ -42,9 +45,9 @@ struct CompactTimeBlockRow: View {
                 // Status indicator
                 Image(systemName: statusIcon)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(statusColor)
+                    .foregroundStyle(statusColor(scheme))
                     .frame(width: 20, height: 20)
-                    .background(statusColor.opacity(0.15))
+                    .background(statusColor(scheme).opacity(scheme.ringOuterAlpha)) // standardized ring alpha
                     .cornerRadius(4)
                 
                 // Quick actions
@@ -53,18 +56,18 @@ struct CompactTimeBlockRow: View {
                         Button(action: onComplete) {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                                .foregroundStyle(scheme.actionSuccess.color)
                                 .frame(width: 28, height: 28)
-                                .background(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color.opacity(0.15))
+                                .background(scheme.actionSuccess.color.opacity(0.15))
                                 .cornerRadius(6)
                         }
                         
                         Button(action: onSkip) {
                             Image(systemName: "forward.fill")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                                .foregroundStyle(scheme.warningColor.color)
                                 .frame(width: 28, height: 28)
-                                .background(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color.opacity(0.15))
+                                .background(scheme.warningColor.color.opacity(0.15))
                                 .cornerRadius(6)
                         }
                     }
@@ -74,14 +77,19 @@ struct CompactTimeBlockRow: View {
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(isActive ? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.1) :
-                        (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.2))
+                    .fill(
+                        (isActive
+                         ? scheme.surface2.color.opacity(0.50)  // active row elevation
+                         : scheme.surface2.color.opacity(0.25)) // inactive row elevation
+                    )
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(
-                        isHighlighted ? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color : Color.clear,
-                        lineWidth: isHighlighted ? 2 : 0
+                        isHighlighted
+                        ? scheme.focusRing.color   // unified focus ring
+                        : scheme.border.color.opacity(0.8),
+                        lineWidth: isHighlighted ? 2 : 1
                     )
             )
         }
@@ -94,21 +102,21 @@ struct CompactTimeBlockRow: View {
         switch timeBlock.status {
         case .notStarted: return "clock"
         case .inProgress: return "play.fill"
-        case .completed: return "checkmark"
-        case .skipped: return "forward.fill"
+        case .completed:  return "checkmark"
+        case .skipped:    return "forward.fill"
         }
     }
     
-    private var statusColor: Color {
+    private func statusColor(_ scheme: ThemeColorScheme) -> Color {
         switch timeBlock.status {
         case .notStarted:
-            return themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
+            return (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
         case .inProgress:
-            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+            return scheme.workflowPrimary.color
         case .completed:
-            return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+            return scheme.actionSuccess.color
         case .skipped:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+            return scheme.warningColor.color
         }
     }
 }

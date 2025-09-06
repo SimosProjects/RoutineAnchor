@@ -13,7 +13,12 @@ struct MotivationalCard: View {
     @State private var showConfetti = false
     
     var body: some View {
-        VStack(spacing: 16) {
+        // Pull scheme/text once
+        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
+        let primaryText = (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+        let secondaryText = (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+        
+        return VStack(spacing: 16) {
             HStack {
                 Text(viewModel.performanceLevel.emoji)
                     .font(.system(size: 32))
@@ -21,13 +26,13 @@ struct MotivationalCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Daily Reflection")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                        .foregroundStyle(secondaryText.opacity(0.85))
                         .textCase(.uppercase)
                         .tracking(1)
                     
                     Text(viewModel.motivationalMessage)
                         .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                        .foregroundStyle(primaryText)
                         .multilineTextAlignment(.leading)
                 }
                 
@@ -46,37 +51,29 @@ struct MotivationalCard: View {
             }
         }
         .padding(20)
+        // Glass base using theme tokens
+        .themedGlassMorphism(cornerRadius: 16)
+        // Subtle performance tint behind the glass (lets the color glow through)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-                .background(
+                .fill(
                     LinearGradient(
                         colors: [
-                            viewModel.performanceLevel.color.opacity(0.1),
-                            Color.clear
+                            viewModel.performanceLevel.color.opacity(0.10),
+                            .clear
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
-                    .cornerRadius(16)
                 )
         )
+        // Border uses theme border token for consistency
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            viewModel.performanceLevel.color.opacity(0.3),
-                            viewModel.performanceLevel.color.opacity(0.1)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
+                .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
         )
+        // Confetti overlay
         .overlay(
-            // Confetti overlay
             ConfettiView(isActive: $showConfetti)
                 .allowsHitTesting(false)
         )
@@ -100,16 +97,15 @@ struct CompletionActions: View {
     @State private var isPlanTomorrowPressed = false
     
     var body: some View {
-        HStack(spacing: 12) {
+        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
+        let primaryText = (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+        
+        return HStack(spacing: 12) {
+            // View Summary
             Button(action: {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    isViewSummaryPressed = true
-                }
-                
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isViewSummaryPressed = true }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        isViewSummaryPressed = false
-                    }
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isViewSummaryPressed = false }
                     HapticManager.shared.lightImpact()
                     onViewSummary()
                 }
@@ -120,31 +116,30 @@ struct CompletionActions: View {
                     Text("View Summary")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(primaryText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color, themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color],
+                        colors: [scheme.actionSuccess.color, scheme.creativeSecondary.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
+                )
                 .scaleEffect(isViewSummaryPressed ? 0.97 : 1)
-                .shadow(color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color.opacity(0.3), radius: 6, x: 0, y: 3)
+                .shadow(color: scheme.actionSuccess.color.opacity(0.3), radius: 6, x: 0, y: 3)
             }
             
-            // Plan Tomorrow Button
+            // Plan Tomorrow
             Button(action: {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    isPlanTomorrowPressed = true
-                }
-                
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isPlanTomorrowPressed = true }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        isPlanTomorrowPressed = false
-                    }
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isPlanTomorrowPressed = false }
                     HapticManager.shared.impact()
                     onPlanTomorrow()
                 }
@@ -155,12 +150,12 @@ struct CompletionActions: View {
                     Text("Plan Tomorrow")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(primaryText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                        colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -168,10 +163,10 @@ struct CompletionActions: View {
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), lineWidth: 1)
+                        .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
                 )
                 .scaleEffect(isPlanTomorrowPressed ? 0.97 : 1)
-                .shadow(color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), radius: 6, x: 0, y: 3)
+                .shadow(color: scheme.workflowPrimary.color.opacity(0.3), radius: 6, x: 0, y: 3)
             }
         }
     }

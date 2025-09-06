@@ -102,6 +102,34 @@ struct ThemeColorScheme: Codable, Equatable {
     let creativeSecondary: ColorHex
     let socialAccent: ColorHex
     
+    let surface0: ColorHex            // lowest elevation background
+    let surface1: ColorHex
+    let surface2: ColorHex
+    let surface3: ColorHex
+    
+    let divider: ColorHex             // hairlines (usually with 60% alpha in use)
+    let border: ColorHex              // emphasized borders (80% alpha in use)
+    let focusRing: ColorHex           // focus/active outline
+    
+    let todayHeroTop: ColorHex        // Today hero gradient start
+    let todayHeroBottom: ColorHex     // Today hero gradient end
+    let todayHeroVignette: ColorHex   // subtle vignette hue
+    let todayHeroVignetteOpacity: Double
+    
+    let progressTrack: ColorHex
+    let progressFillStart: ColorHex
+    let progressFillEnd: ColorHex
+
+    let ringOuterAlpha: Double
+    let ringInnerStartAlpha: Double
+    let ringInnerEndAlpha: Double
+
+    let scrim: ColorHex
+
+    let chartPalette: [ColorHex]
+    let chartGrid: ColorHex
+    let chartLabel: ColorHex
+    
     // Glass morphism effect
     let glassTint: ColorHex
     let glassOpacity: Double
@@ -138,14 +166,48 @@ struct ThemeColorScheme: Codable, Equatable {
         organizationAccent: ColorHex,
         creativeSecondary: ColorHex,
         socialAccent: ColorHex,
+
+        surface0: ColorHex = ColorHex("#0E1228"),
+        surface1: ColorHex = ColorHex("#131834"),
+        surface2: ColorHex = ColorHex("#1A2145"),
+        surface3: ColorHex = ColorHex("#212A57"),
+
+        divider: ColorHex = ColorHex("#2B3152"),
+        border: ColorHex  = ColorHex("#3B4474"),
+        focusRing: ColorHex = ColorHex("#7DB7FF"),
+
+        todayHeroTop: ColorHex = ColorHex("#0F1630"),
+        todayHeroBottom: ColorHex = ColorHex("#1D1C53"),
+        todayHeroVignette: ColorHex = ColorHex("#2E0B5F"),
+        todayHeroVignetteOpacity: Double = 0.18,
+
+        progressTrack: ColorHex = ColorHex("#2B3152"),
+        progressFillStart: ColorHex = ColorHex("#32D74B"),
+        progressFillEnd: ColorHex = ColorHex("#64D2FF"),
+
+        ringOuterAlpha: Double = 0.30,
+        ringInnerStartAlpha: Double = 0.30,
+        ringInnerEndAlpha: Double = 0.10,
+
+        scrim: ColorHex = ColorHex("#000000"),
+
+        chartPalette: [ColorHex] = [
+            ColorHex("#0A84FF"), ColorHex("#6E5AE6"), ColorHex("#64D2FF"),
+            ColorHex("#32D74B"), ColorHex("#FF9F0A"), ColorHex("#FFD66B"),
+            ColorHex("#FF6B6B"), ColorHex("#F472B6")
+        ],
+        chartGrid: ColorHex = ColorHex("#2B3152"),
+        chartLabel: ColorHex = ColorHex("#9AA4C0"),
+
+        // glass / glow / bg gradient
         glassTint: ColorHex,
-        glassOpacity: Double = 0.1,
-        glowIntensityPrimary: Double = 0.15,
-        glowIntensitySecondary: Double = 0.08,
-        glowBlurRadius: Double = 10,
-        glowRadiusInner: Double = 20,
-        glowRadiusOuter: Double = 60,
-        glowAnimationScale: Double = 1.15,
+        glassOpacity: Double = 0.08,
+        glowIntensityPrimary: Double = 0.35,
+        glowIntensitySecondary: Double = 0.15,
+        glowBlurRadius: Double = 30,
+        glowRadiusInner: Double = 32,
+        glowRadiusOuter: Double = 84,
+        glowAnimationScale: Double = 1.4,
         gradientColors: [ColorHex]
     ) {
         self.buttonPrimary = buttonPrimary
@@ -168,6 +230,36 @@ struct ThemeColorScheme: Codable, Equatable {
         self.organizationAccent = organizationAccent
         self.creativeSecondary = creativeSecondary
         self.socialAccent = socialAccent
+
+        self.surface0 = surface0
+        self.surface1 = surface1
+        self.surface2 = surface2
+        self.surface3 = surface3
+
+        self.divider = divider
+        self.border = border
+        self.focusRing = focusRing
+
+        self.todayHeroTop = todayHeroTop
+        self.todayHeroBottom = todayHeroBottom
+        self.todayHeroVignette = todayHeroVignette
+        self.todayHeroVignetteOpacity = todayHeroVignetteOpacity
+
+        self.progressTrack = progressTrack
+        self.progressFillStart = progressFillStart
+        self.progressFillEnd = progressFillEnd
+
+        self.ringOuterAlpha = ringOuterAlpha
+        self.ringInnerStartAlpha = ringInnerStartAlpha
+        self.ringInnerEndAlpha = ringInnerEndAlpha
+
+        self.scrim = scrim
+
+        self.chartPalette = chartPalette
+        self.chartGrid = chartGrid
+        self.chartLabel = chartLabel
+
+        // glass / glow / bg gradient
         self.glassTint = glassTint
         self.glassOpacity = glassOpacity
         self.glowIntensityPrimary = glowIntensityPrimary
@@ -178,6 +270,7 @@ struct ThemeColorScheme: Codable, Equatable {
         self.glowAnimationScale = glowAnimationScale
         self.gradientColors = gradientColors
     }
+
 }
 
 // MARK: - Color Hex Helper
@@ -277,9 +370,55 @@ extension Theme {
         colorScheme.gradientColors.map { $0.color }
     }
     
+    var cardBackgroundColor: Color { colorScheme.cardBackground.color }
+    
     var primaryTextColor: Color { colorScheme.primaryText.color }
     var secondaryTextColor: Color { colorScheme.secondaryText.color }
     var subtleTextColor: Color { colorScheme.subtleText.color }
+    var creativeSecondaryTextColor: Color { colorScheme.creativeSecondary.color }
+    
+    // Elevation
+    var surface0Color: Color { colorScheme.surface0.color }
+    var surface1Color: Color { colorScheme.surface1.color }
+    var surface2Color: Color { colorScheme.surface2.color }
+    var surface3Color: Color { colorScheme.surface3.color }
+    
+    // Lines / focus
+    var dividerColor: Color { colorScheme.divider.color }
+    var borderColor: Color { colorScheme.border.color }
+    var focusRingColor: Color { colorScheme.focusRing.color }
+    
+    // Today hero background
+    var todayHeroGradient: LinearGradient {
+        LinearGradient(
+            colors: [colorScheme.todayHeroTop.color, colorScheme.todayHeroBottom.color],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+    var todayHeroVignetteColor: Color { colorScheme.todayHeroVignette.color }
+    var todayHeroVignetteOpacity: Double { colorScheme.todayHeroVignetteOpacity }
+    
+    // Progress / rings
+    var progressTrackColor: Color { colorScheme.progressTrack.color }
+    var progressFillGradient: LinearGradient {
+        LinearGradient(
+            colors: [colorScheme.progressFillStart.color, colorScheme.progressFillEnd.color],
+            startPoint: .topTrailing,
+            endPoint: .bottomLeading
+        )
+    }
+    var ringOuterAlpha: Double { colorScheme.ringOuterAlpha }
+    var ringInnerStartAlpha: Double { colorScheme.ringInnerStartAlpha }
+    var ringInnerEndAlpha: Double { colorScheme.ringInnerEndAlpha }
+    
+    // Scrim
+    var scrimColor: Color { colorScheme.scrim.color }
+
+    // Charts
+    var chartColors: [Color] { colorScheme.chartPalette.map { $0.color } }
+    var chartGridColor: Color { colorScheme.chartGrid.color }
+    var chartLabelColor: Color { colorScheme.chartLabel.color }
     
     // Gradient creation
     var backgroundGradient: LinearGradient {

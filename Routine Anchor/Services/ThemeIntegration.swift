@@ -221,34 +221,81 @@ struct ThemedButton: View {
 }
 
 // MARK: - Theme-Aware Card Component
+
 struct ThemedCard<Content: View>: View {
     let content: Content
     let cornerRadius: CGFloat
-    
+    var useMaterial: Bool
+    var materialOpacity: Double
+    var useTint: Bool
+
     @Environment(\.themeManager) private var themeManager
-    
-    init(cornerRadius: CGFloat = 16, @ViewBuilder content: () -> Content) {
+
+    init(
+        cornerRadius: CGFloat = 16,
+        useMaterial: Bool = false,
+        materialOpacity: Double = 0.16,
+        useTint: Bool = true,
+        @ViewBuilder content: () -> Content
+    ) {
         self.cornerRadius = cornerRadius
+        self.useMaterial = useMaterial
+        self.materialOpacity = materialOpacity
+        self.useTint = useTint
         self.content = content()
     }
-    
+
     var body: some View {
         content
             .padding(20)
             .background(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(glassEffect.color.opacity(glassEffect.opacity))
-                    .background(
+                ZStack {
+                    // Base surface
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .fill((themeManager?.currentTheme.cardBackgroundColor
+                               ?? Theme.defaultTheme.cardBackgroundColor)
+                              .opacity(0.95))
+
+                    // Optional, subtle material (kept weak to avoid greying)
+                    if useMaterial {
                         RoundedRectangle(cornerRadius: cornerRadius)
-                            .fill(.ultraThinMaterial)
-                    )
+                            .fill(.thinMaterial)
+                            .opacity(materialOpacity)
+                    }
+
+                    // Optional hue tint from theme (prevents neutral cast)
+                    if useTint, glassEffect.opacity > 0 {
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .fill(glassEffect.color.opacity(glassEffect.opacity))
+                    }
+
+                    // Soft inner highlight at the top edge (2% white)
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .strokeBorder(Color.white.opacity(0.02), lineWidth: 1)
+                        .blendMode(.screen)
+                        .mask(
+                            LinearGradient(
+                                gradient: .init(colors: [.white, .clear]),
+                                startPoint: .top, endPoint: .center
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                        )
+                }
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             )
+            // Hairline border + shadow for separation
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.28), radius: 14, x: 0, y: 8)
     }
-    
+
     private var glassEffect: (color: Color, opacity: Double) {
-        themeManager?.glassEffect ?? (Color.white, 0.1)
+        themeManager?.glassEffect ?? (Color.clear, 0.0)
     }
 }
+
 
 struct ThemedIconButton: View {
     let icon: String

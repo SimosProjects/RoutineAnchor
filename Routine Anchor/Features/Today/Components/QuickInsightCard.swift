@@ -18,12 +18,16 @@ struct QuickInsightCard: View {
     @State private var isVisible = false
     
     var body: some View {
-        ThemedCard(cornerRadius: 12) {
+        // Pull once for clean token usage
+        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
+        let scheme = theme.colorScheme
+        
+        return ThemedCard(cornerRadius: 12) {
             HStack(spacing: 12) {
                 // Icon
                 ZStack {
                     Circle()
-                        .fill(color.opacity(0.2))
+                        .fill(color.opacity(scheme.ringOuterAlpha)) // consistent with ring alpha
                         .frame(width: 36, height: 36)
                     
                     Image(systemName: "clock.arrow.circlepath")
@@ -35,12 +39,12 @@ struct QuickInsightCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ??
-                                         Theme.defaultTheme.secondaryTextColor)
+                        .foregroundStyle(theme.secondaryTextColor)
+                        .lineLimit(1)
                     
                     Text(subtitle)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                        .foregroundStyle(theme.primaryTextColor)
                         .lineLimit(1)
                 }
                 
@@ -53,11 +57,15 @@ struct QuickInsightCard: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(
-                        Capsule()
-                            .fill(color.opacity(0.15))
+                        Capsule().fill(color.opacity(0.15))
                     )
             }
         }
+        // Consistent border with other cards
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
+        )
         .scaleEffect(isVisible ? 1 : 0.8)
         .opacity(isVisible ? 1 : 0)
         .offset(y: isVisible ? 0 : 20)

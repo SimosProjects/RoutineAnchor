@@ -27,7 +27,11 @@ struct AddTimeBlockView: View {
     }
     
     var body: some View {
-        TimeBlockFormView(
+        // cache once
+        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
+        let scheme = theme.colorScheme
+        
+        return TimeBlockFormView(
             title: "New Time Block",
             icon: "plus.circle",
             subtitle: "Add structure to your day",
@@ -35,23 +39,23 @@ struct AddTimeBlockView: View {
         ) {
             VStack(spacing: 24) {
                 if !formData.getConflictingBlocks().isEmpty {
-                    conflictWarningView
+                    conflictWarningView(theme: theme, scheme: scheme)
                 }
                 
                 // Basic Information Section
-                basicInfoSection
+                basicInfoSection(theme: theme, scheme: scheme)
                 
                 // Time Section with Quick Duration integrated
-                timeAndDurationSection
+                timeAndDurationSection(theme: theme, scheme: scheme)
                 
                 // Organization Section
-                organizationSection
+                organizationSection(theme: theme, scheme: scheme)
                 
                 // Icon Section
-                iconSection
+                iconSection(theme: theme, scheme: scheme)
                 
                 // Action Buttons
-                actionButtons
+                actionButtons(theme: theme, scheme: scheme)
             }
         }
         .onAppear {
@@ -66,22 +70,16 @@ struct AddTimeBlockView: View {
         .onChange(of: formData.title) { _, _ in formData.validateForm() }
         .onChange(of: formData.startTime) { _, _ in
             formData.validateForm()
-            // Clear selected duration if times were manually changed
             if selectedDuration != nil {
                 let currentDuration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
-                if currentDuration != selectedDuration {
-                    selectedDuration = nil
-                }
+                if currentDuration != selectedDuration { selectedDuration = nil }
             }
         }
         .onChange(of: formData.endTime) { _, _ in
             formData.validateForm()
-            // Clear selected duration if times were manually changed
             if selectedDuration != nil {
                 let currentDuration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
-                if currentDuration != selectedDuration {
-                    selectedDuration = nil
-                }
+                if currentDuration != selectedDuration { selectedDuration = nil }
             }
         }
         .alert("Invalid Time Block", isPresented: $showingValidationErrors) {
@@ -94,7 +92,7 @@ struct AddTimeBlockView: View {
     // MARK: - Conflict Warning
     
     @ViewBuilder
-    private var conflictWarningView: some View {
+    private func conflictWarningView(theme: Theme, scheme: ThemeColorScheme) -> some View {
         let conflicts = formData.getConflictingBlocks()
         
         if !conflicts.isEmpty {
@@ -103,21 +101,21 @@ struct AddTimeBlockView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                        .foregroundStyle(scheme.warningColor.color)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Time Conflict")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                            .foregroundStyle(theme.primaryTextColor)
                         
                         if conflicts.count == 1 {
                             Text("Overlaps with '\(conflicts.first!.title)'")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                                .foregroundStyle(theme.secondaryTextColor)
                         } else {
                             Text("Overlaps with \(conflicts.count) time blocks")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                                .foregroundStyle(theme.secondaryTextColor)
                         }
                     }
                     
@@ -136,15 +134,15 @@ struct AddTimeBlockView: View {
                         Text("Find Next Available Time")
                             .font(.system(size: 14, weight: .semibold))
                     }
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(scheme.workflowPrimary.color)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
+                            .fill(scheme.surface1.color.opacity(0.65))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), lineWidth: 1)
+                                    .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
                             )
                     )
                 }
@@ -153,14 +151,14 @@ struct AddTimeBlockView: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color) // Your app's card background
+                    .fill(scheme.surface2.color) // card/elevation
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color.opacity(0.6),
-                                        themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color.opacity(0.2)
+                                        scheme.warningColor.color.opacity(0.6),
+                                        scheme.warningColor.color.opacity(0.2)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -169,7 +167,7 @@ struct AddTimeBlockView: View {
                             )
                     )
             )
-            .shadow(color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color.opacity(0.2), radius: 8, x: 0, y: 4)
+            .shadow(color: scheme.warningColor.color.opacity(0.18), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 24)
             .transition(.asymmetric(
                 insertion: .scale(scale: 0.95).combined(with: .opacity),
@@ -180,11 +178,11 @@ struct AddTimeBlockView: View {
     
     // MARK: - Form Sections
     
-    private var basicInfoSection: some View {
+    private func basicInfoSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
         FormSection(
             title: "Basic Information",
             icon: "doc.text",
-            color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+            color: scheme.workflowPrimary.color
         ) {
             VStack(spacing: 16) {
                 DesignedTextField(
@@ -207,11 +205,11 @@ struct AddTimeBlockView: View {
         .offset(x: isVisible ? 0 : -20)
     }
     
-    private var timeAndDurationSection: some View {
+    private func timeAndDurationSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
         FormSection(
             title: "Schedule",
             icon: "clock",
-            color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+            color: scheme.actionSuccess.color
         ) {
             VStack(spacing: 20) {
                 // Time pickers
@@ -229,16 +227,16 @@ struct AddTimeBlockView: View {
                     )
                 }
                 
-                // Quick duration selector - RIGHT UNDER TIME PICKERS
+                // Quick duration selector
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
                         Image(systemName: "timer")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                            .foregroundStyle(scheme.warningColor.color)
                         
                         Text("Quick Duration")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
+                            .foregroundStyle(theme.primaryTextColor.opacity(0.8))
                     }
                     
                     QuickDurationSelector(
@@ -255,7 +253,7 @@ struct AddTimeBlockView: View {
                 let duration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
                 DurationCard(
                     minutes: duration,
-                    color: color(for: duration)
+                    color: color(for: duration, scheme: scheme)
                 )
             }
         }
@@ -263,24 +261,22 @@ struct AddTimeBlockView: View {
         .offset(x: isVisible ? 0 : 20)
     }
     
-    private func color(for minutes: Int) -> Color {
+    private func color(for minutes: Int, scheme: ThemeColorScheme) -> Color {
         switch minutes {
         case ..<15:
-            return themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color
-        case ..<30:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+            return scheme.errorColor.color
         case ..<60:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+            return scheme.warningColor.color
         default:
-            return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+            return scheme.actionSuccess.color
         }
     }
     
-    private var organizationSection: some View {
+    private func organizationSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
         FormSection(
             title: "Organization",
             icon: "folder",
-            color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
+            color: scheme.organizationAccent.color
         ) {
             CategorySelector(
                 categories: formData.categories,
@@ -291,11 +287,11 @@ struct AddTimeBlockView: View {
         .offset(y: isVisible ? 0 : 20)
     }
     
-    private var iconSection: some View {
+    private func iconSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
         FormSection(
             title: "Icon",
             icon: "face.smiling",
-            color: themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
+            color: scheme.creativeSecondary.color
         ) {
             IconSelector(
                 icons: formData.icons,
@@ -306,7 +302,7 @@ struct AddTimeBlockView: View {
         .offset(x: isVisible ? 0 : -20)
     }
     
-    private var actionButtons: some View {
+    private func actionButtons(theme: Theme, scheme: ThemeColorScheme) -> some View {
         VStack(spacing: 16) {
             DesignedButton(
                 title: "Create Time Block",
@@ -337,9 +333,7 @@ struct AddTimeBlockView: View {
         }
         
         let (title, notes, category) = formData.prepareForSave()
-        
         onSave(title, formData.startTime, formData.endTime, notes, category)
-        
         HapticManager.shared.anchorSuccess()
         dismiss()
     }
@@ -351,32 +345,18 @@ extension TimeBlockFormData {
         let calendar = Calendar.current
         let now = Date()
         
-        // Start from the next hour
         let startOfNextHour = calendar.dateInterval(of: .hour, for: now)?.end ?? now
         var candidateStart = startOfNextHour
         
-        // Try up to 24 hours ahead
         for _ in 0..<24 {
             let candidateEnd = candidateStart.addingTimeInterval(duration)
-            
-            // Create test block
-            let testBlock = TimeBlock(
-                title: "Test",
-                startTime: candidateStart,
-                endTime: candidateEnd
-            )
-            
-            // Check if this slot is free
-            let conflicts = testBlock.conflictsWith(existingTimeBlocks)
-            if conflicts.isEmpty {
+            let testBlock = TimeBlock(title: "Test", startTime: candidateStart, endTime: candidateEnd)
+            if testBlock.conflictsWith(existingTimeBlocks).isEmpty {
                 return (start: candidateStart, end: candidateEnd)
             }
-            
-            // Move to next hour
             candidateStart = calendar.date(byAdding: .hour, value: 1, to: candidateStart) ?? candidateStart
         }
-        
-        return nil // No available slot found in next 24 hours
+        return nil
     }
     
     /// Set the form to the next available time slot

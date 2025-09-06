@@ -191,7 +191,7 @@ struct DailySummaryView: View {
                 Button(action: { showingShareSheet = true }) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
@@ -261,7 +261,7 @@ struct DailySummaryView: View {
         .offset(y: isVisible ? 0 : -20)
     }
     
-    // MARK: - Progress Section (FIXED)
+    // MARK: - Progress Section
     private func progressCircleSection(_ viewModel: DailySummaryViewModel) -> some View {
         ThemedCard(cornerRadius: 24) {
             VStack(spacing: 0) {
@@ -532,8 +532,7 @@ struct DailySummaryView: View {
                                 "🎯 Personalized productivity patterns",
                                 "⏰ Time-of-day performance analysis",
                                 "📊 Category-based recommendations",
-                                "📈 Weekly progress trends",
-                                "🧠 AI-powered improvement suggestions"
+                                "📈 Weekly progress trends"
                             ]
                             
                             ForEach(features, id: \.self) { feature in
@@ -666,11 +665,13 @@ struct DailySummaryView: View {
                     .multilineTextAlignment(.center)
             }
             
-            ThemedButton(
-                title: viewModel.isDayComplete ? "Plan Tomorrow" : "Back to Schedule",
-                style: .primary
-            ) {
-                planTomorrow()
+            if viewModel.isDayComplete {
+                ThemedButton(
+                    title: "Plan Tomorrow",
+                    style: .primary
+                ) {
+                    planTomorrow()
+                }
             }
         }
     }

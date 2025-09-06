@@ -12,15 +12,17 @@ struct QuickStatsView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        GeometryReader { geometry in
+        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
+        let scheme = theme.colorScheme
+        
+        return GeometryReader { geometry in
             VStack(spacing: 24) {
-                // Header - FIXED with safe area handling
                 HStack {
                     Text("Quick Stats")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                                colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -31,11 +33,11 @@ struct QuickStatsView: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundStyle(Color(themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor).opacity(0.6))
+                            .foregroundStyle(theme.subtleTextColor.opacity(0.6))
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, max(geometry.safeAreaInsets.top + 8, 20)) // FIXED: Respect safe area
+                .padding(.top, max(geometry.safeAreaInsets.top + 8, 20))
                 
                 // Stats Grid
                 LazyVGrid(columns: [
@@ -46,7 +48,7 @@ struct QuickStatsView: View {
                         title: "Total Blocks",
                         value: "\(viewModel.timeBlocks.count)",
                         subtitle: "blocks",
-                        color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                        color: scheme.workflowPrimary.color,
                         icon: "square.stack"
                     )
                     
@@ -54,7 +56,7 @@ struct QuickStatsView: View {
                         title: "Completed",
                         value: "\(viewModel.completedBlocksCount)",
                         subtitle: "blocks",
-                        color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                        color: scheme.actionSuccess.color,
                         icon: "checkmark.circle"
                     )
                     
@@ -62,7 +64,7 @@ struct QuickStatsView: View {
                         title: "Progress",
                         value: "\(viewModel.progressPercentage)%",
                         subtitle: "blocks",
-                        color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
+                        color: scheme.organizationAccent.color,
                         icon: "chart.pie"
                     )
                     
@@ -70,7 +72,7 @@ struct QuickStatsView: View {
                         title: "Remaining",
                         value: "\(viewModel.upcomingBlocksCount)",
                         subtitle: "blocks",
-                        color: themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color,
+                        color: scheme.creativeSecondary.color,
                         icon: "clock"
                     )
                 }
@@ -81,29 +83,53 @@ struct QuickStatsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Currently Working On")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                            .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                         
                         Text(currentBlock.title)
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                            .foregroundStyle(theme.primaryTextColor)
                         
                         if let remaining = viewModel.remainingTimeForCurrentBlock() {
                             Text(remaining)
-                                .font(.system(size: 14))
-                                .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                                .font(.system(size: 14, weight: .medium, design: .monospaced))
+                                .foregroundStyle(scheme.actionSuccess.color)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
-                    .background(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
-                    .cornerRadius(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(scheme.surface2.color.opacity(0.55))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
+                    )
                     .padding(.horizontal, 24)
                 }
                 
                 Spacer(minLength: geometry.safeAreaInsets.bottom + 16)
             }
+            .background(
+                ZStack {
+                    LinearGradient(
+                        colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    RadialGradient(
+                        colors: [
+                            scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
+                            .clear
+                        ],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 520
+                    )
+                }
+                .ignoresSafeArea()
+            )
         }
-        .background(ThemedAnimatedBackground())
         .ignoresSafeArea(.container, edges: .bottom)
     }
 }

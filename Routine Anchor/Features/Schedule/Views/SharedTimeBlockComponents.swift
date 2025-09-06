@@ -15,12 +15,15 @@ struct CategorySelector: View {
     @Binding var selectedCategory: String
     
     var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
+        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
+        let scheme = theme.colorScheme
+        
+        return LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
             // No category option
             CategoryChip(
                 title: "No Category",
                 isSelected: selectedCategory.isEmpty,
-                color: Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85)
+                color: theme.secondaryTextColor.opacity(0.85)
             ) {
                 selectedCategory = ""
             }
@@ -29,7 +32,7 @@ struct CategorySelector: View {
                 CategoryChip(
                     title: category,
                     isSelected: selectedCategory == category,
-                    color: categoryColor(for: category)
+                    color: categoryColor(for: category, scheme: scheme, theme: theme)
                 ) {
                     selectedCategory = category
                 }
@@ -37,14 +40,14 @@ struct CategorySelector: View {
         }
     }
     
-    private func categoryColor(for category: String) -> Color {
+    private func categoryColor(for category: String, scheme: ThemeColorScheme, theme: Theme) -> Color {
         switch category.lowercased() {
-        case "work": return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
-        case "personal": return themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
-        case "health": return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
-        case "learning": return themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
-        case "social": return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
-        default: return Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85)
+        case "work":     return scheme.workflowPrimary.color
+        case "personal": return scheme.organizationAccent.color
+        case "health":   return scheme.actionSuccess.color
+        case "learning": return scheme.creativeSecondary.color
+        case "social":   return scheme.warningColor.color
+        default:         return theme.secondaryTextColor.opacity(0.85)
         }
     }
 }
@@ -57,18 +60,11 @@ struct IconSelector: View {
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
             // No icon option
-            IconChip(
-                icon: nil,
-                isSelected: selectedIcon.isEmpty
-            ) {
+            IconChip(icon: nil, isSelected: selectedIcon.isEmpty) {
                 selectedIcon = ""
             }
-            
             ForEach(icons, id: \.self) { icon in
-                IconChip(
-                    icon: icon,
-                    isSelected: selectedIcon == icon
-                ) {
+                IconChip(icon: icon, isSelected: selectedIcon == icon) {
                     selectedIcon = icon
                 }
             }
@@ -105,30 +101,33 @@ struct HistoryRow: View {
     let icon: String
     
     var body: some View {
-        HStack(spacing: 12) {
+        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
+        let scheme = theme.colorScheme
+        
+        return HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                .foregroundStyle(theme.secondaryTextColor)
                 .frame(width: 20, height: 20)
             
             Text(title)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(theme.primaryTextColor)
             
             Spacer()
             
             Text(date.formatted(date: .abbreviated, time: .shortened))
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                .foregroundStyle(theme.secondaryTextColor)
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.2))
+                .fill(scheme.surface2.color.opacity(0.55))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke((themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.3), lineWidth: 1)
+                .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
         )
     }
 }
@@ -160,10 +159,25 @@ struct TimeBlockFormView<Content: View>: View {
     }
     
     var body: some View {
-        ZStack {
-            // Animated background
-            ThemedAnimatedBackground()
-                .ignoresSafeArea()
+        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
+        let scheme = theme.colorScheme
+        
+        return ZStack {
+            // Animated background (hero tokens + vignette)
+            ZStack {
+                LinearGradient(
+                    colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
+                    startPoint: .top, endPoint: .bottom
+                )
+                RadialGradient(
+                    colors: [
+                        scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
+                        .clear
+                    ],
+                    center: .center, startRadius: 0, endRadius: 520
+                )
+            }
+            .ignoresSafeArea()
             
             AnimatedMeshBackground()
                 .opacity(0.3)
@@ -175,7 +189,7 @@ struct TimeBlockFormView<Content: View>: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     // Header
-                    headerSection
+                    headerSection(theme: theme, scheme: scheme)
                     
                     // Form content
                     content
@@ -186,24 +200,22 @@ struct TimeBlockFormView<Content: View>: View {
             }
         }
         .navigationBarHidden(true)
-        .task {
-            await startAnimations()
-        }
+        .task { await startAnimations() }
     }
     
-    private var headerSection: some View {
+    private func headerSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
         VStack(spacing: 16) {
             HStack {
                 Button(action: onDismiss) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
+                        .foregroundStyle(theme.primaryTextColor.opacity(0.8))
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
-                                .fill(.ultraThinMaterial)
-                                .background(
-                                    Circle().fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
+                                .fill(scheme.surface1.color.opacity(0.65))
+                                .overlay(
+                                    Circle().stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
                                 )
                         )
                         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
@@ -213,19 +225,17 @@ struct TimeBlockFormView<Content: View>: View {
             }
             
             VStack(spacing: 12) {
-                // Animated icon
+                // Animated icon glow using hero tokens
                 ZStack {
                     Circle()
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.4),
-                                    themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color.opacity(0.2),
-                                    Color.clear
+                                    scheme.todayHeroTop.color.opacity(0.55),
+                                    scheme.todayHeroBottom.color.opacity(0.25),
+                                    .clear
                                 ],
-                                center: .center,
-                                startRadius: 30,
-                                endRadius: 80
+                                center: .center, startRadius: 30, endRadius: 90
                             )
                         )
                         .frame(width: 80, height: 80)
@@ -236,13 +246,13 @@ struct TimeBlockFormView<Content: View>: View {
                         .font(.system(size: 48, weight: .light))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                                colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.1)
-                        .shadow(color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.4), radius: 20, x: 0, y: 10)
+                        .shadow(color: scheme.focusRing.color.opacity(0.35), radius: 20, x: 0, y: 10)
                 }
                 
                 VStack(spacing: 8) {
@@ -250,7 +260,7 @@ struct TimeBlockFormView<Content: View>: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                                colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -258,7 +268,7 @@ struct TimeBlockFormView<Content: View>: View {
                     
                     Text(subtitle)
                         .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
+                        .foregroundStyle(theme.secondaryTextColor)
                 }
             }
         }
@@ -266,15 +276,11 @@ struct TimeBlockFormView<Content: View>: View {
         .offset(y: isVisible ? 0 : -20)
     }
     
-    // CHANGED: Now marked as @MainActor for proper async handling
     @MainActor
     private func startAnimations() async {
-        // REMOVED: particleSystem.startEmitting() - no longer needed
-        
         withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
             animationPhase = 1
         }
-        
         withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
             isVisible = true
         }

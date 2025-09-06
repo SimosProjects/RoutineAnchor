@@ -2,6 +2,7 @@
 //  TodayView.swift
 //  Routine Anchor
 //
+
 import SwiftUI
 import SwiftData
 
@@ -38,9 +39,28 @@ struct TodayView: View {
     }
     
     var body: some View {
-        ZStack {
-            ThemedAnimatedBackground()
-                .ignoresSafeArea()
+        // Pull the scheme once; if themeManager is missing (e.g., preview),
+        // use the default theme to avoid crashes.
+        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
+        
+        return ZStack {
+            ZStack {
+                LinearGradient(
+                    colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                RadialGradient(
+                    colors: [
+                        scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
+                        .clear
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 520
+                )
+            }
+            .ignoresSafeArea()
             
             GeometryReader { geometry in
                 ScrollViewReader { proxy in
@@ -71,9 +91,8 @@ struct TodayView: View {
                             StyledAdBanner()
                         }
                     }
-                    .refreshable {
-                        await refreshData()
-                    }
+                    .onAppear { scrollProxy = proxy }
+                    .refreshable { await refreshData() }
                 }
             }
         }
@@ -100,9 +119,7 @@ struct TodayView: View {
         }
         .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("Retry") {
-                Task {
-                    await viewModel.retryLastOperation()
-                }
+                Task { await viewModel.retryLastOperation() }
             }
             Button("Dismiss", role: .cancel) {
                 viewModel.clearError()
@@ -111,28 +128,22 @@ struct TodayView: View {
             Text(viewModel.errorMessage ?? "")
         }
         .sheet(isPresented: $showingSettings) {
-            NavigationStack {
-                SettingsView()
-            }
-            .environment(\.themeManager, themeManager)
-            .presentationDetents([.large])
-            .presentationDragIndicator(.visible)
+            NavigationStack { SettingsView() }
+                .environment(\.themeManager, themeManager)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingSummary) {
-            NavigationStack {
-                DailySummaryView(modelContext: modelContext)
-            }
-            .environment(\.themeManager, themeManager)
-            .presentationDetents([.large])
-            .presentationDragIndicator(.visible)
+            NavigationStack { DailySummaryView(modelContext: modelContext) }
+                .environment(\.themeManager, themeManager)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingQuickStats) {
-            NavigationStack {
-                QuickStatsView(viewModel: viewModel)
-            }
-            .environment(\.themeManager, themeManager)
-            .presentationDetents([.fraction(0.7)])
-            .presentationDragIndicator(.visible)
+            NavigationStack { QuickStatsView(viewModel: viewModel) }
+                .environment(\.themeManager, themeManager)
+                .presentationDetents([.fraction(0.7)])
+                .presentationDragIndicator(.visible)
         }
         .onReceive(NotificationCenter.default.publisher(for: .showQuickStats)) { _ in
             showingQuickStats = true
@@ -150,13 +161,8 @@ struct TodayView: View {
             handleShowTimeBlock(notification)
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshTodayView)) { _ in
-            guard !isAboutToShowSheet && !justNavigatedToView else {
-                return
-            }
-            
-            Task {
-                await viewModel.refreshData()
-            }
+            guard !isAboutToShowSheet && !justNavigatedToView else { return }
+            Task { await viewModel.refreshData() }
         }
     }
     
@@ -193,21 +199,23 @@ struct TodayView: View {
     
     // MARK: - Loading State
     private var loadingState: some View {
-        VStack(spacing: 20) {
+        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
+        
+        return VStack(spacing: 20) {
             Spacer()
             
-            // Elegant loading animation
+            // Elegant loading animation — uses workflowPrimary to match theme
             ZStack {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3))
+                        .fill(scheme.workflowPrimary.color.opacity(0.3))
                         .frame(width: 12, height: 12)
                         .scaleEffect(refreshTrigger ? 1.5 : 1.0)
                         .offset(x: CGFloat(index - 1) * 25)
                         .animation(
                             .spring(response: 0.8, dampingFraction: 0.6)
-                            .repeatForever()
-                            .delay(Double(index) * 0.2),
+                                .repeatForever()
+                                .delay(Double(index) * 0.2),
                             value: refreshTrigger
                         )
                 }
@@ -215,13 +223,11 @@ struct TodayView: View {
             
             Text("Loading your day...")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
+                .foregroundStyle(scheme.secondaryText.color)
             
             Spacer()
         }
-        .onAppear {
-            refreshTrigger = true
-        }
+        .onAppear { refreshTrigger = true }
     }
     
     // MARK: - Helper Methods
@@ -230,10 +236,8 @@ struct TodayView: View {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             refreshTrigger.toggle()
         }
-        
         // Small delay for visual feedback
         try? await Task.sleep(nanoseconds: 500_000_000)
-        
         await viewModel.refreshData()
         HapticManager.shared.lightImpact()
     }
@@ -251,10 +255,7 @@ struct TodayView: View {
     // MARK: - Scroll Support Methods
     
     private func scrollToCurrentBlockIfNeeded() {
-        guard let currentBlock = viewModel.getCurrentBlock() else {
-            return
-        }
-        
+        guard let currentBlock = viewModel.getCurrentBlock() else { return }
         // Delay slightly to ensure view is laid out
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
@@ -265,13 +266,10 @@ struct TodayView: View {
     
     private func highlightBlock(_ blockId: UUID) {
         highlightedBlockId = blockId
-        
         // Remove highlight after 2 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             withAnimation(.easeOut(duration: 0.3)) {
-                if highlightedBlockId == blockId {
-                    highlightedBlockId = nil
-                }
+                if highlightedBlockId == blockId { highlightedBlockId = nil }
             }
         }
     }
@@ -280,24 +278,14 @@ struct TodayView: View {
     
     private func handleTimeBlockCompletion(_ notification: Notification) {
         guard let blockId = notification.userInfo?["blockId"] as? UUID,
-              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else {
-            return
-        }
-        
-        Task { @MainActor in
-            await viewModel.markBlockCompleted(block)
-        }
+              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else { return }
+        Task { @MainActor in await viewModel.markBlockCompleted(block) }
     }
     
     private func handleTimeBlockSkip(_ notification: Notification) {
         guard let blockId = notification.userInfo?["blockId"] as? UUID,
-              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else {
-            return
-        }
-        
-        Task { @MainActor in
-            await viewModel.markBlockSkipped(block)
-        }
+              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else { return }
+        Task { @MainActor in await viewModel.markBlockSkipped(block) }
     }
     
     private func handleShowTimeBlock(_ notification: Notification) {
@@ -306,12 +294,10 @@ struct TodayView: View {
             print("Invalid blockId in notification")
             return
         }
-        
         // Scroll to the specified block
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             scrollProxy?.scrollTo(blockId, anchor: .center)
         }
-        
         // Highlight the block
         highlightBlock(blockId)
     }
@@ -319,7 +305,12 @@ struct TodayView: View {
 
 // MARK: - Preview
 #Preview {
-    let container = try! ModelContainer(for: TimeBlock.self, DailyProgress.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    let container = try! ModelContainer(
+        for: TimeBlock.self, DailyProgress.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let tm = ThemeManager.preview(with: Theme.defaultTheme)
     return TodayView(modelContext: container.mainContext)
+        .environment(\.themeManager, tm)
         .modelContainer(container)
 }

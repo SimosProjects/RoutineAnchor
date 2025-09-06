@@ -18,17 +18,22 @@ struct FocusCard: View {
     @State private var progressAnimation: CGFloat = 0
     
     var body: some View {
-        HStack(spacing: 16) {
+        // Pull once to avoid repeating optionals and to match new tokens
+        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
+        let primaryText = (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+        let secondaryText = (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+        
+        return HStack(spacing: 16) {
             // Focus icon with pulse
             ZStack {
                 Circle()
-                    .fill((themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.2))
+                    .fill(scheme.workflowPrimary.color.opacity(scheme.ringOuterAlpha))
                     .frame(width: 50, height: 50)
                     .scaleEffect(pulseScale)
                 
                 Image(systemName: "target")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(scheme.workflowPrimary.color)
             }
             
             // Focus content
@@ -36,7 +41,7 @@ struct FocusCard: View {
                 HStack {
                     Text("Focus Mode")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                        .foregroundStyle(secondaryText.opacity(0.85))
                         .textCase(.uppercase)
                         .tracking(1)
                     
@@ -59,14 +64,14 @@ struct FocusCard: View {
                 
                 Text(text)
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                    .foregroundStyle(primaryText)
                     .lineLimit(2)
                 
                 // Progress bar for current block
                 if let currentBlock = currentBlock, currentBlock.isCurrentlyActive {
                     ProgressBar(
                         progress: currentBlock.currentProgress,
-                        color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                        color: scheme.workflowPrimary.color,
                         animated: true
                     )
                 }
@@ -79,8 +84,8 @@ struct FocusCard: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.4),
-                            (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.1)
+                            scheme.workflowPrimary.color.opacity(0.4),
+                            scheme.workflowPrimary.color.opacity(0.1)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -103,26 +108,24 @@ struct TimeIndicator: View {
     let isActive: Bool
     
     var body: some View {
-        HStack(spacing: 4) {
+        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
+        let activeColor = scheme.actionSuccess.color
+        let idleColor = scheme.workflowPrimary.color
+        
+        return HStack(spacing: 4) {
             Circle()
-                .fill(isActive ?
-                    (themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color) :
-                    (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color))
+                .fill(isActive ? activeColor : idleColor)
                 .frame(width: 6, height: 6)
             
             Text(timeText)
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundStyle(isActive ?
-                    (themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color) :
-                    (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color))
+                .foregroundStyle(isActive ? activeColor : idleColor)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill((isActive ?
-                    (themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color) :
-                    (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)).opacity(0.15))
+                .fill((isActive ? activeColor : idleColor).opacity(0.15))
         )
     }
 }

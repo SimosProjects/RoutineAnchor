@@ -19,9 +19,13 @@ struct TodayTimeBlocksList: View {
     @State private var listAnimation = false
     
     var body: some View {
-        VStack(spacing: 16) {
+        // Pull once for cleanliness + new token usage
+        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
+        let scheme = theme.colorScheme
+        
+        return VStack(spacing: 16) {
             // Section header
-            sectionHeader
+            sectionHeader(theme: theme, scheme: scheme)
             
             // Time blocks content
             if viewModel.hasScheduledBlocks {
@@ -31,17 +35,17 @@ struct TodayTimeBlocksList: View {
                     flatTimeBlocks
                 }
             } else {
-                emptyMessage
+                emptyMessage(theme: theme, scheme: scheme)
             }
         }
     }
     
     // MARK: - Section Header
-    private var sectionHeader: some View {
+    private func sectionHeader(theme: Theme, scheme: ThemeColorScheme) -> some View {
         HStack {
             Text("Today's Schedule")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(theme.primaryTextColor)
             
             Spacer()
             
@@ -67,15 +71,19 @@ struct TodayTimeBlocksList: View {
             } label: {
                 Image(systemName: useGroupedView ? "square.grid.2x2" : "list.bullet")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(scheme.workflowPrimary.color)
                     .frame(width: 32, height: 32)
-                    .background((themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.15))
+                    .background(scheme.workflowPrimary.color.opacity(0.15))
                     .cornerRadius(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
+                    )
             }
             
             if viewModel.isLoading {
                 ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor))
+                    .progressViewStyle(CircularProgressViewStyle(tint: theme.primaryTextColor))
                     .scaleEffect(0.8)
             }
         }
@@ -90,19 +98,13 @@ struct TodayTimeBlocksList: View {
                     timeBlock: timeBlock,
                     showActions: true,
                     onStart: {
-                        Task {
-                            await viewModel.startTimeBlock(timeBlock)
-                        }
+                        Task { await viewModel.startTimeBlock(timeBlock) }
                     },
                     onComplete: {
-                        Task {
-                            await viewModel.markBlockCompleted(timeBlock)
-                        }
+                        Task { await viewModel.markBlockCompleted(timeBlock) }
                     },
                     onSkip: {
-                        Task {
-                            await viewModel.markBlockSkipped(timeBlock)
-                        }
+                        Task { await viewModel.markBlockSkipped(timeBlock) }
                     }
                 )
                 .id(timeBlock.id)
@@ -139,14 +141,10 @@ struct TodayTimeBlocksList: View {
                         },
                         onBlockTap: handleTimeBlockTap,
                         onComplete: { timeBlock in
-                            Task {
-                                await viewModel.markBlockCompleted(timeBlock)
-                            }
+                            Task { await viewModel.markBlockCompleted(timeBlock) }
                         },
                         onSkip: { timeBlock in
-                            Task {
-                                await viewModel.markBlockSkipped(timeBlock)
-                            }
+                            Task { await viewModel.markBlockSkipped(timeBlock) }
                         }
                     )
                     .id(status)
@@ -163,15 +161,15 @@ struct TodayTimeBlocksList: View {
     }
     
     // MARK: - Empty Message
-    private var emptyMessage: some View {
+    private func emptyMessage(theme: Theme, scheme: ThemeColorScheme) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "calendar.badge.plus")
                 .font(.system(size: 48, weight: .light))
-                .foregroundStyle((themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor).opacity(0.6))
+                .foregroundStyle(theme.subtleTextColor.opacity(0.6))
             
             Text("No blocks scheduled for today")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
             
             Button(action: {
                 NotificationCenter.default.post(name: .navigateToSchedule, object: nil)
@@ -183,21 +181,22 @@ struct TodayTimeBlocksList: View {
                     Text("Add Time Blocks")
                         .font(.system(size: 16, weight: .semibold))
                 }
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(theme.primaryTextColor)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [
-                            themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
-                            themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
-                        ],
+                        colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(12)
-                .shadow(color: (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.3), radius: 8, x: 0, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
+                )
+                .shadow(color: scheme.workflowPrimary.color.opacity(0.3), radius: 8, x: 0, y: 4)
             }
         }
         .padding(.vertical, 40)

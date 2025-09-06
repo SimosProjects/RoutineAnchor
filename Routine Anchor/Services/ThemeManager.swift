@@ -313,6 +313,65 @@ extension View {
     }
 }
 
+// MARK: - New Theme Convenience (token-driven)
+extension ThemeManager {
+    // Shorthands
+    var scheme: ThemeColorScheme { currentTheme.colorScheme }
+
+    // Elevation (handy for cards/sheets across the app)
+    var surface0: Color { scheme.surface0.color }
+    var surface1: Color { scheme.surface1.color }
+    var surface2: Color { scheme.surface2.color }
+    var surface3: Color { scheme.surface3.color }
+
+    // Lines / focus
+    var divider: Color { scheme.divider.color }
+    var border: Color { scheme.border.color }
+    var focusRing: Color { scheme.focusRing.color }
+
+    // Today hero background (use on TodayView or any hero section)
+    var todayHeroBackground: some View {
+        ZStack {
+            LinearGradient(
+                colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            RadialGradient(
+                colors: [
+                    scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
+                    .clear
+                ],
+                center: .center,
+                startRadius: 0,
+                endRadius: 520
+            )
+        }
+    }
+
+    // Progress & rings
+    var progressTrack: Color { scheme.progressTrack.color }
+    var progressFillGradient: LinearGradient {
+        LinearGradient(
+            colors: [scheme.progressFillStart.color, scheme.progressFillEnd.color],
+            startPoint: .topTrailing,
+            endPoint: .bottomLeading
+        )
+    }
+    var ringOuterAlpha: Double { scheme.ringOuterAlpha }
+    var ringInnerStartAlpha: Double { scheme.ringInnerStartAlpha }
+    var ringInnerEndAlpha: Double { scheme.ringInnerEndAlpha }
+
+    // Scrim
+    var scrim: Color { scheme.scrim.color }
+
+    // Charts
+    var chartColors: [Color] { scheme.chartPalette.map { $0.color } }
+    var chartGrid: Color { scheme.chartGrid.color }
+    var chartLabel: Color { scheme.chartLabel.color }
+}
+
+
 // MARK: - Debug Helpers
 extension ThemeManager {
     #if DEBUG

@@ -32,7 +32,7 @@ struct TodayHeaderView: View {
         themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
     }
     
-    private var themeTertiaryText: Color {
+    private var themeSubtleText: Color {
         themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
     }
     
@@ -114,7 +114,7 @@ struct TodayHeaderView: View {
                 
                 Text(viewModel.dailyQuote)
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(themeTertiaryText)
+                    .foregroundStyle(themeSubtleText)
                     .lineLimit(1)
             }
             .opacity(dateOpacity)

@@ -21,7 +21,12 @@ struct StatusGroupSection: View {
     @State private var sectionAnimation = false
     
     var body: some View {
-        VStack(spacing: 0) {
+        // Pull once for token usage
+        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
+        let scheme = theme.colorScheme
+        let statusTint = statusColor(for: status, themeManager: themeManager)
+        
+        return VStack(spacing: 0) {
             // Section header
             Button(action: onToggle) {
                 HStack {
@@ -29,18 +34,18 @@ struct StatusGroupSection: View {
                     HStack(spacing: 12) {
                         Image(systemName: status.iconName)
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(statusColor(for: status, themeManager: themeManager))
+                            .foregroundStyle(statusTint)
                             .frame(width: 24, height: 24)
-                            .background(statusColor(for: status, themeManager: themeManager).opacity(0.15))
+                            .background(statusTint.opacity(0.15))
                             .cornerRadius(6)
                         
                         Text(status.displayName)
                             .font(.system(size: 18, weight: .semibold, design: .rounded))
-                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                            .foregroundStyle(theme.primaryTextColor)
                         
                         Text("\(blocks.count) \(blocks.count == 1 ? "block" : "blocks")")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                            .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                     }
                     
                     Spacer()
@@ -48,7 +53,7 @@ struct StatusGroupSection: View {
                     // Expand icon
                     Image(systemName: "chevron.down")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                        .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
                 .padding(16)
@@ -80,37 +85,26 @@ struct StatusGroupSection: View {
             }
         }
         .background(
+            // Elevation-based surface, no material
             RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.8),
-                                    (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.04)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(
+                .fill(
                     LinearGradient(
                         colors: [
-                            statusColor(for: status, themeManager: themeManager).opacity(0.3),
-                            statusColor(for: status, themeManager: themeManager).opacity(0.1)
+                            scheme.surface2.color,
+                            scheme.surface3.color.opacity(0.7)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
+                    )
                 )
         )
-        .shadow(color: statusColor(for: status, themeManager: themeManager).opacity(0.2), radius: 8, x: 0, y: 4)
+        .overlay(
+            // Standard border token for consistency across cards
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
+        )
+        // Subtle status-tinted shadow for affordance
+        .shadow(color: statusTint.opacity(0.18), radius: 8, x: 0, y: 4)
         .scaleEffect(sectionAnimation ? 1 : 0.95)
         .opacity(sectionAnimation ? 1 : 0)
         .onAppear {

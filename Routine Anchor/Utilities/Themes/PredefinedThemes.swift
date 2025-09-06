@@ -17,44 +17,103 @@ struct PredefinedThemes {
         description: "The original Routine Anchor experience",
         isPremium: false,
         colorScheme: ThemeColorScheme(
-            buttonPrimary: ColorHex("#007AFF"), //primary
-            buttonSecondary: ColorHex("#5856D6"), //secondary
-            tertiary: ColorHex("#AF52DE"), //tertiary - keep for gradient completion
-            appBackground: ColorHex("#000000"), //backgroundPrimary
-            cardBackground: ColorHex("#1C1C1E"), //backgroundSecondary - dark cards
-            overlayBackground: ColorHex("#2C2C2E"), //backgroundTertiary - modal backgrounds
-            uiElementPrimary: ColorHex("#1C1C2E"), //surfacePrimary
-            uiElementSecondary: ColorHex("#2C2C3E"), //surfaceSecondary
-            primaryText: ColorHex("#FFFFFF"), //textPrimary
-            secondaryText: ColorHex("#E5E5E7"), //textSecondary
-            subtleText: ColorHex("#AEAEB2"), //textTertiary
-            buttonAccent: ColorHex("#007AFF"), //accent
-            warningColor: ColorHex("#FF9500"), //warning
-            successColor: ColorHex("#30D158"), //success
-            errorColor: ColorHex("#FF3B30"), //error
-            workflowPrimary: ColorHex("#007AFF"), //blue
-            actionSuccess: ColorHex("#32D74B"), //green
-            organizationAccent: ColorHex("#5856D6"), //purple
-            creativeSecondary: ColorHex("#64D2FF"), //teal
-            socialAccent: ColorHex("#FF9500"), //orange
-            glassTint: ColorHex("#FFFFFF"), //glassTint - for glass effects
-            glassOpacity: 0.1, //0.1 - restore for glass effects
-            glowIntensityPrimary: 0.2, //0.2 - restore for button glows
-            glowIntensitySecondary: 0.1, //0.1 - restore for subtle glows
-            glowBlurRadius: 15, //15 - restore for glow effects
-            glowRadiusInner: 25, //25 - restore for radial effects
-            glowRadiusOuter: 70, //70 - restore for outer glow
-            glowAnimationScale: 1.2, //1.2 - restore for animations
+            // Core actions
+            buttonPrimary:    ColorHex("#0A84FF"),
+            buttonSecondary:  ColorHex("#6E5AE6"),
+            tertiary:         ColorHex("#B084F5"),
+
+            // Base surfaces
+            appBackground:    ColorHex("#000000"),  // OLED black
+            cardBackground:   ColorHex("#131834"),  // kept for back-compat (== surface1)
+            overlayBackground:ColorHex("#1C1F2E"),
+
+            // UI “element” surfaces (kept for back-compat)
+            uiElementPrimary:   ColorHex("#1A2145"),
+            uiElementSecondary: ColorHex("#212A57"),
+
+            // Text
+            primaryText:     ColorHex("#FFFFFF"),
+            secondaryText:   ColorHex("#D7E0FF"),
+            subtleText:      ColorHex("#9AA4C0"),   // ↑ contrast vs old #B8BED6
+
+            // Accents / status
+            buttonAccent:    ColorHex("#64D2FF"),
+            warningColor:    ColorHex("#FF9F0A"),
+            successColor:    ColorHex("#32D74B"),
+            errorColor:      ColorHex("#FF453A"),
+
+            // Feature accents / categories
+            workflowPrimary:     ColorHex("#64D2FF"), // modern cyan used across Focus/Stats
+            actionSuccess:       ColorHex("#32D74B"),
+            organizationAccent:  ColorHex("#6E5AE6"),
+            creativeSecondary:   ColorHex("#64D2FF"),
+            socialAccent:        ColorHex("#FF9F0A"),
+            
+            // Elevation scale
+            surface0: ColorHex("#0E1228"),
+            surface1: ColorHex("#131834"),
+            surface2: ColorHex("#1A2145"),
+            surface3: ColorHex("#212A57"),
+
+            // Lines & focus
+            divider:   ColorHex("#2B3152"),
+            border:    ColorHex("#3B4474"),
+            focusRing: ColorHex("#7DB7FF"),
+
+            // Today hero (used by ThemedAnimatedBackground on TodayView)
+            todayHeroTop:             ColorHex("#0F1630"),
+            todayHeroBottom:          ColorHex("#1D1C53"),
+            todayHeroVignette:        ColorHex("#2E0B5F"),
+            todayHeroVignetteOpacity: 0.18,
+
+            // Progress & rings (used in FocusCard / ProgressOverview / Time blocks)
+            progressTrack:      ColorHex("#2B3152"),
+            progressFillStart:  ColorHex("#32D74B"),
+            progressFillEnd:    ColorHex("#64D2FF"),
+            ringOuterAlpha:     0.30,
+            ringInnerStartAlpha:0.30,
+            ringInnerEndAlpha:  0.10,
+
+            // Scrim for sheets/menus
+            scrim: ColorHex("#000000"),
+
+            // Charts (for Analytics + QuickStats)
+            chartPalette: [
+                ColorHex("#0A84FF"),
+                ColorHex("#6E5AE6"),
+                ColorHex("#64D2FF"),
+                ColorHex("#32D74B"),
+                ColorHex("#FF9F0A"),
+                ColorHex("#FFD66B"),
+                ColorHex("#FF6B6B"),
+                ColorHex("#F472B6")
+            ],
+            chartGrid:  ColorHex("#2B3152"),
+            chartLabel: ColorHex("#9AA4C0"),
+
+            // Glass / glow
+            glassTint:         ColorHex("#9AA9FF"),
+            glassOpacity:      0.08,
+            glowIntensityPrimary:   0.35,
+            glowIntensitySecondary: 0.15,
+            glowBlurRadius:    30,
+            glowRadiusInner:   32,
+            glowRadiusOuter:   84,
+            glowAnimationScale:1.4,
+
+            // Background gradients (general use)
             gradientColors: [
-                ColorHex("#007AFF"),
-                ColorHex("#5856D6"),
-                ColorHex("#AF52DE")
+                ColorHex("#0A84FF"),
+                ColorHex("#6E5AE6"),
+                ColorHex("#B084F5")
             ]
         ),
         gradientStyle: .linear,
         icon: "paintbrush.fill",
         category: .minimal
     )
+
+
     
     // MARK: - Premium Themes
     /*
