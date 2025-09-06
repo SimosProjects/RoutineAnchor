@@ -2,6 +2,7 @@
 //  DataManagementSection.swift
 //  Routine Anchor
 //
+
 import SwiftUI
 
 struct DataManagementSection: View {
@@ -13,6 +14,9 @@ struct DataManagementSection: View {
     let onClearTodaysSchedule: () -> Void
     let onDeleteAllData: () -> Void
     
+    /// If false, taps will call actions immediately without showing confirmations.
+    var showsConfirmations: Bool = true
+    
     // MARK: - State
     @State private var showingClearTodayConfirmation = false
     @State private var showingDeleteConfirmation = false
@@ -23,7 +27,8 @@ struct DataManagementSection: View {
         SettingsSection(
             title: "Data & Privacy",
             icon: "shield.checkered",
-            color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
+            color: themeManager?.currentTheme.colorScheme.organizationAccent.color
+                ?? Theme.defaultTheme.colorScheme.organizationAccent.color
         ) {
             VStack(spacing: 16) {
                 // Export data button
@@ -31,7 +36,8 @@ struct DataManagementSection: View {
                     title: "Export My Data",
                     subtitle: "Download your routine data",
                     icon: "square.and.arrow.up",
-                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color
+                        ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onExportData()
@@ -43,7 +49,8 @@ struct DataManagementSection: View {
                     title: "Import Data",
                     subtitle: "Restore from backup file",
                     icon: "square.and.arrow.down",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color
+                        ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onImportData()
@@ -55,7 +62,8 @@ struct DataManagementSection: View {
                     title: "Privacy Policy",
                     subtitle: "How we protect your data",
                     icon: "hand.raised",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color
+                        ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onShowPrivacyPolicy()
@@ -67,7 +75,10 @@ struct DataManagementSection: View {
                 
                 // Divider
                 Rectangle()
-                    .fill(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+                    .fill(
+                        themeManager?.currentTheme.colorScheme.uiElementSecondary.color
+                            ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color
+                    )
                     .frame(height: 1)
                     .padding(.vertical, 4)
                 
@@ -76,24 +87,34 @@ struct DataManagementSection: View {
                     title: "Clear Today's Schedule",
                     subtitle: "Delete all time blocks for today",
                     icon: "calendar.badge.minus",
-                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
+                    color: themeManager?.currentTheme.colorScheme.warningColor.color
+                        ?? Theme.defaultTheme.colorScheme.warningColor.color,
                     action: {
                         HapticManager.shared.warning()
-                        showingClearTodayConfirmation = true
+                        if showsConfirmations {
+                            showingClearTodayConfirmation = true
+                        } else {
+                            onClearTodaysSchedule()
+                        }
                     }
                 )
                 .accessibilityIdentifier("ClearTodaysScheduleButton")
                 .scaleEffect(clearTodayButtonScale)
                 
-                // Delete all data button - Updated for better UI testing
+                // Delete all data button
                 SettingsButton(
                     title: "Delete All Data",
                     subtitle: "Permanently remove everything",
                     icon: "trash",
-                    color: themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color,
+                    color: themeManager?.currentTheme.colorScheme.errorColor.color
+                        ?? Theme.defaultTheme.colorScheme.errorColor.color,
                     action: {
                         HapticManager.shared.warning()
-                        showingDeleteConfirmation = true
+                        if showsConfirmations {
+                            showingDeleteConfirmation = true
+                        } else {
+                            onDeleteAllData()
+                        }
                     }
                 )
                 .accessibilityIdentifier("DeleteAllDataButton")
@@ -110,9 +131,7 @@ struct DataManagementSection: View {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     clearTodayButtonScale = 0.95
                 }
-                onClearTodaysSchedule()  // Call the correct function
-                
-                // Reset animation after delay
+                onClearTodaysSchedule()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     clearTodayButtonScale = 1.0
                 }
@@ -144,19 +163,24 @@ struct DataManagementSection: View {
     
     // MARK: - Data Storage Info
     private var dataStorageInfo: some View {
-        HStack(spacing: 12) {
+        let wp = (themeManager?.currentTheme.colorScheme.workflowPrimary.color
+                  ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+        
+        return HStack(spacing: 12) {
             Image(systemName: "internaldrive")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.8))
+                .foregroundStyle(wp.opacity(0.8)) // fixed precedence
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("Local Storage Only")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor
+                                     ?? Theme.defaultTheme.primaryTextColor)
                 
                 Text("All data is stored securely on your device")
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor
+                                     ?? Theme.defaultTheme.secondaryTextColor)
             }
             
             Spacer()
@@ -164,11 +188,11 @@ struct DataManagementSection: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.1))
+                .fill(wp.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.2), lineWidth: 1)
+                .stroke(wp.opacity(0.2), lineWidth: 1)
         )
     }
 }
@@ -181,21 +205,12 @@ struct DataManagementSection: View {
         
         ScrollView {
             DataManagementSection(
-                onExportData: {
-                    print("Export data")
-                },
-                onImportData: {
-                    print("Import data")
-                },
-                onShowPrivacyPolicy: {
-                    print("Show privacy policy")
-                },
-                onClearTodaysSchedule: {
-                    print("Clear today's schedule")
-                },
-                onDeleteAllData: {
-                    print("Delete all data")
-                }
+                onExportData: { print("Export data") },
+                onImportData: { print("Import data") },
+                onShowPrivacyPolicy: { print("Show privacy policy") },
+                onClearTodaysSchedule: { print("Clear today's schedule") },
+                onDeleteAllData: { print("Delete all data") },
+                showsConfirmations: true
             )
             .padding()
         }

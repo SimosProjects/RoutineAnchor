@@ -2,102 +2,82 @@
 //  FeatureCard.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/20/25.
-//
+
 import SwiftUI
-import UserNotifications
 
 struct FeatureCard: View {
     @Environment(\.themeManager) private var themeManager
+
     let icon: String
     let title: String
     let description: String
+    let tint: Color?
     let delay: Double
-    
+
     @State private var isVisible = false
-    @State private var isHovered = false
-    
-    // Theme color helpers
-    private var themePrimaryText: Color {
-        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-    }
-    
-    private var themeSecondaryText: Color {
-        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
-    }
-    
+    @State private var isPressed = false
+
+    // Theme helpers
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+
     private var iconGradient: LinearGradient {
-        guard let theme = themeManager?.currentTheme else {
-            return LinearGradient(
-                colors: [Theme.defaultTheme.buttonPrimaryColor, Theme.defaultTheme.buttonAccentColor],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-        
-        return LinearGradient(
-            colors: [theme.buttonPrimaryColor, theme.buttonAccentColor],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        let base = tint ?? scheme.workflowPrimary.color
+        let mate = tint == nil ? scheme.creativeSecondary.color : base.opacity(0.7)
+        return LinearGradient(colors: [base, mate], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
-    
-    private var iconShadowColor: Color {
-        themeManager?.currentTheme.buttonPrimaryColor.opacity(0.5) ?? Theme.defaultTheme.buttonPrimaryColor.opacity(0.5)
+
+    private var borderColor: Color {
+        (tint ?? scheme.workflowPrimary.color).opacity(0.28)
     }
-    
-    private var cardShadowColor: Color {
-        themeManager?.currentTheme.colorScheme.appBackground.color.opacity(0.3) ?? Theme.defaultTheme.colorScheme.appBackground.color.opacity(0.3)
-    }
-    
+
     var body: some View {
-        ThemedCard(cornerRadius: 18) {
-            HStack(spacing: 16) {
-                // Icon
-                RoundedRectangle(cornerRadius: 14)
+        ThemedCard(cornerRadius: 16) {
+            HStack(spacing: 14) {
+                // Icon blob
+                RoundedRectangle(cornerRadius: 12)
                     .fill(iconGradient)
                     .frame(width: 48, height: 48)
                     .overlay(
                         Image(systemName: icon)
                             .font(.system(size: 22, weight: .medium))
-                            .foregroundStyle(themePrimaryText)
+                            .foregroundStyle(theme.primaryTextColor)
                     )
-                    .shadow(color: iconShadowColor, radius: 10, x: 0, y: 5)
-                
-                // Content
+                    .shadow(color: (tint ?? scheme.workflowPrimary.color).opacity(0.35), radius: 10, x: 0, y: 6)
+
+                // Copy
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.system(size: 17, weight: .semibold, design: .rounded))
-                        .foregroundStyle(themePrimaryText)
-                    
+                        .foregroundStyle(theme.primaryTextColor)
+
                     Text(description)
                         .font(.system(size: 14, weight: .regular, design: .rounded))
-                        .foregroundStyle(themeSecondaryText)
-                        .lineLimit(2)
+                        .foregroundStyle(theme.secondaryTextColor)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(3)
                 }
-                
-                Spacer()
+
+                Spacer(minLength: 0)
             }
+            .contentShape(Rectangle())
         }
-        .scaleEffect(isHovered ? 1.02 : 1)
-        .shadow(color: cardShadowColor, radius: 20, x: 0, y: 10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(borderColor, lineWidth: 1)
+        )
+        .scaleEffect(isPressed ? 0.98 : 1)
         .opacity(isVisible ? 1 : 0)
-        .offset(y: isVisible ? 0 : 30)
-        .scaleEffect(isVisible ? 1 : 0.9)
-        .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(delay)) {
-                isVisible = true
-            }
-        }
+        .offset(y: isVisible ? 0 : 18)
+        .animation(.spring(response: 0.6, dampingFraction: 0.75).delay(delay), value: isVisible)
+        .onAppear { isVisible = true }
         .onTapGesture {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                isHovered = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    isHovered = false
-                }
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { isPressed = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { isPressed = false }
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title). \(description)")
     }
 }

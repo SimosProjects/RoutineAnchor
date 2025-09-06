@@ -4,29 +4,33 @@
 //
 //  App preferences section for Settings view
 //
+
 import SwiftUI
 
 struct AppPreferencesSection: View {
     @Environment(\.themeManager) private var themeManager
-    
+
     @Binding var hapticsEnabled: Bool
     @Binding var autoResetEnabled: Bool
     let onResetProgress: () -> Void
-    
-    // MARK: - State
+
+    // MARK: - Theme helpers
+    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
+    private var scheme: ThemeColorScheme { theme.colorScheme }
+
+    // MARK: - Local state
     @State private var showingResetConfirmation = false
-    @State private var showingClearTodayConfirmation = false
     @State private var animateReset = false
-    @State private var animateClear = false
-    
+
     var body: some View {
         SettingsSection(
             title: "Preferences",
             icon: "slider.horizontal.3",
-            color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+            color: scheme.actionSuccess.color
         ) {
             VStack(spacing: 16) {
-                // Haptic feedback toggle
+
+                // Haptics toggle
                 SettingsToggle(
                     title: "Haptic Feedback",
                     subtitle: "Feel interactions and confirmations",
@@ -34,11 +38,9 @@ struct AppPreferencesSection: View {
                     icon: "hand.tap"
                 )
                 .onChange(of: hapticsEnabled) { _, newValue in
-                    if newValue {
-                        HapticManager.shared.impact()
-                    }
+                    if newValue { HapticManager.shared.lightImpact() }
                 }
-                
+
                 // Auto-reset toggle
                 SettingsToggle(
                     title: "Auto-Reset Daily",
@@ -46,14 +48,28 @@ struct AppPreferencesSection: View {
                     isOn: $autoResetEnabled,
                     icon: "arrow.clockwise"
                 )
-                
+
                 // Divider
                 Rectangle()
-                    .fill(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+                    .fill(scheme.uiElementSecondary.color.opacity(0.3))
                     .frame(height: 1)
                     .padding(.vertical, 4)
-                
-                // Additional preferences info
+
+                // Reset today's progress (not destructive like delete; keep primary accent)
+                SettingsButton(
+                    title: "Reset Today's Progress",
+                    subtitle: "Set all of today's blocks back to Not Started",
+                    icon: "arrow.uturn.backward",
+                    color: scheme.workflowPrimary.color,
+                    action: {
+                        HapticManager.shared.lightImpact()
+                        showingResetConfirmation = true
+                    }
+                )
+                .scaleEffect(animateReset ? 0.98 : 1.0)
+                .animation(.spring(response: 0.35, dampingFraction: 0.75), value: animateReset)
+
+                // Info card
                 preferencesInfoSection
             }
         }
@@ -63,14 +79,12 @@ struct AppPreferencesSection: View {
             titleVisibility: .visible
         ) {
             Button("Reset Progress", role: .destructive) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    animateReset = true
-                }
+                withAnimation { animateReset = true }
                 onResetProgress()
-                
-                // Reset animation after delay
+
+                // quick pulse, then return to normal
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    animateReset = false
+                    withAnimation { animateReset = false }
                 }
             }
             Button("Cancel", role: .cancel) {}
@@ -78,54 +92,59 @@ struct AppPreferencesSection: View {
             Text("This will reset all time blocks back to 'Not Started' for today. This action cannot be undone.")
         }
     }
-    
-    // MARK: - Info Section
+
+    // MARK: - Info
     private var preferencesInfoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
+
             // Haptics info
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "hand.tap")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color.opacity(0.8))
+                    .foregroundStyle(scheme.actionSuccess.color.opacity(0.85))
                     .frame(width: 16, height: 16)
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Haptic Feedback")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                    
+                        .foregroundStyle(theme.primaryTextColor)
+
                     Text("Provides tactile feedback for buttons and actions")
-                        .font(.system(size: 10, weight: .regular))
-                        .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                        .font(.system(size: 10))
+                        .foregroundStyle(theme.secondaryTextColor)
                 }
-                
+
                 Spacer()
             }
-            
+
             // Auto-reset info
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "moon.stars")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color.opacity(0.8))
+                    .foregroundStyle(scheme.organizationAccent.color.opacity(0.85))
                     .frame(width: 16, height: 16)
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Midnight Reset")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                    
+                        .foregroundStyle(theme.primaryTextColor)
+
                     Text("Automatically clears progress at 12:00 AM daily")
-                        .font(.system(size: 10, weight: .regular))
-                        .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                        .font(.system(size: 10))
+                        .foregroundStyle(theme.secondaryTextColor)
                 }
-                
+
                 Spacer()
             }
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
+                .fill(scheme.surface2.color.opacity(0.9))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(scheme.border.color.opacity(0.85), lineWidth: 1)
         )
     }
 }
@@ -133,16 +152,12 @@ struct AppPreferencesSection: View {
 // MARK: - Preview
 #Preview {
     ZStack {
-        ThemedAnimatedBackground()
-            .ignoresSafeArea()
-        
+        ThemedAnimatedBackground().ignoresSafeArea()
         ScrollView {
             AppPreferencesSection(
                 hapticsEnabled: .constant(true),
                 autoResetEnabled: .constant(true),
-                onResetProgress: {
-                    print("Reset progress")
-                }
+                onResetProgress: { print("Reset progress") }
             )
             .padding()
         }
