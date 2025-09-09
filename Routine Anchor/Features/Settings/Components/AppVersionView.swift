@@ -2,18 +2,13 @@
 //  AppVersionView.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 8/9/25.
-//
 
 import SwiftUI
 import UIKit
 
 struct AppVersionView: View {
     @Environment(\.themeManager) private var themeManager
-
-    // Theme helpers
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     // App info
     private var version: String {
@@ -24,15 +19,13 @@ struct AppVersionView: View {
     }
     private var year: String { String(Calendar.current.component(.year, from: Date())) }
 
-    private var copyString: String {
-        build.isEmpty ? "v\(version)" : "v\(version) (\(build))"
-    }
+    private var copyString: String { build.isEmpty ? "v\(version)" : "v\(version) (\(build))" }
 
     var body: some View {
         VStack(spacing: 10) {
             Image(systemName: "app.clipboard")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(scheme.workflowPrimary.color.opacity(0.9))
+                .foregroundStyle(theme.accentPrimaryColor.opacity(0.9))
 
             Text("Routine Anchor")
                 .font(TypographyConstants.Body.emphasized)
@@ -52,13 +45,13 @@ struct AppVersionView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(theme.surfaceCardColor.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(scheme.border.color.opacity(0.85), lineWidth: 1)
+                .stroke(theme.borderColor.opacity(0.85), lineWidth: 1)
         )
-        .contentShape(Rectangle()) // make entire card tappable
+        .contentShape(Rectangle())
         .onTapGesture {
             UIPasteboard.general.string = copyString
             HapticManager.shared.lightImpact()

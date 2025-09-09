@@ -2,8 +2,9 @@
 //  PremiumManager.swift
 //  Routine Anchor
 //
-//  Premium subscription and feature management
+//  Premium subscription and feature management with debug override.
 //
+
 import StoreKit
 import SwiftUI
 import Foundation
@@ -11,421 +12,375 @@ import Foundation
 @MainActor
 @Observable
 class PremiumManager {
-    // MARK: - Published Properties
+    // MARK: - Published-like (via @Observable) Properties
     var userIsPremium = false
     var products: [Product] = []
+    var monthlyProduct: Product?
+    var yearlyProduct: Product?
+
     var isLoading = false
-    var errorMessage: String?
     var purchaseInProgress = false
-    var temporaryPremiumUntil: Date?
-    
-    // MARK: - Product IDs
+    var errorMessage: String?
+
+    // MARK: - Debug Override
+    private let debugPremiumKey = "premiumDebugOverride"
+    private(set) var premiumDebugOverrideEnabled: Bool =
+        UserDefaults.standard.bool(forKey: "premiumDebugOverride")
+
+    /// Use this everywhere the UI needs to know if premium features are unlocked.
+    /// True if the user has a valid entitlement OR the debug override is on.
+    var isPremiumActive: Bool {
+        userIsPremium || premiumDebugOverrideEnabled
+    }
+
+    // MARK: - Product Identifiers
     private let productIDs = [
         "com.simosmediatech.routineanchor.premium.monthly",
         "com.simosmediatech.routineanchor.premium.yearly"
     ]
-    
-    // MARK: - Premium Limits
+
+    // MARK: - Free Limits
     static let freeTimeBlockLimit = 3
-    static let freeDailyBlocks = 3
-    static let freeTemplateLimit = 3
-    
-    // MARK: - Initialization
+    static let freeDailyBlocks    = 3
+    static let freeTemplateLimit  = 3
+
+    // MARK: - Init
     init() {
         loadUserPremiumStatus()
+
+        // Observe SettingsView’s debug toggle
+        NotificationCenter.default.addObserver(
+            forName: .premiumDebugOverrideChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            guard let enabled = note.userInfo?["enabled"] as? Bool else { return }
+            Task { @MainActor [weak self] in
+                self?.setDebugPremium(enabled)
+            }
+        }
+
         Task {
             await loadProducts()
             await checkForExistingSubscriptions()
         }
     }
-    
-    // MARK: - Product Loading
+
+    // MARK: - Debug override API
+    func setDebugPremium(_ enabled: Bool) {
+        premiumDebugOverrideEnabled = enabled
+        UserDefaults.standard.set(enabled, forKey: debugPremiumKey)
+        broadcastStatusChange()
+    }
+
+    // MARK: - StoreKit: Load Products
     func loadProducts() async {
         isLoading = true
         defer { isLoading = false }
-        
+
         do {
             products = try await Product.products(for: productIDs)
+            for product in products {
+                if product.id.contains("monthly") {
+                    monthlyProduct = product
+                } else if product.id.contains("yearly") {
+                    yearlyProduct = product
+                }
+            }
             print("✅ Loaded \(products.count) products")
         } catch {
             errorMessage = "Failed to load products: \(error.localizedDescription)"
             print("❌ Failed to load products: \(error)")
         }
     }
-    
-    // MARK: - Purchase Management
+
+    // MARK: - StoreKit: Purchase
+    enum AnchorError: Error {
+        case productUnavailable
+        case verificationFailed
+        case purchaseCancelled
+        case unknown
+    }
+
     func purchase(_ product: Product) async throws {
-        guard !purchaseInProgress else { return }
-        
         purchaseInProgress = true
-        isLoading = true
-        defer {
-            purchaseInProgress = false
-            isLoading = false
-        }
-        
-        let result = try await product.purchase()
-        
-        switch result {
-        case .success(let verification):
-            switch verification {
-            case .verified(let transaction):
-                userIsPremium = true
-                savePremiumStatus(true)
-                await transaction.finish()
-                HapticManager.shared.anchorSuccess()
-                print("✅ Purchase successful: \(product.displayName)")
-                
-            case .unverified:
-                throw anchorError.verificationFailed
+        defer { purchaseInProgress = false }
+
+        do {
+            let result = try await product.purchase()
+            switch result {
+            case .success(let verification):
+                switch verification {
+                case .verified(let transaction):
+                    userIsPremium = true
+                    savePremiumStatus(true)
+                    await transaction.finish()
+                    HapticManager.shared.anchorSuccess()
+                    print("✅ Purchase successful: \(product.displayName)")
+                    broadcastStatusChange()
+
+                case .unverified:
+                    throw AnchorError.verificationFailed
+                }
+
+            case .userCancelled:
+                throw AnchorError.purchaseCancelled
+
+            default:
+                throw AnchorError.unknown
             }
-            
-        case .userCancelled:
-            print("ℹ️ User cancelled purchase")
-            break
-            
-        case .pending:
-            print("⏳ Purchase pending")
-            break
-            
-        @unknown default:
-            throw anchorError.unknownResult
+        } catch {
+            errorMessage = "Purchase failed: \(error.localizedDescription)"
+            HapticManager.shared.anchorError()
+            print("❌ Purchase failed: \(error)")
+            throw error
         }
     }
-    
+
+    // MARK: - StoreKit: Restore
     func restorePurchases() async {
         isLoading = true
         defer { isLoading = false }
-        
-        var foundSubscription = false
-        
-        for await result in Transaction.currentEntitlements {
-            switch result {
-            case .verified(let transaction):
-                if productIDs.contains(transaction.productID) {
-                    userIsPremium = true
-                    savePremiumStatus(true)
-                    foundSubscription = true
-                    print("✅ Restored subscription: \(transaction.productID)")
+
+        do {
+            var restored = false
+            for await result in Transaction.currentEntitlements {
+                switch result {
+                case .verified(let transaction):
+                    if transaction.productID.contains("premium") {
+                        restored = true
+                        userIsPremium = true
+                        savePremiumStatus(true)
+                        print("✅ Restored entitlement: \(transaction.productID)")
+                    }
+                case .unverified:
+                    print("⚠️ Unverified entitlement present")
                 }
-            case .unverified:
-                print("⚠️ Unverified transaction found")
-                break
             }
+            if restored { broadcastStatusChange() }
+        } catch {
+            print("❌ Restore failed: \(error)")
+            errorMessage = "Restore failed: \(error.localizedDescription)"
         }
-        
-        if !foundSubscription {
-            userIsPremium = false
-            savePremiumStatus(false)
-            print("ℹ️ No valid subscriptions found")
+    }
+
+    // MARK: - Entitlement Check on Launch
+    func checkForExistingSubscriptions() async {
+        do {
+            var found = false
+            for await result in Transaction.currentEntitlements {
+                switch result {
+                case .verified(let transaction):
+                    if transaction.productID.contains("premium") {
+                        found = true
+                        userIsPremium = true
+                        savePremiumStatus(true)
+                        print("✅ Existing entitlement detected: \(transaction.productID)")
+                    }
+                case .unverified:
+                    print("⚠️ Unverified entitlement encountered")
+                }
+            }
+            if found { broadcastStatusChange() }
         }
-        
-        HapticManager.shared.lightImpact()
     }
-    
-    private func checkForExistingSubscriptions() async {
-        await restorePurchases()
-    }
-    
-    // MARK: - Premium Status Management
+
+    // MARK: - Local Persistence
+    private let premiumKey = "userIsPremium"
+
     private func loadUserPremiumStatus() {
-        userIsPremium = UserDefaults.standard.bool(forKey: "userIsPremium")
-        
-        // Load temporary premium
-        if let tempDate = UserDefaults.standard.object(forKey: "temporaryPremiumUntil") as? Date {
-            temporaryPremiumUntil = tempDate
-        }
+        userIsPremium = UserDefaults.standard.bool(forKey: premiumKey)
     }
-    
-    private func savePremiumStatus(_ isPremium: Bool) {
-        UserDefaults.standard.set(isPremium, forKey: "userIsPremium")
+
+    private func savePremiumStatus(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: premiumKey)
     }
-    
-    // MARK: - Feature Access Control
-    
-    /// Whether the user has premium access (subscription or temporary)
-    var hasPremiumAccess: Bool {
-        if userIsPremium { return true }
-        
-        if let tempExpiry = temporaryPremiumUntil, Date() < tempExpiry {
-            return true
-        }
-        
-        return false
-    }
-    
-    /// Whether ads should be shown
-    var shouldShowAds: Bool {
-        return !hasPremiumAccess
-    }
-    
-    /// Check if user can create more time blocks today
-    func canCreateTimeBlock(currentDailyCount: Int) -> Bool {
-        if hasPremiumAccess { return true }
-        return currentDailyCount < Self.freeTimeBlockLimit
-    }
-    
-    /// Check if user can access advanced analytics
-    var canAccessAdvancedAnalytics: Bool {
-        return hasPremiumAccess
-    }
-    
-    /// Check if user can access unlimited templates
-    func canCreateTemplate(currentTemplateCount: Int) -> Bool {
-        if hasPremiumAccess { return true }
-        return currentTemplateCount < Self.freeTemplateLimit
-    }
-    
-    /// Check if user can access widgets
-    var canAccessWidgets: Bool {
-        return hasPremiumAccess
-    }
-    
-    // MARK: - Temporary Premium (for rewarded ads)
-    func grantTemporaryPremium(duration: TimeInterval = 24 * 60 * 60) {
-        temporaryPremiumUntil = Date().addingTimeInterval(duration)
-        UserDefaults.standard.set(temporaryPremiumUntil, forKey: "temporaryPremiumUntil")
-        HapticManager.shared.anchorSuccess()
-    }
-    
-    // MARK: - Pricing Information
-    var monthlyProduct: Product? {
-        products.first { $0.id.contains("monthly") }
-    }
-    
-    var yearlyProduct: Product? {
-        products.first { $0.id.contains("yearly") }
-    }
-    
-    var monthlySavings: String {
-        guard let monthly = monthlyProduct,
-              let yearly = yearlyProduct else { return "" }
-        
-        let monthlyPrice = monthly.price
-        let yearlyPrice = yearly.price
-        let yearlyMonthlyEquivalent = yearlyPrice / 12
-        let savings = monthlyPrice - yearlyMonthlyEquivalent
-        let percentage = (savings / monthlyPrice) * 100
-        
-        // Convert Decimal to Double first, then to Int
-        let percentageDouble = NSDecimalNumber(decimal: percentage).doubleValue
-        return "\(Int(percentageDouble.rounded()))% off"
-    }
-    
-    // MARK: - Error Handling
+
     func clearError() {
         errorMessage = nil
     }
-}
 
-// MARK: - Premium Errors
-enum anchorError: Error, LocalizedError {
-    case verificationFailed
-    case unknownResult
-    case productNotFound
-    
-    var errorDescription: String? {
-        switch self {
-        case .verificationFailed:
-            return "Purchase verification failed"
-        case .unknownResult:
-            return "Unknown purchase result"
-        case .productNotFound:
-            return "Product not found"
+    // MARK: - Business Rules / Gates (use isPremiumActive)
+    /// Backwards-compatible property some parts of the app already use.
+    /// Getter reflects *active* premium (entitlement OR debug). Setter flips real entitlement flag.
+    var hasPremiumAccess: Bool {
+        get { isPremiumActive }
+        set {
+            // Setter simulates entitlement for debug/QA flows.
+            userIsPremium = newValue
+            savePremiumStatus(newValue)
+            broadcastStatusChange()
         }
+    }
+
+    /// Free users see ads unless premium is active.
+    var shouldShowAds: Bool {
+        !isPremiumActive
+    }
+
+    /// Whether free users have hit a limit for creating time blocks.
+    func canCreateMoreBlocks(currentCount: Int) -> Bool {
+        isPremiumActive || currentCount < Self.freeTimeBlockLimit
+    }
+
+    /// Whether free users can create more templates.
+    func canCreateMoreTemplates(currentCount: Int) -> Bool {
+        isPremiumActive || currentCount < Self.freeTemplateLimit
+    }
+
+    /// Feature gates (handy for views like analytics, themes, templates)
+    var canAccessAdvancedAnalytics: Bool { isPremiumActive }
+    var canAccessPremiumThemes: Bool     { isPremiumActive }
+    var canUseUnlimitedTemplates: Bool   { isPremiumActive }
+
+    // Friendly savings string for yearly vs monthly (simple for now)
+    var monthlySavings: String? {
+        guard monthlyProduct != nil, yearlyProduct != nil else { return nil }
+        return "Best value"
+    }
+
+    // MARK: - Notifications
+    private func broadcastStatusChange() {
+        // Legacy name used in the project:
+        NotificationCenter.default.post(name: .premiumStatusChanged, object: nil)
+        // Also post a generic raw-name so views listening to "premiumStatusDidChange" update too.
+        NotificationCenter.default.post(name: Notification.Name("premiumStatusDidChange"), object: nil)
     }
 }
 
-// MARK: - Premium Feature Flags
+// MARK: - Premium Features
 extension PremiumManager {
-    enum PremiumFeature {
+    enum PremiumFeature: String, CaseIterable, Identifiable, Sendable {
         case unlimitedTimeBlocks
         case advancedAnalytics
         case premiumThemes
         case unlimitedTemplates
         case widgets
-        case smartScheduling
-        case goalTracking
-        case cloudSync
-        
-        var displayName: String {
+
+        var id: String { rawValue }
+
+        var icon: String {
             switch self {
-            case .unlimitedTimeBlocks:
-                return "Unlimited Time Blocks"
-            case .advancedAnalytics:
-                return "Advanced Analytics"
-            case .premiumThemes:
-                return "Premium Themes"
-            case .unlimitedTemplates:
-                return "Unlimited Templates"
-            case .widgets:
-                return "Widgets & Complications"
-            case .smartScheduling:
-                return "Smart Scheduling"
-            case .goalTracking:
-                return "Goal Tracking"
-            case .cloudSync:
-                return "Cloud Sync"
+            case .unlimitedTimeBlocks: return "checkmark.circle.fill"
+            case .advancedAnalytics:   return "chart.xyaxis.line"
+            case .premiumThemes:       return "paintpalette.fill"
+            case .unlimitedTemplates:  return "square.grid.2x2.fill"
+            case .widgets:             return "rectangle.portrait.on.rectangle.portrait.angled"
             }
         }
-        
+
+        var displayName: String {
+            switch self {
+            case .unlimitedTimeBlocks: return "Unlimited Time Blocks"
+            case .advancedAnalytics:   return "Advanced Analytics"
+            case .premiumThemes:       return "Premium Themes"
+            case .unlimitedTemplates:  return "Unlimited Templates"
+            case .widgets:             return "Home & Lock Screen Widgets"
+            }
+        }
+
         var description: String {
             switch self {
             case .unlimitedTimeBlocks:
-                return "Create as many time blocks as you need"
+                return "Plan your day without limits."
             case .advancedAnalytics:
-                return "Deep insights into your productivity patterns"
+                return "Deep insights and performance trends."
             case .premiumThemes:
-                return "Beautiful themes and customization options"
+                return "Exclusive, high-contrast themes."
             case .unlimitedTemplates:
-                return "Save and reuse unlimited routine templates"
+                return "Create and reuse as many as you like."
             case .widgets:
-                return "Quick access from your home screen"
-            case .smartScheduling:
-                return "AI-powered scheduling suggestions"
-            case .goalTracking:
-                return "Set and track long-term productivity goals"
-            case .cloudSync:
-                return "Sync your data across all devices"
-            }
-        }
-        
-        var icon: String {
-            switch self {
-            case .unlimitedTimeBlocks:
-                return "infinity"
-            case .advancedAnalytics:
-                return "chart.line.uptrend.xyaxis"
-            case .premiumThemes:
-                return "paintbrush.fill"
-            case .unlimitedTemplates:
-                return "doc.on.doc.fill"
-            case .widgets:
-                return "widget.medium"
-            case .smartScheduling:
-                return "brain.head.profile"
-            case .goalTracking:
-                return "target"
-            case .cloudSync:
-                return "icloud.fill"
+                return "Glanceable progress and quick actions."
             }
         }
     }
-    
-    func hasAccess(to feature: PremiumFeature) -> Bool {
-        return hasPremiumAccess
+
+    /// If you ever want to drive the list dynamically in the UI:
+    var availableFeatures: [PremiumFeature] {
+        PremiumFeature.allCases
     }
 }
 
-extension PremiumManager {
-    #if DEBUG
-    /// Enable premium for testing (debug only)
-    func enableDebugPremium() {
-        userIsPremium = true
-        savePremiumStatus(true)
-        print("🔓 Debug: Premium enabled for testing")
-        
-        NotificationCenter.default.post(name: .premiumStatusChanged, object: nil)
-    }
-    
-    /// Disable premium for testing (debug only)
-    func disableDebugPremium() {
-        userIsPremium = false
-        savePremiumStatus(false)
-        // Clear temporary premium too
-        temporaryPremiumUntil = nil
-        UserDefaults.standard.removeObject(forKey: "temporaryPremiumUntil")
-        print("🔒 Debug: Premium disabled for testing")
-        
-        NotificationCenter.default.post(name: .premiumStatusChanged, object: nil)
-    }
-    
-    /// Toggle premium status for testing
-    func toggleDebugPremium() {
-        if userIsPremium {
-            disableDebugPremium()
-        } else {
-            enableDebugPremium()
-        }
-        
-        NotificationCenter.default.post(name: .premiumStatusChanged, object: nil)
-    }
-    #endif
-}
 
-// MARK: - Debug Settings View
 #if DEBUG
+// MARK: - Debug Controls (Optional helper UI)
 struct DebugPremiumView: View {
     @Environment(\.themeManager) private var themeManager
     @Environment(\.premiumManager) private var premiumManager
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             Text("🧪 Debug Premium Controls")
-                .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-            
-            VStack(spacing: 12) {
-                HStack {
-                    Text("Premium Status:")
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                    
-                    Spacer()
-                    
-                    Text(premiumManager?.userIsPremium == true ? "PREMIUM" : "FREE")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(premiumManager?.userIsPremium == true ? .green : .red)
-                        .padding(.horizontal, 12)
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundStyle(theme.primaryTextColor)
+
+            HStack(spacing: 12) {
+                DesignedButton(title: "Load Products", style: .surface, size: .medium, fullWidth: false) {
+                    Task { await premiumManager?.loadProducts() }
+                }
+                DesignedButton(
+                    title: (premiumManager?.isPremiumActive ?? false) ? "Set Free" : "Set Premium",
+                    style: .gradient, size: .medium, fullWidth: false
+                ) {
+                    guard let pm = premiumManager else { return }
+                    pm.setDebugPremium(!(pm.isPremiumActive))
+                }
+            }
+
+            if let monthly = premiumManager?.monthlyProduct {
+                DesignedButton(title: "Purchase Monthly", style: .surface, size: .medium, fullWidth: false) {
+                    Task { try? await premiumManager?.purchase(monthly) }
+                }
+            }
+            if let yearly = premiumManager?.yearlyProduct {
+                DesignedButton(title: "Purchase Yearly", style: .surface, size: .medium, fullWidth: false) {
+                    Task { try? await premiumManager?.purchase(yearly) }
+                }
+            }
+
+            DesignedButton(title: "Restore Purchases", style: .surface, size: .medium, fullWidth: false) {
+                Task { await premiumManager?.restorePurchases() }
+            }
+
+            if let products = premiumManager?.products, !products.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Loaded Products")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(theme.secondaryTextColor)
+
+                    ForEach(products, id: \.id) { product in
+                        HStack {
+                            Text(product.displayName)
+                                .foregroundStyle(theme.primaryTextColor)
+                            Spacer()
+                            Text(product.displayPrice)
+                                .foregroundStyle(theme.secondaryTextColor)
+                        }
+                        .font(.system(size: 14))
                         .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
-                        )
-                }
-                
-                Button(action: {
-                    premiumManager?.toggleDebugPremium()
-                }) {
-                    HStack {
-                        Image(systemName: premiumManager?.userIsPremium == true ? "lock.open" : "lock")
-                        Text(premiumManager?.userIsPremium == true ? "Disable Premium" : "Enable Premium")
                     }
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(premiumManager?.userIsPremium == true ? Color.red : Color.green)
-                    )
                 }
-                
-                Button(action: {
-                    premiumManager?.grantTemporaryPremium(duration: 60 * 60) // 1 hour
-                }) {
-                    HStack {
-                        Image(systemName: "clock")
-                        Text("Grant 1 Hour Premium")
-                    }
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 40)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.blue)
-                    )
-                }
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: theme.cardCornerRadius, style: .continuous)
+                        .fill(theme.surfaceCardColor.opacity(0.5))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: theme.cardCornerRadius, style: .continuous)
+                        .stroke(theme.borderColor.opacity(0.9), lineWidth: 1)
+                )
             }
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.black.opacity(0.3))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: theme.cardCornerRadius, style: .continuous)
+                .fill(theme.surfaceCardColor.opacity(0.35))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: theme.cardCornerRadius, style: .continuous)
+                .stroke(theme.borderColor.opacity(0.8), lineWidth: 1)
         )
         .padding()
     }

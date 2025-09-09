@@ -2,8 +2,9 @@
 //  StatusGroupSection.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 8/9/25.
+//  Expandable group of time blocks by status (e.g., In Progress, Completed).
 //
+
 import SwiftUI
 
 struct StatusGroupSection: View {
@@ -16,21 +17,19 @@ struct StatusGroupSection: View {
     let onBlockTap: (TimeBlock) -> Void
     let onComplete: (TimeBlock) -> Void
     let onSkip: (TimeBlock) -> Void
-    
+
     @Environment(\.themeManager) private var themeManager
     @State private var sectionAnimation = false
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
-        // Pull once for token usage
-        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
-        let scheme = theme.colorScheme
-        let statusTint = statusColor(for: status, themeManager: themeManager)
-        
+        let statusTint = tint(for: status)
+
         return VStack(spacing: 0) {
             // Section header
             Button(action: onToggle) {
                 HStack {
-                    // Status icon and title
                     HStack(spacing: 12) {
                         Image(systemName: status.iconName)
                             .font(.system(size: 16, weight: .medium))
@@ -38,19 +37,18 @@ struct StatusGroupSection: View {
                             .frame(width: 24, height: 24)
                             .background(statusTint.opacity(0.15))
                             .cornerRadius(6)
-                        
+
                         Text(status.displayName)
                             .font(.system(size: 18, weight: .semibold, design: .rounded))
                             .foregroundStyle(theme.primaryTextColor)
-                        
+
                         Text("\(blocks.count) \(blocks.count == 1 ? "block" : "blocks")")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                     }
-                    
+
                     Spacer()
-                    
-                    // Expand icon
+
                     Image(systemName: "chevron.down")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
@@ -59,8 +57,8 @@ struct StatusGroupSection: View {
                 .padding(16)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(PlainButtonStyle())
-            
+            .buttonStyle(.plain)
+
             // Expanded content
             if isExpanded {
                 VStack(spacing: 8) {
@@ -85,25 +83,15 @@ struct StatusGroupSection: View {
             }
         }
         .background(
-            // Elevation-based surface, no material
-            RoundedRectangle(cornerRadius: 16)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            scheme.surface2.color,
-                            scheme.surface3.color.opacity(0.7)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+            ZStack {
+                RoundedRectangle(cornerRadius: 16).fill(theme.surfaceCardColor)
+                RoundedRectangle(cornerRadius: 16).fill(theme.glassMaterialOverlay)
+            }
         )
         .overlay(
-            // Standard border token for consistency across cards
             RoundedRectangle(cornerRadius: 16)
-                .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
+                .stroke(theme.borderColor.opacity(0.8), lineWidth: 1)
         )
-        // Subtle status-tinted shadow for affordance
         .shadow(color: statusTint.opacity(0.18), radius: 8, x: 0, y: 4)
         .scaleEffect(sectionAnimation ? 1 : 0.95)
         .opacity(sectionAnimation ? 1 : 0)
@@ -111,6 +99,15 @@ struct StatusGroupSection: View {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
                 sectionAnimation = true
             }
+        }
+    }
+
+    private func tint(for status: BlockStatus) -> Color {
+        switch status {
+        case .notStarted: return theme.secondaryTextColor
+        case .inProgress: return theme.accentPrimaryColor
+        case .completed:  return theme.statusSuccessColor
+        case .skipped:    return theme.statusWarningColor
         }
     }
 }

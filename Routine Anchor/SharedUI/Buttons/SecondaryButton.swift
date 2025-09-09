@@ -2,415 +2,159 @@
 //  SecondaryButton.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/19/25.
-//
+
 import SwiftUI
 
+/// Flexible secondary button with Filled / Outlined / Ghost styles and variants.
 struct SecondaryButton: View {
     @Environment(\.themeManager) private var themeManager
-    
-    // MARK: - Properties
+
     let title: String
     let action: () -> Void
-    
-    // Optional customization
+
     var isEnabled: Bool = true
     var isLoading: Bool = false
     var fullWidth: Bool = true
     var size: ButtonSize = .large
     var style: ButtonStyle = .outlined
     var variant: ButtonVariant = .neutral
-    
-    // MARK: - Body
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
-        Button(action: {
-            if isEnabled && !isLoading {
-                // Lighter haptic feedback for secondary actions
-                HapticManager.shared.lightImpact()
-                action()
-            }
-        }) {
+        Button {
+            guard isEnabled && !isLoading else { return }
+            HapticManager.shared.lightImpact()
+            action()
+        } label: {
             HStack(spacing: 8) {
-                // Loading indicator
                 if isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .scaleEffect(0.8)
-                        .foregroundColor(textColor)
-                }
-                
-                // Button text
-                if !isLoading {
+                    ProgressView().scaleEffect(0.9)
+                } else {
                     Text(title)
-                        .font(buttonFont)
-                        .fontWeight(.medium)
-                        .foregroundColor(textColor)
                 }
             }
+            .font(font)
+            .foregroundStyle(textColor)
             .frame(maxWidth: fullWidth ? .infinity : nil)
-            .frame(height: buttonHeight)
-            .padding(.horizontal, horizontalPadding)
-            .background(backgroundColor)
-            .cornerRadius(cornerRadius)
+            .frame(height: height)
+            .padding(.horizontal, hPad)
+            .background(background)
+            .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
                     .stroke(borderColor, lineWidth: borderWidth)
             )
         }
         .disabled(!isEnabled || isLoading)
         .opacity(isEnabled ? 1.0 : 0.5)
-        .scaleEffect(isEnabled ? 1.0 : 0.98)
-        .animation(.easeInOut(duration: 0.1), value: isEnabled)
-        .animation(.easeInOut(duration: 0.1), value: isLoading)
+        .animation(.easeInOut(duration: 0.12), value: isLoading)
+        .animation(.easeInOut(duration: 0.12), value: isEnabled)
     }
-    
-    // MARK: - Computed Properties
-    private var backgroundColor: Color {
-        switch style {
-        case .filled:
-            switch variant {
-            case .neutral:
-                return themeManager?.currentTheme.colorScheme.uiElementSecondary.color ??
-                       Theme.defaultTheme.colorScheme.uiElementSecondary.color
-            case .destructive:
-                return themeManager?.currentTheme.colorScheme.errorColor.color ??
-                       Theme.defaultTheme.colorScheme.errorColor.color
-            case .success:
-                return themeManager?.currentTheme.colorScheme.successColor.color ??
-                       Theme.defaultTheme.colorScheme.successColor.color
-            }
-        case .outlined, .ghost:
-            return Color.clear
+
+    // MARK: - Styling
+
+    enum ButtonSize { case small, medium, large }
+    enum ButtonStyle { case filled, outlined }
+    enum ButtonVariant { case neutral, destructive, success }
+
+    private var height: CGFloat {
+        switch size {
+        case .small:  return 36
+        case .medium: return 44
+        case .large:  return 52
         }
     }
-    
+
+    private var hPad: CGFloat {
+        switch size {
+        case .small:  return 16
+        case .medium: return 20
+        case .large:  return 24
+        }
+    }
+
+    private var radius: CGFloat {
+        switch size {
+        case .small:  return 10
+        case .medium: return 12
+        case .large:  return 14
+        }
+    }
+
+    private var font: Font {
+        switch size {
+        case .small:  return .system(size: 14, weight: .semibold)
+        case .medium: return .system(size: 16, weight: .semibold)
+        case .large:  return .system(size: 18, weight: .semibold)
+        }
+    }
+
+    private var roleColor: Color {
+        switch variant {
+        case .neutral:     return theme.accentSecondaryColor
+        case .destructive: return theme.statusErrorColor
+        case .success:     return theme.statusSuccessColor
+        }
+    }
+
+    private var background: AnyShapeStyle {
+        switch style {
+        case .filled:
+            return AnyShapeStyle(
+                LinearGradient(colors: [roleColor, roleColor.opacity(0.85)],
+                               startPoint: .leading, endPoint: .trailing)
+            )
+        case .outlined:
+            return AnyShapeStyle(Color.clear)
+        }
+    }
+
     private var textColor: Color {
         switch style {
-        case .filled:
-            switch variant {
-            case .neutral: return themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-            case .destructive, .success:
-                return themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-            }
-        case .outlined, .ghost:
-            switch variant {
-            case .neutral: return themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
-            case .destructive: return Color.errorRed
-            case .success: return Color.successGreen
-            }
+        case .filled:  return theme.invertedTextColor
+        case .outlined:
+            return roleColor
         }
     }
-    
+
     private var borderColor: Color {
         switch style {
-        case .filled:
-            return Color.clear
-        case .outlined:
-            switch variant {
-            case .neutral: return themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color
-            case .destructive: return Color.errorRed
-            case .success: return Color.successGreen
-            }
-        case .ghost:
-            return Color.clear
+        case .outlined: return roleColor
+        default:        return .clear
         }
     }
-    
+
     private var borderWidth: CGFloat {
-        switch style {
-        case .filled, .ghost: return 0
-        case .outlined: return 1.5
-        }
-    }
-    
-    private var buttonHeight: CGFloat {
-        switch size {
-        case .small: return 36
-        case .medium: return 44
-        case .large: return 52
-        }
-    }
-    
-    private var horizontalPadding: CGFloat {
-        switch size {
-        case .small: return 16
-        case .medium: return 20
-        case .large: return 24
-        }
-    }
-    
-    private var cornerRadius: CGFloat {
-        switch size {
-        case .small: return 8
-        case .medium: return 10
-        case .large: return 12
-        }
-    }
-    
-    private var buttonFont: Font {
-        switch size {
-        case .small: return .system(size: 14, weight: .medium)
-        case .medium: return .system(size: 16, weight: .medium)
-        case .large: return .system(size: 18, weight: .medium)
-        }
+        style == .outlined ? 1.5 : 0
     }
 }
 
-// MARK: - Button Enums
+// MARK: - Convenience
+
 extension SecondaryButton {
-    enum ButtonSize {
-        case small
-        case medium
-        case large
-    }
-    
-    enum ButtonStyle {
-        case filled    // Background filled with color
-        case outlined  // Border with transparent background
-        case ghost     // No border, no background (text only)
-    }
-    
-    enum ButtonVariant {
-        case neutral     // Default gray/neutral colors
-        case destructive // Red for delete/cancel actions
-        case success     // Green for positive actions
-    }
-}
-
-// MARK: - Convenience Initializers
-extension SecondaryButton {
-    // Standard secondary button
-    init(
-        _ title: String,
-        action: @escaping () -> Void
-    ) {
+    init(_ title: String, action: @escaping () -> Void) {
         self.title = title
         self.action = action
     }
-    
-    // Secondary button with loading state
-    init(
-        _ title: String,
-        isLoading: Bool,
-        action: @escaping () -> Void
-    ) {
-        self.title = title
-        self.action = action
-        self.isLoading = isLoading
-    }
-    
-    // Secondary button with enabled state
-    init(
-        _ title: String,
-        isEnabled: Bool,
-        action: @escaping () -> Void
-    ) {
-        self.title = title
-        self.action = action
-        self.isEnabled = isEnabled
-    }
-    
-    // Destructive secondary button (for delete/cancel actions)
-    init(
-        _ title: String,
-        destructive: Bool,
-        action: @escaping () -> Void
-    ) {
-        self.title = title
-        self.action = action
-        self.variant = destructive ? .destructive : .neutral
-    }
-    
-    // Ghost button (text only, no background/border)
-    init(
-        _ title: String,
-        ghost: Bool,
-        action: @escaping () -> Void
-    ) {
-        self.title = title
-        self.action = action
-        self.style = ghost ? .ghost : .outlined
-    }
-    
-    // Compact secondary button (not full width)
-    init(
-        _ title: String,
-        compact: Bool,
-        action: @escaping () -> Void
-    ) {
-        self.title = title
-        self.action = action
-        self.fullWidth = !compact
-    }
+
+    func buttonSize(_ s: ButtonSize) -> Self { var c = self; c.size = s; return c }
+    func buttonStyle(_ s: ButtonStyle) -> Self { var c = self; c.style = s; return c }
+    func variant(_ v: ButtonVariant) -> Self { var c = self; c.variant = v; return c }
+    func loading(_ v: Bool) -> Self { var c = self; c.isLoading = v; return c }
+    func enabled(_ v: Bool) -> Self { var c = self; c.isEnabled = v; return c }
+    func fullWidth(_ v: Bool) -> Self { var c = self; c.fullWidth = v; return c }
 }
 
-// MARK: - View Modifiers
-extension SecondaryButton {
-    func buttonSize(_ size: ButtonSize) -> SecondaryButton {
-        var button = self
-        button.size = size
-        return button
+#Preview {
+    VStack(spacing: 12) {
+        SecondaryButton("Neutral (Outlined)") {}
+        SecondaryButton("Neutral (Filled)") {}.buttonStyle(.filled)
+        SecondaryButton("Success") {}.variant(.success)
+        SecondaryButton("Delete") {}.variant(.destructive).buttonStyle(.outlined)
     }
-    
-    func buttonStyle(_ style: ButtonStyle) -> SecondaryButton {
-        var button = self
-        button.style = style
-        return button
-    }
-    
-    func variant(_ variant: ButtonVariant) -> SecondaryButton {
-        var button = self
-        button.variant = variant
-        return button
-    }
-    
-    func loading(_ isLoading: Bool) -> SecondaryButton {
-        var button = self
-        button.isLoading = isLoading
-        return button
-    }
-    
-    func enabled(_ isEnabled: Bool) -> SecondaryButton {
-        var button = self
-        button.isEnabled = isEnabled
-        return button
-    }
-    
-    func fullWidth(_ fullWidth: Bool) -> SecondaryButton {
-        var button = self
-        button.fullWidth = fullWidth
-        return button
-    }
-}
-
-// MARK: - Convenience Methods for Common Use Cases
-extension SecondaryButton {
-    // Cancel button (common pattern)
-    static func cancel(action: @escaping () -> Void) -> SecondaryButton {
-        SecondaryButton("Cancel", action: action)
-            .variant(.neutral)
-            .buttonStyle(.ghost)
-    }
-    
-    // Skip button (common in onboarding)
-    static func skip(action: @escaping () -> Void) -> SecondaryButton {
-        SecondaryButton("Skip", action: action)
-            .variant(.neutral)
-            .buttonStyle(.ghost)
-            .buttonSize(.medium)
-    }
-    
-    // Delete button (destructive action)
-    static func delete(action: @escaping () -> Void) -> SecondaryButton {
-        SecondaryButton("Delete", action: action)
-            .variant(.destructive)
-            .buttonStyle(.outlined)
-    }
-    
-    // Maybe Later button (common in permissions)
-    static func maybeLater(action: @escaping () -> Void) -> SecondaryButton {
-        SecondaryButton("Maybe Later", action: action)
-            .variant(.neutral)
-            .buttonStyle(.outlined)
-    }
-}
-
-// MARK: - Previews
-#Preview("Secondary Button States") {
-    VStack(spacing: 20) {
-        Group {
-            // Standard states
-            SecondaryButton("Maybe Later") {}
-            
-            SecondaryButton("Loading...") {}
-                .loading(true)
-            
-            SecondaryButton("Disabled") {}
-                .enabled(false)
-            
-            // Different variants
-            SecondaryButton("Neutral") {}
-                .variant(.neutral)
-            
-            SecondaryButton("Destructive") {}
-                .variant(.destructive)
-            
-            SecondaryButton("Success") {}
-                .variant(.success)
-            
-            // Different styles
-            SecondaryButton("Outlined") {}
-                .buttonStyle(.outlined)
-            
-            SecondaryButton("Filled") {}
-                .buttonStyle(.filled)
-            
-            SecondaryButton("Ghost") {}
-                .buttonStyle(.ghost)
-            
-            // Different sizes
-            SecondaryButton("Large") {}
-                .buttonSize(.large)
-            
-            SecondaryButton("Medium") {}
-                .buttonSize(.medium)
-            
-            SecondaryButton("Small") {}
-                .buttonSize(.small)
-            
-            // Common patterns
-            SecondaryButton.cancel {}
-            SecondaryButton.skip {}
-            SecondaryButton.delete {}
-            SecondaryButton.maybeLater {}
-        }
-    }
-    .padding(20)
-    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
-}
-
-#Preview("Button Combinations") {
-    VStack(spacing: 16) {
-        VStack(spacing: 12) {
-            PrimaryButton("Get Started") {}
-            SecondaryButton("Maybe Later") {}
-        }
-        
-        Divider()
-        
-        // Action + Cancel combination
-        HStack(spacing: 12) {
-            SecondaryButton("Cancel") {}
-                .buttonStyle(.ghost)
-            
-            PrimaryButton("Save Changes") {}
-        }
-        
-        Divider()
-        
-        // Destructive action pattern
-        VStack(spacing: 12) {
-            SecondaryButton("Delete Routine") {}
-                .variant(.destructive)
-                .buttonStyle(.outlined)
-            
-            SecondaryButton("Cancel") {}
-                .buttonStyle(.ghost)
-        }
-    }
-    .padding(20)
-    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
-}
-
-#Preview("Dark Mode") {
-    VStack(spacing: 20) {
-        SecondaryButton("Maybe Later") {}
-        SecondaryButton("Delete") {}
-            .variant(.destructive)
-        SecondaryButton("Cancel") {}
-            .buttonStyle(.ghost)
-    }
-    .padding(20)
-    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+    .padding()
+    .background(PredefinedThemes.classic.heroBackground.ignoresSafeArea())
+    .environment(\.themeManager, ThemeManager.preview())
     .preferredColorScheme(.dark)
 }

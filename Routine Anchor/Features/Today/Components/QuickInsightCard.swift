@@ -2,69 +2,63 @@
 //  QuickInsightCard.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/21/25.
+//  Tiny “what’s next/current” insight card. Fully tokenized.
 //
+
 import SwiftUI
 import UserNotifications
 
-// MARK: - Quick Insight Card
 struct QuickInsightCard: View {
     let title: String
     let subtitle: String
     let timeText: String
     let color: Color
-    
+
     @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
-        // Pull once for clean token usage
-        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
-        let scheme = theme.colorScheme
-        
-        return ThemedCard(cornerRadius: 12) {
+        ThemedCard(cornerRadius: 12) {
             HStack(spacing: 12) {
                 // Icon
                 ZStack {
                     Circle()
-                        .fill(color.opacity(scheme.ringOuterAlpha)) // consistent with ring alpha
+                        .fill(color.opacity(0.25))
                         .frame(width: 36, height: 36)
-                    
                     Image(systemName: "clock.arrow.circlepath")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(color)
                 }
-                
+
                 // Content
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(theme.secondaryTextColor)
                         .lineLimit(1)
-                    
+
                     Text(subtitle)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(theme.primaryTextColor)
                         .lineLimit(1)
                 }
-                
+
                 Spacer()
-                
-                // Time
+
+                // Time pill
                 Text(timeText)
                     .font(.system(size: 12, weight: .medium, design: .monospaced))
                     .foregroundStyle(color)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(
-                        Capsule().fill(color.opacity(0.15))
-                    )
+                    .background(Capsule().fill(color.opacity(0.15)))
             }
         }
-        // Consistent border with other cards
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
+                .stroke(theme.borderColor.opacity(0.8), lineWidth: 1)
         )
         .scaleEffect(isVisible ? 1 : 0.8)
         .opacity(isVisible ? 1 : 0)

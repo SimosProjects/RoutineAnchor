@@ -2,151 +2,120 @@
 //  NavigationButton.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/21/25.
-//
-import SwiftUI
-import UserNotifications
 
-// MARK: - Navigation Button
+import SwiftUI
+
+/// Small icon button for toolbars / floating actions.
 struct NavigationButton: View {
     let icon: String
-    let style: NavigationButtonStyle
+    let style: Style
     let action: () -> Void
-    
+
     @Environment(\.themeManager) private var themeManager
     @State private var isPressed = false
-    
-    enum NavigationButtonStyle {
-        case primary
-        case secondary
-        case accent
-        case success
-        
-        // Map to ThemedButton style
-        var themedButtonStyle: ThemedButton.ButtonStyle {
-            switch self {
-            case .primary, .success:
-                return .primary
-            case .secondary:
-                return .secondary
-            case .accent:
-                return .accent
-            }
-        }
-    }
-    
-    // Theme color helpers
-    private var themePrimaryText: Color {
-        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-    }
-    
-    private var themeGradient: LinearGradient {
-        guard let theme = themeManager?.currentTheme else {
-            return Theme.defaultTheme.backgroundGradient
-        }
-        
-        switch style {
-        case .primary:
-            return LinearGradient(
-                colors: [theme.buttonPrimaryColor, theme.buttonSecondaryColor],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        case .secondary:
-            return LinearGradient(
-                colors: [theme.colorScheme.uiElementPrimary.color, theme.colorScheme.uiElementSecondary.color],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        case .accent:
-            return LinearGradient(
-                colors: [theme.buttonAccentColor, theme.buttonPrimaryColor],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        case .success:
-            return LinearGradient(
-                colors: [theme.colorScheme.actionSuccess.color, theme.colorScheme.creativeSecondary.color],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-    }
-    
-    private var shadowColor: Color {
-        guard let theme = themeManager?.currentTheme else {
-            return Theme.defaultTheme.buttonPrimaryColor.opacity(0.3)
-        }
-        
-        switch style {
-        case .primary:
-            return theme.buttonPrimaryColor.opacity(0.3)
-        case .secondary:
-            return theme.colorScheme.uiElementPrimary.color.opacity(0.3)
-        case .accent:
-            return theme.buttonAccentColor.opacity(0.3)
-        case .success:
-            return theme.colorScheme.actionSuccess.color.opacity(0.3)
-        }
-    }
-    
+
+    enum Style { case primary, secondary, accent, success }
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
-        Button(action: {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                isPressed = true
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    isPressed = false
-                }
+        Button {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) { isPressed = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) { isPressed = false }
                 action()
             }
-        }) {
+        } label: {
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(themePrimaryText)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(foreground)
                 .frame(width: 40, height: 40)
-                .background(themeGradient)
-                .cornerRadius(12)
-                .shadow(color: shadowColor, radius: 8, x: 0, y: 4)
-                .scaleEffect(isPressed ? 0.95 : 1)
+                .background(background)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(border, lineWidth: borderWidth)
+                )
+                .shadow(color: shadow, radius: isPressed ? 6 : 10, x: 0, y: isPressed ? 3 : 5)
+                .scaleEffect(isPressed ? 0.94 : 1.0)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Style mapping
+
+    private var background: AnyShapeStyle {
+        switch style {
+        case .primary:
+            return AnyShapeStyle(theme.actionPrimaryGradient)
+        case .accent:
+            return AnyShapeStyle(
+                LinearGradient(colors: [theme.accentPrimaryColor, theme.accentSecondaryColor],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+            )
+        case .success:
+            return AnyShapeStyle(
+                LinearGradient(colors: [theme.statusSuccessColor, theme.accentSecondaryColor],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+            )
+        case .secondary:
+            return AnyShapeStyle(theme.surfaceCardColor.opacity(0.35))
+        }
+    }
+
+    private var foreground: Color {
+        switch style {
+        case .secondary: return theme.primaryTextColor
+        default:         return theme.invertedTextColor
+        }
+    }
+
+    private var border: Color {
+        style == .secondary ? theme.borderColor.opacity(0.9) : .clear
+    }
+
+    private var borderWidth: CGFloat {
+        style == .secondary ? 1 : 0
+    }
+
+    private var shadow: Color {
+        switch style {
+        case .primary:  return theme.accentPrimaryColor.opacity(0.35)
+        case .accent:   return theme.accentSecondaryColor.opacity(0.35)
+        case .success:  return theme.statusSuccessColor.opacity(0.35)
+        case .secondary:return .black.opacity(0.18)
         }
     }
 }
 
-// MARK: - Convenience Initializers
+// Convenience initializers
 extension NavigationButton {
-    // Primary navigation button (default)
-    init(
-        icon: String,
-        action: @escaping () -> Void
-    ) {
+    init(icon: String, action: @escaping () -> Void) {
         self.icon = icon
         self.style = .primary
         self.action = action
     }
-    
-    // Secondary navigation button
-    static func secondary(
-        icon: String,
-        action: @escaping () -> Void
-    ) -> NavigationButton {
+
+    static func secondary(icon: String, action: @escaping () -> Void) -> NavigationButton {
         NavigationButton(icon: icon, style: .secondary, action: action)
     }
-    
-    // Accent navigation button
-    static func accent(
-        icon: String,
-        action: @escaping () -> Void
-    ) -> NavigationButton {
+    static func accent(icon: String, action: @escaping () -> Void) -> NavigationButton {
         NavigationButton(icon: icon, style: .accent, action: action)
     }
-    
-    static func success(
-        icon: String,
-        action: @escaping () -> Void
-    ) -> NavigationButton {
+    static func success(icon: String, action: @escaping () -> Void) -> NavigationButton {
         NavigationButton(icon: icon, style: .success, action: action)
     }
+}
+
+#Preview {
+    HStack(spacing: 12) {
+        NavigationButton(icon: "arrow.right") {}
+        NavigationButton.secondary(icon: "gear") {}
+        NavigationButton.accent(icon: "star") {}
+        NavigationButton.success(icon: "checkmark") {}
+    }
+    .padding()
+    .background(PredefinedThemes.classic.heroBackground.ignoresSafeArea())
+    .environment(\.themeManager, ThemeManager.preview())
+    .preferredColorScheme(.dark)
 }

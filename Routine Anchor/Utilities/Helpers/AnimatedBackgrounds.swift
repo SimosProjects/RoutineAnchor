@@ -70,3 +70,63 @@ struct AnimatedMeshBackground: View {
     }
 }
 
+struct ThemedAnimatedBackground: View {
+    @Environment(\.themeManager) private var themeManager
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
+    // Simple animation phase
+    @State private var phase: Double = 0
+
+    var body: some View {
+        ZStack {
+            theme.heroBackground
+
+            // Subtle animated “aurora” blobs
+            TimelineView(.animation) { context in
+                let t = context.date.timeIntervalSinceReferenceDate
+                ZStack {
+                    auroraBlob(color: theme.accentPrimaryColor.opacity(0.18),
+                               size: 280,
+                               x: sin(t / 7.0) * 80,
+                               y: cos(t / 9.0) * 60)
+
+                    auroraBlob(color: theme.accentSecondaryColor.opacity(0.16),
+                               size: 320,
+                               x: cos(t / 6.0) * 90,
+                               y: sin(t / 8.0) * 70)
+
+                    auroraBlob(color: theme.statusInfoColor.opacity(0.10),
+                               size: 360,
+                               x: sin(t / 5.0) * -70,
+                               y: cos(t / 7.0) * -60)
+                }
+                .compositingGroup()
+                .blendMode(.plusLighter)
+                .allowsHitTesting(false)
+                .animation(.linear(duration: 1.0), value: t)
+            }
+
+            // Gentle vignette to keep edges readable
+            LinearGradient(
+                colors: [Color.black.opacity(0.35), .clear, Color.black.opacity(0.35)],
+                startPoint: .top, endPoint: .bottom
+            )
+            .allowsHitTesting(false)
+        }
+        .onAppear {
+            withAnimation(.linear(duration: 12).repeatForever(autoreverses: true)) {
+                phase = 1
+            }
+        }
+    }
+
+    // MARK: - Pieces
+
+    private func auroraBlob(color: Color, size: CGFloat, x: Double, y: Double) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: size, height: size)
+            .blur(radius: 80)
+            .offset(x: x, y: y)
+    }
+}

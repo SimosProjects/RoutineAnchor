@@ -2,129 +2,74 @@
 //  TaskBreakdownRow.swift
 //  Routine Anchor
 //
-//  Task breakdown row component for Daily Summary
+//  Compact row used in Daily Summary's "Task Breakdown" card.
+//  - Migrated to semantic Theme tokens
 //
+
 import SwiftUI
 
 struct TaskBreakdownRow: View {
     @Environment(\.themeManager) private var themeManager
     let timeBlock: TimeBlock
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         HStack(spacing: 12) {
             // Status indicator
             StatusIndicatorView(status: timeBlock.status)
                 .frame(width: 24, height: 24)
-            
+
             // Content
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     if let icon = timeBlock.icon {
-                        Text(icon)
-                            .font(.system(size: 14))
+                        Text(icon).font(.system(size: 14))
                     }
-                    
+
                     Text(timeBlock.title)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                        .foregroundStyle(theme.primaryTextColor)
                         .lineLimit(1)
                 }
-                
+
                 Text(timeBlock.shortFormattedTimeRange)
                     .font(.system(size: 12, weight: .medium, design: .monospaced))
-                    .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                    .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
             }
-            
+
             Spacer()
-            
+
             // Duration and status
             VStack(alignment: .trailing, spacing: 2) {
                 Text(timeBlock.formattedDuration)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
-                
+                    .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
+
                 Text(timeBlock.status.shortDisplayName)
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(statusColor(for: timeBlock.status, themeManager: themeManager))
+                    .foregroundStyle(statusColor(for: timeBlock.status))
             }
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
+                .fill(theme.color.surface.card.opacity(0.55))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(statusColor(for: timeBlock.status, themeManager: themeManager).opacity(0.2), lineWidth: 1)
+                .stroke(statusColor(for: timeBlock.status).opacity(0.25), lineWidth: 1)
         )
     }
-}
 
-// MARK: - Preview
-#Preview("Task Breakdown Row") {
-    ZStack {
-        ThemedAnimatedBackground()
-            .ignoresSafeArea()
-        
-        VStack(spacing: 8) {
-            // Sample completed task
-            TaskBreakdownRow(
-                timeBlock: {
-                    let today = Date()
-                    let startTime = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: today)!
-                    let endTime = Calendar.current.date(byAdding: .hour, value: 1, to: startTime)!
-                    
-                    let block = TimeBlock(
-                        title: "Morning Routine",
-                        startTime: startTime,
-                        endTime: endTime,
-                        icon: "☕",
-                        category: "Personal"
-                    )
-                    block.status = .completed
-                    return block
-                }()
-            )
-            
-            // Sample in progress task
-            TaskBreakdownRow(
-                timeBlock: {
-                    let today = Date()
-                    let startTime = Calendar.current.date(bySettingHour: 10, minute: 0, second: 0, of: today)!
-                    let endTime = Calendar.current.date(byAdding: .hour, value: 3, to: startTime)!
-                    
-                    let block = TimeBlock(
-                        title: "Project Work",
-                        startTime: startTime,
-                        endTime: endTime,
-                        icon: "💼",
-                        category: "Work"
-                    )
-                    block.status = .inProgress
-                    return block
-                }()
-            )
+    // MARK: - Status → Color
 
-            // Sample skipped task
-            TaskBreakdownRow(
-                timeBlock: {
-                    let today = Date()
-                    let startTime = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: today)!
-                    let endTime = Calendar.current.date(byAdding: .hour, value: 1, to: startTime)!
-                    
-                    let block = TimeBlock(
-                        title: "Gym Session",
-                        startTime: startTime,
-                        endTime: endTime,
-                        icon: "🏋️",
-                        category: "Health"
-                    )
-                    block.status = .skipped
-                    return block
-                }()
-            )
-
+    private func statusColor(for status: BlockStatus) -> Color {
+        switch status {
+        case .notStarted: return theme.secondaryTextColor
+        case .inProgress: return theme.accentPrimaryColor
+        case .completed:  return theme.statusSuccessColor
+        case .skipped:    return theme.statusWarningColor
         }
-        .padding()
     }
 }

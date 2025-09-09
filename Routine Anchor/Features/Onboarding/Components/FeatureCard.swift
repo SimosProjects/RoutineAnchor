@@ -17,19 +17,15 @@ struct FeatureCard: View {
     @State private var isVisible = false
     @State private var isPressed = false
 
-    // Theme helpers
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     private var iconGradient: LinearGradient {
-        let base = tint ?? scheme.workflowPrimary.color
-        let mate = tint == nil ? scheme.creativeSecondary.color : base.opacity(0.7)
+        let base = tint ?? theme.accentPrimaryColor
+        let mate = tint == nil ? theme.accentSecondaryColor : base.opacity(0.7)
         return LinearGradient(colors: [base, mate], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 
-    private var borderColor: Color {
-        (tint ?? scheme.workflowPrimary.color).opacity(0.28)
-    }
+    private var borderTint: Color { (tint ?? theme.accentPrimaryColor).opacity(0.28) }
 
     var body: some View {
         ThemedCard(cornerRadius: 16) {
@@ -41,9 +37,9 @@ struct FeatureCard: View {
                     .overlay(
                         Image(systemName: icon)
                             .font(.system(size: 22, weight: .medium))
-                            .foregroundStyle(theme.primaryTextColor)
+                            .foregroundStyle(theme.invertedTextColor)
                     )
-                    .shadow(color: (tint ?? scheme.workflowPrimary.color).opacity(0.35), radius: 10, x: 0, y: 6)
+                    .shadow(color: (tint ?? theme.accentPrimaryColor).opacity(0.35), radius: 10, x: 0, y: 6)
 
                 // Copy
                 VStack(alignment: .leading, spacing: 4) {
@@ -64,7 +60,7 @@ struct FeatureCard: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(borderColor, lineWidth: 1)
+                .stroke(borderTint, lineWidth: 1)
         )
         .scaleEffect(isPressed ? 0.98 : 1)
         .opacity(isVisible ? 1 : 0)

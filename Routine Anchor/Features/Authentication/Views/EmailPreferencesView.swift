@@ -4,13 +4,17 @@
 //
 //  Email preferences and subscription management
 //
+
 import SwiftUI
 
 struct EmailPreferencesView: View {
     @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authManager: AuthenticationManager
-    
+
+    // Theme shortcut (falls back to Classic)
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     // MARK: - State
     @State private var marketingEmails = true
     @State private var productUpdates = true
@@ -18,28 +22,18 @@ struct EmailPreferencesView: View {
     @State private var showingUnsubscribeConfirmation = false
     @State private var isLoading = false
     @State private var showingSuccess = false
-    
+
     var body: some View {
         ZStack {
-            // Background
-            ThemedAnimatedBackground()
-                .ignoresSafeArea()
-            
+            // Screen background from theme (hero gradient + vignette)
+            theme.heroBackground.ignoresSafeArea()
+
             ScrollView {
                 VStack(spacing: 32) {
-                    // Header
                     headerSection
-                    
-                    // Email Display
                     emailDisplaySection
-                    
-                    // Preferences
                     preferencesSection
-                    
-                    // Actions
                     actionsSection
-                    
-                    // Unsubscribe
                     unsubscribeSection
                 }
                 .padding(.horizontal, 24)
@@ -49,15 +43,12 @@ struct EmailPreferencesView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
-                    dismiss()
-                }
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                Button("Cancel") { dismiss() }
+                    .foregroundStyle(theme.primaryTextColor)
+                    .buttonStyle(.plain)
             }
         }
-        .onAppear {
-            loadPreferences()
-        }
+        .onAppear(perform: loadPreferences)
         .alert("Preferences Saved", isPresented: $showingSuccess) {
             Button("OK") { dismiss() }
         } message: {
@@ -68,215 +59,203 @@ struct EmailPreferencesView: View {
             isPresented: $showingUnsubscribeConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Unsubscribe", role: .destructive) {
-                unsubscribeFromAll()
-            }
+            Button("Unsubscribe", role: .destructive, action: unsubscribeFromAll)
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This will remove your email from all communications. You can always re-subscribe later in Settings.")
         }
     }
-    
-    // MARK: - Header Section
+
+    // MARK: - Header
+
     private var headerSection: some View {
         VStack(spacing: 16) {
             Image(systemName: "envelope.badge")
                 .font(.system(size: 50, weight: .medium))
                 .foregroundStyle(
-                    LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+                    LinearGradient(colors: [theme.accentPrimaryColor, theme.accentSecondaryColor],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing)
                 )
-            
+
             VStack(spacing: 8) {
                 Text("Email Preferences")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                
+                    .foregroundStyle(theme.primaryTextColor)
+
                 Text("Choose what you'd like to receive from us")
                     .font(.system(size: 16))
-                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
+                    .foregroundStyle(theme.secondaryTextColor.opacity(0.8))
                     .multilineTextAlignment(.center)
             }
         }
     }
-    
-    // MARK: - Email Display Section
+
+    // MARK: - Email Display
+
     private var emailDisplaySection: some View {
         VStack(spacing: 12) {
             HStack {
                 Image(systemName: "person.circle")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
-                
+                    .foregroundStyle(theme.accentPrimaryColor)
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Email Address")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
-                    
+                        .foregroundStyle(theme.secondaryTextColor.opacity(0.7))
+
                     Text(authManager.userEmail ?? "No email")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                        .foregroundStyle(theme.primaryTextColor)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 16))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                    .foregroundStyle(theme.statusSuccessColor)
             }
             .padding(16)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), lineWidth: 1)
-                    )
+                // Glassy card with subtle border
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.ultraThinMaterial)
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(theme.borderColor, lineWidth: 1)
+                }
             )
         }
     }
-    
-    // MARK: - Preferences Section
+
+    // MARK: - Preferences
+
     private var preferencesSection: some View {
         VStack(spacing: 20) {
             Text("Email Types")
                 .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(theme.primaryTextColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            
+
             VStack(spacing: 16) {
                 EmailPreferenceToggle(
                     icon: "lightbulb.fill",
                     title: "Productivity Tips",
                     description: "Weekly productivity insights",
                     isOn: $coursesAndTips,
-                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+                    color: theme.statusWarningColor   // semantic: guidance/tips
                 )
-                
                 EmailPreferenceToggle(
                     icon: "app.badge",
                     title: "Product Updates",
                     description: "New features and announcements",
                     isOn: $productUpdates,
-                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+                    color: theme.accentPrimaryColor   // semantic: main accent
                 )
-                
                 EmailPreferenceToggle(
                     icon: "graduationcap.fill",
                     title: "Development Courses",
                     description: "iOS app building tutorials",
                     isOn: $marketingEmails,
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+                    color: theme.statusSuccessColor   // semantic: positive/education
                 )
             }
         }
     }
-    
-    // MARK: - Actions Section
+
+    // MARK: - Actions
+
     private var actionsSection: some View {
         VStack(spacing: 16) {
             Button(action: savePreferences) {
                 HStack {
                     if isLoading {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                        ProgressView().scaleEffect(0.8)
                     } else {
                         Text("Save Preferences")
                             .font(.system(size: 16, weight: .semibold))
                     }
                 }
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(theme.invertedTextColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .background(
-                    LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+                    LinearGradient(colors: [theme.accentPrimaryColor, theme.accentSecondaryColor],
+                                   startPoint: .leading, endPoint: .trailing)
                 )
-                .cornerRadius(12)
-                .disabled(isLoading)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .shadow(color: theme.accentPrimaryColor.opacity(0.25), radius: 10, x: 0, y: 5)
             }
-            
+            .buttonStyle(.plain)
+            .disabled(isLoading)
+
             Text("We respect your privacy and will never spam you. You can change these preferences anytime.")
                 .font(.system(size: 12))
-                .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                 .multilineTextAlignment(.center)
         }
     }
-    
-    // MARK: - Unsubscribe Section
+
+    // MARK: - Unsubscribe
+
     private var unsubscribeSection: some View {
         VStack(spacing: 16) {
-            Divider()
-                .background((themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color))
-            
+            Divider().background(theme.borderColor)
+
             VStack(spacing: 12) {
                 Text("Don't want any emails?")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
-                
+                    .foregroundStyle(theme.primaryTextColor.opacity(0.8))
+
                 Button("Unsubscribe from All") {
                     showingUnsubscribeConfirmation = true
                 }
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                .foregroundStyle(theme.statusWarningColor)
+                .buttonStyle(.plain)
             }
         }
     }
-    
-    // MARK: - Actions
+
+    // MARK: - Logic
+
+    /// Loads persisted user preferences (defaults to `true` if never set).
     private func loadPreferences() {
-        marketingEmails = UserDefaults.standard.bool(forKey: "emailPref_marketing")
-        productUpdates = UserDefaults.standard.bool(forKey: "emailPref_productUpdates")
-        coursesAndTips = UserDefaults.standard.bool(forKey: "emailPref_courses")
-        
-        // Default to true if never set
-        if !UserDefaults.standard.objectExists(forKey: "emailPref_marketing") {
-            marketingEmails = true
-        }
-        if !UserDefaults.standard.objectExists(forKey: "emailPref_productUpdates") {
-            productUpdates = true
-        }
-        if !UserDefaults.standard.objectExists(forKey: "emailPref_courses") {
-            coursesAndTips = true
-        }
+        let d = UserDefaults.standard
+
+        // Read booleans (default to true if the key doesn't exist)
+        marketingEmails = d.objectExists(forKey: "emailPref_marketing") ? d.bool(forKey: "emailPref_marketing") : true
+        productUpdates = d.objectExists(forKey: "emailPref_productUpdates") ? d.bool(forKey: "emailPref_productUpdates") : true
+        coursesAndTips = d.objectExists(forKey: "emailPref_courses") ? d.bool(forKey: "emailPref_courses") : true
     }
-    
+
     private func savePreferences() {
         isLoading = true
-        
-        // Simulate API call delay
+
+        // Simulate API write with a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             authManager.updateEmailPreferences(
                 marketing: marketingEmails,
                 productUpdates: productUpdates,
                 courses: coursesAndTips
             )
-            
+
             isLoading = false
             HapticManager.shared.anchorSuccess()
-            
-            // Dismiss after successful save
-            dismiss()
+            showingSuccess = true
         }
     }
-    
+
     private func unsubscribeFromAll() {
         marketingEmails = false
         productUpdates = false
         coursesAndTips = false
-        
         savePreferences()
     }
 }
 
-// MARK: - Email Preference Toggle
+// MARK: - Email Preference Toggle Row
+
+/// Compact, glassy toggle row used in the preferences list.
 struct EmailPreferenceToggle: View {
     @Environment(\.themeManager) private var themeManager
     let icon: String
@@ -284,79 +263,72 @@ struct EmailPreferenceToggle: View {
     let description: String
     @Binding var isOn: Bool
     let color: Color
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         VStack(spacing: 0) {
-            // Header row with title and toggle
+            // Title row
             HStack(spacing: 12) {
-                // Icon
                 ZStack {
-                    Circle()
-                        .fill(color.opacity(0.15))
-                        .frame(width: 36, height: 36)
-                    
+                    Circle().fill(color.opacity(0.15)).frame(width: 36, height: 36)
                     Image(systemName: icon)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(color)
                 }
-                
-                // Title - allow it to expand and shrink as needed
+
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                    .foregroundStyle(theme.primaryTextColor)
                     .lineLimit(1)
-                    .layoutPriority(1) // Give title priority over spacer
-                    .minimumScaleFactor(0.8) // Allow slight text scaling if needed
-                
-                Spacer(minLength: 20) // Ensure minimum space between title and toggle
-                
-                // Toggle
+                    .layoutPriority(1)
+                    .minimumScaleFactor(0.8)
+
+                Spacer(minLength: 20)
+
                 Toggle("", isOn: $isOn)
                     .toggleStyle(SwitchToggleStyle(tint: color))
-                    .fixedSize() // Prevent toggle from being compressed
+                    .fixedSize()
             }
-            
-            // Description row (separate, full width) - THIS WAS MISSING
+
+            // Description row
             if !description.isEmpty {
                 HStack {
                     Text(description)
                         .font(.system(size: 13))
-                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
-                        .lineLimit(2)
+                        .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                         .multilineTextAlignment(.leading)
-                    
+                        .lineLimit(2)
                     Spacer()
                 }
                 .padding(.top, 8)
-                .padding(.leading, 48) // Align with title text (icon width + spacing)
+                .padding(.leading, 48) // aligns under title (icon 36 + 12 spacing)
             }
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(
-                            isOn ? color.opacity(0.3) : Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color),
-                            lineWidth: 1
-                        )
-                )
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.ultraThinMaterial)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(isOn ? color.opacity(0.30) : theme.borderColor, lineWidth: 1)
+            }
         )
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isOn)
     }
 }
 
-// MARK: - UserDefaults Helper Extension
+// MARK: - UserDefaults small helper
+
 extension UserDefaults {
     func objectExists(forKey defaultName: String) -> Bool {
-        return object(forKey: defaultName) != nil
+        object(forKey: defaultName) != nil
     }
 }
 
 #Preview {
     NavigationStack {
         EmailPreferencesView()
+            .environment(\.themeManager, ThemeManager.preview())
             .environmentObject(AuthenticationManager())
     }
 }

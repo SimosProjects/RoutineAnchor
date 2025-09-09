@@ -2,93 +2,91 @@
 //  DataManagementSection.swift
 //  Routine Anchor
 //
+//  Data & privacy actions.
+//
 
 import SwiftUI
 
 struct DataManagementSection: View {
     @Environment(\.themeManager) private var themeManager
-    
+
     let onExportData: () -> Void
     let onImportData: () -> Void
     let onShowPrivacyPolicy: () -> Void
     let onClearTodaysSchedule: () -> Void
     let onDeleteAllData: () -> Void
-    
-    /// If false, taps will call actions immediately without showing confirmations.
+
+    /// If false, taps call actions immediately without confirmations.
     var showsConfirmations: Bool = true
-    
-    // MARK: - State
+
+    // Theme
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
+    // State
     @State private var showingClearTodayConfirmation = false
     @State private var showingDeleteConfirmation = false
     @State private var deleteButtonScale: CGFloat = 1.0
     @State private var clearTodayButtonScale: CGFloat = 1.0
-    
+
     var body: some View {
         SettingsSection(
             title: "Data & Privacy",
             icon: "shield.checkered",
-            color: themeManager?.currentTheme.colorScheme.organizationAccent.color
-                ?? Theme.defaultTheme.colorScheme.organizationAccent.color
+            color: theme.accentSecondaryColor
         ) {
             VStack(spacing: 16) {
-                // Export data button
+                // Export
                 SettingsButton(
                     title: "Export My Data",
                     subtitle: "Download your routine data",
                     icon: "square.and.arrow.up",
-                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color
-                        ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                    // old: workflowPrimary → new: accentPrimary
+                    color: theme.accentPrimaryColor,
                     action: {
                         HapticManager.shared.lightImpact()
                         onExportData()
                     }
                 )
-                
-                // Import data button
+
+                // Import
                 SettingsButton(
                     title: "Import Data",
                     subtitle: "Restore from backup file",
                     icon: "square.and.arrow.down",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color
-                        ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: theme.statusSuccessColor,
                     action: {
                         HapticManager.shared.lightImpact()
                         onImportData()
                     }
                 )
-                
-                // Privacy policy button
+
+                // Privacy policy
                 SettingsButton(
                     title: "Privacy Policy",
                     subtitle: "How we protect your data",
                     icon: "hand.raised",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color
-                        ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: theme.statusInfoColor,
                     action: {
                         HapticManager.shared.lightImpact()
                         onShowPrivacyPolicy()
                     }
                 )
-                
+
                 // Data storage info
                 dataStorageInfo
-                
+
                 // Divider
                 Rectangle()
-                    .fill(
-                        themeManager?.currentTheme.colorScheme.uiElementSecondary.color
-                            ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color
-                    )
+                    .fill(theme.borderColor.opacity(0.5))
                     .frame(height: 1)
                     .padding(.vertical, 4)
-                
-                // Clear Today's Schedule button
+
+                // Clear today's schedule
                 SettingsButton(
                     title: "Clear Today's Schedule",
                     subtitle: "Delete all time blocks for today",
                     icon: "calendar.badge.minus",
-                    color: themeManager?.currentTheme.colorScheme.warningColor.color
-                        ?? Theme.defaultTheme.colorScheme.warningColor.color,
+                    color: theme.statusWarningColor,
                     action: {
                         HapticManager.shared.warning()
                         if showsConfirmations {
@@ -100,14 +98,13 @@ struct DataManagementSection: View {
                 )
                 .accessibilityIdentifier("ClearTodaysScheduleButton")
                 .scaleEffect(clearTodayButtonScale)
-                
-                // Delete all data button
+
+                // Delete all data
                 SettingsButton(
                     title: "Delete All Data",
                     subtitle: "Permanently remove everything",
                     icon: "trash",
-                    color: themeManager?.currentTheme.colorScheme.errorColor.color
-                        ?? Theme.defaultTheme.colorScheme.errorColor.color,
+                    color: theme.statusErrorColor,
                     action: {
                         HapticManager.shared.warning()
                         if showsConfirmations {
@@ -156,53 +153,48 @@ struct DataManagementSection: View {
                 }
             }
             .accessibilityIdentifier("ConfirmDeleteAllData")
-            
+
             Button("Cancel", role: .cancel) {}
         }
     }
-    
+
     // MARK: - Data Storage Info
+
     private var dataStorageInfo: some View {
-        let wp = (themeManager?.currentTheme.colorScheme.workflowPrimary.color
-                  ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
-        
+        let accent = theme.accentPrimaryColor
+
         return HStack(spacing: 12) {
             Image(systemName: "internaldrive")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(wp.opacity(0.8)) // fixed precedence
-            
+                .foregroundStyle(accent.opacity(0.8))
+
             VStack(alignment: .leading, spacing: 4) {
                 Text("Local Storage Only")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor
-                                     ?? Theme.defaultTheme.primaryTextColor)
-                
+                    .foregroundStyle(theme.primaryTextColor)
+
                 Text("All data is stored securely on your device")
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor
-                                     ?? Theme.defaultTheme.secondaryTextColor)
+                    .foregroundStyle(theme.secondaryTextColor)
             }
-            
+
             Spacer()
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(wp.opacity(0.1))
+                .fill(accent.opacity(0.10))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(wp.opacity(0.2), lineWidth: 1)
+                .stroke(accent.opacity(0.20), lineWidth: 1)
         )
     }
 }
 
-// MARK: - Preview
 #Preview {
     ZStack {
-        ThemedAnimatedBackground()
-            .ignoresSafeArea()
-        
+        PredefinedThemes.classic.heroBackground.ignoresSafeArea()
         ScrollView {
             DataManagementSection(
                 onExportData: { print("Export data") },
@@ -215,4 +207,6 @@ struct DataManagementSection: View {
             .padding()
         }
     }
+    .environment(\.themeManager, ThemeManager.preview())
+    .preferredColorScheme(.dark)
 }

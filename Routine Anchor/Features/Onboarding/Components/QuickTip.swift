@@ -2,8 +2,7 @@
 //  QuickTip.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/20/25.
-//
+
 import SwiftUI
 import UserNotifications
 
@@ -11,31 +10,29 @@ struct QuickTip: View {
     let number: String
     let text: String
     let delay: Double
-    
+
     @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         HStack(spacing: 12) {
             Text(number)
                 .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(theme.invertedTextColor)
                 .frame(width: 28, height: 28)
                 .background(
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(red: 0.2, green: 0.8, blue: 0.5), Color(red: 0.2, green: 0.7, blue: 0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                    Circle().fill(
+                        LinearGradient(colors: [theme.statusSuccessColor, theme.accentSecondaryColor],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
                 )
-            
+
             Text(text)
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-            
+                .foregroundStyle(theme.primaryTextColor)
+
             Spacer()
         }
         .opacity(isVisible ? 1 : 0)

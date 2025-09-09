@@ -2,8 +2,7 @@
 //  FeatureRow.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/19/25.
-//
+
 import SwiftUI
 
 struct FeatureRow: View {
@@ -11,24 +10,26 @@ struct FeatureRow: View {
     let icon: String
     let title: String
     let description: String
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(Color.primaryBlue)
+                .foregroundStyle(theme.accentPrimaryColor)
                 .frame(width: 28, height: 28)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
-                    .foregroundColor(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                
+                    .foregroundStyle(theme.primaryTextColor)
+
                 Text(description)
                     .font(TypographyConstants.UI.caption)
-                    .foregroundColor(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                    .foregroundStyle(theme.secondaryTextColor)
             }
-            
+
             Spacer()
         }
     }

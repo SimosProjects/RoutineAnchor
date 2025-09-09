@@ -2,29 +2,26 @@
 //  DurationCard.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/23/25.
-//
+
 import SwiftUI
 
+/// Compact “Duration: Xh Ym” card that adopts the active theme.
+/// Pass an accent `color` to match the context (status or category).
 struct DurationCard: View {
     let minutes: Int
     let color: Color
-    
+
     @Environment(\.themeManager) private var themeManager
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     private var formattedDuration: String {
         let hours = minutes / 60
         let mins = minutes % 60
-
-        if hours > 0 && mins > 0 {
-            return "\(hours)h \(mins)m"
-        } else if hours > 0 {
-            return "\(hours)h"
-        } else {
-            return "\(mins)m"
+        if hours > 0 && mins > 0 { return "\(hours)h \(mins)m" }
+        if hours > 0             { return "\(hours)h" }
+        return "\(mins)m"
         }
-    }
-
+    
     var body: some View {
         HStack {
             Image(systemName: "clock.badge")
@@ -33,7 +30,7 @@ struct DurationCard: View {
 
             Text("Duration:")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(theme.primaryTextColor)
 
             Spacer()
 
@@ -48,8 +45,7 @@ struct DurationCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(color.opacity(0.3), lineWidth: 1)
+                .stroke(color.opacity(0.30), lineWidth: 1)
         )
     }
 }
-

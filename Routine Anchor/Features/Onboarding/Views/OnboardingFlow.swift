@@ -2,6 +2,7 @@
 //  OnboardingFlow.swift
 //  Routine Anchor
 //
+
 import SwiftUI
 import UserNotifications
 
@@ -10,6 +11,8 @@ struct OnboardingFlow: View {
     @Environment(\.themeManager) private var themeManager
     @State private var viewModel = OnboardingViewModel()
     @State private var animationPhase = 0
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     var body: some View {
         GeometryReader { geometry in
@@ -43,16 +46,12 @@ struct OnboardingFlow: View {
                         ForEach(OnboardingViewModel.OnboardingStep.allCases, id: \.self) { step in
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(
-                                    viewModel.currentStep == step ?
-                                    LinearGradient(
-                                        colors: [Color(red: 0.4, green: 0.6, blue: 1.0), Color(red: 0.6, green: 0.4, blue: 1.0)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    ) : LinearGradient(
-                                        colors: [Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
+                                    viewModel.currentStep == step
+                                    ? LinearGradient(colors: [theme.accentPrimaryColor, theme.accentSecondaryColor],
+                                                     startPoint: .leading, endPoint: .trailing)
+                                    : LinearGradient(colors: [theme.secondaryTextColor.opacity(0.35),
+                                                              theme.secondaryTextColor.opacity(0.35)],
+                                                     startPoint: .leading, endPoint: .trailing)
                                 )
                                 .frame(width: viewModel.currentStep == step ? 32 : 8, height: 8)
                                 .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.currentStep)
@@ -82,38 +81,40 @@ struct OnboardingFlow: View {
 struct NotificationPreview: View {
     @Environment(\.themeManager) private var themeManager
     @State private var showNotification = false
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 Image(systemName: "bell.badge.fill")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Color(red: 0.4, green: 0.6, blue: 1.0))
-                
+                    .foregroundStyle(theme.accentPrimaryColor)
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Time for: Morning Routine")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-                    
+                        .foregroundStyle(theme.primaryTextColor)
+
                     Text("Your 7:00 AM block is starting now")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor))
+                        .foregroundStyle(theme.secondaryTextColor)
                 }
-                
+
                 Spacer()
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
-                    .background(
+                    .fill(theme.surfaceCardColor.opacity(0.90))
+                    .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(.ultraThinMaterial)
+                            .fill(theme.glassMaterialOverlay)
                     )
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), lineWidth: 1)
+                    .stroke(theme.borderColor.opacity(0.9), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.3), radius: 15, x: 0, y: 8)
             .scaleEffect(showNotification ? 1 : 0.8)

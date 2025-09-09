@@ -156,7 +156,7 @@ class TemplateManager {
         // Check premium limits
         let userTemplateCount = templates.filter { !$0.isDefault }.count
         
-        if !premiumManager.canCreateTemplate(currentTemplateCount: userTemplateCount) {
+        if !premiumManager.canCreateMoreTemplates(currentCount: userTemplateCount) {
             throw TemplateError.premiumRequired
         }
         
@@ -306,7 +306,7 @@ class TemplateManager {
     
     var canCreateNewTemplate: Bool {
         let userTemplateCount = templates.filter { !$0.isDefault }.count
-        return premiumManager.canCreateTemplate(currentTemplateCount: userTemplateCount)
+        return premiumManager.canCreateMoreTemplates(currentCount: userTemplateCount)
     }
     
     var remainingFreeTemplates: Int {

@@ -2,25 +2,29 @@
 //  TimeBlockRowView.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 8/10/25.
+//  Uses AppTheme semantics:
+//  - surfaceCardColor / borderColor for the container
+//  - accentPrimary/secondary + status colors for accents
 //
+
 import SwiftUI
 
 struct TimeBlockRowView: View {
     @Environment(\.themeManager) private var themeManager
-    
+
     let timeBlock: TimeBlock
     let showActions: Bool
-    let onStart: (() -> Void)?
-    let onComplete: (() -> Void)?
-    let onSkip: (() -> Void)?
-    let onEdit: (() -> Void)?
-    let onDelete: (() -> Void)?
-    
+    let onStart:   (() -> Void)?
+    let onComplete:(() -> Void)?
+    let onSkip:    (() -> Void)?
+    let onEdit:    (() -> Void)?
+    let onDelete:  (() -> Void)?
+
     @State private var isPressed = false
-    @State private var isHovered = false
     @State private var shimmerPhase: CGFloat = 0
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     init(
         timeBlock: TimeBlock,
         showActions: Bool = true,
@@ -38,192 +42,132 @@ struct TimeBlockRowView: View {
         self.onEdit = onEdit
         self.onDelete = onDelete
     }
-    
+
     var body: some View {
         HStack(spacing: 0) {
-            // Left accent bar with animated gradient
+            // Left accent bar
             accentBar
-            
+
             HStack(spacing: 16) {
-                // Time badge with glass effect
                 timeBadge
-                
-                // Main content with enhanced typography
                 mainContent
-                
                 Spacer(minLength: 8)
-                
-                if showActions {
-                    actionButtons
-                }
+                if showActions { actionButtons }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
         .background(backgroundLayer)
-        .overlay(overlayEffects)
-        .shadow(color: shadowColor, radius: 12, x: 0, y: 6)
+        .overlay(overlayStroke)
+        .shadow(color: statusColor.opacity(0.20), radius: 12, x: 0, y: 6)
         .scaleEffect(isPressed ? 0.97 : 1.0)
-        .rotation3DEffect(
-            .degrees(isHovered ? 1 : 0),
-            axis: (x: -1, y: 0, z: 0)
-        )
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
-        .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onAppear {
             withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
                 shimmerPhase = 1
             }
         }
     }
-    
+
     // MARK: - Accent Bar
+
     private var accentBar: some View {
         RoundedRectangle(cornerRadius: 20, style: .continuous)
             .fill(
-                LinearGradient(
-                    colors: accentColors,
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+                LinearGradient(colors: accentColors, startPoint: .topLeading, endPoint: .bottomTrailing)
             )
             .frame(width: 5)
             .overlay(
-                // Animated shimmer effect
+                // Subtle shimmer when in-progress
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [
-                                Color.clear,
-                                (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.3),
-                                Color.clear
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
+                            colors: [.clear, theme.primaryTextColor.opacity(0.30), .clear],
+                            startPoint: .top, endPoint: .bottom
                         )
                     )
                     .offset(y: shimmerPhase * 100 - 50)
                     .opacity(timeBlock.status == .inProgress ? 1 : 0)
             )
     }
-    
+
     // MARK: - Time Badge
+
     private var timeBadge: some View {
         VStack(spacing: 6) {
-            // Enhanced status indicator with pulse animation
             ZStack {
-                // Outer ring
                 Circle()
                     .stroke(
-                        LinearGradient(
-                            colors: [statusColor, statusColor.opacity(0.3)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
+                        LinearGradient(colors: [statusColor, statusColor.opacity(0.3)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing),
                         lineWidth: 2
                     )
                     .frame(width: 42, height: 42)
-                
-                // Inner filled circle with glass effect
+
                 Circle()
                     .fill(
-                        LinearGradient(
-                            colors: [
-                                statusColor.opacity(0.3),
-                                statusColor.opacity(0.1)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
+                        LinearGradient(colors: [statusColor.opacity(0.30), statusColor.opacity(0.10)],
+                                       startPoint: .top, endPoint: .bottom)
                     )
                     .frame(width: 36, height: 36)
                     .overlay(
-                        Circle()
-                            .stroke((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.2), lineWidth: 0.5)
+                        Circle().stroke(theme.primaryTextColor.opacity(0.20), lineWidth: 0.5)
                     )
-                
-                // Icon with shadow
+
                 Image(systemName: timeBlock.status.iconName)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(statusColor)
                     .shadow(color: statusColor.opacity(0.3), radius: 2, x: 0, y: 1)
-                
-                // Pulse animation for in-progress
-                if timeBlock.status == .inProgress {
-                    Circle()
-                        .stroke(statusColor, lineWidth: 2)
-                        .frame(width: 36, height: 36)
-                        .scaleEffect(isPressed ? 1.2 : 1.4)
-                        .opacity(isPressed ? 0.8 : 0)
-                        .animation(
-                            .easeOut(duration: 1.5).repeatForever(autoreverses: false),
-                            value: isPressed
-                        )
-                }
             }
-            
-            // Time display with better typography
+
             VStack(spacing: 2) {
                 Text(timeBlock.startTime.formatted(date: .omitted, time: .shortened))
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [
-                                themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor,
-                                (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.9)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
+                            colors: [theme.primaryTextColor, theme.primaryTextColor.opacity(0.9)],
+                            startPoint: .top, endPoint: .bottom
                         )
                     )
 
                 Text(timeBlock.formattedDuration)
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                    .foregroundStyle(theme.secondaryTextColor)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(
-                        Capsule()
-                            .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ??
-                                   Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.3))
+                        Capsule().fill(theme.surfaceCardColor.opacity(0.30))
                     )
             }
         }
     }
-    
+
     // MARK: - Main Content
+
     private var mainContent: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Title row with icon
             HStack(spacing: 10) {
-                if let icon = timeBlock.icon {
-                    Text(icon)
+                if let emoji = timeBlock.icon {
+                    Text(emoji)
                         .font(.system(size: 24))
-                        .scaleEffect(isHovered ? 1.1 : 1.0)
-                        .animation(.spring(response: 0.3), value: isHovered)
                 }
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text(timeBlock.title)
                         .font(.system(size: 19, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [
-                                    themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor,
-                                    (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.95)
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
+                                colors: [theme.primaryTextColor, theme.primaryTextColor.opacity(0.95)],
+                                startPoint: .leading, endPoint: .trailing
                             )
                         )
                         .lineLimit(1)
-                    
-                    // Category pill if exists
+
                     if let category = timeBlock.category {
                         HStack(spacing: 4) {
                             Image(systemName: "folder.fill")
                                 .font(.system(size: 9, weight: .semibold))
-                            
+
                             Text(category.uppercased())
                                 .font(.system(size: 10, weight: .bold, design: .rounded))
                                 .tracking(0.5)
@@ -233,85 +177,71 @@ struct TimeBlockRowView: View {
                         .padding(.vertical, 3)
                         .background(
                             Capsule()
-                                .fill(categoryColor.opacity(0.2))
-                                .overlay(
-                                    Capsule()
-                                        .stroke(categoryColor.opacity(0.3), lineWidth: 0.5)
-                                )
+                                .fill(categoryColor.opacity(0.20))
+                                .overlay(Capsule().stroke(categoryColor.opacity(0.30), lineWidth: 0.5))
                         )
                     }
                 }
             }
-            
-            // Notes with glass card effect
+
             if let notes = timeBlock.notes, !notes.isEmpty {
                 Text(notes)
                     .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.9))
+                    .foregroundStyle(theme.secondaryTextColor.opacity(0.9))
                     .lineLimit(2)
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.2))
+                            .fill(theme.surfaceCardColor.opacity(0.20))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                                     .stroke(
                                         LinearGradient(
-                                            colors: [
-                                                (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.3),
-                                                (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.1)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
+                                            colors: [theme.borderColor.opacity(0.30), theme.borderColor.opacity(0.10)],
+                                            startPoint: .topLeading, endPoint: .bottomTrailing
                                         ),
                                         lineWidth: 0.5
                                     )
                             )
                     )
             }
-            
-            // Progress indicator for in-progress items
+
             if timeBlock.status == .inProgress {
-                progressBar
+                inlineProgressBar
             }
         }
     }
-    
-    // MARK: - Progress Bar
-    private var progressBar: some View {
-        GeometryReader { geometry in
+
+    // MARK: - Inline Progress
+
+    private var inlineProgressBar: some View {
+        GeometryReader { geo in
             ZStack(alignment: .leading) {
-                // Background track
                 Capsule()
-                    .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.3))
+                    .fill(theme.surfaceCardColor.opacity(0.30))
                     .frame(height: 4)
-                
-                // Progress fill
+
                 Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.6)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: geometry.size.width * progressPercentage, height: 4)
+                    .fill(LinearGradient(colors: [theme.accentPrimaryColor, theme.accentPrimaryColor.opacity(0.7)],
+                                         startPoint: .leading, endPoint: .trailing))
+                    .frame(width: geo.size.width * progressPercentage, height: 4)
                     .animation(.linear(duration: 1), value: progressPercentage)
             }
         }
         .frame(height: 4)
     }
-    
+
     private var progressPercentage: CGFloat {
         guard timeBlock.status == .inProgress else { return 0 }
         let now = Date()
         let total = timeBlock.endTime.timeIntervalSince(timeBlock.startTime)
         let elapsed = now.timeIntervalSince(timeBlock.startTime)
-        return min(max(elapsed / total, 0), 1)
+        return CGFloat(min(max(elapsed / total, 0), 1))
     }
-    
-    // MARK: - Action Buttons
+
+    // MARK: - Actions
+
     @ViewBuilder
     private var actionButtons: some View {
         HStack(spacing: 10) {
@@ -322,225 +252,143 @@ struct TimeBlockRowView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     private var todayViewActions: some View {
         switch timeBlock.status {
         case .notStarted:
-            if let onStart = onStart {
-                TimeBlockActionButton(
-                    icon: "play.fill",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
-                    action: onStart,
-                    isLarge: true
-                )
-            }
+            if let onStart { TimeBlockActionButton(icon: "play.fill", color: theme.statusSuccessColor, action: onStart, isLarge: true) }
         case .inProgress:
             HStack(spacing: 8) {
-                if let onComplete = onComplete {
-                    TimeBlockActionButton(
-                        icon: "checkmark.circle.fill",
-                        color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
-                        action: onComplete,
-                        isLarge: true
-                    )
-                }
-                if let onSkip = onSkip {
-                    TimeBlockActionButton(
-                        icon: "forward.fill",
-                        color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
-                        action: onSkip
-                    )
-                }
+                if let onComplete { TimeBlockActionButton(icon: "checkmark.circle.fill", color: theme.statusSuccessColor, action: onComplete, isLarge: true) }
+                if let onSkip     { TimeBlockActionButton(icon: "forward.fill", color: theme.statusWarningColor, action: onSkip) }
             }
         case .completed, .skipped:
             Image(systemName: timeBlock.status == .completed ? "checkmark.seal.fill" : "forward.circle.fill")
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: timeBlock.status == .completed
-                            ? [themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color, themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color.opacity(0.7)]
-                            : [themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color, themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color.opacity(0.7)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        colors: (timeBlock.status == .completed)
+                        ? [theme.statusSuccessColor, theme.statusSuccessColor.opacity(0.7)]
+                        : [theme.statusWarningColor, theme.statusWarningColor.opacity(0.7)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
                     )
                 )
         }
     }
-    
+
     @ViewBuilder
     private var scheduleViewActions: some View {
-        if let onEdit = onEdit {
-            TimeBlockActionButton(
-                icon: "pencil.circle",
-                color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
-                action: onEdit
-            )
+        if let onEdit {
+            TimeBlockActionButton(icon: "pencil.circle", color: theme.accentPrimaryColor, action: onEdit)
         }
-        
-        if let onDelete = onDelete {
-            TimeBlockActionButton(
-                icon: "trash.circle",
-                color: themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color,
-                action: onDelete
-            )
+        if let onDelete {
+            TimeBlockActionButton(icon: "trash.circle", color: theme.statusErrorColor, action: onDelete)
         }
     }
-    
-    // MARK: - Background & Effects
+
+    // MARK: - Background & Border
+
     private var backgroundLayer: some View {
         RoundedRectangle(cornerRadius: 20, style: .continuous)
             .fill(
                 LinearGradient(
-                    colors: [
-                        themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color,
-                        themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    colors: [theme.surfaceCardColor.opacity(0.75), theme.surfaceCardColor.opacity(0.55)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
                 )
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [
-                                (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.15),
-                                (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.05)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
+                            colors: [theme.surfaceGlassColor.opacity(0.15), theme.surfaceGlassColor.opacity(0.05)],
+                            startPoint: .top, endPoint: .bottom
                         )
                     )
             )
     }
-    
-    private var overlayEffects: some View {
+
+    private var overlayStroke: some View {
         RoundedRectangle(cornerRadius: 20, style: .continuous)
             .stroke(
                 LinearGradient(
-                    colors: [
-                        (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.3),
-                        (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.1)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    colors: [theme.borderColor.opacity(0.30), theme.borderColor.opacity(0.10)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
                 ),
                 lineWidth: 1
             )
     }
-    
-    // MARK: - Helper Properties
+
+    // MARK: - Color helpers
+
     private var statusColor: Color {
         switch timeBlock.status {
-        case .notStarted:
-            return themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
-        case .inProgress:
-            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
-        case .completed:
-            return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
-        case .skipped:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+        case .notStarted: return theme.secondaryTextColor
+        case .inProgress: return theme.accentPrimaryColor
+        case .completed:  return theme.statusSuccessColor
+        case .skipped:    return theme.statusWarningColor
         }
     }
-    
+
     private var accentColors: [Color] {
         switch timeBlock.status {
-        case .notStarted:
-            return [
-                Color(red: 102/255, green: 126/255, blue: 234/255), // #667eea
-                Color(red: 118/255, green: 75/255,  blue: 162/255)  // #764ba2
-            ]
-        case .inProgress:
-            return [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.6)]
-        case .completed:
-            return [themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color, themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color.opacity(0.6)]
-        case .skipped:
-            return [themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color, themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color.opacity(0.6)]
+        case .notStarted: return [theme.accentSecondaryColor, theme.accentSecondaryColor.opacity(0.7)]
+        case .inProgress: return [theme.accentPrimaryColor, theme.accentPrimaryColor.opacity(0.7)]
+        case .completed:  return [theme.statusSuccessColor, theme.statusSuccessColor.opacity(0.7)]
+        case .skipped:    return [theme.statusWarningColor, theme.statusWarningColor.opacity(0.7)]
         }
     }
-    
+
     private var categoryColor: Color {
         switch timeBlock.category?.lowercased() {
-        case "work": return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
-        case "personal": return themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
-        case "health": return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
-        case "learning": return themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
-        default:
-            return themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
+        case "work":     return theme.accentPrimaryColor
+        case "personal": return theme.accentSecondaryColor
+        case "health":   return theme.statusSuccessColor
+        case "learning": return theme.accentSecondaryColor
+        default:         return theme.secondaryTextColor
         }
-    }
-    
-    private var shadowColor: Color {
-        statusColor.opacity(0.2)
     }
 }
 
-// MARK: - Action Button Component
+// MARK: - Action Button
+
 struct TimeBlockActionButton: View {
     @Environment(\.themeManager) private var themeManager
     let icon: String
     let color: Color
     let action: () -> Void
     var isLarge: Bool = false
-    
+
     @State private var isPressed = false
-    
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         Button(action: {
             HapticManager.shared.lightImpact()
             action()
         }) {
             ZStack {
-                // Gradient background
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                color.opacity(0.3),
-                                color.opacity(0.1)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                
-                // Glass overlay
+                    .fill(LinearGradient(colors: [color.opacity(0.30), color.opacity(0.10)],
+                                         startPoint: .topLeading, endPoint: .bottomTrailing))
                 Circle()
-                    .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.1))
+                    .fill(theme.surfaceGlassColor.opacity(0.10))
                     .blur(radius: 1)
-                
-                // Border
                 Circle()
-                    .stroke(
-                        LinearGradient(
-                            colors: [color, color.opacity(0.5)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.5
-                    )
-                
-                // Icon
+                    .stroke(LinearGradient(colors: [color, color.opacity(0.5)],
+                                           startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.5)
                 Image(systemName: icon)
                     .font(.system(size: isLarge ? 20 : 16, weight: .semibold))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [color, color.opacity(0.8)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                    .foregroundStyle(LinearGradient(colors: [color, color.opacity(0.8)],
+                                                    startPoint: .top, endPoint: .bottom))
                     .shadow(color: color.opacity(0.3), radius: 2, x: 0, y: 1)
             }
             .frame(width: isLarge ? 44 : 36, height: isLarge ? 44 : 36)
             .scaleEffect(isPressed ? 0.9 : 1.0)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
         .onLongPressGesture(minimumDuration: .infinity, maximumDistance: .infinity, pressing: { pressing in
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isPressed = pressing
-            }
+            withAnimation(.easeInOut(duration: 0.1)) { isPressed = pressing }
         }, perform: {})
     }
 }

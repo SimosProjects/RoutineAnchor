@@ -2,24 +2,19 @@
 //  TimePicker.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/23/25.
-//
+
 import SwiftUI
 
+/// Compact time picker row that respects theme tokens.
 struct TimePicker: View {
     @Environment(\.themeManager) private var themeManager
+
     let title: String
     @Binding var selection: Date
     let icon: String
-    let isDisabled: Bool
-    
-    private var themePrimaryText: Color {
-        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-    }
-    
-    private var themeSecondaryText: Color {
-        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
-    }
+    var isDisabled: Bool = false
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     init(title: String, selection: Binding<Date>, icon: String, isDisabled: Bool = false) {
         self.title = title
@@ -30,34 +25,34 @@ struct TimePicker: View {
 
     var body: some View {
         VStack(spacing: 8) {
+            // Label
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(isDisabled ? themeSecondaryText.opacity(0.6) : themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                    .foregroundStyle(isDisabled ? theme.secondaryTextColor.opacity(0.6) : theme.statusSuccessColor)
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(isDisabled ? themeSecondaryText.opacity(0.6) : themePrimaryText)
+                    .foregroundStyle(isDisabled ? theme.secondaryTextColor.opacity(0.6) : theme.primaryTextColor)
             }
 
+            // Control
             DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
                 .datePickerStyle(.compact)
                 .labelsHidden()
-                .accentColor(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
-                .colorScheme(.dark)
+                .tint(theme.statusSuccessColor)
                 .disabled(isDisabled)
                 .opacity(isDisabled ? 0.6 : 1.0)
         }
         .frame(maxWidth: .infinity)
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isDisabled ? themeSecondaryText.opacity(0.1) : themeSecondaryText.opacity(0.2))
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(theme.surfaceCardColor.opacity(isDisabled ? 0.28 : 0.35))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(isDisabled ? themeSecondaryText.opacity(0.2) : themeSecondaryText.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(theme.borderColor.opacity(isDisabled ? 0.6 : 0.9), lineWidth: 1)
         )
     }
 }
-

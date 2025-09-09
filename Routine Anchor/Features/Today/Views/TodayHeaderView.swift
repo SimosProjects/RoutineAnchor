@@ -2,8 +2,9 @@
 //  TodayHeaderView.swift
 //  Routine Anchor
 //
-//  Header section for Today view with navigation and progress
+//  Header area for Today: greeting/date + quick action buttons + (optional) progress.
 //
+
 import SwiftUI
 
 struct TodayHeaderView: View {
@@ -12,38 +13,23 @@ struct TodayHeaderView: View {
     @Binding var showingSettings: Bool
     @Binding var showingSummary: Bool
     @Binding var showingQuickStats: Bool
-    
-    // MARK: - State
+
+    // MARK: - Local animation state
     @State private var greetingOpacity: Double = 0
     @State private var dateOpacity: Double = 0
     @State private var buttonsOpacity: Double = 0
     @State private var progressCardScale: CGFloat = 0.9
     @State private var animationPhase = 0
-    
-    // MARK: - Environment
-    @Environment(\.colorScheme) var colorScheme
-    
-    // Theme color helpers
-    private var themePrimaryText: Color {
-        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-    }
-    
-    private var themeSecondaryText: Color {
-        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
-    }
-    
-    private var themeSubtleText: Color {
-        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
-    }
-    
+
+    // Resolve the theme once per render pass.
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         VStack(spacing: 24) {
-            // Top navigation bar
             navigationBar
-            
-            // Progress overview (if has data)
+
             if viewModel.hasScheduledBlocks {
-                ProgressOverviewCard(viewModel: viewModel)
+                ProgressOverviewCard(viewModel: viewModel) // assumed existing
                     .scaleEffect(progressCardScale)
                     .opacity(progressCardScale > 0.95 ? 1 : 0)
                     .onAppear {
@@ -54,38 +40,33 @@ struct TodayHeaderView: View {
                     .padding(.horizontal, 24)
             }
         }
-        .onAppear {
-            animationPhase = 1
-        }
+        .onAppear { animationPhase = 1 }
     }
-    
+
     // MARK: - Navigation Bar
+
     private var navigationBar: some View {
         HStack {
-            // Date and greeting
             dateAndGreetingSection
-            
             Spacer()
-            
-            // Action buttons
             actionButtons
         }
         .padding(.horizontal, 24)
     }
-    
-    // MARK: - Date and Greeting Section
+
+    // Left side: greeting + date/quote
     private var dateAndGreetingSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Animated greeting
+            // Greeting
             HStack(spacing: 6) {
                 Text(viewModel.greetingText)
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(themeSecondaryText)
-                
+                    .foregroundStyle(theme.secondaryTextColor)
+
                 if viewModel.isSpecialDay {
                     Image(systemName: viewModel.specialDayIcon)
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                        .foregroundStyle(theme.statusWarningColor) // semantic status color
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.2)
                         .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animationPhase)
                 }
@@ -93,40 +74,36 @@ struct TodayHeaderView: View {
             .opacity(greetingOpacity)
             .offset(y: greetingOpacity < 1 ? 10 : 0)
             .onAppear {
-                withAnimation(.easeOut(duration: 0.8)) {
-                    greetingOpacity = 1
-                }
+                withAnimation(.easeOut(duration: 0.8)) { greetingOpacity = 1 }
                 animationPhase = 1
             }
-            
-            // Date with day of week
+
+            // Date + quote
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.currentDateText)
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(themePrimaryText)
+                    .foregroundStyle(theme.primaryTextColor)
                     .opacity(dateOpacity)
                     .offset(y: dateOpacity < 1 ? 10 : 0)
                     .onAppear {
-                        withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
-                            dateOpacity = 1
-                        }
+                        withAnimation(.easeOut(duration: 0.8).delay(0.2)) { dateOpacity = 1 }
                     }
-                
+
                 Text(viewModel.dailyQuote)
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(themeSubtleText)
+                    .foregroundStyle(theme.subtleTextColor)
                     .lineLimit(1)
             }
             .opacity(dateOpacity)
             .offset(y: dateOpacity < 1 ? 10 : 0)
         }
     }
-    
-    // MARK: - Action Buttons
+
+    // Right side: actions
     private var actionButtons: some View {
         HStack(spacing: 16) {
-            // Summary button (with badge if needed)
-            NavigationButton(
+            // Summary (badge shown when there’s something to review)
+            NavigationButton( // assumed existing
                 icon: viewModel.shouldShowSummary ? "chart.pie.fill" : "chart.pie",
                 style: .success
             ) {
@@ -134,38 +111,26 @@ struct TodayHeaderView: View {
                 showingSummary = true
             }
             .overlay(
-                // Badge for unviewed summary
-                viewModel.shouldShowSummary && !viewModel.isDayComplete ?
-                NotificationBadge()
-                    .offset(x: 12, y: -12)
+                viewModel.shouldShowSummary && !viewModel.isDayComplete
+                ? NotificationBadge().offset(x: 12, y: -12)
                 : nil
             )
             .opacity(buttonsOpacity)
             .scaleEffect(buttonsOpacity)
-            
-            // Settings button
-            NavigationButton(
-                icon: "gearshape.fill",
-                style: .secondary
-            ) {
+
+            // Settings
+            NavigationButton(icon: "gearshape.fill", style: .secondary) {
                 HapticManager.shared.lightImpact()
                 showingSettings = true
             }
             .opacity(buttonsOpacity)
             .scaleEffect(buttonsOpacity)
-            
-            // Quick stats button
+
+            // Quick stats (visible when there are scheduled blocks)
             if viewModel.hasScheduledBlocks {
-                NavigationButton(
-                    icon: "bolt.fill",
-                    style: .accent
-                ) {
+                NavigationButton(icon: "bolt.fill", style: .accent) {
                     HapticManager.shared.lightImpact()
-                    // Post notification to show quick stats
-                    NotificationCenter.default.post(
-                        name: .showQuickStats,
-                        object: nil
-                    )
+                    NotificationCenter.default.post(name: .showQuickStats, object: nil)
                 }
                 .opacity(buttonsOpacity)
                 .scaleEffect(buttonsOpacity)
@@ -173,21 +138,23 @@ struct TodayHeaderView: View {
             }
         }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.8).delay(0.4)) {
-                buttonsOpacity = 1
-            }
+            withAnimation(.easeOut(duration: 0.8).delay(0.4)) { buttonsOpacity = 1 }
         }
     }
 }
 
-// MARK: - Notification Badge
+// MARK: - Tiny helpers used in header
+
+/// Pulsing dot used as a subtle “unread/attention” indicator.
 struct NotificationBadge: View {
     @Environment(\.themeManager) private var themeManager
     @State private var isAnimating = false
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         Circle()
-            .fill(themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color)
+            .fill(theme.statusErrorColor) // semantic status color
             .frame(width: 8, height: 8)
             .scaleEffect(isAnimating ? 1.2 : 1.0)
             .opacity(isAnimating ? 0.8 : 1.0)
@@ -196,73 +163,5 @@ struct NotificationBadge: View {
                     isAnimating = true
                 }
             }
-    }
-}
-
-// MARK: - Weather Widget (Optional Enhancement)
-struct WeatherWidget: View {
-    @Environment(\.themeManager) private var themeManager
-    @State private var temperature: String = "--"
-    @State private var weatherIcon: String = "sun.max"
-    
-    private var themeSecondaryText: Color {
-        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
-    }
-    
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: weatherIcon)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeSecondaryText)
-            
-            Text(temperature)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(themeSecondaryText)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(
-            Capsule()
-                .fill(themeSecondaryText.opacity(0.1))
-        )
-        .onAppear {
-            // Fetch weather data
-            fetchWeather()
-        }
-    }
-    
-    private func fetchWeather() {
-        // Mock weather data - integrate with weather service
-        temperature = "72°"
-        weatherIcon = "sun.max"
-    }
-}
-
-// MARK: - Streak Indicator (Optional Enhancement)
-struct StreakIndicator: View {
-    @Environment(\.themeManager) private var themeManager
-    
-    let streakCount: Int
-    
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "flame.fill")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
-            
-            Text("\(streakCount)")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(
-            Capsule()
-                .fill((themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color).opacity(0.15))
-        )
-        .overlay(
-            Capsule()
-                .stroke((themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color).opacity(0.3), lineWidth: 1)
-        )
     }
 }

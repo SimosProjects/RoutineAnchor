@@ -15,6 +15,9 @@ struct PremiumUpgradeView: View {
     @State private var showingFeatureDetail = false
     @State private var animationPhase = 0.0
 
+    // New theme shortcut
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         ZStack {
             ThemedAnimatedBackground()
@@ -23,7 +26,7 @@ struct PremiumUpgradeView: View {
             if (premiumManager?.isLoading == true) && ((premiumManager?.products.isEmpty) ?? true) {
                 loadingView
             } else {
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 32) {
                         headerSection
                         featuresSection
@@ -37,25 +40,25 @@ struct PremiumUpgradeView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .task {
-            await loadProductsAndSetDefaults()
-        }
+        .task { await loadProductsAndSetDefaults() }
         .onAppear { startAnimations() }
     }
 
-    // MARK: - Loading View
+    // MARK: - Loading
+
     private var loadingView: some View {
         VStack(spacing: 20) {
             Spacer()
-            ProgressView().scaleEffect(1.5).tint(.white)
+            ProgressView().scaleEffect(1.5).tint(theme.invertedTextColor)
             Text("Loading Premium Plans...")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
+                .foregroundStyle(theme.primaryTextColor.opacity(0.8))
             Spacer()
         }
     }
 
     // MARK: - Header
+
     private var headerSection: some View {
         VStack(spacing: 20) {
             HStack {
@@ -63,7 +66,7 @@ struct PremiumUpgradeView: View {
                 Button(action: { closeView() }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 28))
-                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
+                        .foregroundStyle(theme.primaryTextColor.opacity(0.85))
                 }
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
@@ -73,36 +76,34 @@ struct PremiumUpgradeView: View {
                 .font(.system(size: 60, weight: .medium))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [
-                            themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
-                            themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
-                        ],
+                        colors: [theme.statusWarningColor, theme.statusSuccessColor],
                         startPoint: .topLeading, endPoint: .bottomTrailing
                     )
                 )
-                .floatModifier(amplitude: 8, duration: 3)
+                .floatModifier(amplitude: 8, duration: 3)       // assumes existing modifier
                 .scaleEffect(1.0 + sin(animationPhase * .pi * 2) * 0.05)
 
             VStack(spacing: 12) {
                 Text("Upgrade to Premium")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                    .foregroundStyle(theme.primaryTextColor)
                     .multilineTextAlignment(.center)
 
                 Text("Unlock the full potential of Routine Anchor")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.8))
+                    .foregroundStyle(theme.primaryTextColor.opacity(0.8))
                     .multilineTextAlignment(.center)
             }
         }
     }
 
     // MARK: - Features
+
     private var featuresSection: some View {
         VStack(spacing: 20) {
             Text("Premium Features")
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(theme.primaryTextColor)
 
             VStack(spacing: 16) {
                 PremiumFeatureRow(feature: .unlimitedTimeBlocks, delay: 0.1)
@@ -113,31 +114,33 @@ struct PremiumUpgradeView: View {
             }
         }
         .padding(24)
-        .themedGlassMorphism(cornerRadius: 20)
     }
 
     // MARK: - Pricing
+
     private var pricingSection: some View {
         VStack(spacing: 16) {
             Text("Choose Your Plan")
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                .foregroundStyle(theme.primaryTextColor)
 
             if (premiumManager?.products.isEmpty ?? true) {
                 VStack(spacing: 12) {
                     Text("Unable to load pricing")
                         .font(.system(size: 16))
-                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
+                        .foregroundStyle(theme.primaryTextColor.opacity(0.7))
 
-                    Button("Retry") {
-                        Task { await loadProductsAndSetDefaults() }
-                    }
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    Button("Retry") { Task { await loadProductsAndSetDefaults() } }
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(theme.accentPrimaryColor)
                 }
                 .padding(20)
-                .background(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
-                .cornerRadius(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12).fill(theme.surfaceCardColor.opacity(0.5))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12).stroke(theme.borderColor.opacity(0.9), lineWidth: 1)
+                )
             } else {
                 VStack(spacing: 12) {
                     if let yearly = premiumManager?.yearlyProduct {
@@ -168,11 +171,12 @@ struct PremiumUpgradeView: View {
     }
 
     // MARK: - Purchase
+
     private var purchaseSection: some View {
         VStack(spacing: 16) {
             if let selected = selectedProduct {
                 DesignedButton(
-                    title: (premiumManager?.purchaseInProgress == true) ? "Processing..." : "Start Premium - \(selected.displayPrice)",
+                    title: (premiumManager?.purchaseInProgress == true) ? "Processing..." : "Start Premium – \(selected.displayPrice)",
                     style: .gradient
                 ) {
                     Task { await attemptPurchase(selected) }
@@ -180,24 +184,23 @@ struct PremiumUpgradeView: View {
                 .disabled((premiumManager?.isLoading ?? true) || (premiumManager?.purchaseInProgress ?? false))
                 .opacity(((premiumManager?.isLoading ?? false) || (premiumManager?.purchaseInProgress ?? false)) ? 0.6 : 1.0)
 
-                // Simple billing hints
                 if selected.id.contains("yearly") {
                     VStack(spacing: 4) {
                         Text("• Billed annually")
                         Text("• Cancel anytime in Settings")
                     }
                     .font(.system(size: 14))
-                    .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                    .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                 } else {
                     Text("• Billed monthly, cancel anytime")
                         .font(.system(size: 14))
-                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                        .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                 }
             } else {
                 VStack(spacing: 8) {
                     Text("Select a plan to continue")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                        .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
 
                     if let yearly = premiumManager?.yearlyProduct {
                         Button("Select Recommended Plan") {
@@ -205,7 +208,7 @@ struct PremiumUpgradeView: View {
                             HapticManager.shared.anchorSelection()
                         }
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                        .foregroundStyle(theme.accentPrimaryColor)
                     }
                 }
                 .padding(.vertical, 16)
@@ -213,10 +216,10 @@ struct PremiumUpgradeView: View {
 
             if (premiumManager?.isLoading == true) || (premiumManager?.purchaseInProgress == true) {
                 HStack(spacing: 8) {
-                    ProgressView().scaleEffect(0.8).tint(.white)
+                    ProgressView().scaleEffect(0.8).tint(theme.invertedTextColor)
                     Text("Processing...")
                         .font(.system(size: 14))
-                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
+                        .foregroundStyle(theme.primaryTextColor.opacity(0.7))
                 }
             }
 
@@ -224,43 +227,43 @@ struct PremiumUpgradeView: View {
                 VStack(spacing: 8) {
                     Text(errorMessage)
                         .font(.system(size: 14))
-                        .foregroundStyle(.red)
+                        .foregroundStyle(theme.statusErrorColor)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
 
                     Button("Dismiss") { premiumManager?.clearError() }
                         .font(.system(size: 14))
-                        .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
+                        .foregroundStyle(theme.primaryTextColor.opacity(0.7))
                 }
             }
         }
     }
 
-    // MARK: - Restore
+    // MARK: - Restore & Legal
+
     private var restoreSection: some View {
         VStack(spacing: 12) {
-            Button("Restore Purchases") {
-                Task { await attemptRestore() }
-            }
-            .font(.system(size: 16, weight: .medium))
-            .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
-            .disabled(premiumManager?.isLoading ?? true)
+            Button("Restore Purchases") { Task { await attemptRestore() } }
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(theme.primaryTextColor.opacity(0.85))
+                .disabled(premiumManager?.isLoading ?? true)
 
             HStack(spacing: 4) {
                 Button("Terms") {
                     if let url = URL(string: "https://routineanchor.com/terms") { UIApplication.shared.open(url) }
                 }
-                Text("•")
+                Text("•").foregroundStyle(theme.subtleTextColor)
                 Button("Privacy") {
                     if let url = URL(string: "https://routineanchor.com/privacy") { UIApplication.shared.open(url) }
                 }
             }
             .font(.system(size: 12))
-            .foregroundStyle((themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor))
+            .foregroundStyle(theme.subtleTextColor)
         }
     }
 
     // MARK: - Helpers
+
     private func startAnimations() {
         withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
             animationPhase = 1.0
@@ -305,6 +308,7 @@ struct PremiumUpgradeView: View {
 }
 
 // MARK: - Pricing Card
+
 struct PremiumPricingCard: View {
     @Environment(\.themeManager) private var themeManager
     let product: Product
@@ -312,6 +316,8 @@ struct PremiumPricingCard: View {
     let savings: String?
     let isRecommended: Bool
     let onTap: () -> Void
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     var body: some View {
         Button(action: onTap) {
@@ -321,10 +327,10 @@ struct PremiumPricingCard: View {
                         Spacer()
                         Text("MOST POPULAR")
                             .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                            .foregroundStyle(theme.invertedTextColor)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 4)
-                            .background(Capsule().fill(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color))
+                            .background(Capsule().fill(theme.statusSuccessColor))
                         Spacer()
                     }
                 }
@@ -333,12 +339,12 @@ struct PremiumPricingCard: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(product.displayName)
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                            .foregroundStyle(theme.primaryTextColor)
 
                         if let s = savings, !s.isEmpty {
                             Text("Save \(s)")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(.green)
+                                .foregroundStyle(theme.statusSuccessColor)
                         }
                     }
 
@@ -347,31 +353,24 @@ struct PremiumPricingCard: View {
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(product.displayPrice)
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                            .foregroundStyle(theme.primaryTextColor)
 
                         Text(product.id.contains("yearly") ? "per year" : "per month")
                             .font(.system(size: 12))
-                            .foregroundStyle((themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
+                            .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                     }
                 }
             }
             .padding(20)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(
-                        isSelected
-                        ? (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
-                        : Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color),
-                        lineWidth: isSelected ? 2 : 1
-                    )
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(
-                                isSelected
-                                ? (themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.1)
-                                : Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5)
-                            )
-                    )
+                    .fill(isSelected ? theme.accentPrimaryColor.opacity(0.10)
+                                     : theme.surfaceCardColor.opacity(0.50))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? theme.accentPrimaryColor : theme.borderColor.opacity(0.9),
+                            lineWidth: isSelected ? 2 : 1)
             )
         }
         .scaleEffect(isSelected ? 1.02 : 1.0)
@@ -380,11 +379,14 @@ struct PremiumPricingCard: View {
 }
 
 // MARK: - Feature Row
+
 struct PremiumFeatureRow: View {
     @Environment(\.themeManager) private var themeManager
     let feature: PremiumManager.PremiumFeature
     let delay: Double
     @State private var isVisible = false
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     var body: some View {
         HStack(spacing: 16) {
@@ -397,18 +399,18 @@ struct PremiumFeatureRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(feature.displayName)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                    .foregroundStyle(theme.primaryTextColor)
 
                 Text(feature.description)
                     .font(.system(size: 14))
-                    .foregroundStyle((themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor).opacity(0.7))
+                    .foregroundStyle(theme.primaryTextColor.opacity(0.7))
                     .lineLimit(2)
             }
 
             Spacer()
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 20))
-                .foregroundStyle(.green)
+                .foregroundStyle(theme.statusSuccessColor)
         }
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : -20)
@@ -419,27 +421,22 @@ struct PremiumFeatureRow: View {
         }
     }
 
+    // Map legacy feature tints → semantic tokens
     private var featureColor: Color {
         switch feature {
-        case .unlimitedTimeBlocks:
-            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
-        case .advancedAnalytics:
-            return themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
-        case .premiumThemes:
-            return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
-        case .unlimitedTemplates:
-            return themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
-        case .widgets:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
-        default:
-            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+        case .unlimitedTimeBlocks: return theme.accentPrimaryColor
+        case .advancedAnalytics:   return theme.accentSecondaryColor
+        case .premiumThemes:       return theme.statusSuccessColor
+        case .unlimitedTemplates:  return theme.accentSecondaryColor
+        case .widgets:             return theme.statusWarningColor
+        default:                   return theme.accentPrimaryColor
         }
     }
 }
 
 #Preview {
-    // Preview with a fresh manager in the environment
     PremiumUpgradeView()
         .environment(\.premiumManager, PremiumManager())
-        .environment(\.themeManager, ThemeManager(premiumManager: PremiumManager()))
+        .environment(\.themeManager, ThemeManager.preview())
+        .preferredColorScheme(.dark)
 }

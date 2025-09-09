@@ -2,6 +2,9 @@
 //  AddTimeBlockView.swift
 //  Routine Anchor
 //
+//  New-block sheet.
+//
+
 import SwiftUI
 import Foundation
 
@@ -9,15 +12,15 @@ struct AddTimeBlockView: View {
     @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @State private var formData = TimeBlockFormData()
-    
+
     // MARK: - State
     @State private var showingValidationErrors = false
     @State private var isVisible = false
     @State private var selectedDuration: Int? = nil
-    
+
     let existingTimeBlocks: [TimeBlock]
     let onSave: (String, Date, Date, String?, String?) -> Void
-    
+
     init(
         existingTimeBlocks: [TimeBlock] = [],
         onSave: @escaping (String, Date, Date, String?, String?) -> Void
@@ -25,13 +28,11 @@ struct AddTimeBlockView: View {
         self.existingTimeBlocks = existingTimeBlocks
         self.onSave = onSave
     }
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
-        // cache once
-        let theme  = (themeManager?.currentTheme ?? Theme.defaultTheme)
-        let scheme = theme.colorScheme
-        
-        return TimeBlockFormView(
+        TimeBlockFormView(
             title: "New Time Block",
             icon: "plus.circle",
             subtitle: "Add structure to your day",
@@ -39,75 +40,52 @@ struct AddTimeBlockView: View {
         ) {
             VStack(spacing: 24) {
                 if !formData.getConflictingBlocks().isEmpty {
-                    conflictWarningView(theme: theme, scheme: scheme)
+                    conflictWarningView
                 }
-                
-                // Basic Information Section
-                basicInfoSection(theme: theme, scheme: scheme)
-                
-                // Time Section with Quick Duration integrated
-                timeAndDurationSection(theme: theme, scheme: scheme)
-                
-                // Organization Section
-                organizationSection(theme: theme, scheme: scheme)
-                
-                // Icon Section
-                iconSection(theme: theme, scheme: scheme)
-                
-                // Action Buttons
-                actionButtons(theme: theme, scheme: scheme)
+
+                basicInfoSection
+                timeAndDurationSection
+                organizationSection
+                iconSection
+                actionButtons
             }
         }
         .onAppear {
             formData.setExistingTimeBlocks(existingTimeBlocks)
             formData.setToNextAvailableSlot()
             formData.validateForm()
-            
+
             withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.3)) {
                 isVisible = true
             }
         }
         .onChange(of: formData.title) { _, _ in formData.validateForm() }
-        .onChange(of: formData.startTime) { _, _ in
-            formData.validateForm()
-            if selectedDuration != nil {
-                let currentDuration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
-                if currentDuration != selectedDuration { selectedDuration = nil }
-            }
-        }
-        .onChange(of: formData.endTime) { _, _ in
-            formData.validateForm()
-            if selectedDuration != nil {
-                let currentDuration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
-                if currentDuration != selectedDuration { selectedDuration = nil }
-            }
-        }
+        .onChange(of: formData.startTime) { _, _ in handleManualTimeChange() }
+        .onChange(of: formData.endTime) { _, _ in handleManualTimeChange() }
         .alert("Invalid Time Block", isPresented: $showingValidationErrors) {
             Button("OK") {}
         } message: {
             Text(formData.validationErrors.joined(separator: "\n"))
         }
     }
-    
+
     // MARK: - Conflict Warning
-    
+
     @ViewBuilder
-    private func conflictWarningView(theme: Theme, scheme: ThemeColorScheme) -> some View {
+    private var conflictWarningView: some View {
         let conflicts = formData.getConflictingBlocks()
-        
         if !conflicts.isEmpty {
             VStack(spacing: 12) {
-                // Main warning content
                 HStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(scheme.warningColor.color)
-                    
+                        .foregroundStyle(theme.statusWarningColor)
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Time Conflict")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(theme.primaryTextColor)
-                        
+
                         if conflicts.count == 1 {
                             Text("Overlaps with '\(conflicts.first!.title)'")
                                 .font(.system(size: 14, weight: .medium))
@@ -118,10 +96,9 @@ struct AddTimeBlockView: View {
                                 .foregroundStyle(theme.secondaryTextColor)
                         }
                     }
-                    
                     Spacer()
                 }
-                
+
                 Button(action: {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                         formData.setToNextAvailableSlot()
@@ -134,32 +111,30 @@ struct AddTimeBlockView: View {
                         Text("Find Next Available Time")
                             .font(.system(size: 14, weight: .semibold))
                     }
-                    .foregroundStyle(scheme.workflowPrimary.color)
+                    .foregroundStyle(theme.accentPrimaryColor)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(scheme.surface1.color.opacity(0.65))
+                            .fill(theme.surfaceCardColor.opacity(0.65))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
+                                    .stroke(theme.borderColor.opacity(0.8), lineWidth: 1)
                             )
                     )
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(scheme.surface2.color) // card/elevation
+                    .fill(theme.surfaceCardColor)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(
                                 LinearGradient(
-                                    colors: [
-                                        scheme.warningColor.color.opacity(0.6),
-                                        scheme.warningColor.color.opacity(0.2)
-                                    ],
+                                    colors: [theme.statusWarningColor.opacity(0.6),
+                                             theme.statusWarningColor.opacity(0.2)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 ),
@@ -167,7 +142,7 @@ struct AddTimeBlockView: View {
                             )
                     )
             )
-            .shadow(color: scheme.warningColor.color.opacity(0.18), radius: 8, x: 0, y: 4)
+            .shadow(color: theme.statusWarningColor.opacity(0.18), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 24)
             .transition(.asymmetric(
                 insertion: .scale(scale: 0.95).combined(with: .opacity),
@@ -175,14 +150,14 @@ struct AddTimeBlockView: View {
             ))
         }
     }
-    
+
     // MARK: - Form Sections
-    
-    private func basicInfoSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
+
+    private var basicInfoSection: some View {
         FormSection(
             title: "Basic Information",
             icon: "doc.text",
-            color: scheme.workflowPrimary.color
+            color: theme.accentPrimaryColor
         ) {
             VStack(spacing: 16) {
                 DesignedTextField(
@@ -191,7 +166,6 @@ struct AddTimeBlockView: View {
                     placeholder: "What will you be doing?",
                     icon: "textformat"
                 )
-                
                 DesignedTextField(
                     title: "Notes",
                     text: $formData.notes,
@@ -204,41 +178,29 @@ struct AddTimeBlockView: View {
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : -20)
     }
-    
-    private func timeAndDurationSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
+
+    private var timeAndDurationSection: some View {
         FormSection(
             title: "Schedule",
             icon: "clock",
-            color: scheme.actionSuccess.color
+            color: theme.statusSuccessColor
         ) {
             VStack(spacing: 20) {
-                // Time pickers
                 HStack(spacing: 16) {
-                    TimePicker(
-                        title: "Start",
-                        selection: $formData.startTime,
-                        icon: "play.circle"
-                    )
-                    
-                    TimePicker(
-                        title: "End",
-                        selection: $formData.endTime,
-                        icon: "stop.circle"
-                    )
+                    TimePicker(title: "Start", selection: $formData.startTime, icon: "play.circle")
+                    TimePicker(title: "End",   selection: $formData.endTime,   icon: "stop.circle")
                 }
-                
-                // Quick duration selector
+
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
                         Image(systemName: "timer")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(scheme.warningColor.color)
-                        
+                            .foregroundStyle(theme.statusWarningColor)
                         Text("Quick Duration")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(theme.primaryTextColor.opacity(0.8))
                     }
-                    
+
                     QuickDurationSelector(
                         selectedDuration: $selectedDuration,
                         onSelect: { minutes in
@@ -248,35 +210,28 @@ struct AddTimeBlockView: View {
                         }
                     )
                 }
-                
-                // Duration display card
+
                 let duration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
-                DurationCard(
-                    minutes: duration,
-                    color: color(for: duration, scheme: scheme)
-                )
+                DurationCard(minutes: duration, color: color(for: duration))
             }
         }
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : 20)
     }
-    
-    private func color(for minutes: Int, scheme: ThemeColorScheme) -> Color {
+
+    private func color(for minutes: Int) -> Color {
         switch minutes {
-        case ..<15:
-            return scheme.errorColor.color
-        case ..<60:
-            return scheme.warningColor.color
-        default:
-            return scheme.actionSuccess.color
+        case ..<15: return theme.statusErrorColor
+        case ..<60: return theme.statusWarningColor
+        default:    return theme.statusSuccessColor
         }
     }
-    
-    private func organizationSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
+
+    private var organizationSection: some View {
         FormSection(
             title: "Organization",
             icon: "folder",
-            color: scheme.organizationAccent.color
+            color: theme.accentSecondaryColor
         ) {
             CategorySelector(
                 categories: formData.categories,
@@ -286,23 +241,20 @@ struct AddTimeBlockView: View {
         .opacity(isVisible ? 1 : 0)
         .offset(y: isVisible ? 0 : 20)
     }
-    
-    private func iconSection(theme: Theme, scheme: ThemeColorScheme) -> some View {
+
+    private var iconSection: some View {
         FormSection(
             title: "Icon",
             icon: "face.smiling",
-            color: scheme.creativeSecondary.color
+            color: theme.accentSecondaryColor
         ) {
-            IconSelector(
-                icons: formData.icons,
-                selectedIcon: $formData.selectedIcon
-            )
+            IconSelector(icons: formData.icons, selectedIcon: $formData.selectedIcon)
         }
         .opacity(isVisible ? 1 : 0)
         .offset(x: isVisible ? 0 : -20)
     }
-    
-    private func actionButtons(theme: Theme, scheme: ThemeColorScheme) -> some View {
+
+    private var actionButtons: some View {
         VStack(spacing: 16) {
             DesignedButton(
                 title: "Create Time Block",
@@ -311,27 +263,29 @@ struct AddTimeBlockView: View {
             )
             .disabled(!formData.isFormValid)
             .opacity(formData.isFormValid ? 1.0 : 0.6)
-            
-            SecondaryActionButton(
-                title: "Cancel",
-                icon: "xmark",
-                action: { dismiss() }
-            )
+
+            SecondaryActionButton(title: "Cancel", icon: "xmark") { dismiss() }
         }
         .opacity(isVisible ? 1 : 0)
         .offset(y: isVisible ? 0 : 20)
     }
-    
+
     // MARK: - Actions
-    
+
+    private func handleManualTimeChange() {
+        formData.validateForm()
+        if selectedDuration != nil {
+            let currentDuration = Int(formData.endTime.timeIntervalSince(formData.startTime) / 60)
+            if currentDuration != selectedDuration { selectedDuration = nil }
+        }
+    }
+
     private func saveTimeBlock() {
         formData.validateForm()
-        
         guard formData.isFormValid else {
             showingValidationErrors = true
             return
         }
-        
         let (title, notes, category) = formData.prepareForSave()
         onSave(title, formData.startTime, formData.endTime, notes, category)
         HapticManager.shared.anchorSuccess()
@@ -339,39 +293,8 @@ struct AddTimeBlockView: View {
     }
 }
 
-extension TimeBlockFormData {
-    /// Find the next available time slot that doesn't conflict
-    func findNextAvailableTimeSlot(duration: TimeInterval = 3600) -> (start: Date, end: Date)? {
-        let calendar = Calendar.current
-        let now = Date()
-        
-        let startOfNextHour = calendar.dateInterval(of: .hour, for: now)?.end ?? now
-        var candidateStart = startOfNextHour
-        
-        for _ in 0..<24 {
-            let candidateEnd = candidateStart.addingTimeInterval(duration)
-            let testBlock = TimeBlock(title: "Test", startTime: candidateStart, endTime: candidateEnd)
-            if testBlock.conflictsWith(existingTimeBlocks).isEmpty {
-                return (start: candidateStart, end: candidateEnd)
-            }
-            candidateStart = calendar.date(byAdding: .hour, value: 1, to: candidateStart) ?? candidateStart
-        }
-        return nil
-    }
-    
-    /// Set the form to the next available time slot
-    func setToNextAvailableSlot() {
-        if let nextSlot = findNextAvailableTimeSlot() {
-            self.startTime = nextSlot.start
-            self.endTime = nextSlot.end
-            validateForm()
-        }
-    }
-}
-
-// MARK: - Preview
 #Preview {
-    AddTimeBlockView { title, startTime, endTime, notes, category in
-        print("Saving: \(title) from \(startTime) to \(endTime)")
+    AddTimeBlockView { title, start, end, notes, category in
+        print("Saving: \(title) from \(start) to \(end)")
     }
 }

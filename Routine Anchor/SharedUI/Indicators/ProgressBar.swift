@@ -2,40 +2,34 @@
 //  ProgressBar.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/21/25.
-//
+
 import SwiftUI
 
-// MARK: - Progress Bar
+/// Linear progress bar using theme tokens.
+/// - `color` drives the fill gradient
+/// - Track uses `surfaceCardColor`
 struct ProgressBar: View {
     @Environment(\.themeManager) private var themeManager
-    let progress: Double
+    let progress: Double     // 0...1
     let color: Color
     let animated: Bool
-    
+
     @State private var animatedProgress: CGFloat = 0
-    
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 // Track
                 Capsule()
-                    .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
+                    .fill(theme.surfaceCardColor.opacity(0.30))
                     .frame(height: 4)
-                
+
                 // Progress
                 Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [color, color.opacity(0.7)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(
-                        width: geometry.size.width * animatedProgress,
-                        height: 4
-                    )
+                    .fill(LinearGradient(colors: [color, color.opacity(0.70)],
+                                         startPoint: .leading, endPoint: .trailing))
+                    .frame(width: geometry.size.width * animatedProgress, height: 4)
             }
         }
         .frame(height: 4)

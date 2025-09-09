@@ -2,7 +2,7 @@
 //  SupportInfoSection.swift
 //  Routine Anchor
 //
-//  Support and info section for Settings view
+//  Support & info.
 //
 
 import SwiftUI
@@ -15,11 +15,9 @@ struct SupportInfoSection: View {
     let onRateApp: () -> Void
     let onContactSupport: () -> Void
 
-    // MARK: - Theme helpers
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
-    // MARK: - State
+    // State
     @State private var animateRating = false
     @State private var showThankYou = false
 
@@ -27,7 +25,7 @@ struct SupportInfoSection: View {
         SettingsSection(
             title: "Support & Info",
             icon: "questionmark.circle",
-            color: scheme.creativeSecondary.color
+            color: theme.accentSecondaryColor
         ) {
             VStack(spacing: 16) {
                 // Help & FAQ
@@ -35,10 +33,8 @@ struct SupportInfoSection: View {
                     title: "Help & FAQ",
                     subtitle: "Get answers to common questions",
                     icon: "questionmark.circle",
-                    color: scheme.workflowPrimary.color,
-                    action: {
-                        onShowHelp()
-                    }
+                    color: theme.accentPrimaryColor,
+                    action: { onShowHelp() }
                 )
 
                 // About
@@ -46,21 +42,19 @@ struct SupportInfoSection: View {
                     title: "About Routine Anchor",
                     subtitle: "App info and acknowledgments",
                     icon: "info.circle",
-                    color: scheme.organizationAccent.color,
-                    action: {
-                        onShowAbout()
-                    }
+                    color: theme.accentSecondaryColor,
+                    action: { onShowAbout() }
                 )
 
                 // Divider
                 supportDivider
 
-                // Rate the app (keeps stronger success haptic + micro animation)
+                // Rate the app
                 SettingsButton(
                     title: "Rate the App",
                     subtitle: showThankYou ? "Thank you! ❤️" : "Support development",
                     icon: "star",
-                    color: scheme.warningColor.color,
+                    color: theme.statusWarningColor,
                     action: {
                         HapticManager.shared.anchorSuccess()
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
@@ -75,31 +69,20 @@ struct SupportInfoSection: View {
                         }
                         // Fade out the thank-you after a moment
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                            withAnimation {
-                                showThankYou = false
-                            }
+                            withAnimation { showThankYou = false }
                         }
                     }
                 )
                 .scaleEffect(animateRating ? 1.1 : 1.0)
                 .animation(.spring(response: 0.5, dampingFraction: 0.6), value: animateRating)
-                .onChange(of: animateRating) { _, newValue in
-                    if newValue {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            animateRating = false
-                        }
-                    }
-                }
 
                 // Contact support
                 SettingsButton(
                     title: "Contact Support",
                     subtitle: "Get help from our team",
                     icon: "envelope",
-                    color: scheme.actionSuccess.color,
-                    action: {
-                        onContactSupport()
-                    }
+                    color: theme.statusSuccessColor,
+                    action: { onContactSupport() }
                 )
 
                 // Quick tips
@@ -109,10 +92,11 @@ struct SupportInfoSection: View {
     }
 
     // MARK: - Support Divider
+
     private var supportDivider: some View {
         HStack(spacing: 12) {
             Rectangle()
-                .fill(scheme.uiElementSecondary.color.opacity(0.3))
+                .fill(theme.borderColor.opacity(0.3))
                 .frame(height: 1)
 
             Text("SUPPORT")
@@ -121,19 +105,20 @@ struct SupportInfoSection: View {
                 .tracking(1)
 
             Rectangle()
-                .fill(scheme.uiElementSecondary.color.opacity(0.3))
+                .fill(theme.borderColor.opacity(0.3))
                 .frame(height: 1)
         }
         .padding(.vertical, 4)
     }
 
     // MARK: - Quick Tips Section
+
     private var quickTipsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: "lightbulb")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(scheme.warningColor.color)
+                    .foregroundStyle(theme.statusWarningColor)
 
                 Text("Quick Tips")
                     .font(.system(size: 13, weight: .semibold))
@@ -149,20 +134,20 @@ struct SupportInfoSection: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(scheme.creativeSecondary.color.opacity(0.10))
+                .fill(theme.accentSecondaryColor.opacity(0.10))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(scheme.creativeSecondary.color.opacity(0.20), lineWidth: 1)
+                .stroke(theme.accentSecondaryColor.opacity(0.20), lineWidth: 1)
         )
     }
 }
 
 // MARK: - Quick Tip Row
+
 struct SupportingInfoQuickTip: View {
     @Environment(\.themeManager) private var themeManager
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     let number: String
     let text: String
@@ -171,11 +156,11 @@ struct SupportingInfoQuickTip: View {
         HStack(alignment: .top, spacing: 8) {
             Text(number)
                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(scheme.creativeSecondary.color)
+                .foregroundStyle(theme.accentSecondaryColor)
                 .frame(width: 16, height: 16)
                 .background(
                     Circle()
-                        .fill(scheme.creativeSecondary.color.opacity(0.20))
+                        .fill(theme.accentSecondaryColor.opacity(0.20))
                 )
 
             Text(text)
@@ -188,10 +173,9 @@ struct SupportingInfoQuickTip: View {
     }
 }
 
-// MARK: - Preview
 #Preview {
     ZStack {
-        ThemedAnimatedBackground().ignoresSafeArea()
+        PredefinedThemes.classic.heroBackground.ignoresSafeArea()
         ScrollView {
             SupportInfoSection(
                 onShowHelp: { print("Show help") },
@@ -202,4 +186,6 @@ struct SupportingInfoQuickTip: View {
             .padding()
         }
     }
+    .environment(\.themeManager, ThemeManager.preview())
+    .preferredColorScheme(.dark)
 }

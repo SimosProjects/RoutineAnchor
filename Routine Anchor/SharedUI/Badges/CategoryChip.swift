@@ -2,44 +2,44 @@
 //  CategoryChip.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/23/25.
-//
+
 import SwiftUI
 
 struct CategoryChip: View {
     let title: String
     let isSelected: Bool
-    let color: Color
+    let color: Color            // category accent passed in
     let action: () -> Void
-    
+
     @Environment(\.themeManager) private var themeManager
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
+    private let corner: CGFloat = 10
 
     var body: some View {
-        Button(action: {
+        Button {
             HapticManager.shared.lightImpact()
             action()
-        }) {
+        } label: {
             Text(title)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(isSelected ?
-                    (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor) :
-                    color)
+                .foregroundStyle(isSelected ? theme.invertedTextColor : color)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(isSelected ? color :
-                            (themeManager?.currentTheme.colorScheme.uiElementPrimary.color.opacity(0.3) ??
-                             Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)))
+                    RoundedRectangle(cornerRadius: corner, style: .continuous)
+                        .fill(isSelected ? color : theme.surfaceCardColor.opacity(0.30))
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(color.opacity(0.5), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: corner, style: .continuous)
+                        .stroke(color.opacity(isSelected ? 0.9 : 0.5), lineWidth: isSelected ? 2 : 1)
                 )
+                .contentShape(RoundedRectangle(cornerRadius: corner, style: .continuous))
         }
-        .scaleEffect(isSelected ? 1.0 : 0.95)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+        .buttonStyle(.plain)
+        .scaleEffect(isSelected ? 1.0 : 0.96)
+        .animation(.spring(response: 0.30, dampingFraction: 0.75), value: isSelected)
+        .accessibilityLabel("\(title) \(isSelected ? "selected" : "not selected")")
     }
 }
-

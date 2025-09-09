@@ -2,20 +2,22 @@
 //  StatCard.swift
 //  Routine Anchor
 //
+//  Compact stat tile used in Quick Stats and similar grids.
+//
+
 import SwiftUI
 
 struct StatCard: View {
     let title: String
     let value: String
     let subtitle: String
-    let color: Color  
+    let color: Color          // accent tint for icon/overlay
     let icon: String
 
     @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
 
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     var body: some View {
         VStack(spacing: 12) {
@@ -42,16 +44,18 @@ struct StatCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(scheme.surface2.color.opacity(0.9))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(color.opacity(0.08))
-                )
+            // Glassy card base + subtle accent tint layer
+            ZStack {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(theme.surfaceCardColor.opacity(0.9))
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(color.opacity(0.08))
+            }
         )
         .overlay(
+            // Consistent border from theme tokens
             RoundedRectangle(cornerRadius: 16)
-                .stroke(scheme.border.color.opacity(0.85), lineWidth: 1)
+                .stroke(theme.borderColor.opacity(0.85), lineWidth: 1)
         )
         .scaleEffect(isVisible ? 1 : 0.8)
         .opacity(isVisible ? 1 : 0)
@@ -64,40 +68,43 @@ struct StatCard: View {
 }
 
 // MARK: - Preview
+
 #Preview("Stat Cards") {
     StatCardsPreviewView()
 }
 
 private struct StatCardsPreviewView: View {
     @Environment(\.themeManager) private var themeManager
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         ZStack {
-            ThemedAnimatedBackground()
-                .ignoresSafeArea()
-            
+            // Uses the same hero background as Today
+            ThemedAnimatedBackground().ignoresSafeArea()
+
             HStack(spacing: 12) {
                 StatCard(
                     title: "Completed",
                     value: "8",
                     subtitle: "blocks",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: theme.statusSuccessColor,
                     icon: "checkmark.circle.fill"
                 )
-                
+
                 StatCard(
                     title: "Time",
                     value: "5h 30m",
                     subtitle: "tracked",
-                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                    color: theme.accentPrimaryColor,
                     icon: "clock.fill"
                 )
-                
+
                 StatCard(
                     title: "Skipped",
                     value: "2",
                     subtitle: "blocks",
-                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
+                    color: theme.statusWarningColor,
                     icon: "forward.circle.fill"
                 )
             }

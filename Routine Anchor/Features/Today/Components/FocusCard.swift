@@ -2,93 +2,83 @@
 //  FocusCard.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/21/25.
+//  Shows current or next focus with time and optional progress.
 //
+
 import SwiftUI
 import UserNotifications
 
-// MARK: - Focus Card
 struct FocusCard: View {
     let text: String
     let currentBlock: TimeBlock?
     let viewModel: TodayViewModel
-    
+
     @Environment(\.themeManager) private var themeManager
     @State private var pulseScale: CGFloat = 1.0
-    @State private var progressAnimation: CGFloat = 0
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
-        // Pull once to avoid repeating optionals and to match new tokens
-        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
-        let primaryText = (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
-        let secondaryText = (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
-        
-        return HStack(spacing: 16) {
+        HStack(spacing: 16) {
             // Focus icon with pulse
             ZStack {
                 Circle()
-                    .fill(scheme.workflowPrimary.color.opacity(scheme.ringOuterAlpha))
+                    .fill(theme.accentPrimaryColor.opacity(0.25))
                     .frame(width: 50, height: 50)
                     .scaleEffect(pulseScale)
-                
+
                 Image(systemName: "target")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(scheme.workflowPrimary.color)
+                    .foregroundStyle(theme.accentPrimaryColor)
             }
-            
-            // Focus content
+
+            // Content
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("Focus Mode")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(secondaryText.opacity(0.85))
+                        .foregroundStyle(theme.secondaryTextColor.opacity(0.85))
                         .textCase(.uppercase)
                         .tracking(1)
-                    
+
                     Spacer()
-                    
-                    // Time indicator
-                    if currentBlock != nil,
-                       let remainingTime = viewModel.remainingTimeForCurrentBlock() {
-                        TimeIndicator(
-                            timeText: remainingTime,
-                            isActive: true
-                        )
+
+                    if currentBlock != nil, let remainingTime = viewModel.remainingTimeForCurrentBlock() {
+                        TimeIndicator(timeText: remainingTime, isActive: true)
                     } else if let nextTime = viewModel.timeUntilNextBlock() {
-                        TimeIndicator(
-                            timeText: "in \(nextTime)",
-                            isActive: false
-                        )
+                        TimeIndicator(timeText: "in \(nextTime)", isActive: false)
                     }
                 }
-                
+
                 Text(text)
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(primaryText)
+                    .foregroundStyle(theme.primaryTextColor)
                     .lineLimit(2)
-                
-                // Progress bar for current block
-                if let currentBlock = currentBlock, currentBlock.isCurrentlyActive {
+
+                // Progress bar when actively working
+                if let currentBlock, currentBlock.isCurrentlyActive {
                     ProgressBar(
                         progress: currentBlock.currentProgress,
-                        color: scheme.workflowPrimary.color,
+                        color: theme.accentPrimaryColor,
                         animated: true
                     )
                 }
             }
         }
         .padding(20)
-        .themedGlassMorphism(cornerRadius: 16)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 16).fill(theme.surfaceCardColor.opacity(0.95))
+                RoundedRectangle(cornerRadius: 16).fill(theme.glassMaterialOverlay)
+            }
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(
                     LinearGradient(
-                        colors: [
-                            scheme.workflowPrimary.color.opacity(0.4),
-                            scheme.workflowPrimary.color.opacity(0.1)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        colors: [theme.accentPrimaryColor.opacity(0.4),
+                                 theme.accentPrimaryColor.opacity(0.1)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
                     ),
                     lineWidth: 1
                 )
@@ -101,31 +91,26 @@ struct FocusCard: View {
     }
 }
 
-// MARK: - Time Indicator
+// MARK: - Time Indicator (pill)
+
 struct TimeIndicator: View {
     @Environment(\.themeManager) private var themeManager
     let timeText: String
     let isActive: Bool
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
-        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
-        let activeColor = scheme.actionSuccess.color
-        let idleColor = scheme.workflowPrimary.color
-        
+        let tint = isActive ? theme.statusSuccessColor : theme.accentPrimaryColor
+
         return HStack(spacing: 4) {
-            Circle()
-                .fill(isActive ? activeColor : idleColor)
-                .frame(width: 6, height: 6)
-            
+            Circle().fill(tint).frame(width: 6, height: 6)
             Text(timeText)
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundStyle(isActive ? activeColor : idleColor)
+                .foregroundStyle(tint)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(
-            Capsule()
-                .fill((isActive ? activeColor : idleColor).opacity(0.15))
-        )
+        .background(Capsule().fill(tint.opacity(0.15)))
     }
 }

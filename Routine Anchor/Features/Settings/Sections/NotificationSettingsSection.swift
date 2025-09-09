@@ -2,7 +2,7 @@
 //  NotificationSettingsSection.swift
 //  Routine Anchor
 //
-//  Notification settings section for Settings view
+//  Notification settings.
 //
 
 import SwiftUI
@@ -14,18 +14,15 @@ struct NotificationSettingsSection: View {
     @Binding var dailyReminderTime: Date
     @Binding var notificationSound: String
 
-    // Theme helpers
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
-    // Local UI
     @State private var togglePulse = false
 
     var body: some View {
         SettingsSection(
             title: "Notifications",
             icon: "bell",
-            color: scheme.workflowPrimary.color
+            color: theme.accentPrimaryColor
         ) {
             VStack(spacing: 16) {
 
@@ -75,12 +72,13 @@ struct NotificationSettingsSection: View {
     }
 
     // MARK: - Info card
+
     private var notificationInfoSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(scheme.workflowPrimary.color)
+                    .foregroundStyle(theme.accentPrimaryColor)
 
                 Text("Notification Timing")
                     .font(.system(size: 13, weight: .semibold))
@@ -95,19 +93,18 @@ struct NotificationSettingsSection: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(theme.surfaceCardColor.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(scheme.border.color.opacity(0.85), lineWidth: 1)
+                .stroke(theme.borderColor.opacity(0.85), lineWidth: 1)
         )
     }
 }
 
-// MARK: - Preview
 #Preview {
     ZStack {
-        ThemedAnimatedBackground().ignoresSafeArea()
+        PredefinedThemes.classic.heroBackground.ignoresSafeArea()
         ScrollView {
             NotificationSettingsSection(
                 notificationsEnabled: .constant(true),
@@ -117,4 +114,6 @@ struct NotificationSettingsSection: View {
             .padding()
         }
     }
+    .environment(\.themeManager, ThemeManager.preview())
+    .preferredColorScheme(.dark)
 }

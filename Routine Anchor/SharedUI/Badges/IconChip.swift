@@ -2,21 +2,25 @@
 //  IconChip.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/23/25.
-//
+
 import SwiftUI
 
 struct IconChip: View {
     @Environment(\.themeManager) private var themeManager
-    let icon: String?
+    let icon: String?     // emoji or nil for “no icon”
     let isSelected: Bool
     let action: () -> Void
 
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
+    private let side: CGFloat = 44
+    private let corner: CGFloat = 12
+
     var body: some View {
-        Button(action: {
+        Button {
             HapticManager.shared.lightImpact()
             action()
-        }) {
+        } label: {
             Group {
                 if let icon = icon {
                     Text(icon)
@@ -24,25 +28,30 @@ struct IconChip: View {
                 } else {
                     Image(systemName: "minus")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
+                        .foregroundStyle(theme.secondaryTextColor)
                 }
             }
-            .frame(width: 44, height: 44)
+            .frame(width: side, height: side)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color.opacity(0.3) :
-                        (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.3))
+                RoundedRectangle(cornerRadius: corner, style: .continuous)
+                    .fill(
+                        isSelected
+                        ? theme.accentSecondaryColor.opacity(0.22)
+                        : theme.surfaceCardColor.opacity(0.30)
+                    )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: corner, style: .continuous)
                     .stroke(
-                        isSelected ? themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color :
-                        (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.4),
+                        (isSelected ? theme.accentSecondaryColor : theme.borderColor.opacity(0.40)), 
                         lineWidth: isSelected ? 2 : 1
                     )
             )
+            .contentShape(RoundedRectangle(cornerRadius: corner, style: .continuous))
         }
+        .buttonStyle(.plain)
         .scaleEffect(isSelected ? 1.1 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+        .animation(.spring(response: 0.30, dampingFraction: 0.75), value: isSelected)
+        .accessibilityLabel(icon ?? "No icon")
     }
 }

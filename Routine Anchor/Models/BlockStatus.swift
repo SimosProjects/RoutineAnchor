@@ -2,280 +2,223 @@
 //  BlockStatus.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/19/25.
+//  Represents the lifecycle state of a time block.
+//  Core enum is UI-agnostic; a SwiftUI-only section at the bottom
+//  provides theme-aware colors and small status views.
 //
-import Foundation
-import SwiftUI
 
-/// Represents the current state of a time block in the user's schedule
+import Foundation
+
+/// Represents the current state of a time block in the user's schedule.
 enum BlockStatus: String, CaseIterable, Codable, Sendable {
     case notStarted = "not_started"
     case inProgress = "in_progress"
-    case completed = "completed"
-    case skipped = "skipped"
-    
-    // MARK: - Display Properties
-    
-    /// Human-readable name for the status
+    case completed  = "completed"
+    case skipped    = "skipped"
+
+    // MARK: - Display
+
+    /// Human-readable name for the status (long).
     var displayName: String {
         switch self {
-        case .notStarted:
-            return "Upcoming"
-        case .inProgress:
-            return "In Progress"
-        case .completed:
-            return "Completed"
-        case .skipped:
-            return "Skipped"
+        case .notStarted: return "Upcoming"
+        case .inProgress: return "In Progress"
+        case .completed:  return "Completed"
+        case .skipped:    return "Skipped"
         }
     }
-    
-    /// Short display name for compact UI elements
+
+    /// Compact name for small UI elements.
     var shortDisplayName: String {
         switch self {
-        case .notStarted:
-            return "Upcoming"
-        case .inProgress:
-            return "Active"
-        case .completed:
-            return "Done"
-        case .skipped:
-            return "Skipped"
+        case .notStarted: return "Upcoming"
+        case .inProgress: return "Active"
+        case .completed:  return "Done"
+        case .skipped:    return "Skipped"
         }
     }
-    
-    /// Icon representing the status
+
+    /// SF Symbol best representing the status.
     var iconName: String {
         switch self {
-        case .notStarted:
-            return "circle"
-        case .inProgress:
-            return "clock.fill"
-        case .completed:
-            return "checkmark.circle.fill"
-        case .skipped:
-            return "xmark.circle.fill"
+        case .notStarted: return "circle"
+        case .inProgress: return "clock.fill"
+        case .completed:  return "checkmark.circle.fill"
+        case .skipped:    return "xmark.circle.fill"
         }
     }
-    
-    var statusEmoji: String {
+
+    /// Emoji used occasionally in copy.
+    var emoji: String {
         switch self {
         case .notStarted: return "⏰"
         case .inProgress: return "🔄"
-        case .completed: return "✅"
-        case .skipped: return "⏭️"
+        case .completed:  return "✅"
+        case .skipped:    return "⏭️"
         }
     }
-    
+
     // MARK: - State Logic
-    
-    /// Whether this status represents a completed state (for progress calculations)
-    var isCompleted: Bool {
-        return self == .completed
-    }
-    
-    /// Whether this status represents an active state (user can interact)
-    var isActive: Bool {
-        return self == .inProgress
-    }
-    
-    /// Whether this status represents a finished state (no more actions available)
-    var isFinished: Bool {
-        return self == .completed || self == .skipped
-    }
-    
-    /// Whether this status can be changed to another status
+
+    /// Whether this is a completed state (counts as success in progress calculations).
+    var isCompleted: Bool { self == .completed }
+
+    /// Whether the user can actively interact with this state.
+    var isActive: Bool { self == .inProgress }
+
+    /// Whether no more actions should be available (terminal state).
+    var isFinished: Bool { self == .completed || self == .skipped }
+
+    /// Whether transitions are allowed out of this state.
     var canTransition: Bool {
         switch self {
-        case .notStarted, .inProgress:
-            return true
-        case .completed, .skipped:
-            return false // Once finished, cannot change (for data integrity)
+        case .notStarted, .inProgress: return true
+        case .completed, .skipped:     return false
         }
     }
-    
-    /// Available next states from current status
+
+    /// Allowed next states (for UI menus etc.).
     var availableTransitions: [BlockStatus] {
         switch self {
-        case .notStarted:
-            return [.inProgress, .completed, .skipped]
-        case .inProgress:
-            return [.completed, .skipped]
-        case .completed, .skipped:
-            return [] // Final states
+        case .notStarted: return [.inProgress, .completed, .skipped]
+        case .inProgress: return [.completed, .skipped]
+        case .completed, .skipped: return []
         }
     }
-    
-    // MARK: - Business Logic
-    
-    /// Determines the appropriate status based on current time and time block schedule
+
+    /// Determine status based on current time window (non-destructive).
     static func determineStatus(
         startTime: Date,
         endTime: Date,
         currentStatus: BlockStatus,
         currentTime: Date = Date()
     ) -> BlockStatus {
-        // Don't change status if already finished
-        if currentStatus.isFinished {
-            return currentStatus
-        }
-        
-        // If current time is within the block timeframe and not started, mark as in progress
+        // Don't override terminal states.
+        if currentStatus.isFinished { return currentStatus }
+
+        // Auto-activate when we enter the time window.
         if currentTime >= startTime && currentTime <= endTime && currentStatus == .notStarted {
             return .inProgress
         }
-        
-        // If current time is past the block and still in progress, keep as in progress
-        // (let user manually mark as completed or skipped)
-        
+
+        // If past end and still in progress, keep as-is (user decides complete/skip).
         return currentStatus
     }
-    
-    /// Whether a time block with this status should show action buttons
-    var showsActionButtons: Bool {
-        return self == .inProgress
-    }
-    
-    /// Priority for sorting (higher number = higher priority in lists)
+
+    // MARK: - Sorting / Analytics
+
+    /// Sort priority for list grouping (higher first).
     var sortPriority: Int {
         switch self {
         case .inProgress: return 3
         case .notStarted: return 2
-        case .completed: return 1
-        case .skipped: return 0
+        case .completed:  return 1
+        case .skipped:    return 0
         }
     }
-    
-    // MARK: - Accessibility
-    
-    /// Accessibility label for screen readers
-    var accessibilityLabel: String {
-        switch self {
-        case .notStarted:
-            return "Not started, upcoming task"
-        case .inProgress:
-            return "In progress, currently active"
-        case .completed:
-            return "Completed successfully"
-        case .skipped:
-            return "Skipped, not completed"
-        }
-    }
-    
-    /// Accessibility hint for actions
-    var accessibilityHint: String? {
-        switch self {
-        case .notStarted:
-            return "Task will become active at scheduled time"
-        case .inProgress:
-            return "Tap to mark as completed or skipped"
-        case .completed:
-            return "Task completed successfully"
-        case .skipped:
-            return "Task was skipped"
-        }
-    }
-    
-    // MARK: - Analytics & Metrics
-    
-    /// Category for analytics tracking
+
+    /// Buckets for analytics.
     var analyticsCategory: String {
         switch self {
-        case .notStarted:
-            return "pending"
-        case .inProgress:
-            return "active"
-        case .completed:
-            return "success"
-        case .skipped:
-            return "abandoned"
+        case .notStarted: return "pending"
+        case .inProgress: return "active"
+        case .completed:  return "success"
+        case .skipped:    return "abandoned"
         }
     }
-    
-    /// Numeric value for progress calculations (0.0 to 1.0)
+
+    /// A rough numeric factor for progress visuals.
     var progressValue: Double {
         switch self {
-        case .notStarted:
-            return 0.0
-        case .inProgress:
-            return 0.5
-        case .completed:
-            return 1.0
-        case .skipped:
-            return 0.0
+        case .notStarted: return 0.0
+        case .inProgress: return 0.5
+        case .completed:  return 1.0
+        case .skipped:    return 0.0
+        }
+    }
+
+    // MARK: - Accessibility
+
+    var accessibilityLabel: String {
+        switch self {
+        case .notStarted: return "Not started, upcoming task"
+        case .inProgress: return "In progress, currently active"
+        case .completed:  return "Completed successfully"
+        case .skipped:    return "Skipped, not completed"
+        }
+    }
+
+    var accessibilityHint: String? {
+        switch self {
+        case .notStarted: return "Task will become active at scheduled time"
+        case .inProgress: return "Tap to mark as completed or skipped"
+        case .completed:  return "Task completed successfully"
+        case .skipped:    return "Task was skipped"
         }
     }
 }
 
-// MARK: - Theme-Aware View Extensions
-extension View {
-    /// Helper function to get color for a block status
-    func statusColor(for status: BlockStatus, themeManager: ThemeManager?) -> Color {
-        switch status {
-        case .notStarted:
-            return themeManager?.currentTheme.subtleTextColor ??
-                   Theme.defaultTheme.subtleTextColor
-        case .inProgress:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ??
-                   Theme.defaultTheme.colorScheme.warningColor.color
-        case .completed:
-            return themeManager?.currentTheme.colorScheme.successColor.color ??
-                   Theme.defaultTheme.colorScheme.successColor.color
-        case .skipped:
-            return themeManager?.currentTheme.colorScheme.errorColor.color ??
-                   Theme.defaultTheme.colorScheme.errorColor.color
+#if canImport(SwiftUI)
+import SwiftUI
+
+// MARK: - Theme-aware colors (SwiftUI-only)
+
+extension BlockStatus {
+    /// Main tint color for a status under a given theme.
+    func tintColor(theme: AppTheme) -> Color {
+        switch self {
+        case .notStarted: return theme.subtleTextColor
+        case .inProgress: return theme.statusWarningColor
+        case .completed:  return theme.statusSuccessColor
+        case .skipped:    return theme.statusErrorColor
         }
     }
-    
-    /// Helper function to get background color for a block status
-    func statusBackgroundColor(for status: BlockStatus, themeManager: ThemeManager?) -> Color {
-        switch status {
-        case .notStarted:
-            return Color.clear
-        case .inProgress:
-            let color = themeManager?.currentTheme.colorScheme.warningColor.color ??
-                       Theme.defaultTheme.colorScheme.warningColor.color
-            return color.opacity(0.1)
-        case .completed:
-            let color = themeManager?.currentTheme.colorScheme.successColor.color ??
-                       Theme.defaultTheme.colorScheme.successColor.color
-            return color.opacity(0.1)
-        case .skipped:
-            let color = themeManager?.currentTheme.colorScheme.errorColor.color ??
-                       Theme.defaultTheme.colorScheme.errorColor.color
-            return color.opacity(0.1)
+
+    /// Background tint for chips/badges.
+    func backgroundTint(theme: AppTheme) -> Color {
+        switch self {
+        case .notStarted: return .clear
+        default:          return tintColor(theme: theme).opacity(0.12)
         }
     }
 }
 
-// MARK: - SwiftUI View Components
+// MARK: - Minimal status UI helpers
+
 struct StatusIndicatorView: View {
     @Environment(\.themeManager) private var themeManager
     let status: BlockStatus
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         Image(systemName: status.iconName)
-            .foregroundStyle(statusColor(for: status, themeManager: themeManager))
+            .foregroundStyle(status.tintColor(theme: theme))
             .font(.system(size: 16, weight: .medium))
+            .accessibilityLabel(status.accessibilityLabel)
     }
 }
 
 struct StatusBadgeView: View {
     @Environment(\.themeManager) private var themeManager
     let status: BlockStatus
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: status.iconName)
                 .font(.system(size: 12, weight: .medium))
-            
             Text(status.shortDisplayName)
                 .font(.system(size: 12, weight: .medium))
         }
-        .foregroundStyle(statusColor(for: status, themeManager: themeManager))
+        .foregroundStyle(status.tintColor(theme: theme))
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(statusBackgroundColor(for: status, themeManager: themeManager))
+        .background(status.backgroundTint(theme: theme))
         .cornerRadius(6)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(status.accessibilityLabel)
     }
 }
+#endif

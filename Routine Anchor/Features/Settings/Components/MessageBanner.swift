@@ -2,51 +2,46 @@
 //  MessageBanner.swift
 //  Routine Anchor
 //
-//  Reusable message banner component
+//  Reusable message banner
 //
+
 import SwiftUI
 
 struct MessageBanner: View {
     @Environment(\.themeManager) private var themeManager
     let message: String
     let type: MessageType
-    
-    private var themePrimaryText: Color {
-        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-    }
-    
-    // Computed property to get the color based on type
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     private var typeColor: Color {
         switch type {
-        case .success:
-            return themeManager?.currentTheme.colorScheme.successColor.color ?? Theme.defaultTheme.colorScheme.successColor.color
-        case .error:
-            return themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color
+        case .success: return theme.statusSuccessColor
+        case .error:   return theme.statusErrorColor
         }
     }
-    
+
     enum MessageType {
         case success, error
-        
         var icon: String {
             switch self {
             case .success: return "checkmark.circle.fill"
-            case .error: return "exclamationmark.triangle.fill"
+            case .error:   return "exclamationmark.triangle.fill"
             }
         }
     }
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: type.icon)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(typeColor)
-            
+
             Text(message)
                 .font(TypographyConstants.Body.emphasized)
-                .foregroundStyle(themePrimaryText)
+                .foregroundStyle(theme.primaryTextColor)
                 .lineLimit(2)
-            
+
             Spacer()
         }
         .padding(.horizontal, 16)
@@ -69,19 +64,13 @@ struct MessageBanner: View {
     }
 }
 
-// MARK: - Preview
 #Preview("Message Banners") {
     VStack(spacing: 20) {
-        MessageBanner(
-            message: "Successfully saved your changes",
-            type: .success
-        )
-        
-        MessageBanner(
-            message: "An error occurred. Please try again.",
-            type: .error
-        )
+        MessageBanner(message: "Successfully saved your changes", type: .success)
+        MessageBanner(message: "An error occurred. Please try again.", type: .error)
     }
     .padding()
     .background(Color.gray.opacity(0.1))
+    .environment(\.themeManager, ThemeManager.preview())
+    .preferredColorScheme(.dark)
 }

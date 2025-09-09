@@ -2,33 +2,31 @@
 //  SettingsComponents.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/22/25.
-//
 
 import SwiftUI
 import SwiftData
 
 // MARK: - Settings Section Container
+
 struct SettingsSection<Content: View>: View {
     @Environment(\.themeManager) private var themeManager
-    
+
     let title: String
     let icon: String
     let color: Color
     let content: Content
-    
+
     @State private var isVisible = false
-    
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     init(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) {
         self.title = title
         self.icon = icon
         self.color = color
         self.content = content()
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Section header
@@ -37,31 +35,27 @@ struct SettingsSection<Content: View>: View {
                     .font(.system(size: 18, weight: .medium))
                     .foregroundStyle(color)
                     .frame(width: 24, height: 24)
-                
+
                 Text(title)
                     .font(TypographyConstants.Headers.cardTitle)
                     .foregroundStyle(theme.primaryTextColor)
-                
+
                 Spacer()
             }
-            
+
             // Section content
             content
         }
         .padding(20)
         .background(
-            // Use themed surface instead of material to avoid gray cast
-            RoundedRectangle(cornerRadius: 16)
-                .fill(scheme.surface2.color.opacity(0.9))
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(theme.surfaceCardColor.opacity(0.9))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(
-                    LinearGradient(
-                        colors: [color.opacity(0.30), color.opacity(0.10)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
+                    LinearGradient(colors: [color.opacity(0.30), color.opacity(0.10)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
                     lineWidth: 1
                 )
         )
@@ -77,36 +71,36 @@ struct SettingsSection<Content: View>: View {
 }
 
 // MARK: - Toggle Row
+
 struct SettingsToggle: View {
     @Environment(\.themeManager) private var themeManager
-    
+
     let title: String
     let subtitle: String
     @Binding var isOn: Bool
     let icon: String
-    
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(scheme.workflowPrimary.color)
+                .foregroundStyle(theme.accentPrimaryColor)
                 .frame(width: 24, height: 24)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
                     .foregroundStyle(theme.primaryTextColor)
-                
+
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
                     .foregroundStyle(theme.secondaryTextColor)
             }
-            
+
             Spacer()
-            
+
             Toggle("", isOn: $isOn)
                 .labelsHidden()
                 .toggleStyle(DesignedToggleStyle())
@@ -116,20 +110,20 @@ struct SettingsToggle: View {
 }
 
 // MARK: - Custom Toggle Style
+
 struct DesignedToggleStyle: ToggleStyle {
     @Environment(\.themeManager) private var themeManager
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
-    
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     func makeBody(configuration: Configuration) -> some View {
         HStack {
             configuration.label
-            
-            let onColor  = scheme.actionSuccess.color
-            let offColor = scheme.uiElementSecondary.color
-            
-            RoundedRectangle(cornerRadius: 16)
-                .fill(configuration.isOn ? onColor : offColor)
+
+            let onColor  = theme.statusSuccessColor
+            let offColor = theme.iconMutedColor
+
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(configuration.isOn ? onColor : offColor.opacity(0.6))
                 .frame(width: 44, height: 26)
                 .overlay(
                     Circle()
@@ -144,17 +138,18 @@ struct DesignedToggleStyle: ToggleStyle {
 }
 
 // MARK: - Button Row
+
 struct SettingsButton: View {
     @Environment(\.themeManager) private var themeManager
-    
+
     let title: String
     let subtitle: String
     let icon: String
     let color: Color
     let action: () -> Void
-    
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         Button {
             HapticManager.shared.lightImpact()
@@ -165,19 +160,19 @@ struct SettingsButton: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(color)
                     .frame(width: 24, height: 24)
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(TypographyConstants.Body.emphasized)
                         .foregroundStyle(theme.primaryTextColor)
-                    
+
                     Text(subtitle)
                         .font(TypographyConstants.UI.caption)
                         .foregroundStyle(theme.secondaryTextColor)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(theme.secondaryTextColor)
@@ -189,44 +184,45 @@ struct SettingsButton: View {
 }
 
 // MARK: - DatePicker Row
+
 struct SettingsDatePicker: View {
     @Environment(\.themeManager) private var themeManager
     let title: String
     let subtitle: String
     @Binding var selection: Date
     let icon: String
-    
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(scheme.workflowPrimary.color)
+                .foregroundStyle(theme.accentPrimaryColor)
                 .frame(width: 24, height: 24)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
                     .foregroundStyle(theme.primaryTextColor)
-                
+
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
                     .foregroundStyle(theme.secondaryTextColor)
             }
-            
+
             Spacer()
-            
+
             DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
                 .labelsHidden()
                 .datePickerStyle(.compact)
-                .tint(scheme.workflowPrimary.color)
+                .tint(theme.accentPrimaryColor)
         }
     }
 }
 
 // MARK: - Picker Row
+
 struct SettingsPicker: View {
     @Environment(\.themeManager) private var themeManager
     let title: String
@@ -234,36 +230,35 @@ struct SettingsPicker: View {
     let icon: String
     let options: [String]
     @Binding var selection: String
-    
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
-    
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(scheme.workflowPrimary.color)
+                .foregroundStyle(theme.accentPrimaryColor)
                 .frame(width: 24, height: 24)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TypographyConstants.Body.emphasized)
                     .foregroundStyle(theme.primaryTextColor)
-                
+
                 Text(subtitle)
                     .font(TypographyConstants.UI.caption)
                     .foregroundStyle(theme.secondaryTextColor)
             }
-            
+
             Spacer()
-            
+
             Picker("", selection: $selection) {
                 ForEach(options, id: \.self) { option in
                     Text(option).tag(option)
                 }
             }
             .pickerStyle(.menu)
-            .tint(scheme.workflowPrimary.color)
+            .tint(theme.accentPrimaryColor)
         }
     }
 }

@@ -2,6 +2,9 @@
 //  DailySummaryView.swift
 //  Routine Anchor
 //
+//  Daily summary screen: progress ring, stats, breakdown, insights, and actions.
+//
+
 import SwiftUI
 import SwiftData
 
@@ -10,6 +13,7 @@ struct DailySummaryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.premiumManager) private var premiumManager
     @Environment(\.themeManager) private var themeManager
+
     @State private var viewModel: DailySummaryViewModel
     @State private var showingPremiumUpgrade = false
 
@@ -22,14 +26,9 @@ struct DailySummaryView: View {
     @State private var selectedRating: Int = 0
     @State private var dayNotes = ""
 
-    // Quick theme handles
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
-
-    private var themePrimaryText: Color { theme.primaryTextColor }
-    private var themeSecondaryText: Color { theme.secondaryTextColor }
-    private var themeTertiaryText: Color { theme.subtleTextColor }
-    private var cardShadowColor: Color { scheme.appBackground.color.opacity(0.12) }
+    // Theme shorthands
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+    private var cardShadowColor: Color { theme.color.bg.primary.opacity(0.12) }
 
     init(modelContext: ModelContext, loadImmediately: Bool = true) {
         let dataManager = DataManager(modelContext: modelContext)
@@ -39,7 +38,7 @@ struct DailySummaryView: View {
 
     var body: some View {
         ZStack {
-            // Consistent hero background (matches Today/Schedule/Add)
+            // Matches Today/Schedule backgrounds in your app
             ThemedAnimatedBackground()
                 .ignoresSafeArea()
 
@@ -91,15 +90,24 @@ struct DailySummaryView: View {
                     VStack(spacing: 20) {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 48))
-                            .foregroundStyle(scheme.warningColor.color)
+                            .foregroundStyle(theme.statusWarningColor)
 
-                        Text("Premium Features").font(.title.bold()).foregroundStyle(themePrimaryText)
+                        Text("Premium Features")
+                            .font(.title.bold())
+                            .foregroundStyle(theme.primaryTextColor)
 
                         Text("Premium features are temporarily unavailable. Please try again later.")
                             .multilineTextAlignment(.center)
-                            .foregroundStyle(themeSecondaryText)
+                            .foregroundStyle(theme.secondaryTextColor)
 
-                        ThemedButton(title: "Close", style: .secondary) { showingPremiumUpgrade = false }
+                        DesignedButton(
+                            title: "Close",
+                            style: .surface,
+                            size: .medium,
+                            fullWidth: false
+                        ) {
+                            showingPremiumUpgrade = false
+                        }
                     }
                 }
                 .padding()
@@ -122,7 +130,9 @@ struct DailySummaryView: View {
             ShareSummaryView(viewModel: viewModel)
                 .environment(\.themeManager, themeManager)
         }
-        .onChange(of: selectedRating) { _, newValue in if newValue > 0 { HapticManager.shared.lightImpact() } }
+        .onChange(of: selectedRating) { _, newValue in
+            if newValue > 0 { HapticManager.shared.lightImpact() }
+        }
     }
 
     private func planTomorrow() {
@@ -132,18 +142,19 @@ struct DailySummaryView: View {
     }
 
     // MARK: - Header
+
     private var headerSection: some View {
         VStack(spacing: 16) {
             HStack {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeSecondaryText)
+                        .foregroundStyle(theme.secondaryTextColor)
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
-                                .fill(scheme.surface1.color.opacity(0.65))
-                                .overlay(Circle().stroke(scheme.border.color.opacity(0.85), lineWidth: 1))
+                                .fill(theme.color.surface.card.opacity(0.65))
+                                .overlay(Circle().stroke(theme.borderColor.opacity(0.85), lineWidth: 1))
                         )
                         .shadow(color: cardShadowColor, radius: 8, x: 0, y: 4)
                 }
@@ -153,52 +164,52 @@ struct DailySummaryView: View {
                 Button(action: { showingShareSheet = true }) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(scheme.workflowPrimary.color)
+                        .foregroundStyle(theme.accentPrimaryColor)
                         .frame(width: 36, height: 36)
-                        .background(Circle().fill(scheme.surface2.color))
-                        .overlay(Circle().stroke(scheme.border.color.opacity(0.8), lineWidth: 1))
+                        .background(Circle().fill(theme.color.surface.card.opacity(0.9)))
+                        .overlay(Circle().stroke(theme.borderColor.opacity(0.8), lineWidth: 1))
                 }
             }
 
             VStack(spacing: 12) {
-                // Animated icon glow
+                // Animated glow icon
                 ZStack {
                     Circle()
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    scheme.progressFillStart.color.opacity(scheme.glowIntensityPrimary),
-                                    scheme.progressFillEnd.color.opacity(scheme.glowIntensitySecondary),
+                                    theme.accentPrimaryColor.opacity(0.35),
+                                    theme.accentSecondaryColor.opacity(0.20),
                                     .clear
                                 ],
-                                center: .center, startRadius: scheme.glowRadiusInner, endRadius: scheme.glowRadiusOuter
+                                center: .center, startRadius: 28, endRadius: 88
                             )
                         )
                         .frame(width: 80, height: 80)
-                        .blur(radius: scheme.glowBlurRadius)
-                        .scaleEffect(animationPhase == 0 ? 1.0 : scheme.glowAnimationScale)
+                        .blur(radius: 24)
+                        .scaleEffect(animationPhase == 0 ? 1.0 : 1.2)
 
                     Image(systemName: "chart.pie.fill")
                         .font(.system(size: 40, weight: .light))
                         .foregroundStyle(
-                            LinearGradient(colors: [scheme.progressFillStart.color, scheme.progressFillEnd.color],
+                            LinearGradient(colors: [theme.accentPrimaryColor, theme.accentSecondaryColor],
                                            startPoint: .topLeading, endPoint: .bottomTrailing)
                         )
-                        .scaleEffect(animationPhase == 0 ? 1.0 : 1.1)
+                        .scaleEffect(animationPhase == 0 ? 1.0 : 1.08)
                 }
 
                 VStack(spacing: 8) {
                     Text("Daily Summary")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
-                            LinearGradient(colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
+                            LinearGradient(colors: [theme.accentPrimaryColor, theme.accentSecondaryColor],
                                            startPoint: .leading, endPoint: .trailing)
                         )
 
                     if let progress = viewModel.safeDailyProgress {
                         Text(progress.formattedDate)
                             .font(.system(size: 18, weight: .medium, design: .rounded))
-                            .foregroundStyle(themeSecondaryText)
+                            .foregroundStyle(theme.secondaryTextColor)
                     }
                 }
             }
@@ -208,21 +219,24 @@ struct DailySummaryView: View {
     }
 
     // MARK: - Progress
+
     private func progressCircleSection(_ vm: DailySummaryViewModel) -> some View {
         ThemedCard(cornerRadius: 24) {
             VStack(spacing: 0) {
                 VStack(spacing: 16) {
                     ZStack {
                         Circle()
-                            .stroke(scheme.progressTrack.color, lineWidth: 16)
+                            .stroke(theme.borderColor, lineWidth: 16)
                             .frame(width: 160, height: 160)
 
                         if let progress = vm.safeDailyProgress {
                             Circle()
                                 .trim(from: 0, to: CGFloat(progress.completionPercentage))
                                 .stroke(
-                                    LinearGradient(colors: [scheme.progressFillStart.color, scheme.progressFillEnd.color],
-                                                   startPoint: .topTrailing, endPoint: .bottomLeading),
+                                    LinearGradient(
+                                        colors: [theme.accentPrimaryColor, theme.accentSecondaryColor],
+                                        startPoint: .topTrailing, endPoint: .bottomLeading
+                                    ),
                                     style: StrokeStyle(lineWidth: 16, lineCap: .round)
                                 )
                                 .frame(width: 160, height: 160)
@@ -233,44 +247,46 @@ struct DailySummaryView: View {
                                 Text(progress.performanceLevel.emoji).font(.system(size: 36))
                                 Text(progress.formattedCompletionPercentage)
                                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                                    .foregroundStyle(scheme.progressFillStart.color)
+                                    .foregroundStyle(theme.accentPrimaryColor)
                                 Text("Complete")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(themeTertiaryText)
-                                    .textCase(.uppercase).tracking(1)
+                                    .foregroundStyle(theme.subtleTextColor)
+                                    .textCase(.uppercase)
+                                    .tracking(1)
                             }
                         } else {
                             VStack(spacing: 8) {
                                 Text("📊").font(.system(size: 36))
-                                Text("0%").font(.system(size: 28, weight: .bold, design: .rounded)).foregroundStyle(themeTertiaryText)
+                                Text("0%")
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(theme.subtleTextColor)
                                 Text("Complete")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(themeTertiaryText)
-                                    .textCase(.uppercase).tracking(1)
+                                    .foregroundStyle(theme.subtleTextColor)
+                                    .textCase(.uppercase)
+                                    .tracking(1)
                             }
                         }
                     }
                 }
 
-                VStack(spacing: 0) {
-                    if let progress = vm.safeDailyProgress {
-                        Text(progress.motivationalMessage)
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundStyle(themeSecondaryText)
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(3)
-                            .padding(.horizontal, 24)
-                            .padding(.top, 16)
-                            .lineLimit(3)
-                    } else {
-                        Text("Ready to start your day?")
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundStyle(themeSecondaryText)
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(3)
-                            .padding(.horizontal, 24)
-                            .padding(.top, 16)
-                    }
+                if let progress = vm.safeDailyProgress {
+                    Text(progress.motivationalMessage)
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(theme.secondaryTextColor)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
+                        .lineLimit(3)
+                } else {
+                    Text("Ready to start your day?")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(theme.secondaryTextColor)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
                 }
             }
         }
@@ -278,40 +294,51 @@ struct DailySummaryView: View {
     }
 
     // MARK: - Stats
+
     private func statisticsSection(_ vm: DailySummaryViewModel) -> some View {
         HStack(spacing: 12) {
             if let p = vm.safeDailyProgress {
-                StatCard(title: "Completed", value: "\(p.completedBlocks)", subtitle: p.completedBlocks == 1 ? "block" : "blocks",
-                         color: scheme.actionSuccess.color, icon: "checkmark.circle.fill")
+                StatCard(title: "Completed",
+                         value: "\(p.completedBlocks)",
+                         subtitle: p.completedBlocks == 1 ? "block" : "blocks",
+                         color: theme.statusSuccessColor,
+                         icon: "checkmark.circle.fill")
 
-                StatCard(title: "Skipped", value: "\(p.skippedBlocks)", subtitle: p.skippedBlocks == 1 ? "block" : "blocks",
-                         color: scheme.warningColor.color, icon: "forward.fill")
+                StatCard(title: "Skipped",
+                         value: "\(p.skippedBlocks)",
+                         subtitle: p.skippedBlocks == 1 ? "block" : "blocks",
+                         color: theme.statusWarningColor,
+                         icon: "forward.fill")
 
-                StatCard(title: "Time Used", value: "\(p.completedMinutes / 60)h \(p.completedMinutes % 60)m", subtitle: "planned",
-                         color: scheme.workflowPrimary.color, icon: "clock.fill")
+                StatCard(title: "Time Used",
+                         value: "\(p.completedMinutes / 60)h \(p.completedMinutes % 60)m",
+                         subtitle: "planned",
+                         color: theme.accentPrimaryColor,
+                         icon: "clock.fill")
             } else {
                 StatCard(title: "Completed", value: "0", subtitle: "blocks",
-                         color: scheme.actionSuccess.color, icon: "checkmark.circle.fill")
+                         color: theme.statusSuccessColor, icon: "checkmark.circle.fill")
                 StatCard(title: "Skipped", value: "0", subtitle: "blocks",
-                         color: scheme.warningColor.color, icon: "forward.fill")
+                         color: theme.statusWarningColor, icon: "forward.fill")
                 StatCard(title: "Time Used", value: "0h 0m", subtitle: "planned",
-                         color: scheme.workflowPrimary.color, icon: "clock.fill")
+                         color: theme.accentPrimaryColor, icon: "clock.fill")
             }
         }
     }
 
     // MARK: - Breakdown
+
     private func taskBreakdownSection(_ vm: DailySummaryViewModel) -> some View {
         ThemedCard(cornerRadius: 20) {
             VStack(spacing: 16) {
                 HStack {
                     Image(systemName: "list.bullet.circle")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(scheme.organizationAccent.color)
+                        .foregroundStyle(theme.accentSecondaryColor)
 
                     Text("Task Breakdown")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundStyle(themePrimaryText)
+                        .foregroundStyle(theme.primaryTextColor)
 
                     Spacer()
                 }
@@ -319,8 +346,12 @@ struct DailySummaryView: View {
                 VStack(spacing: 8) {
                     ForEach(vm.sortedTimeBlocks) { block in
                         TaskBreakdownRow(timeBlock: block)
-                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
-                                                    removal: .move(edge: .leading).combined(with: .opacity)))
+                            .transition(
+                                .asymmetric(
+                                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                                    removal: .move(edge: .leading).combined(with: .opacity)
+                                )
+                            )
                     }
                 }
             }
@@ -329,26 +360,27 @@ struct DailySummaryView: View {
     }
 
     // MARK: - Insights (gated)
+
     private func premiumGatedInsightsSection(_ vm: DailySummaryViewModel) -> some View {
         ThemedCard(cornerRadius: 20) {
             VStack(spacing: 16) {
                 HStack {
                     Image(systemName: "lightbulb.circle")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(scheme.warningColor.color)
+                        .foregroundStyle(theme.statusWarningColor)
 
                     Text("Insights & Suggestions")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundStyle(themePrimaryText)
+                        .foregroundStyle(theme.primaryTextColor)
 
                     Spacer()
-
-                    if premiumManager?.canAccessAdvancedAnalytics == true {
+                    
+                    if premiumManager?.hasPremiumAccess == true {
                         PremiumBadge()
                     }
                 }
 
-                if premiumManager?.canAccessAdvancedAnalytics == true {
+                if premiumManager?.hasPremiumAccess == true {
                     VStack(spacing: 12) {
                         ForEach(Array(vm.getPersonalizedInsights().enumerated()), id: \.offset) { idx, insight in
                             InsightRow(text: insight, delay: Double(idx) * 0.1)
@@ -356,26 +388,28 @@ struct DailySummaryView: View {
 
                         let suggestions = vm.getImprovementSuggestions()
                         if !suggestions.isEmpty {
-                            Divider().background(themeTertiaryText.opacity(0.2)).padding(.vertical, 8)
+                            Divider()
+                                .background(theme.subtleTextColor.opacity(0.2))
+                                .padding(.vertical, 8)
 
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
                                     Image(systemName: "brain.head.profile")
                                         .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(scheme.creativeSecondary.color)
+                                        .foregroundStyle(theme.accentSecondaryColor)
                                     Text("AI Suggestions")
                                         .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(themePrimaryText)
+                                        .foregroundStyle(theme.primaryTextColor)
                                 }
 
                                 ForEach(Array(suggestions.enumerated()), id: \.offset) { _, suggestion in
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("•")
                                             .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(scheme.creativeSecondary.color)
+                                            .foregroundStyle(theme.accentSecondaryColor)
                                         Text(suggestion)
                                             .font(.system(size: 14))
-                                            .foregroundStyle(themeSecondaryText)
+                                            .foregroundStyle(theme.secondaryTextColor)
                                     }
                                 }
                             }
@@ -398,10 +432,10 @@ struct DailySummaryView: View {
                             HStack {
                                 Image(systemName: "crown.fill")
                                     .font(.system(size: 12))
-                                    .foregroundStyle(scheme.warningColor.color)
+                                    .foregroundStyle(theme.statusWarningColor)
                                 Text("Premium insights include:")
                                     .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(themeSecondaryText)
+                                    .foregroundStyle(theme.secondaryTextColor)
                             }
 
                             let features = [
@@ -415,7 +449,7 @@ struct DailySummaryView: View {
                                 HStack(spacing: 8) {
                                     Text(f)
                                         .font(.system(size: 12))
-                                        .foregroundStyle(themeTertiaryText)
+                                        .foregroundStyle(theme.subtleTextColor)
                                     Spacer()
                                 }
                                 .padding(.leading, 8)
@@ -442,17 +476,18 @@ struct DailySummaryView: View {
     }
 
     // MARK: - Rating
+
     private func ratingSection(_ vm: DailySummaryViewModel) -> some View {
         ThemedCard(cornerRadius: 20) {
             VStack(spacing: 20) {
                 HStack {
                     Image(systemName: "star.circle")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(scheme.warningColor.color)
+                        .foregroundStyle(theme.statusWarningColor)
 
                     Text("Rate Your Day")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundStyle(themePrimaryText)
+                        .foregroundStyle(theme.primaryTextColor)
 
                     Spacer()
                 }
@@ -468,9 +503,9 @@ struct DailySummaryView: View {
                                 .font(.system(size: 32, weight: .medium))
                                 .foregroundStyle(
                                     filled
-                                    ? LinearGradient(colors: [scheme.warningColor.color, scheme.warningColor.color.opacity(0.85)],
+                                    ? LinearGradient(colors: [theme.statusWarningColor, theme.statusWarningColor.opacity(0.85)],
                                                      startPoint: .top, endPoint: .bottom)
-                                    : LinearGradient(colors: [themeTertiaryText, themeTertiaryText],
+                                    : LinearGradient(colors: [theme.subtleTextColor, theme.subtleTextColor],
                                                      startPoint: .top, endPoint: .bottom)
                                 )
                                 .scaleEffect(selectedRating == rating ? 1.2 : 1.0)
@@ -483,20 +518,26 @@ struct DailySummaryView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "note.text")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(scheme.creativeSecondary.color)
+                            .foregroundStyle(theme.accentSecondaryColor)
 
                         Text("Reflection")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(themeSecondaryText)
+                            .foregroundStyle(theme.secondaryTextColor)
                     }
 
                     TextField("How did your day go?", text: $dayNotes, axis: .vertical)
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themePrimaryText)
+                        .foregroundStyle(theme.primaryTextColor)
                         .lineLimit(3...6)
                         .padding(16)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(scheme.surface2.color.opacity(0.6)))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(scheme.border.color.opacity(0.8), lineWidth: 1))
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(theme.color.surface.card.opacity(0.6))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(theme.borderColor.opacity(0.8), lineWidth: 1)
+                        )
                 }
             }
         }
@@ -510,20 +551,24 @@ struct DailySummaryView: View {
     }
 
     // MARK: - Actions
+
     private func actionSection(_ vm: DailySummaryViewModel) -> some View {
         VStack(spacing: 16) {
             if vm.isDayComplete {
                 Text("🎉 Congratulations on completing your day!")
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(scheme.actionSuccess.color)
+                    .foregroundStyle(theme.statusSuccessColor)
                     .multilineTextAlignment(.center)
 
-                ThemedButton(title: "Plan Tomorrow", style: .primary) { planTomorrow() }
+                DesignedButton(title: "Plan Tomorrow", style: .gradient, size: .medium, fullWidth: false) {
+                    planTomorrow()
+                }
             }
         }
     }
 
     // MARK: - Empty State
+
     private var emptyStateView: some View {
         VStack(spacing: 32) {
             Spacer()
@@ -533,8 +578,8 @@ struct DailySummaryView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                scheme.actionSuccess.color.opacity(0.3),
-                                scheme.creativeSecondary.color.opacity(0.12),
+                                theme.statusSuccessColor.opacity(0.3),
+                                theme.accentSecondaryColor.opacity(0.12),
                                 .clear
                             ],
                             center: .center, startRadius: 50, endRadius: 150
@@ -546,26 +591,26 @@ struct DailySummaryView: View {
                 Image(systemName: "chart.pie")
                     .font(.system(size: 80, weight: .thin))
                     .foregroundStyle(
-                        LinearGradient(colors: [scheme.actionSuccess.color, scheme.creativeSecondary.color],
+                        LinearGradient(colors: [theme.statusSuccessColor, theme.accentSecondaryColor],
                                        startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
-                    .floatModifier()
+                    .floatModifier() // assuming you have this
             }
 
             VStack(spacing: 16) {
                 Text("No Data Yet")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(themePrimaryText)
+                    .foregroundStyle(theme.primaryTextColor)
 
                 Text("Complete some time blocks to see your daily summary")
                     .font(.system(size: 18, weight: .regular, design: .rounded))
-                    .foregroundStyle(themeSecondaryText)
+                    .foregroundStyle(theme.secondaryTextColor)
                     .multilineTextAlignment(.center)
             }
 
             Spacer()
 
-            ThemedButton(title: "Start Your Day", style: .primary) {
+            DesignedButton(title: "Start Your Day", style: .gradient) {
                 NotificationCenter.default.post(name: .navigateToToday, object: nil)
             }
         }
@@ -573,6 +618,7 @@ struct DailySummaryView: View {
     }
 
     // MARK: - Helpers
+
     @MainActor
     private func setupInitialState() async {
         await viewModel.refreshData()
@@ -588,7 +634,6 @@ struct DailySummaryView: View {
     }
 }
 
-
 // MARK: - Supporting Components
 
 struct InsightRow: View {
@@ -598,13 +643,12 @@ struct InsightRow: View {
     @Environment(\.themeManager) private var themeManager
     @State private var isVisible = false
 
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Circle()
-                .fill(scheme.warningColor.color.opacity(0.3))
+                .fill(theme.statusWarningColor.opacity(0.3))
                 .frame(width: 6, height: 6)
                 .offset(y: 6)
 
@@ -622,35 +666,5 @@ struct InsightRow: View {
                 isVisible = true
             }
         }
-    }
-}
-
-
-// MARK: - Preview
-#Preview("Empty State") {
-    NavigationStack {
-        DailySummaryView(
-            modelContext: ModelContext(
-                try! ModelContainer(
-                    for: TimeBlock.self,
-                    configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-                )
-            ),
-            loadImmediately: false
-        )
-    }
-}
-
-#Preview("With Data - Static") {
-    NavigationStack {
-        DailySummaryView(
-            modelContext: ModelContext(
-                try! ModelContainer(
-                    for: Schema([TimeBlock.self, DailyProgress.self]),
-                    configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-                )
-            ),
-            loadImmediately: false
-        )
     }
 }

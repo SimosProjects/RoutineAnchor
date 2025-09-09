@@ -13,14 +13,11 @@ struct WelcomeView: View {
     @State private var appearAnimation = false
     @State private var floatingAnimation = false
 
-    // Theme helpers
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
     var body: some View {
         ZStack {
-            ThemedAnimatedBackground()
-                .ignoresSafeArea()
+            ThemedAnimatedBackground().ignoresSafeArea()
 
             GeometryReader { geometry in
                 ScrollView(showsIndicators: false) {
@@ -33,14 +30,10 @@ struct WelcomeView: View {
                                 Circle()
                                     .fill(
                                         RadialGradient(
-                                            colors: [
-                                                scheme.workflowPrimary.color.opacity(0.55),
-                                                scheme.workflowPrimary.color.opacity(0.25),
-                                                .clear
-                                            ],
-                                            center: .center,
-                                            startRadius: 30,
-                                            endRadius: 120
+                                            colors: [theme.accentPrimaryColor.opacity(0.55),
+                                                     theme.accentPrimaryColor.opacity(0.25),
+                                                     .clear],
+                                            center: .center, startRadius: 30, endRadius: 120
                                         )
                                     )
                                     .frame(width: 160, height: 160)
@@ -50,13 +43,8 @@ struct WelcomeView: View {
                                 Circle()
                                     .fill(
                                         RadialGradient(
-                                            colors: [
-                                                scheme.creativeSecondary.color.opacity(0.4),
-                                                .clear
-                                            ],
-                                            center: .center,
-                                            startRadius: 20,
-                                            endRadius: 90
+                                            colors: [theme.accentSecondaryColor.opacity(0.4), .clear],
+                                            center: .center, startRadius: 20, endRadius: 90
                                         )
                                     )
                                     .frame(width: 160, height: 160)
@@ -66,13 +54,11 @@ struct WelcomeView: View {
                                 Image(systemName: "target")
                                     .font(.system(size: 92, weight: .thin))
                                     .foregroundStyle(
-                                        LinearGradient(
-                                            colors: [scheme.workflowPrimary.color, scheme.creativeSecondary.color],
-                                            startPoint: .topLeading, endPoint: .bottomTrailing
-                                        )
+                                        LinearGradient(colors: [theme.accentPrimaryColor, theme.accentSecondaryColor],
+                                                       startPoint: .topLeading, endPoint: .bottomTrailing)
                                     )
                                     .rotation3DEffect(.degrees(floatingAnimation ? 10 : -10), axis: (x: 0, y: 1, z: 0))
-                                    .shadow(color: scheme.workflowPrimary.color.opacity(0.45), radius: 30, x: 0, y: 15)
+                                    .shadow(color: theme.accentPrimaryColor.opacity(0.45), radius: 30, x: 0, y: 15)
                             }
                             .scaleEffect(appearAnimation ? 1 : 0.5)
                             .opacity(appearAnimation ? 1 : 0)
@@ -86,10 +72,8 @@ struct WelcomeView: View {
                                 Text("Routine Anchor")
                                     .font(.system(size: 46, weight: .bold, design: .rounded))
                                     .foregroundStyle(
-                                        LinearGradient(
-                                            colors: [scheme.workflowPrimary.color, scheme.creativeSecondary.color],
-                                            startPoint: .leading, endPoint: .trailing
-                                        )
+                                        LinearGradient(colors: [theme.accentPrimaryColor, theme.accentSecondaryColor],
+                                                       startPoint: .leading, endPoint: .trailing)
                                     )
 
                                 Text("Transform your daily chaos into\npeaceful productivity")
@@ -110,21 +94,21 @@ struct WelcomeView: View {
                                 icon: "bell.badge",
                                 title: "Smart Reminders",
                                 description: "AI-powered notifications that adapt to your rhythm",
-                                tint: scheme.workflowPrimary.color,
+                                tint: theme.accentPrimaryColor,
                                 delay: 0.15
                             )
                             FeatureCard(
                                 icon: "chart.line.uptrend.xyaxis",
                                 title: "Visual Progress",
                                 description: "Beautiful insights that motivate you daily",
-                                tint: scheme.organizationAccent.color,
+                                tint: theme.accentSecondaryColor,
                                 delay: 0.25
                             )
                             FeatureCard(
                                 icon: "sparkles",
                                 title: "Mindful Design",
                                 description: "Crafted to reduce stress, not add to it",
-                                tint: scheme.creativeSecondary.color,
+                                tint: theme.statusInfoColor,
                                 delay: 0.35
                             )
                         }
@@ -152,12 +136,8 @@ struct WelcomeView: View {
         .toolbar(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.05)) {
-                appearAnimation = true
-            }
-            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
-                floatingAnimation = true
-            }
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.05)) { appearAnimation = true }
+            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) { floatingAnimation = true }
         }
     }
 }

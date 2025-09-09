@@ -1,21 +1,28 @@
 //
-//  AnchorTextField.swift
+//  DesignedTextField.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/23/25.
-//
+
 import SwiftUI
 
+/// Labeled text field that adapts to the active AppTheme.
 struct DesignedTextField: View {
     let title: String
     @Binding var text: String
     let placeholder: String
     let icon: String
-    let isMultiline: Bool
-    
-    @Environment(\.themeManager) private var themeManager
+    var isMultiline: Bool = false
 
-    init(title: String, text: Binding<String>, placeholder: String, icon: String, isMultiline: Bool = false) {
+    @Environment(\.themeManager) private var themeManager
+    @FocusState private var isFocused: Bool
+
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
+
+    init(title: String,
+         text: Binding<String>,
+         placeholder: String,
+         icon: String,
+         isMultiline: Bool = false) {
         self.title = title
         self._text = text
         self.placeholder = placeholder
@@ -25,16 +32,18 @@ struct DesignedTextField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // Label
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(theme.accentPrimaryColor)
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+                    .foregroundStyle(theme.primaryTextColor)
             }
 
+            // Field
             Group {
                 if isMultiline {
                     TextField(placeholder, text: $text, axis: .vertical)
@@ -43,18 +52,20 @@ struct DesignedTextField: View {
                     TextField(placeholder, text: $text)
                 }
             }
+            .focused($isFocused)
             .font(.system(size: 16, weight: .medium))
-            .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
+            .foregroundStyle(theme.primaryTextColor)
+            .tint(theme.accentPrimaryColor) // cursor / selection
             .padding(16)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(theme.surfaceCardColor.opacity(0.35))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(isFocused ? theme.accentPrimaryColor : theme.borderColor.opacity(0.9), lineWidth: 1)
             )
+            .animation(.easeInOut(duration: 0.15), value: isFocused)
         }
     }
 }
-

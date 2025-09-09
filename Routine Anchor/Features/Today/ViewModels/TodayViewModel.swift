@@ -2,9 +2,10 @@
 //  TodayViewModel.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/19/25.
-//  Swift 6 Compatible Version
+//  View-model for the Today screen. Swift 6 / iOS 17+
+//  Uses Observation (@Observable) and MainActor isolation.
 //
+
 import SwiftUI
 import SwiftData
 import Observation
@@ -12,501 +13,269 @@ import Observation
 @Observable
 @MainActor
 final class TodayViewModel {
-    // MARK: - Observable Properties
+
+    // MARK: - Observable State
+
     var timeBlocks: [TimeBlock] = []
-    var dailyProgress: DailyProgress?
     var isLoading = false
     var errorMessage: String?
-    
-    // MARK: - Private Properties
+
+    // MARK: - Private
+
     private let dataManager: DataManager
-    
-    // MARK: - Nonisolated Properties
-    nonisolated(unsafe) private var updateTimer: Timer?
-    nonisolated(unsafe) private var notificationObserver: NSObjectProtocol?
-    
-    // MARK: - Initialization
+
+    // Periodic refresh loop and notification listener (both cancelable tasks).
+    nonisolated(unsafe) private var refreshTask: Task<Void, Never>?
+    nonisolated(unsafe) private var notificationsTask: Task<Void, Never>?
+
+    // MARK: - Init / Deinit
+
     init(dataManager: DataManager) {
         self.dataManager = dataManager
-        setupNotificationObserver()
-        
-        // Load today's blocks asynchronously
+        startNotificationListener()
         Task { await loadTodaysBlocks() }
     }
-    
-    private func setupNotificationObserver() {
-        notificationObserver = NotificationCenter.default.addObserver(
-            forName: .timeBlocksDidChange,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            guard let self = self else { return }
-            
-            // Check if the change affects today's blocks
-            if let date = notification.userInfo?["date"] as? Date,
-               Calendar.current.isDateInToday(date) {
-                Task { @MainActor [weak self] in
-                    await self?.loadTodaysBlocks()
+
+    deinit {
+        // Both are safe to cancel here; no cross-actor hops.
+        refreshTask?.cancel()
+        notificationsTask?.cancel()
+    }
+
+    // MARK: - Notifications (async sequence, no removeObserver needed)
+
+    private func startNotificationListener() {
+        // Listen to .timeBlocksDidChange and refresh if it concerns today.
+        notificationsTask?.cancel()
+        notificationsTask = Task { [weak self] in
+            guard let self else { return }
+            let center = NotificationCenter.default
+            for await note in center.notifications(named: .timeBlocksDidChange) {
+                if let date = note.userInfo?["date"] as? Date,
+                   Calendar.current.isDateInToday(date) {
+                    await self.loadTodaysBlocks()
                 }
+                if Task.isCancelled { break }
             }
         }
     }
-    
-    deinit {
-        if let timer = updateTimer {
-            timer.invalidate()
-        }
-        
-        if let observer = notificationObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
-    }
-    
-    // MARK: - Timer Management
+
+    // MARK: - Periodic Refresh
 
     func startPeriodicUpdates() {
         stopPeriodicUpdates()
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                await self?.refreshData()
+        refreshTask = Task { [weak self] in
+            guard let self else { return }
+            await self.refreshData()                       // initial tick
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(60))
+                await self.refreshData()
             }
         }
     }
-    
+
     func stopPeriodicUpdates() {
-        updateTimer?.invalidate()
-        updateTimer = nil
+        refreshTask?.cancel()
+        refreshTask = nil
     }
-    
+
     // MARK: - Data Loading
-    
-    /// Load today's time blocks and calculate progress
+
     func loadTodaysBlocks() async {
         isLoading = true
         errorMessage = nil
-        
-        do {
-            // Use safe loading methods
-            let blocks = dataManager.loadTodaysTimeBlocksSafely()
-            dataManager.updateDailyProgressSafely(for: Date())
-            
-            // Update properties directly
-            self.timeBlocks = blocks
-            self.dailyProgress = nil
-            self.isLoading = false
-            
-        }
-    }
-    
-    func refreshData() async {
-        print("🔄 TodayViewModel.refreshData() starting...")
-        
-        // Add safety guard for model context
-        guard dataManager.modelContext.hasChanges == false || dataManager.modelContext.hasChanges == true else {
-            print("⚠️ ModelContext appears invalid, skipping refresh")
-            return
-        }
-        
-        isLoading = true
-        errorMessage = nil
-        
-        do {
-            print("🔄 Loading today's time blocks...")
-            
-            // Use safe loading method
-            timeBlocks = dataManager.loadTodaysTimeBlocksSafely()
-            print("🔄 Loaded \(timeBlocks.count) time blocks")
-            
-            for block in timeBlocks {
-                print("🔄 Block '\(block.title)' status: \(block.status.rawValue)")
-            }
-            
-            print("🔄 Updating daily progress...")
-            
-            // Use safe update method instead of storing the DailyProgress object
-            dataManager.updateDailyProgressSafely(for: Date())
-            
-            // DON'T store the DailyProgress object - reload it each time it's needed
-            // This prevents holding onto destroyed model instances
-            // dailyProgress = try dataManager.loadDailyProgress(for: Date()) // <- Remove this line
-            dailyProgress = nil // Clear any existing reference
-            
-            print("🔄 ✅ Daily progress updated")
-            
-        }
-        
+
+        timeBlocks = dataManager.loadTodaysTimeBlocksSafely()
+        dataManager.updateDailyProgressSafely(for: Date())
+
         isLoading = false
-        print("🔄 ✅ TodayViewModel.refreshData() completed")
     }
-    
-    // MARK: - Time Block Actions
-    
-    /// Mark a time block as completed
-    func markBlockCompleted(_ timeBlock: TimeBlock) async {
+
+    func refreshData() async {
         isLoading = true
         errorMessage = nil
-        
+
+        timeBlocks = dataManager.loadTodaysTimeBlocksSafely()
+        dataManager.updateDailyProgressSafely(for: Date())
+
+        isLoading = false
+    }
+
+    // MARK: - Block Actions
+
+    func markBlockCompleted(_ timeBlock: TimeBlock) async {
+        isLoading = true; errorMessage = nil
         do {
             try dataManager.markTimeBlockCompleted(timeBlock)
             await loadTodaysBlocks()
             HapticManager.shared.success()
         } catch {
-            self.errorMessage = "Failed to mark block as completed: \(error.localizedDescription)"
+            errorMessage = "Failed to mark block as completed: \(error.localizedDescription)"
             HapticManager.shared.error()
         }
-        
         isLoading = false
     }
-    
-    /// Mark a time block as skipped
+
     func markBlockSkipped(_ timeBlock: TimeBlock) async {
-        isLoading = true
-        errorMessage = nil
-        
+        isLoading = true; errorMessage = nil
         do {
             try dataManager.markTimeBlockSkipped(timeBlock)
             await loadTodaysBlocks()
             HapticManager.shared.lightImpact()
         } catch {
-            self.errorMessage = "Failed to skip block: \(error.localizedDescription)"
+            errorMessage = "Failed to skip block: \(error.localizedDescription)"
             HapticManager.shared.error()
         }
-        
         isLoading = false
     }
-    
-    /// Start a time block (transition to in-progress)
+
     func startTimeBlock(_ timeBlock: TimeBlock) async {
         do {
             try dataManager.startTimeBlock(timeBlock)
             await loadTodaysBlocks()
             HapticManager.shared.mediumImpact()
         } catch {
-            self.errorMessage = "Failed to start block: \(error.localizedDescription)"
+            errorMessage = "Failed to start block: \(error.localizedDescription)"
             HapticManager.shared.error()
         }
     }
-    
-    // MARK: - Computed Properties
-    
-    var safeDailyProgress: DailyProgress? {
-        return dataManager.loadDailyProgressSafely(for: Date())
-    }
-    
-    var progressPercentage: Double {
-        return safeDailyProgress?.completionPercentage ?? 0.0
-    }
-    
-    /// Formatted progress percentage string
-    var formattedProgressPercentage: String {
-        return safeDailyProgress?.formattedCompletionPercentage ?? "0%"
-    }
-    
-    /// Completion summary string (e.g., "4 of 6 completed")
-    var completionSummary: String {
-        return safeDailyProgress?.completionSummary ?? "No tasks scheduled"
-    }
-    
-    /// Time summary string (e.g., "2h 30m of 4h planned")
-    var timeSummary: String {
-        return safeDailyProgress?.timeSummary ?? "No time planned"
-    }
-    
-    /// Performance level for the day
-    var performanceLevel: DailyProgress.PerformanceLevel {
-        return safeDailyProgress?.performanceLevel ?? .none
-    }
-    
-    /// Motivational message based on progress
-    var motivationalMessage: String {
-        return safeDailyProgress?.motivationalMessage ?? "Ready to start your day?"
-    }
-    
-    /// Sorted time blocks by start time
-    var sortedTimeBlocks: [TimeBlock] {
-        return timeBlocks.sorted()
-    }
-    
-    /// Time blocks grouped by status
-    var timeBlocksByStatus: [BlockStatus: [TimeBlock]] {
-        return Dictionary(grouping: timeBlocks) { $0.status }
-    }
-    
-    /// Count of blocks by status
-    var completedBlocksCount: Int {
-        return timeBlocks.filter { $0.status == .completed }.count
-    }
-    
-    var inProgressBlocksCount: Int {
-        return timeBlocks.filter { $0.status == .inProgress }.count
-    }
-    
-    var remainingBlocksCount: Int {
-        return timeBlocks.filter { block in
-            block.status == .notStarted || block.status == .inProgress
-        }.count
-    }
-    
-    var completionPercentage: Int {
-        guard !timeBlocks.isEmpty else { return 0 }
-        let completed = timeBlocks.filter { $0.status == .completed }.count
-        return Int((Double(completed) / Double(timeBlocks.count)) * 100)
-    }
-    
-    var upcomingBlocksCount: Int {
-        return timeBlocks.filter { $0.status == .notStarted }.count
-    }
-    
-    var skippedBlocksCount: Int {
-        return timeBlocks.filter { $0.status == .skipped }.count
-    }
-    
-    /// Check if there are any scheduled blocks for today
-    var hasScheduledBlocks: Bool {
-        !timeBlocks.isEmpty
-    }
-    
-    /// Check if all blocks are complete for today
-    var isDayComplete: Bool {
-        guard !timeBlocks.isEmpty else { return false }
-        return timeBlocks.allSatisfy { $0.status == .completed }
-    }
-    
-    /// Get completion percentage for today (duplicate name fixed)
-    var dayCompletionPercentage: Double {
-        guard !timeBlocks.isEmpty else { return 0 }
-        let completedCount = timeBlocks.filter { $0.status == .completed }.count
-        return Double(completedCount) / Double(timeBlocks.count)
-    }
-    
-    /// Get total scheduled time for today
-    var totalScheduledMinutes: Int {
-        timeBlocks.reduce(0) { $0 + $1.durationMinutes }
+
+    // MARK: - Daily Progress (read on demand; don’t retain model)
+
+    private var safeDailyProgress: DailyProgress? {
+        dataManager.loadDailyProgressSafely(for: Date())
     }
 
-    /// Get total completed time for today
-    var totalCompletedMinutes: Int {
-        timeBlocks
-            .filter { $0.status == .completed }
-            .reduce(0) { $0 + $1.durationMinutes }
-    }
-    
-    // MARK: - Helper Methods
-    
-    /// Get the currently active time block
+    var progressRatio: Double { safeDailyProgress?.completionPercentage ?? 0.0 } // 0…1
+    var progressPercentage: Double { progressRatio }                             // alias (ratio)
+    var progressPercent: Int { Int(round(progressRatio * 100)) }                // 0…100
+    var formattedProgressPercentage: String { "\(progressPercent)%" }
+
+    var completionSummary: String { safeDailyProgress?.completionSummary ?? "No tasks scheduled" }
+    var timeSummary: String       { safeDailyProgress?.timeSummary ?? "No time planned" }
+    var performanceLevel: DailyProgress.PerformanceLevel { safeDailyProgress?.performanceLevel ?? .none }
+    var motivationalMessage: String { safeDailyProgress?.motivationalMessage ?? "Ready to start your day?" }
+
+    // MARK: - Derived Collections & Counts
+
+    var sortedTimeBlocks: [TimeBlock] { timeBlocks.sorted() }
+    var timeBlocksByStatus: [BlockStatus: [TimeBlock]] { .init(grouping: timeBlocks, by: { $0.status }) }
+
+    var completedBlocksCount: Int { timeBlocks.filter { $0.status == .completed }.count }
+    var inProgressBlocksCount: Int { timeBlocks.filter { $0.status == .inProgress }.count }
+    var upcomingBlocksCount: Int { timeBlocks.filter { $0.status == .notStarted }.count }
+    var remainingBlocksCount: Int { timeBlocks.filter { $0.status == .notStarted || $0.status == .inProgress }.count }
+
+    var completionPercentage: Int { progressPercent }      // legacy alias
+    var dayCompletionPercentage: Double { progressRatio }  // legacy alias
+
+    var totalScheduledMinutes: Int { timeBlocks.reduce(0) { $0 + $1.durationMinutes } }
+    var totalCompletedMinutes: Int { timeBlocks.filter { $0.status == .completed }.reduce(0) { $0 + $1.durationMinutes } }
+
+    // MARK: - Convenience
+
     func getCurrentBlock() -> TimeBlock? {
         let now = Date()
-        return timeBlocks.first { block in
-            block.startTime <= now && block.endTime > now
-        }
+        return timeBlocks.first { $0.startTime <= now && $0.endTime > now }
     }
-    
-    /// Get the next upcoming time block
+
     func getNextUpcomingBlock() -> TimeBlock? {
         let now = Date()
-        return timeBlocks
-            .filter { $0.startTime > now }
-            .sorted { $0.startTime < $1.startTime }
-            .first
+        return timeBlocks.filter { $0.startTime > now }.min(by: { $0.startTime < $1.startTime })
     }
-    
-    /// Get time blocks by status
+
     func getBlocks(withStatus status: BlockStatus) -> [TimeBlock] {
         timeBlocks.filter { $0.status == status }
     }
-    
-    /// Check if a specific time block is current
+
     func isBlockCurrent(_ block: TimeBlock) -> Bool {
         let now = Date()
         return block.startTime <= now && block.endTime > now
     }
-    
-    /// Whether it's the right time to show summary (end of day)
+
     var shouldShowSummary: Bool {
-        let calendar = Calendar.current
-        let hour = calendar.component(.hour, from: Date())
-        
-        // Show summary after 8 PM or if all blocks are complete
+        let hour = Calendar.current.component(.hour, from: Date())
         return hour >= 20 || isDayComplete
     }
-    
-    /// Get time until next block
+
+    var hasScheduledBlocks: Bool { !timeBlocks.isEmpty }
+    var isDayComplete: Bool { !timeBlocks.isEmpty && timeBlocks.allSatisfy { $0.status == .completed } }
+
     func timeUntilNextBlock() -> String? {
-        guard let nextBlock = getNextUpcomingBlock() else { return nil }
-        
-        let interval = nextBlock.startTime.timeIntervalSince(Date())
+        guard let next = getNextUpcomingBlock() else { return nil }
+        let interval = next.startTime.timeIntervalSince(Date())
         guard interval > 0 else { return nil }
-        
-        let hours = Int(interval) / 3600
-        let minutes = (Int(interval) % 3600) / 60
-        
-        if hours > 0 {
-            return "\(hours)h \(minutes)m"
-        } else {
-            return "\(minutes)m"
-        }
+        let h = Int(interval) / 3600
+        let m = (Int(interval) % 3600) / 60
+        return h > 0 ? "\(h)h \(m)m" : "\(m)m"
     }
-    
-    /// Get remaining time for current block
+
     func remainingTimeForCurrentBlock() -> String? {
-        guard let currentBlock = getCurrentBlock(),
-              let remainingMinutes = currentBlock.remainingMinutes else {
-            return nil
-        }
-        
-        let hours = remainingMinutes / 60
-        let minutes = remainingMinutes % 60
-        
-        if hours > 0 {
-            return "\(hours)h \(minutes)m remaining"
-        } else {
-            return "\(minutes)m remaining"
-        }
+        guard let current = getCurrentBlock(), let mins = current.remainingMinutes else { return nil }
+        let h = mins / 60, m = mins % 60
+        return h > 0 ? "\(h)h \(m)m remaining" : "\(m)m remaining"
     }
-    
+
     // MARK: - Actions
-    
-    /// Reset today's progress (useful for testing or corrections)
+
     func resetTodaysProgress() async {
-        isLoading = true
-        errorMessage = nil
-        
+        isLoading = true; errorMessage = nil
         do {
             try dataManager.resetTimeBlocksStatus(for: Date())
             await loadTodaysBlocks()
             HapticManager.shared.success()
         } catch {
-            self.errorMessage = "Failed to reset progress: \(error.localizedDescription)"
+            errorMessage = "Failed to reset progress: \(error.localizedDescription)"
             HapticManager.shared.error()
         }
-        
         isLoading = false
     }
-    
-    /// Mark day as reviewed (for summary tracking)
+
     func markDayAsReviewed() async {
-        do {
-            dailyProgress?.markSummaryViewed()
-            try dataManager.updateDailyProgress(for: Date())
-        } catch {
-            print("Error marking day as reviewed: \(error)")
+        if let progress = dataManager.loadDailyProgressSafely(for: Date()) {
+            progress.markSummaryViewed()
+            do { try dataManager.updateDailyProgress(for: Date()) } catch { print("Mark reviewed error:", error) }
         }
     }
-    
-    // MARK: - Error Handling
-    
-    /// Clear any error messages
+
     func clearError() {
-        self.errorMessage = nil
-        self.dataManager.clearError()
+        errorMessage = nil
+        dataManager.clearError()
     }
-    
-    /// Retry the last failed operation
+
     func retryLastOperation() async {
         clearError()
         await loadTodaysBlocks()
     }
-}
 
-// MARK: - Auto-refresh Logic
-extension TodayViewModel {
-    /// Manual refresh with pull-to-refresh gesture
+    // MARK: - Pull to refresh
+
     func pullToRefresh() async {
         await refreshData()
-        
-        // Add small delay for better UX
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        try? await Task.sleep(for: .milliseconds(400))
     }
 }
 
-// MARK: - Convenience Methods
+// MARK: - Friendly Strings
+
 extension TodayViewModel {
-    /// Quick action methods for common operations
-    
-    /// Toggle time block status (complete/skip based on current state)
-    func toggleTimeBlockStatus(_ timeBlock: TimeBlock) {
-        Task {
-            switch timeBlock.status {
-            case .notStarted, .inProgress:
-                await markBlockCompleted(timeBlock)
-            case .completed, .skipped:
-                // Could allow undo in future
-                break
-            }
-        }
-    }
-    
-    /// Start the next available time block
-    func startNextBlock() {
-        guard let nextBlock = getNextUpcomingBlock() else { return }
-        Task {
-            await startTimeBlock(nextBlock)
-        }
-    }
-    
-    /// Get focus mode suggestions based on current block
-    func getFocusModeText() -> String? {
-        if let currentBlock = getCurrentBlock() {
-            return "Focus on: \(currentBlock.title)"
-        } else if let nextBlock = getNextUpcomingBlock() {
-            return "Up next: \(nextBlock.title)"
-        } else if isDayComplete {
-            return "All tasks complete! 🎉"
-        } else {
-            return nil
-        }
-    }
-    
-    var isSpecialDay: Bool {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.month, .day], from: Date())
-        
-        // Special occasions
-        if components.month == 1 && components.day == 1 { return true } // New Year
-        if components.month == 12 && components.day == 25 { return true } // Christmas
-        
-        // Check if it's Friday (weekend start)
-        let weekday = calendar.component(.weekday, from: Date())
-        if weekday == 6 { return true } // Friday
-        
-        return false
-    }
-    
-    /// Get icon for special days
-    var specialDayIcon: String {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.month, .day], from: Date())
-        
-        if components.month == 1 && components.day == 1 { return "sparkles" }
-        if components.month == 12 && components.day == 25 { return "snowflake" }
-        
-        let weekday = calendar.component(.weekday, from: Date())
-        if weekday == 6 { return "party.popper" }
-        
-        return "star"
-    }
-    
-    /// Get personalized greeting based on time of day
     var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
         let name = UserDefaults.standard.string(forKey: "userName") ?? ""
-        let personalizedGreeting = name.isEmpty ? "" : ", \(name)"
-        
+        let suffix = name.isEmpty ? "" : ", \(name)"
         switch hour {
-        case 5..<12: return "Good morning\(personalizedGreeting)"
-        case 12..<17: return "Good afternoon\(personalizedGreeting)"
-        case 17..<22: return "Good evening\(personalizedGreeting)"
-        default: return "Good night\(personalizedGreeting)"
+        case 5..<12:  return "Good morning\(suffix)"
+        case 12..<17: return "Good afternoon\(suffix)"
+        case 17..<22: return "Good evening\(suffix)"
+        default:      return "Good night\(suffix)"
         }
     }
-    
-    /// Get formatted current date
+
     var currentDateText: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMMM d"
-        return formatter.string(from: Date())
+        let f = DateFormatter(); f.dateFormat = "EEEE, MMMM d"
+        return f.string(from: Date())
     }
-    
+
     var dailyQuote: String {
         let quotes = [
             "Small steps lead to big changes",
@@ -517,12 +286,42 @@ extension TodayViewModel {
             "Your routine shapes your future",
             "Focus on what matters most"
         ]
-        
-        // Use date as seed for consistent daily quote
-        let calendar = Calendar.current
-        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
-        let index = dayOfYear % quotes.count
-        
-        return quotes[index]
+        let day = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 1
+        return quotes[day % quotes.count]
+    }
+
+    var isSpecialDay: Bool {
+        let cal = Calendar.current
+        let c = cal.dateComponents([.month, .day, .weekday], from: Date())
+        return (c.month == 1 && c.day == 1) || (c.month == 12 && c.day == 25) || (c.weekday == 6)
+    }
+
+    var specialDayIcon: String {
+        let cal = Calendar.current
+        let c = cal.dateComponents([.month, .day, .weekday], from: Date())
+        if c.month == 1, c.day == 1 { return "sparkles" }
+        if c.month == 12, c.day == 25 { return "snowflake" }
+        if c.weekday == 6 { return "party.popper" }
+        return "star"
+    }
+
+    func getFocusModeText() -> String? {
+        if let current = getCurrentBlock() { return "Focus on: \(current.title)" }
+        if let next = getNextUpcomingBlock() { return "Up next: \(next.title)" }
+        return isDayComplete ? "All tasks complete! 🎉" : nil
+    }
+
+    func toggleTimeBlockStatus(_ timeBlock: TimeBlock) {
+        Task {
+            switch timeBlock.status {
+            case .notStarted, .inProgress: await markBlockCompleted(timeBlock)
+            case .completed, .skipped: break
+            }
+        }
+    }
+
+    func startNextBlock() {
+        guard let next = getNextUpcomingBlock() else { return }
+        Task { await startTimeBlock(next) }
     }
 }

@@ -2,7 +2,7 @@
 //  AppPreferencesSection.swift
 //  Routine Anchor
 //
-//  App preferences section for Settings view
+//  Preferences section used inside Settings.
 //
 
 import SwiftUI
@@ -14,11 +14,10 @@ struct AppPreferencesSection: View {
     @Binding var autoResetEnabled: Bool
     let onResetProgress: () -> Void
 
-    // MARK: - Theme helpers
-    private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var scheme: ThemeColorScheme { theme.colorScheme }
+    // Theme (fallback to Classic)
+    private var theme: AppTheme { themeManager?.currentTheme ?? PredefinedThemes.classic }
 
-    // MARK: - Local state
+    // Local state
     @State private var showingResetConfirmation = false
     @State private var animateReset = false
 
@@ -26,7 +25,7 @@ struct AppPreferencesSection: View {
         SettingsSection(
             title: "Preferences",
             icon: "slider.horizontal.3",
-            color: scheme.actionSuccess.color
+            color: theme.statusSuccessColor
         ) {
             VStack(spacing: 16) {
 
@@ -51,16 +50,16 @@ struct AppPreferencesSection: View {
 
                 // Divider
                 Rectangle()
-                    .fill(scheme.uiElementSecondary.color.opacity(0.3))
+                    .fill(theme.borderColor.opacity(0.3))
                     .frame(height: 1)
                     .padding(.vertical, 4)
 
-                // Reset today's progress (not destructive like delete; keep primary accent)
+                // Reset today's progress
                 SettingsButton(
                     title: "Reset Today's Progress",
                     subtitle: "Set all of today's blocks back to Not Started",
                     icon: "arrow.uturn.backward",
-                    color: scheme.workflowPrimary.color,
+                    color: theme.accentPrimaryColor,
                     action: {
                         HapticManager.shared.lightImpact()
                         showingResetConfirmation = true
@@ -81,7 +80,6 @@ struct AppPreferencesSection: View {
             Button("Reset Progress", role: .destructive) {
                 withAnimation { animateReset = true }
                 onResetProgress()
-
                 // quick pulse, then return to normal
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     withAnimation { animateReset = false }
@@ -94,6 +92,7 @@ struct AppPreferencesSection: View {
     }
 
     // MARK: - Info
+
     private var preferencesInfoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
 
@@ -101,7 +100,7 @@ struct AppPreferencesSection: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "hand.tap")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(scheme.actionSuccess.color.opacity(0.85))
+                    .foregroundStyle(theme.statusSuccessColor.opacity(0.85))
                     .frame(width: 16, height: 16)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -121,7 +120,7 @@ struct AppPreferencesSection: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "moon.stars")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(scheme.organizationAccent.color.opacity(0.85))
+                    .foregroundStyle(theme.accentSecondaryColor.opacity(0.85))
                     .frame(width: 16, height: 16)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -140,19 +139,18 @@ struct AppPreferencesSection: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(theme.surfaceCardColor.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(scheme.border.color.opacity(0.85), lineWidth: 1)
+                .stroke(theme.borderColor.opacity(0.85), lineWidth: 1)
         )
     }
 }
 
-// MARK: - Preview
 #Preview {
     ZStack {
-        ThemedAnimatedBackground().ignoresSafeArea()
+        PredefinedThemes.classic.heroBackground.ignoresSafeArea()
         ScrollView {
             AppPreferencesSection(
                 hapticsEnabled: .constant(true),
@@ -162,4 +160,6 @@ struct AppPreferencesSection: View {
             .padding()
         }
     }
+    .environment(\.themeManager, ThemeManager.preview())
+    .preferredColorScheme(.dark)
 }

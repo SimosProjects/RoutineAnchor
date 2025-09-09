@@ -2,67 +2,51 @@
 //  TimeBlock.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/19/25.
+//  SwiftData model for a scheduled block of time.
+//  Model is UI-agnostic; keep display concerns in views.
 //
+
 import Foundation
 import SwiftData
 
-/// Represents a single time block in the user's daily routine
+/// Represents a single time block in the user's daily routine.
 @Model
-class TimeBlock {
-    // MARK: - Core Properties
-    
-    /// Unique identifier for the time block
+final class TimeBlock {
+    // MARK: - Core
+
     @Attribute(.unique) var id: UUID
-    
-    /// User-defined title for the time block
     var title: String
-    
-    /// When this time block should start
     var startTime: Date
-    
-    /// When this time block should end
     var endTime: Date
-    
-    /// Current status of the time block (stored as String for SwiftData compatibility)
+
+    /// Stored raw value for SwiftData compatibility.
     var statusValue: String = BlockStatus.notStarted.rawValue
-    
-    /// Optional description or notes about the time block
+
+    // Optional metadata
     var notes: String?
-    
-    /// Optional emoji or icon identifier
     var icon: String?
-    
-    /// Optional category for grouping (e.g., "Work", "Personal", "Health")
     var category: String?
-    
-    /// Optional color identifier for customization
     var colorId: String?
-    
+
     // MARK: - Metadata
-    
-    /// When this time block was originally created
+
     var createdAt: Date
-    
-    /// When this time block was last modified
     var updatedAt: Date
-    
-    /// Date this time block is scheduled for (derived from startTime)
+
+    /// The day this block is scheduled for (derived from startTime).
     var scheduledDate: Date {
         Calendar.current.startOfDay(for: startTime)
     }
-    
-    // MARK: - Status Property (Computed)
-    
-    /// Current status of the time block
+
+    // MARK: - Computed status
+
     var status: BlockStatus {
         get { BlockStatus(rawValue: statusValue) ?? .notStarted }
         set { statusValue = newValue.rawValue }
     }
-    
-    // MARK: - Initializers
-    
-    /// Create a new time block with required information
+
+    // MARK: - Init
+
     init(
         title: String,
         startTime: Date,
@@ -84,8 +68,8 @@ class TimeBlock {
         self.createdAt = Date()
         self.updatedAt = Date()
     }
-    
-    /// Create a time block for a specific date with time components
+
+    /// Builder for a specific calendar day using hour/minute + duration.
     convenience init(
         title: String,
         date: Date,
@@ -96,25 +80,23 @@ class TimeBlock {
         icon: String? = nil,
         category: String? = nil
     ) {
-        let calendar = Calendar.current
-        let startComponents = DateComponents(
-            year: calendar.component(.year, from: date),
-            month: calendar.component(.month, from: date),
-            day: calendar.component(.day, from: date),
+        let cal = Calendar.current
+        let comps = DateComponents(
+            year: cal.component(.year, from: date),
+            month: cal.component(.month, from: date),
+            day: cal.component(.day, from: date),
             hour: startHour,
             minute: startMinute
         )
-        
-        guard let startTime = calendar.date(from: startComponents) else {
+        guard let start = cal.date(from: comps) else {
             fatalError("Invalid time components")
         }
-        
-        let endTime = calendar.date(byAdding: .minute, value: durationMinutes, to: startTime) ?? startTime
-        
+        let end = cal.date(byAdding: .minute, value: durationMinutes, to: start) ?? start
+
         self.init(
             title: title,
-            startTime: startTime,
-            endTime: endTime,
+            startTime: start,
+            endTime: end,
             notes: notes,
             icon: icon,
             category: category
@@ -122,269 +104,171 @@ class TimeBlock {
     }
 }
 
-// MARK: - Computed Properties
+// MARK: - Computed helpers
 extension TimeBlock {
-    /// Duration of the time block in minutes
-    var durationMinutes: Int {
-        Int(endTime.timeIntervalSince(startTime) / 60)
-    }
-    
-    /// Duration of the time block in hours (rounded to 1 decimal place)
-    var durationHours: Double {
-        Double(durationMinutes) / 60.0
-    }
-    
-    /// Formatted duration string (e.g., "1h 30m", "45m")
+    var durationMinutes: Int { Int(endTime.timeIntervalSince(startTime) / 60) }
+    var durationHours: Double { Double(durationMinutes) / 60.0 }
+
     var formattedDuration: String {
-        let hours = durationMinutes / 60
-        let minutes = durationMinutes % 60
-        
-        if hours > 0 && minutes > 0 {
-            return "\(hours)h \(minutes)m"
-        } else if hours > 0 {
-            return "\(hours)h"
-        } else {
-            return "\(minutes)m"
-        }
+        let h = durationMinutes / 60
+        let m = durationMinutes % 60
+        if h > 0 && m > 0 { return "\(h)h \(m)m" }
+        if h > 0          { return "\(h)h" }
+        return "\(m)m"
     }
-    
-    /// Formatted time range string (e.g., "9:00 AM - 10:30 AM")
+
     var formattedTimeRange: String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return "\(formatter.string(from: startTime)) - \(formatter.string(from: endTime))"
+        let f = DateFormatter(); f.timeStyle = .short
+        return "\(f.string(from: startTime)) - \(f.string(from: endTime))"
     }
-    
-    /// Short formatted time range (e.g., "9:00-10:30")
+
     var shortFormattedTimeRange: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "H:mm"
-        return "\(formatter.string(from: startTime))-\(formatter.string(from: endTime))"
+        let f = DateFormatter(); f.dateFormat = "H:mm"
+        return "\(f.string(from: startTime))-\(f.string(from: endTime))"
     }
-    
-    /// Whether this time block is scheduled for today
-    var isToday: Bool {
-        Calendar.current.isDateInToday(startTime)
-    }
-    
-    /// Whether this time block is currently active (within its time range)
+
+    var isToday: Bool { Calendar.current.isDateInToday(startTime) }
+
     var isCurrentlyActive: Bool {
         let now = Date()
         return now >= startTime && now <= endTime
     }
-    
-    /// Whether this time block is in the past
-    var isPast: Bool {
-        Date() > endTime
-    }
-    
-    /// Whether this time block is in the future
-    var isFuture: Bool {
-        Date() < startTime
-    }
-    
-    /// Progress percentage if currently active (0.0 to 1.0)
+
+    var isPast: Bool { Date() > endTime }
+    var isFuture: Bool { Date() < startTime }
+
+    /// Progress (0…1) if active now.
     var currentProgress: Double {
-        guard isCurrentlyActive else { return 0.0 }
-        
-        let totalDuration = endTime.timeIntervalSince(startTime)
+        guard isCurrentlyActive else { return 0 }
+        let total = endTime.timeIntervalSince(startTime)
         let elapsed = Date().timeIntervalSince(startTime)
-        
-        return min(max(elapsed / totalDuration, 0.0), 1.0)
+        return min(max(elapsed / total, 0), 1)
     }
-    
-    /// Remaining time in minutes if currently active
+
+    /// Remaining minutes if active.
     var remainingMinutes: Int? {
         guard isCurrentlyActive else { return nil }
         return max(0, Int(endTime.timeIntervalSince(Date()) / 60))
     }
 }
 
-// MARK: - Status Management
+// MARK: - Status management
 extension TimeBlock {
-    /// Update the status and handle side effects
     func updateStatus(to newStatus: BlockStatus) {
         guard status.canTransition else { return }
         guard status.availableTransitions.contains(newStatus) else { return }
-        
+
         status = newStatus
         updatedAt = Date()
-        
-        // Handle status-specific logic
+
+        // Hook for analytics/notifications if needed later.
         switch newStatus {
-        case .inProgress:
-            // Could trigger analytics or notifications
-            break
-        case .completed:
-            // Could trigger celebration or next task suggestion
-            break
-        case .skipped:
-            // Could track skip reasons for insights
-            break
-        case .notStarted:
-            break
+        case .inProgress: break
+        case .completed:  break
+        case .skipped:    break
+        case .notStarted: break
         }
     }
-    
-    /// Mark this time block as completed
-    func markCompleted() {
-        updateStatus(to: .completed)
-    }
-    
-    /// Mark this time block as skipped
-    func markSkipped() {
-        updateStatus(to: .skipped)
-    }
-    
-    /// Start this time block (mark as in progress)
-    func start() {
-        updateStatus(to: .inProgress)
-    }
-    
-    /// Update status based on current time
+
+    func markCompleted() { updateStatus(to: .completed) }
+    func markSkipped()   { updateStatus(to: .skipped) }
+    func start()         { updateStatus(to: .inProgress) }
+
+    /// Re-evaluate state based on the clock.
     func updateStatusBasedOnTime() {
         let newStatus = BlockStatus.determineStatus(
             startTime: startTime,
             endTime: endTime,
             currentStatus: status
         )
-        
-        if newStatus != status {
-            updateStatus(to: newStatus)
-        }
+        if newStatus != status { updateStatus(to: newStatus) }
     }
 }
 
 // MARK: - Validation
 extension TimeBlock {
-    /// Whether this time block passes all validation checks
-    var isValid: Bool {
-        return validationErrors.isEmpty
-    }
-    
-    /// All validation errors for this time block
+    var isValid: Bool { validationErrors.isEmpty }
+
     var validationErrors: [String] {
         var errors: [String] = []
-        
-        // Title validation
+
         if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             errors.append("Title cannot be empty")
         }
-        
-        if title.count > 100 {
-            errors.append("Title cannot exceed 100 characters")
-        }
-        
-        // Time validation
-        if startTime >= endTime {
-            errors.append("Start time must be before end time")
-        }
-        
-        if durationMinutes < 1 {
-            errors.append("Duration must be at least 1 minute")
-        }
-        
-        if durationMinutes > 24 * 60 {
-            errors.append("Duration cannot exceed 24 hours")
-        }
-        
-        // Notes validation
-        if let notes = notes, notes.count > 500 {
-            errors.append("Notes cannot exceed 500 characters")
-        }
-        
-        // Category validation
-        if let category = category, category.count > 50 {
-            errors.append("Category cannot exceed 50 characters")
-        }
-        
+        if title.count > 100 { errors.append("Title cannot exceed 100 characters") }
+
+        if startTime >= endTime { errors.append("Start time must be before end time") }
+
+        if durationMinutes < 1 { errors.append("Duration must be at least 1 minute") }
+        if durationMinutes > 24 * 60 { errors.append("Duration cannot exceed 24 hours") }
+
+        if let notes, notes.count > 500 { errors.append("Notes cannot exceed 500 characters") }
+        if let category, category.count > 50 { errors.append("Category cannot exceed 50 characters") }
+
         return errors
     }
 }
 
-// MARK: - Conflict Detection
+// MARK: - Conflicts
 extension TimeBlock {
-    /// Check if this time block conflicts with another time block
+    /// Whether this block overlaps another block on the same day.
     func conflictsWith(_ other: TimeBlock) -> Bool {
-        guard self.id != other.id else { return false }
-        guard Calendar.current.isDate(self.startTime, inSameDayAs: other.startTime) else { return false }
-        
-        // Check for time overlap
-        return self.startTime < other.endTime && self.endTime > other.startTime
+        guard id != other.id else { return false }
+        guard Calendar.current.isDate(startTime, inSameDayAs: other.startTime) else { return false }
+        return startTime < other.endTime && endTime > other.startTime
     }
-    
-    /// Check if this time block conflicts with a list of other time blocks
+
     func conflictsWith(_ others: [TimeBlock]) -> [TimeBlock] {
-        return others.filter { conflictsWith($0) }
+        others.filter { conflictsWith($0) }
     }
 }
 
-// MARK: - Convenience Methods
+// MARK: - Utilities
 extension TimeBlock {
-    /// Create a copy of this time block for a different date
+    /// Duplicate for a different date, keeping hour/minute range.
     func copyToDate(_ date: Date) -> TimeBlock {
-        let calendar = Calendar.current
-        
-        // Calculate the time components from original start time
-        let startComponents = calendar.dateComponents([.hour, .minute], from: startTime)
-        let endComponents = calendar.dateComponents([.hour, .minute], from: endTime)
-        
-        // Create new start and end times on the target date
-        var newStartComponents = calendar.dateComponents([.year, .month, .day], from: date)
-        newStartComponents.hour = startComponents.hour
-        newStartComponents.minute = startComponents.minute
-        
-        var newEndComponents = calendar.dateComponents([.year, .month, .day], from: date)
-        newEndComponents.hour = endComponents.hour
-        newEndComponents.minute = endComponents.minute
-        
-        guard let newStartTime = calendar.date(from: newStartComponents),
-              let newEndTime = calendar.date(from: newEndComponents) else {
-            return self
-        }
-        
+        let cal = Calendar.current
+        let startHM = cal.dateComponents([.hour, .minute], from: startTime)
+        let endHM   = cal.dateComponents([.hour, .minute], from: endTime)
+
+        var startD = cal.dateComponents([.year, .month, .day], from: date)
+        startD.hour = startHM.hour; startD.minute = startHM.minute
+
+        var endD = cal.dateComponents([.year, .month, .day], from: date)
+        endD.hour = endHM.hour; endD.minute = endHM.minute
+
+        guard let newStart = cal.date(from: startD),
+              let newEnd   = cal.date(from: endD) else { return self }
+
         return TimeBlock(
             title: title,
-            startTime: newStartTime,
-            endTime: newEndTime,
+            startTime: newStart,
+            endTime: newEnd,
             notes: notes,
             icon: icon,
             category: category,
             colorId: colorId
         )
     }
-    
-    /// Update the metadata timestamp
+
     func touch() {
         updatedAt = Date()
     }
 }
 
-// MARK: - Hashable & Equatable
+// MARK: - Identity / Sorting
 extension TimeBlock: Hashable {
-    static func == (lhs: TimeBlock, rhs: TimeBlock) -> Bool {
-        lhs.id == rhs.id
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
+    static func == (lhs: TimeBlock, rhs: TimeBlock) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
-// MARK: - Comparable (for sorting)
 extension TimeBlock: Comparable {
     static func < (lhs: TimeBlock, rhs: TimeBlock) -> Bool {
-        // Primary sort: by start time
-        if lhs.startTime != rhs.startTime {
-            return lhs.startTime < rhs.startTime
-        }
-        
-        // Secondary sort: by status priority
+        if lhs.startTime != rhs.startTime { return lhs.startTime < rhs.startTime }
         if lhs.status.sortPriority != rhs.status.sortPriority {
+            // higher priority first
             return lhs.status.sortPriority > rhs.status.sortPriority
         }
-        
-        // Tertiary sort: by title
         return lhs.title < rhs.title
     }
 }
