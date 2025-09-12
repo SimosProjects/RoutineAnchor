@@ -345,7 +345,7 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Premium Active")
@@ -366,7 +366,7 @@ struct SettingsView: View {
                         }
                     }
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             } else {
@@ -375,7 +375,7 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "star.circle")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
 
                         Text("Upgrade to Premium")
                             .font(.system(size: 16, weight: .semibold))
@@ -417,11 +417,11 @@ struct SettingsView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 14))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color)
                         
                         Text("Verified")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color)
                     }
                 }
                 
@@ -429,7 +429,7 @@ struct SettingsView: View {
                 HStack {
                     Image(systemName: "envelope")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Email Address")
@@ -446,14 +446,14 @@ struct SettingsView: View {
                 
                 // Divider for visual separation
                 Rectangle()
-                    .fill((themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.3))
+                    .fill((themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color).opacity(0.3))
                     .frame(height: 1)
                 
                 // Email preferences button
                 HStack {
                     Image(systemName: "slider.horizontal.3")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Email Preferences")

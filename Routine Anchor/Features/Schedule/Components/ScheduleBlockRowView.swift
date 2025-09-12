@@ -29,7 +29,7 @@ struct ScheduleBlockRowView: View {
     }
     
     private var cardShadowColor: Color {
-        themeManager?.currentTheme.colorScheme.appBackground.color.opacity(0.1) ?? Theme.defaultTheme.colorScheme.appBackground.color.opacity(0.1)
+        themeManager?.currentTheme.colorScheme.primaryBackground.color.opacity(0.1) ?? Theme.defaultTheme.colorScheme.primaryBackground.color.opacity(0.1)
     }
     
     var body: some View {
@@ -146,25 +146,25 @@ struct ScheduleBlockRowView: View {
         guard let theme = themeManager?.currentTheme else {
             switch timeBlock.status {
             case .notStarted: return Theme.defaultTheme.secondaryTextColor
-            case .inProgress: return Theme.defaultTheme.colorScheme.workflowPrimary.color
-            case .completed: return Theme.defaultTheme.colorScheme.successColor.color
-            case .skipped: return Theme.defaultTheme.colorScheme.warningColor.color
+            case .inProgress: return Theme.defaultTheme.colorScheme.normal.color
+            case .completed: return Theme.defaultTheme.colorScheme.success.color
+            case .skipped: return Theme.defaultTheme.colorScheme.warning.color
             }
         }
         
         switch timeBlock.status {
         case .notStarted: return theme.secondaryTextColor
-        case .inProgress: return theme.colorScheme.workflowPrimary.color
-        case .completed: return theme.colorScheme.successColor.color
-        case .skipped: return theme.colorScheme.warningColor.color
+        case .inProgress: return theme.colorScheme.normal.color
+        case .completed: return theme.colorScheme.success.color
+        case .skipped: return theme.colorScheme.warning.color
         }
     }
     
     private var editButtonColor: Color {
-        themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+        themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
     }
     
     private var deleteButtonColor: Color {
-        themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color
+        themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
     }
 }

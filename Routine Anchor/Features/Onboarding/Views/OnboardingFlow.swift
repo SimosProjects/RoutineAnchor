@@ -49,7 +49,7 @@ struct OnboardingFlow: View {
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     ) : LinearGradient(
-                                        colors: [Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color)],
+                                        colors: [Color(themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color), Color(themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color)],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -105,7 +105,7 @@ struct NotificationPreview: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
+                    .fill(Color(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color))
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(.ultraThinMaterial)
@@ -113,7 +113,7 @@ struct NotificationPreview: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), lineWidth: 1)
+                    .stroke(Color(themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.3), radius: 15, x: 0, y: 8)
             .scaleEffect(showNotification ? 1 : 0.8)

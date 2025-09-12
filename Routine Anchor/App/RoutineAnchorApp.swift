@@ -209,7 +209,7 @@ struct MigrationProgressView: View {
                     .font(.system(size: 60))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                            colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -236,7 +236,7 @@ struct MigrationProgressView: View {
                 VStack(spacing: 8) {
                     ProgressView(value: migrationService.migrationProgress)
                         .progressViewStyle(LinearProgressViewStyle())
-                        .tint(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                        .tint(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                         .scaleEffect(y: 2)
                     
                     Text("\(Int(migrationService.migrationProgress * 100))%")
@@ -283,8 +283,8 @@ struct MigrationProgressView: View {
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color),
-                                        Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)
+                                        Color(themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color),
+                                        Color(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -319,7 +319,7 @@ struct AppLoadingView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                                colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -402,7 +402,7 @@ struct DataErrorView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                            .background(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                             .cornerRadius(12)
                     }
                     

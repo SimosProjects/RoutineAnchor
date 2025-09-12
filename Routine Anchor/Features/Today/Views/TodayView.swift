@@ -186,11 +186,11 @@ struct TodayView: View {
         return VStack(spacing: 20) {
             Spacer()
             
-            // Elegant loading animation — uses workflowPrimary to match theme
+            // Elegant loading animation — uses normal to match theme
             ZStack {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(scheme.workflowPrimary.color.opacity(0.3))
+                        .fill(scheme.normal.color.opacity(0.3))
                         .frame(width: 12, height: 12)
                         .scaleEffect(refreshTrigger ? 1.5 : 1.0)
                         .offset(x: CGFloat(index - 1) * 25)

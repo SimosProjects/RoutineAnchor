@@ -93,7 +93,7 @@ struct MigrationSettingsView: View {
                     .font(.system(size: 50))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                            colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -128,10 +128,10 @@ struct MigrationSettingsView: View {
                     
                     Text(migrationService.currentSchemaVersion.rawValue)
                         .font(.system(size: 14, weight: .medium, design: .monospaced))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
-                        .background(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color.opacity(0.2))
+                        .background(themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color.opacity(0.2))
                         .cornerRadius(6)
                 }
                 
@@ -161,7 +161,7 @@ struct MigrationSettingsView: View {
                             .foregroundStyle(themeTertiaryText)
                     }
                 }
-                .tint(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                .tint(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                 .onChange(of: backupEnabled) { _, newValue in
                     migrationService.setBackupEnabled(newValue)
                     HapticManager.shared.lightImpact()
@@ -175,7 +175,7 @@ struct MigrationSettingsView: View {
                         Text("Learn More About Backups")
                     }
                     .font(.system(size: 12))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -222,12 +222,12 @@ struct MigrationSettingsView: View {
                 
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color)
                         .font(.system(size: 12))
                     
                     Text("All migrations completed successfully")
                         .font(.system(size: 12))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -288,7 +288,7 @@ struct BackupInfoSheet: View {
                                 .font(.system(size: 50))
                                 .foregroundStyle(
                                     LinearGradient(
-                                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                                        colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -352,7 +352,7 @@ struct BackupInfoSheet: View {
             HStack(alignment: .top, spacing: 16) {
                 Image(systemName: icon)
                     .font(.system(size: 24))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                     .frame(width: 30)
                 
                 VStack(alignment: .leading, spacing: 8) {

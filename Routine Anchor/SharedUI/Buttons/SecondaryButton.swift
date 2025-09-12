@@ -70,14 +70,14 @@ struct SecondaryButton: View {
         case .filled:
             switch variant {
             case .neutral:
-                return themeManager?.currentTheme.colorScheme.uiElementSecondary.color ??
-                       Theme.defaultTheme.colorScheme.uiElementSecondary.color
+                return themeManager?.currentTheme.colorScheme.secondaryUIElement.color ??
+                       Theme.defaultTheme.colorScheme.secondaryUIElement.color
             case .destructive:
-                return themeManager?.currentTheme.colorScheme.errorColor.color ??
-                       Theme.defaultTheme.colorScheme.errorColor.color
+                return themeManager?.currentTheme.colorScheme.error.color ??
+                       Theme.defaultTheme.colorScheme.error.color
             case .success:
-                return themeManager?.currentTheme.colorScheme.successColor.color ??
-                       Theme.defaultTheme.colorScheme.successColor.color
+                return themeManager?.currentTheme.colorScheme.success.color ??
+                       Theme.defaultTheme.colorScheme.success.color
             }
         case .outlined, .ghost:
             return Color.clear
@@ -107,7 +107,7 @@ struct SecondaryButton: View {
             return Color.clear
         case .outlined:
             switch variant {
-            case .neutral: return themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color
+            case .neutral: return themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color
             case .destructive: return Color.errorRed
             case .success: return Color.successGreen
             }
@@ -366,7 +366,7 @@ extension SecondaryButton {
         }
     }
     .padding(20)
-    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+    .background(Theme.defaultTheme.colorScheme.secondaryUIElement.color)
 }
 
 #Preview("Button Combinations") {
@@ -399,7 +399,7 @@ extension SecondaryButton {
         }
     }
     .padding(20)
-    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+    .background(Theme.defaultTheme.colorScheme.secondaryUIElement.color)
 }
 
 #Preview("Dark Mode") {
@@ -411,6 +411,6 @@ extension SecondaryButton {
             .buttonStyle(.ghost)
     }
     .padding(20)
-    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+    .background(Theme.defaultTheme.colorScheme.secondaryUIElement.color)
     .preferredColorScheme(.dark)
 }

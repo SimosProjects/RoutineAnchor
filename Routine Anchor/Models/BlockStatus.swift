@@ -216,14 +216,14 @@ extension View {
             return themeManager?.currentTheme.subtleTextColor ??
                    Theme.defaultTheme.subtleTextColor
         case .inProgress:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ??
-                   Theme.defaultTheme.colorScheme.warningColor.color
+            return themeManager?.currentTheme.colorScheme.warning.color ??
+                   Theme.defaultTheme.colorScheme.warning.color
         case .completed:
-            return themeManager?.currentTheme.colorScheme.successColor.color ??
-                   Theme.defaultTheme.colorScheme.successColor.color
+            return themeManager?.currentTheme.colorScheme.success.color ??
+                   Theme.defaultTheme.colorScheme.success.color
         case .skipped:
-            return themeManager?.currentTheme.colorScheme.errorColor.color ??
-                   Theme.defaultTheme.colorScheme.errorColor.color
+            return themeManager?.currentTheme.colorScheme.error.color ??
+                   Theme.defaultTheme.colorScheme.error.color
         }
     }
     
@@ -233,16 +233,16 @@ extension View {
         case .notStarted:
             return Color.clear
         case .inProgress:
-            let color = themeManager?.currentTheme.colorScheme.warningColor.color ??
-                       Theme.defaultTheme.colorScheme.warningColor.color
+            let color = themeManager?.currentTheme.colorScheme.warning.color ??
+                       Theme.defaultTheme.colorScheme.warning.color
             return color.opacity(0.1)
         case .completed:
-            let color = themeManager?.currentTheme.colorScheme.successColor.color ??
-                       Theme.defaultTheme.colorScheme.successColor.color
+            let color = themeManager?.currentTheme.colorScheme.success.color ??
+                       Theme.defaultTheme.colorScheme.success.color
             return color.opacity(0.1)
         case .skipped:
-            let color = themeManager?.currentTheme.colorScheme.errorColor.color ??
-                       Theme.defaultTheme.colorScheme.errorColor.color
+            let color = themeManager?.currentTheme.colorScheme.error.color ??
+                       Theme.defaultTheme.colorScheme.error.color
             return color.opacity(0.1)
         }
     }

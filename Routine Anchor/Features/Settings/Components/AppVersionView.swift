@@ -32,7 +32,7 @@ struct AppVersionView: View {
         VStack(spacing: 10) {
             Image(systemName: "app.clipboard")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(scheme.workflowPrimary.color.opacity(0.9))
+                .foregroundStyle(scheme.normal.color.opacity(0.9))
 
             Text("Routine Anchor")
                 .font(TypographyConstants.Body.emphasized)
@@ -52,7 +52,7 @@ struct AppVersionView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(scheme.secondaryBackground.color.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)

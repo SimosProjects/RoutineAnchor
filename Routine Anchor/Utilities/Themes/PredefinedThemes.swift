@@ -17,48 +17,101 @@ struct PredefinedThemes {
         description: "The original Routine Anchor experience",
         isPremium: false,
         colorScheme: ThemeColorScheme(
-            // Core actions
-            buttonPrimary:    ColorHex("#0A84FF"),
-            buttonSecondary:  ColorHex("#6E5AE6"),
-            tertiary:         ColorHex("#B084F5"),
+            // Background Colors
+            primaryBackground: ColorHex("#F8FAFC"), // full screen backgrounds
+            secondaryBackground: ColorHex("#FFFFFF"), // stacked sections / sheets
+            elevatedBackground: ColorHex("#F1F5F9"), // cards, popovers, glass layers
+            backgroundColors: [
+                ColorHex("#F8FAFC"),
+                ColorHex("#EFF6FF")
+            ],
+            
+            // Text Colors
+            primaryText: ColorHex("#111827"), // titles
+            secondaryText: ColorHex("#374151"), // body / description
+            subtleText: ColorHex("#6B7280"),   // captions / meta
+            invertedText: ColorHex("#FFFFFF"), // text on bold accents (e.g. buttons)
+            
+            // Accent Colors
+            primaryAccent: ColorHex("#2563EB"),   // main accent (buttons, toggles)
+            secondaryAccent: ColorHex("#3B82F6"), // secondary accent (charts, highlights)
+            
+            // Button Colors
+            primaryButton:   ColorHex("#2563EB"),
+            secondaryButton: ColorHex("#E5E7EB"),
+            buttonAccent:    ColorHex("#10B981"),
+            buttonGradient: [
+                ColorHex("#2563EB"),
+                ColorHex("#3B82F6")
+            ],
+            
+            // Icon Colors
+            normal: ColorHex("#374151"), // default icon tint (dark gray)
+            muted:  ColorHex("#9CA3AF"), // disabled / secondary icon tint
+            
+            // Status Colors
+            success: ColorHex("#10B981"), // emerald green
+            warning: ColorHex("#F59E0B"), // amber
+            error:   ColorHex("#EF4444"), // red
+            info:    ColorHex("#3B82F6"), // blue
+            
+            // Lines & focus
+            divider:   ColorHex("#E5E7EB"), // subtle divider
+            border:    ColorHex("#D1D5DB"), // light gray border
+            focusRing: ColorHex("#93C5FD"), // soft blue
+            
+            // Progress & rings
+            progressTrack:      ColorHex("#E5E7EB"),
+            progressFillStart:  ColorHex("#2563EB"),
+            progressFillEnd:    ColorHex("#3B82F6"),
+            ringOuterAlpha:     0.30,
+            ringInnerStartAlpha:0.30,
+            ringInnerEndAlpha:  0.10,
+            
+            // Glass / glow
+            glassTint: ColorHex("#FFFFFF"),
+            glassOpacity: 0.08,
+            glowIntensityPrimary: 0.35,
+            glowIntensitySecondary: 0.15,
+            glowBlurRadius: 30,
+            glowRadiusInner: 32,
+            glowRadiusOuter: 84,
+            glowAnimationScale: 1.4,
+            
+            // Charts
+            chartPalette: [
+                ColorHex("#3B82F6"), // blue
+                ColorHex("#10B981"), // green
+                ColorHex("#F59E0B"), // amber
+                ColorHex("#EF4444"), // red
+                ColorHex("#8B5CF6")  // purple
+            ],
+            chartGrid:  ColorHex("#E5E7EB"),
+            chartLabel: ColorHex("#6B7280"),
+            
+            // Additional UI Elements
+            primaryUIElement:   ColorHex("#2563EB"),
+            secondaryUIElement: ColorHex("#E5E7EB")
+            
+            // View Specific Colors
+            //TODO
+            
+            
 
-            // Base surfaces
-            appBackground:    ColorHex("#000000"),  // OLED black
-            cardBackground:   ColorHex("#131834"),  // kept for back-compat (== surface1)
-            overlayBackground:ColorHex("#1C1F2E"),
-
-            // UI “element” surfaces (kept for back-compat)
-            uiElementPrimary:   ColorHex("#1A2145"),
-            uiElementSecondary: ColorHex("#212A57"),
-
-            // Text
-            primaryText:     ColorHex("#FFFFFF"),
-            secondaryText:   ColorHex("#D7E0FF"),
-            subtleText:      ColorHex("#9AA4C0"),   // ↑ contrast vs old #B8BED6
-
-            // Accents / status
-            buttonAccent:    ColorHex("#64D2FF"),
-            warningColor:    ColorHex("#FF9F0A"),
-            successColor:    ColorHex("#32D74B"),
-            errorColor:      ColorHex("#FF453A"),
-
+            // FIGURE OUT NEW NAMING
+            /*
             // Feature accents / categories
-            workflowPrimary:     ColorHex("#64D2FF"), // modern cyan used across Focus/Stats
-            actionSuccess:       ColorHex("#32D74B"),
-            organizationAccent:  ColorHex("#6E5AE6"),
-            creativeSecondary:   ColorHex("#64D2FF"),
+            normal:     ColorHex("#64D2FF"), // modern cyan used across Focus/Stats
+            success:       ColorHex("#32D74B"),
+            primaryAccent:  ColorHex("#6E5AE6"),
+            secondaryUIElement:   ColorHex("#64D2FF"),
             socialAccent:        ColorHex("#FF9F0A"),
             
             // Elevation scale
             surface0: ColorHex("#0E1228"),
-            surface1: ColorHex("#131834"),
-            surface2: ColorHex("#1A2145"),
-            surface3: ColorHex("#212A57"),
-
-            // Lines & focus
-            divider:   ColorHex("#2B3152"),
-            border:    ColorHex("#3B4474"),
-            focusRing: ColorHex("#7DB7FF"),
+            primaryUIElement: ColorHex("#131834"),
+            secondaryBackground: ColorHex("#1A2145"),
+            elevatedBackground: ColorHex("#212A57"),
 
             // Today hero (used by ThemedAnimatedBackground on TodayView)
             todayHeroTop:             ColorHex("#0F1630"),
@@ -66,7 +119,69 @@ struct PredefinedThemes {
             todayHeroVignette:        ColorHex("#2E0B5F"),
             todayHeroVignetteOpacity: 0.18,
 
-            // Progress & rings (used in FocusCard / ProgressOverview / Time blocks)
+            // Scrim for sheets/menus
+            scrim: ColorHex("#000000"),
+             */
+        ),
+        gradientStyle: .linear,
+        icon: "paintbrush.fill",
+        category: .minimal
+    )
+    
+    // MARK: - Premium Themes (Paid)
+    
+    static let auroraProTheme = Theme(
+        id: "aurora-pro",
+        name: "Aurora Pro",
+        description: "Luminous depth with glass and glow for focused flow.",
+        isPremium: true,
+        colorScheme: ThemeColorScheme(
+            // Background Colors
+            primaryBackground: ColorHex("#0E1228"),   // canvas
+            secondaryBackground: ColorHex("#131834"), // stacked sections / sheets
+            elevatedBackground: ColorHex("#1A2145"),  // cards, popovers
+            backgroundColors: [
+                ColorHex("#0F1630"),
+                ColorHex("#1D1C53"),
+                ColorHex("#2E0B5F")
+            ],
+
+            // Text Colors
+            primaryText: ColorHex("#F5F7FF"),  // titles
+            secondaryText: ColorHex("#C8D1FF"),// body / description
+            subtleText: ColorHex("#9AA4C0"),   // captions / meta
+            invertedText: ColorHex("#0A1024"), // text on light/bright surfaces
+
+            // Accent Colors
+            primaryAccent: ColorHex("#64D2FF"), // cyan electric
+            secondaryAccent: ColorHex("#A78BFA"), // violet
+
+            // Button Colors
+            primaryButton:   ColorHex("#6E5AE6"),
+            secondaryButton: ColorHex("#2B3152"),
+            buttonAccent:    ColorHex("#32D74B"),
+            buttonGradient: [
+                ColorHex("#6E5AE6"),
+                ColorHex("#0A84FF"),
+                ColorHex("#64D2FF")
+            ],
+
+            // Icon Colors
+            normal: ColorHex("#D5DBFF"),
+            muted:  ColorHex("#8A93C9"),
+
+            // Status Colors
+            success: ColorHex("#32D74B"),
+            warning: ColorHex("#FF9F0A"),
+            error:   ColorHex("#FF6B6B"),
+            info:    ColorHex("#64D2FF"),
+
+            // Lines & focus
+            divider:   ColorHex("#2B3152"),
+            border:    ColorHex("#3B4474"),
+            focusRing: ColorHex("#7DB7FF"),
+
+            // Progress & rings
             progressTrack:      ColorHex("#2B3152"),
             progressFillStart:  ColorHex("#32D74B"),
             progressFillEnd:    ColorHex("#64D2FF"),
@@ -74,413 +189,41 @@ struct PredefinedThemes {
             ringInnerStartAlpha:0.30,
             ringInnerEndAlpha:  0.10,
 
-            // Scrim for sheets/menus
-            scrim: ColorHex("#000000"),
+            // Glass / glow
+            glassTint: ColorHex("#9AA9FF"),
+            glassOpacity: 0.12,              // slightly stronger than free theme
+            glowIntensityPrimary: 0.45,      // richer premium glow
+            glowIntensitySecondary: 0.22,
+            glowBlurRadius: 36,
+            glowRadiusInner: 36,
+            glowRadiusOuter: 96,
+            glowAnimationScale: 1.5,
 
-            // Charts (for Analytics + QuickStats)
+            // Charts
             chartPalette: [
-                ColorHex("#0A84FF"),
-                ColorHex("#6E5AE6"),
-                ColorHex("#64D2FF"),
-                ColorHex("#32D74B"),
-                ColorHex("#FF9F0A"),
-                ColorHex("#FFD66B"),
-                ColorHex("#FF6B6B"),
-                ColorHex("#F472B6")
+                ColorHex("#64D2FF"), // cyan
+                ColorHex("#6E5AE6"), // indigo
+                ColorHex("#32D74B"), // green
+                ColorHex("#FF9F0A"), // amber
+                ColorHex("#FF6B6B"), // red
+                ColorHex("#F472B6")  // pink
             ],
             chartGrid:  ColorHex("#2B3152"),
             chartLabel: ColorHex("#9AA4C0"),
 
-            // Glass / glow
-            glassTint:         ColorHex("#9AA9FF"),
-            glassOpacity:      0.08,
-            glowIntensityPrimary:   0.35,
-            glowIntensitySecondary: 0.15,
-            glowBlurRadius:    30,
-            glowRadiusInner:   32,
-            glowRadiusOuter:   84,
-            glowAnimationScale:1.4,
-
-            // Background gradients (general use)
-            gradientColors: [
-                ColorHex("#0A84FF"),
-                ColorHex("#6E5AE6"),
-                ColorHex("#B084F5")
-            ]
+            // Additional UI Elements
+            primaryUIElement:   ColorHex("#212A57"),
+            secondaryUIElement: ColorHex("#2B3152")
         ),
         gradientStyle: .linear,
-        icon: "paintbrush.fill",
+        icon: "sparkles",
         category: .minimal
     )
 
-
-    
-    // MARK: - Premium Themes
-    /*
-    static let arcticDawnTheme = Theme(
-        id: "arctic-dawn",
-        name: "Arctic Dawn",
-        description: "Crisp winter morning vibes with cool blues and pristine whites",
-        isPremium: true,
-        colorScheme: ThemeColorScheme(
-            primary: ColorHex("#000000"),
-            secondary: ColorHex("#000000"),
-            tertiary: ColorHex("#000000"),
-            backgroundPrimary: ColorHex("#000000"),
-            backgroundSecondary: ColorHex("#000000"),
-            backgroundTertiary: ColorHex("#000000"),
-            surfacePrimary: ColorHex("#000000"),
-            surfaceSecondary: ColorHex("#000000"),
-            textPrimary: ColorHex("#000000"),
-            textSecondary: ColorHex("#000000"),
-            textTertiary: ColorHex("#000000"),
-            accent: ColorHex("#000000"),
-            warning: ColorHex("#000000"),
-            success: ColorHex("#000000"),
-            error: ColorHex("#000000"),
-            blue: ColorHex("#000000"),
-            green: ColorHex("#000000"),
-            purple: ColorHex("#000000"),
-            teal: ColorHex("#000000"),
-            orange: ColorHex("#000000"),
-            glassTint: ColorHex("#000000"),
-            glassOpacity: 0.0, //0.1
-            glowIntensityPrimary: 0.0,  //0.2
-            glowIntensitySecondary: 0.0, //0.1
-            glowBlurRadius: 0, //15
-            glowRadiusInner: 0, //25
-            glowRadiusOuter: 0, //70
-            glowAnimationScale: 0, //1.2
-            gradientColors: [
-                ColorHex("#E3F2FD"),
-                ColorHex("#64B5F6"),
-                ColorHex("#1976D2")
-            ]
-        ),
-        gradientStyle: .linear,
-        icon: "snow",
-        category: .minimal
-    )
-    
-    static let forestSanctuaryTheme = Theme(
-        id: "forest-sanctuary",
-        name: "Forest Sanctuary",
-        description: "Find focus in nature's calm - deep greens and earthy tones",
-        isPremium: true,
-        colorScheme: ThemeColorScheme(
-            primary: ColorHex("#000000"),
-            secondary: ColorHex("#000000"),
-            tertiary: ColorHex("#000000"),
-            backgroundPrimary: ColorHex("#000000"),
-            backgroundSecondary: ColorHex("#000000"),
-            backgroundTertiary: ColorHex("#000000"),
-            surfacePrimary: ColorHex("#000000"),
-            surfaceSecondary: ColorHex("#000000"),
-            textPrimary: ColorHex("#000000"),
-            textSecondary: ColorHex("#000000"),
-            textTertiary: ColorHex("#000000"),
-            accent: ColorHex("#000000"),
-            warning: ColorHex("#000000"),
-            success: ColorHex("#000000"),
-            error: ColorHex("#000000"),
-            blue: ColorHex("#000000"),
-            green: ColorHex("#000000"),
-            purple: ColorHex("#000000"),
-            teal: ColorHex("#000000"),
-            orange: ColorHex("#000000"),
-            glassTint: ColorHex("#000000"),
-            glassOpacity: 0.0, //0.1
-            glowIntensityPrimary: 0.0,  //0.2
-            glowIntensitySecondary: 0.0, //0.1
-            glowBlurRadius: 0, //15
-            glowRadiusInner: 0, //25
-            glowRadiusOuter: 0, //70
-            glowAnimationScale: 0, //1.2
-            gradientColors: [
-                ColorHex("#E8F5E8"),
-                ColorHex("#4CAF50"),
-                ColorHex("#1B5E20")
-            ]
-        ),
-        gradientStyle: .linear,
-        icon: "leaf.fill",
-        category: .nature
-    )
-    
-    static let sunsetHarborTheme = Theme(
-        id: "sunset-harbor",
-        name: "Sunset Harbor",
-        description: "Golden hour productivity with warm oranges flowing to deep purples",
-        isPremium: true,
-        colorScheme: ThemeColorScheme(
-            primary: ColorHex("#000000"),
-            secondary: ColorHex("#000000"),
-            tertiary: ColorHex("#000000"),
-            backgroundPrimary: ColorHex("#000000"),
-            backgroundSecondary: ColorHex("#000000"),
-            backgroundTertiary: ColorHex("#000000"),
-            surfacePrimary: ColorHex("#000000"),
-            surfaceSecondary: ColorHex("#000000"),
-            textPrimary: ColorHex("#000000"),
-            textSecondary: ColorHex("#000000"),
-            textTertiary: ColorHex("#000000"),
-            accent: ColorHex("#000000"),
-            warning: ColorHex("#000000"),
-            success: ColorHex("#000000"),
-            error: ColorHex("#000000"),
-            blue: ColorHex("#000000"),
-            green: ColorHex("#000000"),
-            purple: ColorHex("#000000"),
-            teal: ColorHex("#000000"),
-            orange: ColorHex("#000000"),
-            glassTint: ColorHex("#000000"),
-            glassOpacity: 0.0, //0.1
-            glowIntensityPrimary: 0.0,  //0.2
-            glowIntensitySecondary: 0.0, //0.1
-            glowBlurRadius: 0, //15
-            glowRadiusInner: 0, //25
-            glowRadiusOuter: 0, //70
-            glowAnimationScale: 0, //1.2
-            gradientColors: [
-                ColorHex("#FFE0B2"),
-                ColorHex("#FF9800"),
-                ColorHex("#673AB7")
-            ]
-        ),
-        gradientStyle: .linear,
-        icon: "leaf.fill",
-        category: .vibrant
-    )
-    
-    static let midnightFocusTheme = Theme(
-        id: "midnight-focus",
-        name: "Midnight Focus",
-        description: "Deep focus for night owls - rich purples and cosmic blues",
-        isPremium: true,
-        colorScheme: ThemeColorScheme(
-            primary: ColorHex("#000000"),
-            secondary: ColorHex("#000000"),
-            tertiary: ColorHex("#000000"),
-            backgroundPrimary: ColorHex("#000000"),
-            backgroundSecondary: ColorHex("#000000"),
-            backgroundTertiary: ColorHex("#000000"),
-            surfacePrimary: ColorHex("#000000"),
-            surfaceSecondary: ColorHex("#000000"),
-            textPrimary: ColorHex("#000000"),
-            textSecondary: ColorHex("#000000"),
-            textTertiary: ColorHex("#000000"),
-            accent: ColorHex("#000000"),
-            warning: ColorHex("#000000"),
-            success: ColorHex("#000000"),
-            error: ColorHex("#000000"),
-            blue: ColorHex("#000000"),
-            green: ColorHex("#000000"),
-            purple: ColorHex("#000000"),
-            teal: ColorHex("#000000"),
-            orange: ColorHex("#000000"),
-            glassTint: ColorHex("#000000"),
-            glassOpacity: 0.0, //0.1
-            glowIntensityPrimary: 0.0,  //0.2
-            glowIntensitySecondary: 0.0, //0.1
-            glowBlurRadius: 0, //15
-            glowRadiusInner: 0, //25
-            glowRadiusOuter: 0, //70
-            glowAnimationScale: 0, //1.2
-            gradientColors: [
-                ColorHex("#1A1A2E"),
-                ColorHex("#16213E"),
-                ColorHex("#0F3460")
-            ]
-        ),
-        gradientStyle: .radial,
-        icon: "moon.stars.fill",
-        category: .dark
-    )
-    
-    static let roseGoldStudioTheme = Theme(
-        id: "rose-gold-studio",
-        name: "Rose Gold Studio",
-        description: "Creative elegance with soft pinks and metallic accents",
-        isPremium: true,
-        colorScheme: ThemeColorScheme(
-            primary: ColorHex("#000000"),
-            secondary: ColorHex("#000000"),
-            tertiary: ColorHex("#000000"),
-            backgroundPrimary: ColorHex("#000000"),
-            backgroundSecondary: ColorHex("#000000"),
-            backgroundTertiary: ColorHex("#000000"),
-            surfacePrimary: ColorHex("#000000"),
-            surfaceSecondary: ColorHex("#000000"),
-            textPrimary: ColorHex("#000000"),
-            textSecondary: ColorHex("#000000"),
-            textTertiary: ColorHex("#000000"),
-            accent: ColorHex("#000000"),
-            warning: ColorHex("#000000"),
-            success: ColorHex("#000000"),
-            error: ColorHex("#000000"),
-            blue: ColorHex("#000000"),
-            green: ColorHex("#000000"),
-            purple: ColorHex("#000000"),
-            teal: ColorHex("#000000"),
-            orange: ColorHex("#000000"),
-            glassTint: ColorHex("#000000"),
-            glassOpacity: 0.0, //0.1
-            glowIntensityPrimary: 0.0,  //0.2
-            glowIntensitySecondary: 0.0, //0.1
-            glowBlurRadius: 0, //15
-            glowRadiusInner: 0, //25
-            glowRadiusOuter: 0, //70
-            glowAnimationScale: 0, //1.2
-            gradientColors: [
-                ColorHex("#FCE4EC"),
-                ColorHex("#F06292"),
-                ColorHex("#AD1457")
-            ]
-        ),
-        gradientStyle: .linear,
-        icon: "paintpalette.fill",
-        category: .gradient
-    )
-    
-    static let oceanDepthsTheme = Theme(
-        id: "ocean-depths",
-        name: "Ocean Depths",
-        description: "Corporate confidence with deep teals and professional blues",
-        isPremium: true,
-        colorScheme: ThemeColorScheme(
-            primary: ColorHex("#000000"),
-            secondary: ColorHex("#000000"),
-            tertiary: ColorHex("#000000"),
-            backgroundPrimary: ColorHex("#000000"),
-            backgroundSecondary: ColorHex("#000000"),
-            backgroundTertiary: ColorHex("#000000"),
-            surfacePrimary: ColorHex("#000000"),
-            surfaceSecondary: ColorHex("#000000"),
-            textPrimary: ColorHex("#000000"),
-            textSecondary: ColorHex("#000000"),
-            textTertiary: ColorHex("#000000"),
-            accent: ColorHex("#000000"),
-            warning: ColorHex("#000000"),
-            success: ColorHex("#000000"),
-            error: ColorHex("#000000"),
-            blue: ColorHex("#000000"),
-            green: ColorHex("#000000"),
-            purple: ColorHex("#000000"),
-            teal: ColorHex("#000000"),
-            orange: ColorHex("#000000"),
-            glassTint: ColorHex("#000000"),
-            glassOpacity: 0.0, //0.1
-            glowIntensityPrimary: 0.0,  //0.2
-            glowIntensitySecondary: 0.0, //0.1
-            glowBlurRadius: 0, //15
-            glowRadiusInner: 0, //25
-            glowRadiusOuter: 0, //70
-            glowAnimationScale: 0, //1.2
-            gradientColors: [
-                ColorHex("#E0F2F1"),
-                ColorHex("#26A69A"),
-                ColorHex("#004D40")
-            ]
-        ),
-        gradientStyle: .linear,
-        icon: "water.waves",
-        category: .professional
-    )
-    
-    static let solarFlareTheme = Theme(
-        id: "solar-flare",
-        name: "Solar Flare",
-        description: "Energizing brightness with yellow to orange fire gradients",
-        isPremium: true,
-        colorScheme: ThemeColorScheme(
-            primary: ColorHex("#000000"),
-            secondary: ColorHex("#000000"),
-            tertiary: ColorHex("#000000"),
-            backgroundPrimary: ColorHex("#000000"),
-            backgroundSecondary: ColorHex("#000000"),
-            backgroundTertiary: ColorHex("#000000"),
-            surfacePrimary: ColorHex("#000000"),
-            surfaceSecondary: ColorHex("#000000"),
-            textPrimary: ColorHex("#000000"),
-            textSecondary: ColorHex("#000000"),
-            textTertiary: ColorHex("#000000"),
-            accent: ColorHex("#000000"),
-            warning: ColorHex("#000000"),
-            success: ColorHex("#000000"),
-            error: ColorHex("#000000"),
-            blue: ColorHex("#000000"),
-            green: ColorHex("#000000"),
-            purple: ColorHex("#000000"),
-            teal: ColorHex("#000000"),
-            orange: ColorHex("#000000"),
-            glassTint: ColorHex("#000000"),
-            glassOpacity: 0.0, //0.1
-            glowIntensityPrimary: 0.0,  //0.2
-            glowIntensitySecondary: 0.0, //0.1
-            glowBlurRadius: 0, //15
-            glowRadiusInner: 0, //25
-            glowRadiusOuter: 0, //70
-            glowAnimationScale: 0, //1.2
-            gradientColors: [
-                ColorHex("#FFF9C4"),
-                ColorHex("#FFEB3B"),
-                ColorHex("#FF6F00")
-            ]
-        ),
-        gradientStyle: .radial,
-        icon: "sun.max.fill",
-        category: .vibrant
-    )
-    
-    static let lavenderDreamsTheme = Theme(
-        id: "lavender-dreams",
-        name: "Lavender Dreams",
-        description: "Soft focus and gentle productivity with calming purple tones",
-        isPremium: true,
-        colorScheme: ThemeColorScheme(
-            primary: ColorHex("#000000"),
-            secondary: ColorHex("#000000"),
-            tertiary: ColorHex("#000000"),
-            backgroundPrimary: ColorHex("#000000"),
-            backgroundSecondary: ColorHex("#000000"),
-            backgroundTertiary: ColorHex("#000000"),
-            surfacePrimary: ColorHex("#000000"),
-            surfaceSecondary: ColorHex("#000000"),
-            textPrimary: ColorHex("#000000"),
-            textSecondary: ColorHex("#000000"),
-            textTertiary: ColorHex("#000000"),
-            accent: ColorHex("#000000"),
-            warning: ColorHex("#000000"),
-            success: ColorHex("#000000"),
-            error: ColorHex("#000000"),
-            blue: ColorHex("#000000"),
-            green: ColorHex("#000000"),
-            purple: ColorHex("#000000"),
-            teal: ColorHex("#000000"),
-            orange: ColorHex("#000000"),
-            glassTint: ColorHex("#000000"),
-            glassOpacity: 0.0, //0.1
-            glowIntensityPrimary: 0.0,  //0.2
-            glowIntensitySecondary: 0.0, //0.1
-            glowBlurRadius: 0, //15
-            glowRadiusInner: 0, //25
-            glowRadiusOuter: 0, //70
-            glowAnimationScale: 0, //1.2
-            gradientColors: [
-                ColorHex("#F3E5F5"),
-                ColorHex("#BA68C8"),
-                ColorHex("#6A1B9A")
-            ]
-        ),
-        gradientStyle: .mesh,
-        icon: "cloud.drizzle.fill",
-        category: .gradient
-    )
-     */
     
     // MARK: - All Themes Collection
     static let allThemes: [Theme] = [
-        defaultTheme
+        defaultTheme, auroraProTheme
     ]
     
     // MARK: - Free Themes

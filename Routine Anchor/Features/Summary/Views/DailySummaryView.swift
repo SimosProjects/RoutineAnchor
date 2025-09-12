@@ -29,7 +29,7 @@ struct DailySummaryView: View {
     private var themePrimaryText: Color { theme.primaryTextColor }
     private var themeSecondaryText: Color { theme.secondaryTextColor }
     private var themeTertiaryText: Color { theme.subtleTextColor }
-    private var cardShadowColor: Color { scheme.appBackground.color.opacity(0.12) }
+    private var cardShadowColor: Color { scheme.primaryBackground.color.opacity(0.12) }
 
     init(modelContext: ModelContext, loadImmediately: Bool = true) {
         let dataManager = DataManager(modelContext: modelContext)
@@ -91,7 +91,7 @@ struct DailySummaryView: View {
                     VStack(spacing: 20) {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 48))
-                            .foregroundStyle(scheme.warningColor.color)
+                            .foregroundStyle(scheme.warning.color)
 
                         Text("Premium Features").font(.title.bold()).foregroundStyle(themePrimaryText)
 
@@ -142,7 +142,7 @@ struct DailySummaryView: View {
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
-                                .fill(scheme.surface1.color.opacity(0.65))
+                                .fill(scheme.primaryUIElement.color.opacity(0.65))
                                 .overlay(Circle().stroke(scheme.border.color.opacity(0.85), lineWidth: 1))
                         )
                         .shadow(color: cardShadowColor, radius: 8, x: 0, y: 4)
@@ -153,9 +153,9 @@ struct DailySummaryView: View {
                 Button(action: { showingShareSheet = true }) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(scheme.workflowPrimary.color)
+                        .foregroundStyle(scheme.normal.color)
                         .frame(width: 36, height: 36)
-                        .background(Circle().fill(scheme.surface2.color))
+                        .background(Circle().fill(scheme.secondaryBackground.color))
                         .overlay(Circle().stroke(scheme.border.color.opacity(0.8), lineWidth: 1))
                 }
             }
@@ -191,7 +191,7 @@ struct DailySummaryView: View {
                     Text("Daily Summary")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
-                            LinearGradient(colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
+                            LinearGradient(colors: [scheme.normal.color, scheme.primaryAccent.color],
                                            startPoint: .leading, endPoint: .trailing)
                         )
 
@@ -282,20 +282,20 @@ struct DailySummaryView: View {
         HStack(spacing: 12) {
             if let p = vm.safeDailyProgress {
                 StatCard(title: "Completed", value: "\(p.completedBlocks)", subtitle: p.completedBlocks == 1 ? "block" : "blocks",
-                         color: scheme.actionSuccess.color, icon: "checkmark.circle.fill")
+                         color: scheme.success.color, icon: "checkmark.circle.fill")
 
                 StatCard(title: "Skipped", value: "\(p.skippedBlocks)", subtitle: p.skippedBlocks == 1 ? "block" : "blocks",
-                         color: scheme.warningColor.color, icon: "forward.fill")
+                         color: scheme.warning.color, icon: "forward.fill")
 
                 StatCard(title: "Time Used", value: "\(p.completedMinutes / 60)h \(p.completedMinutes % 60)m", subtitle: "planned",
-                         color: scheme.workflowPrimary.color, icon: "clock.fill")
+                         color: scheme.normal.color, icon: "clock.fill")
             } else {
                 StatCard(title: "Completed", value: "0", subtitle: "blocks",
-                         color: scheme.actionSuccess.color, icon: "checkmark.circle.fill")
+                         color: scheme.success.color, icon: "checkmark.circle.fill")
                 StatCard(title: "Skipped", value: "0", subtitle: "blocks",
-                         color: scheme.warningColor.color, icon: "forward.fill")
+                         color: scheme.warning.color, icon: "forward.fill")
                 StatCard(title: "Time Used", value: "0h 0m", subtitle: "planned",
-                         color: scheme.workflowPrimary.color, icon: "clock.fill")
+                         color: scheme.normal.color, icon: "clock.fill")
             }
         }
     }
@@ -307,7 +307,7 @@ struct DailySummaryView: View {
                 HStack {
                     Image(systemName: "list.bullet.circle")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(scheme.organizationAccent.color)
+                        .foregroundStyle(scheme.primaryAccent.color)
 
                     Text("Task Breakdown")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -335,7 +335,7 @@ struct DailySummaryView: View {
                 HStack {
                     Image(systemName: "lightbulb.circle")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(scheme.warningColor.color)
+                        .foregroundStyle(scheme.warning.color)
 
                     Text("Insights & Suggestions")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -362,7 +362,7 @@ struct DailySummaryView: View {
                                 HStack {
                                     Image(systemName: "brain.head.profile")
                                         .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(scheme.creativeSecondary.color)
+                                        .foregroundStyle(scheme.secondaryUIElement.color)
                                     Text("AI Suggestions")
                                         .font(.system(size: 16, weight: .semibold))
                                         .foregroundStyle(themePrimaryText)
@@ -372,7 +372,7 @@ struct DailySummaryView: View {
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("•")
                                             .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(scheme.creativeSecondary.color)
+                                            .foregroundStyle(scheme.secondaryUIElement.color)
                                         Text(suggestion)
                                             .font(.system(size: 14))
                                             .foregroundStyle(themeSecondaryText)
@@ -398,7 +398,7 @@ struct DailySummaryView: View {
                             HStack {
                                 Image(systemName: "crown.fill")
                                     .font(.system(size: 12))
-                                    .foregroundStyle(scheme.warningColor.color)
+                                    .foregroundStyle(scheme.warning.color)
                                 Text("Premium insights include:")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundStyle(themeSecondaryText)
@@ -448,7 +448,7 @@ struct DailySummaryView: View {
                 HStack {
                     Image(systemName: "star.circle")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(scheme.warningColor.color)
+                        .foregroundStyle(scheme.warning.color)
 
                     Text("Rate Your Day")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -468,7 +468,7 @@ struct DailySummaryView: View {
                                 .font(.system(size: 32, weight: .medium))
                                 .foregroundStyle(
                                     filled
-                                    ? LinearGradient(colors: [scheme.warningColor.color, scheme.warningColor.color.opacity(0.85)],
+                                    ? LinearGradient(colors: [scheme.warning.color, scheme.warning.color.opacity(0.85)],
                                                      startPoint: .top, endPoint: .bottom)
                                     : LinearGradient(colors: [themeTertiaryText, themeTertiaryText],
                                                      startPoint: .top, endPoint: .bottom)
@@ -483,7 +483,7 @@ struct DailySummaryView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "note.text")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(scheme.creativeSecondary.color)
+                            .foregroundStyle(scheme.secondaryUIElement.color)
 
                         Text("Reflection")
                             .font(.system(size: 14, weight: .semibold))
@@ -495,7 +495,7 @@ struct DailySummaryView: View {
                         .foregroundStyle(themePrimaryText)
                         .lineLimit(3...6)
                         .padding(16)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(scheme.surface2.color.opacity(0.6)))
+                        .background(RoundedRectangle(cornerRadius: 12).fill(scheme.secondaryBackground.color.opacity(0.6)))
                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(scheme.border.color.opacity(0.8), lineWidth: 1))
                 }
             }
@@ -515,7 +515,7 @@ struct DailySummaryView: View {
             if vm.isDayComplete {
                 Text("🎉 Congratulations on completing your day!")
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(scheme.actionSuccess.color)
+                    .foregroundStyle(scheme.success.color)
                     .multilineTextAlignment(.center)
 
                 ThemedButton(title: "Plan Tomorrow", style: .primary) { planTomorrow() }
@@ -533,8 +533,8 @@ struct DailySummaryView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                scheme.actionSuccess.color.opacity(0.3),
-                                scheme.creativeSecondary.color.opacity(0.12),
+                                scheme.success.color.opacity(0.3),
+                                scheme.secondaryUIElement.color.opacity(0.12),
                                 .clear
                             ],
                             center: .center, startRadius: 50, endRadius: 150
@@ -546,7 +546,7 @@ struct DailySummaryView: View {
                 Image(systemName: "chart.pie")
                     .font(.system(size: 80, weight: .thin))
                     .foregroundStyle(
-                        LinearGradient(colors: [scheme.actionSuccess.color, scheme.creativeSecondary.color],
+                        LinearGradient(colors: [scheme.success.color, scheme.secondaryUIElement.color],
                                        startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
                     .floatModifier()
@@ -604,7 +604,7 @@ struct InsightRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Circle()
-                .fill(scheme.warningColor.color.opacity(0.3))
+                .fill(scheme.warning.color.opacity(0.3))
                 .frame(width: 6, height: 6)
                 .offset(y: 6)
 

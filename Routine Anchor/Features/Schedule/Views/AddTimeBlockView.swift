@@ -101,7 +101,7 @@ struct AddTimeBlockView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(scheme.warningColor.color)
+                        .foregroundStyle(scheme.warning.color)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Time Conflict")
@@ -134,12 +134,12 @@ struct AddTimeBlockView: View {
                         Text("Find Next Available Time")
                             .font(.system(size: 14, weight: .semibold))
                     }
-                    .foregroundStyle(scheme.workflowPrimary.color)
+                    .foregroundStyle(scheme.normal.color)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(scheme.surface1.color.opacity(0.65))
+                            .fill(scheme.primaryUIElement.color.opacity(0.65))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
@@ -151,14 +151,14 @@ struct AddTimeBlockView: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(scheme.surface2.color) // card/elevation
+                    .fill(scheme.secondaryBackground.color) // card/elevation
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        scheme.warningColor.color.opacity(0.6),
-                                        scheme.warningColor.color.opacity(0.2)
+                                        scheme.warning.color.opacity(0.6),
+                                        scheme.warning.color.opacity(0.2)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -167,7 +167,7 @@ struct AddTimeBlockView: View {
                             )
                     )
             )
-            .shadow(color: scheme.warningColor.color.opacity(0.18), radius: 8, x: 0, y: 4)
+            .shadow(color: scheme.warning.color.opacity(0.18), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 24)
             .transition(.asymmetric(
                 insertion: .scale(scale: 0.95).combined(with: .opacity),
@@ -182,7 +182,7 @@ struct AddTimeBlockView: View {
         FormSection(
             title: "Basic Information",
             icon: "doc.text",
-            color: scheme.workflowPrimary.color
+            color: scheme.normal.color
         ) {
             VStack(spacing: 16) {
                 DesignedTextField(
@@ -209,7 +209,7 @@ struct AddTimeBlockView: View {
         FormSection(
             title: "Schedule",
             icon: "clock",
-            color: scheme.actionSuccess.color
+            color: scheme.success.color
         ) {
             VStack(spacing: 20) {
                 // Time pickers
@@ -232,7 +232,7 @@ struct AddTimeBlockView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "timer")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(scheme.warningColor.color)
+                            .foregroundStyle(scheme.warning.color)
                         
                         Text("Quick Duration")
                             .font(.system(size: 14, weight: .semibold))
@@ -264,11 +264,11 @@ struct AddTimeBlockView: View {
     private func color(for minutes: Int, scheme: ThemeColorScheme) -> Color {
         switch minutes {
         case ..<15:
-            return scheme.errorColor.color
+            return scheme.error.color
         case ..<60:
-            return scheme.warningColor.color
+            return scheme.warning.color
         default:
-            return scheme.actionSuccess.color
+            return scheme.success.color
         }
     }
     
@@ -276,7 +276,7 @@ struct AddTimeBlockView: View {
         FormSection(
             title: "Organization",
             icon: "folder",
-            color: scheme.organizationAccent.color
+            color: scheme.primaryAccent.color
         ) {
             CategorySelector(
                 categories: formData.categories,
@@ -291,7 +291,7 @@ struct AddTimeBlockView: View {
         FormSection(
             title: "Icon",
             icon: "face.smiling",
-            color: scheme.creativeSecondary.color
+            color: scheme.secondaryUIElement.color
         ) {
             IconSelector(
                 icons: formData.icons,

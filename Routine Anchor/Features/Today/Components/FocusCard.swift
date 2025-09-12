@@ -27,13 +27,13 @@ struct FocusCard: View {
             // Focus icon with pulse
             ZStack {
                 Circle()
-                    .fill(scheme.workflowPrimary.color.opacity(scheme.ringOuterAlpha))
+                    .fill(scheme.normal.color.opacity(scheme.ringOuterAlpha))
                     .frame(width: 50, height: 50)
                     .scaleEffect(pulseScale)
                 
                 Image(systemName: "target")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(scheme.workflowPrimary.color)
+                    .foregroundStyle(scheme.normal.color)
             }
             
             // Focus content
@@ -71,7 +71,7 @@ struct FocusCard: View {
                 if let currentBlock = currentBlock, currentBlock.isCurrentlyActive {
                     ProgressBar(
                         progress: currentBlock.currentProgress,
-                        color: scheme.workflowPrimary.color,
+                        color: scheme.normal.color,
                         animated: true
                     )
                 }
@@ -84,8 +84,8 @@ struct FocusCard: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            scheme.workflowPrimary.color.opacity(0.4),
-                            scheme.workflowPrimary.color.opacity(0.1)
+                            scheme.normal.color.opacity(0.4),
+                            scheme.normal.color.opacity(0.1)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -109,8 +109,8 @@ struct TimeIndicator: View {
     
     var body: some View {
         let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
-        let activeColor = scheme.actionSuccess.color
-        let idleColor = scheme.workflowPrimary.color
+        let activeColor = scheme.success.color
+        let idleColor = scheme.normal.color
         
         return HStack(spacing: 4) {
             Circle()

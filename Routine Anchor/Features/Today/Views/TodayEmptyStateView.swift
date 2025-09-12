@@ -33,8 +33,8 @@ struct TodayEmptyStateView: View {
                                 .fill(
                                     RadialGradient(
                                         colors: [
-                                            themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.4),
-                                            themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color.opacity(0.2),
+                                            themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color.opacity(0.4),
+                                            themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color.opacity(0.2),
                                             Color.clear
                                         ],
                                         center: .center,
@@ -63,7 +63,7 @@ struct TodayEmptyStateView: View {
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
                                 .foregroundStyle(
                                     LinearGradient(
-                                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                                        colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -87,7 +87,7 @@ struct TodayEmptyStateView: View {
                                 icon: "brain.head.profile",
                                 title: "Focused Mind",
                                 description: "Clear time boundaries eliminate decision fatigue",
-                                color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                                color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color,
                                 delay: 0.2
                             )
                             
@@ -95,7 +95,7 @@ struct TodayEmptyStateView: View {
                                 icon: "chart.line.uptrend.xyaxis",
                                 title: "Visible Progress",
                                 description: "Watch your consistency build momentum",
-                                color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                                color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color,
                                 delay: 0.3
                             )
                             
@@ -103,7 +103,7 @@ struct TodayEmptyStateView: View {
                                 icon: "heart.fill",
                                 title: "Balanced Life",
                                 description: "Protect time for what matters most",
-                                color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
+                                color: themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color,
                                 delay: 0.4
                             )
                         }
@@ -224,7 +224,7 @@ struct CalendarIllustrationView: View {
                 HStack(spacing: 8) {
                     ForEach(0..<3) { _ in
                         Circle()
-                            .fill((themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.6))
+                            .fill((themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color).opacity(0.6))
                             .frame(width: 6, height: 6)
                     }
                 }
@@ -255,16 +255,16 @@ struct CalendarIllustrationView: View {
     }
     
     private var surfaceColor: Color {
-        themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color
+        themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color
     }
     
     // Changed from 'let' to computed 'var'
     private var blockColors: [Color] {
         [
-            themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
-            themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
-            themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
-            themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
+            themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color,
+            themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color,
+            themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color,
+            themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color
         ]
     }
     
@@ -360,9 +360,9 @@ struct FloatingParticle: Identifiable, Sendable {
         
         // Use provided theme colors or fall back to defaults
         let availableColors = themeColors ?? [
-            Theme.defaultTheme.colorScheme.workflowPrimary.color,
-            Theme.defaultTheme.colorScheme.organizationAccent.color,
-            Theme.defaultTheme.colorScheme.actionSuccess.color
+            Theme.defaultTheme.colorScheme.normal.color,
+            Theme.defaultTheme.colorScheme.primaryAccent.color,
+            Theme.defaultTheme.colorScheme.success.color
         ]
         
         self.color = availableColors.randomElement()!

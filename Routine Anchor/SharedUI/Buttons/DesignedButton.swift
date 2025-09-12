@@ -38,7 +38,7 @@ struct DesignedButton: View {
                 .foregroundStyle(theme.primaryTextColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 60)
-                .background(backgroundGradient)
+                .background(backgroundColorsLinear)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18)
@@ -53,7 +53,7 @@ struct DesignedButton: View {
     }
     
     // MARK: - Theme-driven styles
-    private var backgroundGradient: LinearGradient {
+    private var backgroundColorsLinear: LinearGradient {
         switch style {
         case .primary:
             return LinearGradient(
@@ -62,14 +62,14 @@ struct DesignedButton: View {
             )
         case .gradient:
             return LinearGradient(
-                colors: [theme.colorScheme.workflowPrimary.color,
-                         theme.colorScheme.organizationAccent.color],
+                colors: [theme.colorScheme.normal.color,
+                         theme.colorScheme.primaryAccent.color],
                 startPoint: .leading, endPoint: .trailing
             )
         case .secondary:
             return LinearGradient(
-                colors: [theme.colorScheme.workflowPrimary.color,
-                         theme.colorScheme.organizationAccent.color],
+                colors: [theme.colorScheme.normal.color,
+                         theme.colorScheme.primaryAccent.color],
                 startPoint: .leading, endPoint: .trailing
             )
         }
@@ -78,8 +78,8 @@ struct DesignedButton: View {
     private var shadowColor: Color {
         switch style {
         case .primary:  return theme.buttonPrimaryColor.opacity(0.5)
-        case .gradient: return theme.colorScheme.actionSuccess.color.opacity(0.5)
-        case .secondary:return theme.colorScheme.workflowPrimary.color.opacity(0.5)
+        case .gradient: return theme.colorScheme.success.color.opacity(0.5)
+        case .secondary:return theme.colorScheme.normal.color.opacity(0.5)
         }
     }
 }

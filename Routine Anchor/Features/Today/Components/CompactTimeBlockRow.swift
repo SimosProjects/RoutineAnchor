@@ -24,7 +24,7 @@ struct CompactTimeBlockRow: View {
                 // Time
                 Text(timeBlock.startTime, style: .time)
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundStyle(isActive ? scheme.workflowPrimary.color : theme.secondaryTextColor)
+                    .foregroundStyle(isActive ? scheme.normal.color : theme.secondaryTextColor)
                     .frame(width: 60, alignment: .leading)
                 
                 // Icon and title
@@ -56,18 +56,18 @@ struct CompactTimeBlockRow: View {
                         Button(action: onComplete) {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(scheme.actionSuccess.color)
+                                .foregroundStyle(scheme.success.color)
                                 .frame(width: 28, height: 28)
-                                .background(scheme.actionSuccess.color.opacity(0.15))
+                                .background(scheme.success.color.opacity(0.15))
                                 .cornerRadius(6)
                         }
                         
                         Button(action: onSkip) {
                             Image(systemName: "forward.fill")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(scheme.warningColor.color)
+                                .foregroundStyle(scheme.warning.color)
                                 .frame(width: 28, height: 28)
-                                .background(scheme.warningColor.color.opacity(0.15))
+                                .background(scheme.warning.color.opacity(0.15))
                                 .cornerRadius(6)
                         }
                     }
@@ -79,8 +79,8 @@ struct CompactTimeBlockRow: View {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(
                         (isActive
-                         ? scheme.surface2.color.opacity(0.50)  // active row elevation
-                         : scheme.surface2.color.opacity(0.25)) // inactive row elevation
+                         ? scheme.secondaryBackground.color.opacity(0.50)  // active row elevation
+                         : scheme.secondaryBackground.color.opacity(0.25)) // inactive row elevation
                     )
             )
             .overlay(
@@ -112,11 +112,11 @@ struct CompactTimeBlockRow: View {
         case .notStarted:
             return (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
         case .inProgress:
-            return scheme.workflowPrimary.color
+            return scheme.normal.color
         case .completed:
-            return scheme.actionSuccess.color
+            return scheme.success.color
         case .skipped:
-            return scheme.warningColor.color
+            return scheme.warning.color
         }
     }
 }

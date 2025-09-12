@@ -34,8 +34,8 @@ struct WelcomeView: View {
                                     .fill(
                                         RadialGradient(
                                             colors: [
-                                                scheme.workflowPrimary.color.opacity(0.55),
-                                                scheme.workflowPrimary.color.opacity(0.25),
+                                                scheme.normal.color.opacity(0.55),
+                                                scheme.normal.color.opacity(0.25),
                                                 .clear
                                             ],
                                             center: .center,
@@ -51,7 +51,7 @@ struct WelcomeView: View {
                                     .fill(
                                         RadialGradient(
                                             colors: [
-                                                scheme.creativeSecondary.color.opacity(0.4),
+                                                scheme.secondaryUIElement.color.opacity(0.4),
                                                 .clear
                                             ],
                                             center: .center,
@@ -67,12 +67,12 @@ struct WelcomeView: View {
                                     .font(.system(size: 92, weight: .thin))
                                     .foregroundStyle(
                                         LinearGradient(
-                                            colors: [scheme.workflowPrimary.color, scheme.creativeSecondary.color],
+                                            colors: [scheme.normal.color, scheme.secondaryUIElement.color],
                                             startPoint: .topLeading, endPoint: .bottomTrailing
                                         )
                                     )
                                     .rotation3DEffect(.degrees(floatingAnimation ? 10 : -10), axis: (x: 0, y: 1, z: 0))
-                                    .shadow(color: scheme.workflowPrimary.color.opacity(0.45), radius: 30, x: 0, y: 15)
+                                    .shadow(color: scheme.normal.color.opacity(0.45), radius: 30, x: 0, y: 15)
                             }
                             .scaleEffect(appearAnimation ? 1 : 0.5)
                             .opacity(appearAnimation ? 1 : 0)
@@ -87,7 +87,7 @@ struct WelcomeView: View {
                                     .font(.system(size: 46, weight: .bold, design: .rounded))
                                     .foregroundStyle(
                                         LinearGradient(
-                                            colors: [scheme.workflowPrimary.color, scheme.creativeSecondary.color],
+                                            colors: [scheme.normal.color, scheme.secondaryUIElement.color],
                                             startPoint: .leading, endPoint: .trailing
                                         )
                                     )
@@ -110,21 +110,21 @@ struct WelcomeView: View {
                                 icon: "bell.badge",
                                 title: "Smart Reminders",
                                 description: "AI-powered notifications that adapt to your rhythm",
-                                tint: scheme.workflowPrimary.color,
+                                tint: scheme.normal.color,
                                 delay: 0.15
                             )
                             FeatureCard(
                                 icon: "chart.line.uptrend.xyaxis",
                                 title: "Visual Progress",
                                 description: "Beautiful insights that motivate you daily",
-                                tint: scheme.organizationAccent.color,
+                                tint: scheme.primaryAccent.color,
                                 delay: 0.25
                             )
                             FeatureCard(
                                 icon: "sparkles",
                                 title: "Mindful Design",
                                 description: "Crafted to reduce stress, not add to it",
-                                tint: scheme.creativeSecondary.color,
+                                tint: scheme.secondaryUIElement.color,
                                 delay: 0.35
                             )
                         }

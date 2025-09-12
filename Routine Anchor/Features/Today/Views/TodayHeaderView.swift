@@ -85,7 +85,7 @@ struct TodayHeaderView: View {
                 if viewModel.isSpecialDay {
                     Image(systemName: viewModel.specialDayIcon)
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.2)
                         .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animationPhase)
                 }
@@ -187,7 +187,7 @@ struct NotificationBadge: View {
     
     var body: some View {
         Circle()
-            .fill(themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color)
+            .fill(themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color)
             .frame(width: 8, height: 8)
             .scaleEffect(isAnimating ? 1.2 : 1.0)
             .opacity(isAnimating ? 0.8 : 1.0)
@@ -248,21 +248,21 @@ struct StreakIndicator: View {
         HStack(spacing: 4) {
             Image(systemName: "flame.fill")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
             
             Text("\(streakCount)")
                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill((themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color).opacity(0.15))
+                .fill((themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color).opacity(0.15))
         )
         .overlay(
             Capsule()
-                .stroke((themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color).opacity(0.3), lineWidth: 1)
+                .stroke((themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color).opacity(0.3), lineWidth: 1)
         )
     }
 }

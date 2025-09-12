@@ -22,7 +22,7 @@ struct QuickStatsView: View {
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
+                                colors: [scheme.normal.color, scheme.primaryAccent.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -48,7 +48,7 @@ struct QuickStatsView: View {
                         title: "Total Blocks",
                         value: "\(viewModel.timeBlocks.count)",
                         subtitle: "blocks",
-                        color: scheme.workflowPrimary.color,
+                        color: scheme.normal.color,
                         icon: "square.stack"
                     )
                     
@@ -56,7 +56,7 @@ struct QuickStatsView: View {
                         title: "Completed",
                         value: "\(viewModel.completedBlocksCount)",
                         subtitle: "blocks",
-                        color: scheme.actionSuccess.color,
+                        color: scheme.success.color,
                         icon: "checkmark.circle"
                     )
                     
@@ -64,7 +64,7 @@ struct QuickStatsView: View {
                         title: "Progress",
                         value: "\(viewModel.progressPercentage)%",
                         subtitle: "blocks",
-                        color: scheme.organizationAccent.color,
+                        color: scheme.primaryAccent.color,
                         icon: "chart.pie"
                     )
                     
@@ -72,7 +72,7 @@ struct QuickStatsView: View {
                         title: "Remaining",
                         value: "\(viewModel.upcomingBlocksCount)",
                         subtitle: "blocks",
-                        color: scheme.creativeSecondary.color,
+                        color: scheme.secondaryUIElement.color,
                         icon: "clock"
                     )
                 }
@@ -92,14 +92,14 @@ struct QuickStatsView: View {
                         if let remaining = viewModel.remainingTimeForCurrentBlock() {
                             Text(remaining)
                                 .font(.system(size: 14, weight: .medium, design: .monospaced))
-                                .foregroundStyle(scheme.actionSuccess.color)
+                                .foregroundStyle(scheme.success.color)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(scheme.surface2.color.opacity(0.55))
+                            .fill(scheme.secondaryBackground.color.opacity(0.55))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
@@ -113,13 +113,13 @@ struct QuickStatsView: View {
             .background(
                 ZStack {
                     LinearGradient(
-                        colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
+                        colors: scheme.backgroundColors.map { $0.color },
                         startPoint: .top,
                         endPoint: .bottom
                     )
                     RadialGradient(
                         colors: [
-                            scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
+                            theme.colorScheme.glassTint.color.opacity(theme.glowIntensitySecondary),
                             .clear
                         ],
                         center: .center,

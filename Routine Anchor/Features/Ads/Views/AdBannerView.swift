@@ -97,7 +97,7 @@ struct StyledAdBanner: View {
                 HStack(spacing: 8) {
                     Image(systemName: "crown.fill")
                         .font(.system(size: 12))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                     
                     Text("Remove ads with Premium")
                         .font(.system(size: 12, weight: .medium))
@@ -113,7 +113,7 @@ struct StyledAdBanner: View {
                     .foregroundStyle(themeManager?.currentTheme.colorScheme.primaryText.color ?? Theme.defaultTheme.colorScheme.primaryText.color)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background((themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color).opacity(0.2))
+                    .background((themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color).opacity(0.2))
                     .cornerRadius(6)
                 }
                 .padding(.horizontal, 16)

@@ -9,7 +9,7 @@ struct DurationChip: View {
     @State private var isPressed = false
     
     private var theme: Theme { themeManager?.currentTheme ?? Theme.defaultTheme }
-    private var accent: Color { theme.colorScheme.warningColor.color }
+    private var accent: Color { theme.colorScheme.warning.color }
     private let corner: CGFloat = 10
     
     private var displayText: String {

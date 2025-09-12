@@ -184,8 +184,8 @@ struct TimeBlockRowView: View {
                     .padding(.vertical, 2)
                     .background(
                         Capsule()
-                            .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ??
-                                   Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.3))
+                            .fill((themeManager?.currentTheme.colorScheme.primaryUIElement.color ??
+                                   Theme.defaultTheme.colorScheme.primaryUIElement.color).opacity(0.3))
                     )
             }
         }
@@ -253,14 +253,14 @@ struct TimeBlockRowView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.2))
+                            .fill((themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color).opacity(0.2))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                                     .stroke(
                                         LinearGradient(
                                             colors: [
-                                                (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.3),
-                                                (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.1)
+                                                (themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color).opacity(0.3),
+                                                (themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color).opacity(0.1)
                                             ],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
@@ -284,14 +284,14 @@ struct TimeBlockRowView: View {
             ZStack(alignment: .leading) {
                 // Background track
                 Capsule()
-                    .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.3))
+                    .fill((themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color).opacity(0.3))
                     .frame(height: 4)
                 
                 // Progress fill
                 Capsule()
                     .fill(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.6)],
+                            colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color.opacity(0.6)],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -330,7 +330,7 @@ struct TimeBlockRowView: View {
             if let onStart = onStart {
                 TimeBlockActionButton(
                     icon: "play.fill",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color,
                     action: onStart,
                     isLarge: true
                 )
@@ -340,7 +340,7 @@ struct TimeBlockRowView: View {
                 if let onComplete = onComplete {
                     TimeBlockActionButton(
                         icon: "checkmark.circle.fill",
-                        color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                        color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color,
                         action: onComplete,
                         isLarge: true
                     )
@@ -348,7 +348,7 @@ struct TimeBlockRowView: View {
                 if let onSkip = onSkip {
                     TimeBlockActionButton(
                         icon: "forward.fill",
-                        color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
+                        color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
                         action: onSkip
                     )
                 }
@@ -359,8 +359,8 @@ struct TimeBlockRowView: View {
                 .foregroundStyle(
                     LinearGradient(
                         colors: timeBlock.status == .completed
-                            ? [themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color, themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color.opacity(0.7)]
-                            : [themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color, themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color.opacity(0.7)],
+                            ? [themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color, themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color.opacity(0.7)]
+                            : [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color, themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.7)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -373,7 +373,7 @@ struct TimeBlockRowView: View {
         if let onEdit = onEdit {
             TimeBlockActionButton(
                 icon: "pencil.circle",
-                color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color,
                 action: onEdit
             )
         }
@@ -381,7 +381,7 @@ struct TimeBlockRowView: View {
         if let onDelete = onDelete {
             TimeBlockActionButton(
                 icon: "trash.circle",
-                color: themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color,
+                color: themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color,
                 action: onDelete
             )
         }
@@ -393,8 +393,8 @@ struct TimeBlockRowView: View {
             .fill(
                 LinearGradient(
                     colors: [
-                        themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color,
-                        themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color
+                        themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color,
+                        themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -405,8 +405,8 @@ struct TimeBlockRowView: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.15),
-                                (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.05)
+                                (themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color).opacity(0.15),
+                                (themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color).opacity(0.05)
                             ],
                             startPoint: .top,
                             endPoint: .bottom
@@ -420,8 +420,8 @@ struct TimeBlockRowView: View {
             .stroke(
                 LinearGradient(
                     colors: [
-                        (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.3),
-                        (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.1)
+                        (themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color).opacity(0.3),
+                        (themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color).opacity(0.1)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -436,11 +436,11 @@ struct TimeBlockRowView: View {
         case .notStarted:
             return themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
         case .inProgress:
-            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+            return themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
         case .completed:
-            return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+            return themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
         case .skipped:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         }
     }
     
@@ -452,20 +452,20 @@ struct TimeBlockRowView: View {
                 Color(red: 118/255, green: 75/255,  blue: 162/255)  // #764ba2
             ]
         case .inProgress:
-            return [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.6)]
+            return [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color.opacity(0.6)]
         case .completed:
-            return [themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color, themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color.opacity(0.6)]
+            return [themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color, themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color.opacity(0.6)]
         case .skipped:
-            return [themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color, themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color.opacity(0.6)]
+            return [themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color, themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color.opacity(0.6)]
         }
     }
     
     private var categoryColor: Color {
         switch timeBlock.category?.lowercased() {
-        case "work": return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
-        case "personal": return themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
-        case "health": return themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
-        case "learning": return themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
+        case "work": return themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
+        case "personal": return themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color
+        case "health": return themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
+        case "learning": return themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color
         default:
             return themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
         }
@@ -507,7 +507,7 @@ struct TimeBlockActionButton: View {
                 
                 // Glass overlay
                 Circle()
-                    .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.1))
+                    .fill((themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color).opacity(0.1))
                     .blur(radius: 1)
                 
                 // Border

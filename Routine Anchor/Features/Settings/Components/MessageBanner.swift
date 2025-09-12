@@ -19,9 +19,9 @@ struct MessageBanner: View {
     private var typeColor: Color {
         switch type {
         case .success:
-            return themeManager?.currentTheme.colorScheme.successColor.color ?? Theme.defaultTheme.colorScheme.successColor.color
+            return themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
         case .error:
-            return themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color
+            return themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
         }
     }
     

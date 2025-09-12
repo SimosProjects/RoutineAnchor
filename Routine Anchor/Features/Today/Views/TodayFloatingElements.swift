@@ -46,7 +46,7 @@ struct TodayFloatingElements: View {
                             title: "Up Next",
                             subtitle: nextBlock.title,
                             timeText: timeUntil,
-                            color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+                            color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     } else if let currentBlock = viewModel.getCurrentBlock(),
@@ -55,7 +55,7 @@ struct TodayFloatingElements: View {
                             title: "Current",
                             subtitle: currentBlock.title,
                             timeText: remainingTime,
-                            color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+                            color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
@@ -135,7 +135,7 @@ struct FloatingActionButtons: View {
                     if viewModel.getNextUpcomingBlock() != nil {
                         MiniFloatingButton(
                             icon: "play.circle",
-                            color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                            color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color,
                             action: onStartNext
                         )
                         .transition(.scale.combined(with: .opacity))
@@ -145,7 +145,7 @@ struct FloatingActionButtons: View {
                     if viewModel.hasScheduledBlocks {
                         MiniFloatingButton(
                             icon: "chart.pie",
-                            color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
+                            color: themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color,
                             action: {
                                 // Show quick stats
                             }
@@ -199,7 +199,7 @@ struct MainFloatingButton: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color.opacity(0.2)],
+                            colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color.opacity(0.3), themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color.opacity(0.2)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -212,7 +212,7 @@ struct MainFloatingButton: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                            colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -225,7 +225,7 @@ struct MainFloatingButton: View {
                             .rotationEffect(.degrees(isExpanded ? 45 : 0))
                     )
                     .shadow(
-                        color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.4),
+                        color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color.opacity(0.4),
                         radius: 12,
                         x: 0,
                         y: 6

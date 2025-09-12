@@ -27,8 +27,8 @@ struct DataManagementSection: View {
         SettingsSection(
             title: "Data & Privacy",
             icon: "shield.checkered",
-            color: themeManager?.currentTheme.colorScheme.organizationAccent.color
-                ?? Theme.defaultTheme.colorScheme.organizationAccent.color
+            color: themeManager?.currentTheme.colorScheme.primaryAccent.color
+                ?? Theme.defaultTheme.colorScheme.primaryAccent.color
         ) {
             VStack(spacing: 16) {
                 // Export data button
@@ -36,8 +36,8 @@ struct DataManagementSection: View {
                     title: "Export My Data",
                     subtitle: "Download your routine data",
                     icon: "square.and.arrow.up",
-                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color
-                        ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                    color: themeManager?.currentTheme.colorScheme.normal.color
+                        ?? Theme.defaultTheme.colorScheme.normal.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onExportData()
@@ -49,8 +49,8 @@ struct DataManagementSection: View {
                     title: "Import Data",
                     subtitle: "Restore from backup file",
                     icon: "square.and.arrow.down",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color
-                        ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: themeManager?.currentTheme.colorScheme.success.color
+                        ?? Theme.defaultTheme.colorScheme.success.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onImportData()
@@ -62,8 +62,8 @@ struct DataManagementSection: View {
                     title: "Privacy Policy",
                     subtitle: "How we protect your data",
                     icon: "hand.raised",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color
-                        ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: themeManager?.currentTheme.colorScheme.success.color
+                        ?? Theme.defaultTheme.colorScheme.success.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         onShowPrivacyPolicy()
@@ -76,8 +76,8 @@ struct DataManagementSection: View {
                 // Divider
                 Rectangle()
                     .fill(
-                        themeManager?.currentTheme.colorScheme.uiElementSecondary.color
-                            ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color
+                        themeManager?.currentTheme.colorScheme.secondaryUIElement.color
+                            ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color
                     )
                     .frame(height: 1)
                     .padding(.vertical, 4)
@@ -87,8 +87,8 @@ struct DataManagementSection: View {
                     title: "Clear Today's Schedule",
                     subtitle: "Delete all time blocks for today",
                     icon: "calendar.badge.minus",
-                    color: themeManager?.currentTheme.colorScheme.warningColor.color
-                        ?? Theme.defaultTheme.colorScheme.warningColor.color,
+                    color: themeManager?.currentTheme.colorScheme.warning.color
+                        ?? Theme.defaultTheme.colorScheme.warning.color,
                     action: {
                         HapticManager.shared.warning()
                         if showsConfirmations {
@@ -106,8 +106,8 @@ struct DataManagementSection: View {
                     title: "Delete All Data",
                     subtitle: "Permanently remove everything",
                     icon: "trash",
-                    color: themeManager?.currentTheme.colorScheme.errorColor.color
-                        ?? Theme.defaultTheme.colorScheme.errorColor.color,
+                    color: themeManager?.currentTheme.colorScheme.error.color
+                        ?? Theme.defaultTheme.colorScheme.error.color,
                     action: {
                         HapticManager.shared.warning()
                         if showsConfirmations {
@@ -163,8 +163,8 @@ struct DataManagementSection: View {
     
     // MARK: - Data Storage Info
     private var dataStorageInfo: some View {
-        let wp = (themeManager?.currentTheme.colorScheme.workflowPrimary.color
-                  ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+        let wp = (themeManager?.currentTheme.colorScheme.normal.color
+                  ?? Theme.defaultTheme.colorScheme.normal.color)
         
         return HStack(spacing: 12) {
             Image(systemName: "internaldrive")

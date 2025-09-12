@@ -33,7 +33,7 @@ struct TimePicker: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(isDisabled ? themeSecondaryText.opacity(0.6) : themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                    .foregroundStyle(isDisabled ? themeSecondaryText.opacity(0.6) : themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color)
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
@@ -43,7 +43,7 @@ struct TimePicker: View {
             DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
                 .datePickerStyle(.compact)
                 .labelsHidden()
-                .accentColor(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                .accentColor(themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color)
                 .colorScheme(.dark)
                 .disabled(isDisabled)
                 .opacity(isDisabled ? 0.6 : 1.0)

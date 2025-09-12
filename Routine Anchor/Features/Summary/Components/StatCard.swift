@@ -43,7 +43,7 @@ struct StatCard: View {
         .padding(.vertical, 20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(scheme.secondaryBackground.color.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(color.opacity(0.08))
@@ -81,7 +81,7 @@ private struct StatCardsPreviewView: View {
                     title: "Completed",
                     value: "8",
                     subtitle: "blocks",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color,
                     icon: "checkmark.circle.fill"
                 )
                 
@@ -89,7 +89,7 @@ private struct StatCardsPreviewView: View {
                     title: "Time",
                     value: "5h 30m",
                     subtitle: "tracked",
-                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                    color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color,
                     icon: "clock.fill"
                 )
                 
@@ -97,7 +97,7 @@ private struct StatCardsPreviewView: View {
                     title: "Skipped",
                     value: "2",
                     subtitle: "blocks",
-                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
                     icon: "forward.circle.fill"
                 )
             }

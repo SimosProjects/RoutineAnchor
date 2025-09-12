@@ -379,7 +379,7 @@ struct DebugPremiumView: View {
                         .padding(.vertical, 4)
                         .background(
                             Capsule()
-                                .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
+                                .fill(Color(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color))
                         )
                 }
                 
@@ -424,7 +424,7 @@ struct DebugPremiumView: View {
                 .fill(Color.black.opacity(0.3))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color), lineWidth: 1)
+                        .stroke(Color(themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color), lineWidth: 1)
                 )
         )
         .padding()

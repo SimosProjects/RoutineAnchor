@@ -25,7 +25,7 @@ struct NotificationSettingsSection: View {
         SettingsSection(
             title: "Notifications",
             icon: "bell",
-            color: scheme.workflowPrimary.color
+            color: scheme.normal.color
         ) {
             VStack(spacing: 16) {
 
@@ -80,7 +80,7 @@ struct NotificationSettingsSection: View {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(scheme.workflowPrimary.color)
+                    .foregroundStyle(scheme.normal.color)
 
                 Text("Notification Timing")
                     .font(.system(size: 13, weight: .semibold))
@@ -95,7 +95,7 @@ struct NotificationSettingsSection: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(scheme.secondaryBackground.color.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)

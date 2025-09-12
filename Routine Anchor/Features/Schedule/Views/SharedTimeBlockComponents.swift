@@ -42,11 +42,11 @@ struct CategorySelector: View {
     
     private func categoryColor(for category: String, scheme: ThemeColorScheme, theme: Theme) -> Color {
         switch category.lowercased() {
-        case "work":     return scheme.workflowPrimary.color
-        case "personal": return scheme.organizationAccent.color
-        case "health":   return scheme.actionSuccess.color
-        case "learning": return scheme.creativeSecondary.color
-        case "social":   return scheme.warningColor.color
+        case "work":     return scheme.normal.color
+        case "personal": return scheme.primaryAccent.color
+        case "health":   return scheme.success.color
+        case "learning": return scheme.secondaryUIElement.color
+        case "social":   return scheme.warning.color
         default:         return theme.secondaryTextColor.opacity(0.85)
         }
     }
@@ -123,7 +123,7 @@ struct HistoryRow: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(scheme.surface2.color.opacity(0.55))
+                .fill(scheme.secondaryBackground.color.opacity(0.55))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
@@ -198,7 +198,7 @@ struct TimeBlockFormView<Content: View>: View {
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
-                                .fill(scheme.surface1.color.opacity(0.65))
+                                .fill(scheme.primaryUIElement.color.opacity(0.65))
                                 .overlay(
                                     Circle().stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
                                 )
@@ -216,11 +216,13 @@ struct TimeBlockFormView<Content: View>: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    scheme.todayHeroTop.color.opacity(0.55),
-                                    scheme.todayHeroBottom.color.opacity(0.25),
+                                    (scheme.backgroundColors.first ?? scheme.primaryBackground).color.opacity(0.55),
+                                    (scheme.backgroundColors.last  ?? scheme.secondaryBackground).color.opacity(0.25),
                                     .clear
                                 ],
-                                center: .center, startRadius: 30, endRadius: 90
+                                center: .center,
+                                startRadius: 30,
+                                endRadius: 90
                             )
                         )
                         .frame(width: 80, height: 80)
@@ -231,7 +233,7 @@ struct TimeBlockFormView<Content: View>: View {
                         .font(.system(size: 48, weight: .light))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
+                                colors: [scheme.normal.color, scheme.primaryAccent.color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -245,7 +247,7 @@ struct TimeBlockFormView<Content: View>: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
+                                colors: [scheme.normal.color, scheme.primaryAccent.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )

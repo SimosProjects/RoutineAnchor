@@ -58,7 +58,7 @@ struct PrivacyPolicyView: View {
                             Circle()
                                 .fill(.ultraThinMaterial)
                                 .background(
-                                    Circle().fill(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)
+                                    Circle().fill(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color)
                                 )
                         )
                 }
@@ -71,7 +71,7 @@ struct PrivacyPolicyView: View {
                     .font(.system(size: 48, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                            colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -99,42 +99,42 @@ struct PrivacyPolicyView: View {
                 icon: "iphone",
                 title: "Local Storage First",
                 content: "Your routine data is stored locally on your device by default. We only collect email addresses when you voluntarily provide them for updates and courses.",
-                color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+                color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
             )
             
             PrivacySection(
                 icon: "envelope",
                 title: "Optional Email Collection",
                 content: "We may ask for your email to send productivity tips, app updates, and information about our app development courses. This is completely optional and you can unsubscribe anytime.",
-                color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+                color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
             )
             
             PrivacySection(
                 icon: "bell.badge",
                 title: "Notification Permissions",
                 content: "We only request notification permissions to send you helpful reminders about your time blocks. You can disable these at any time in Settings.",
-                color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+                color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
             )
             
             PrivacySection(
                 icon: "lock.shield",
                 title: "Minimal Data Collection",
                 content: "When you provide your email, we store it securely and only use it for the purposes you agreed to. Your routine data remains private and local to your device.",
-                color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
+                color: themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color
             )
             
             PrivacySection(
                 icon: "externaldrive",
                 title: "No Third Party Sharing",
                 content: "We don't share your email or any personal information with third parties for marketing purposes. Your data is used only to provide you with the services you requested.",
-                color: themeManager?.currentTheme.colorScheme.creativeSecondary.color ?? Theme.defaultTheme.colorScheme.creativeSecondary.color
+                color: themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color
             )
             
             PrivacySection(
                 icon: "trash",
                 title: "Data Deletion",
                 content: "You can delete your email from our records at any time through the Settings screen. When you delete the app, all local data is permanently removed.",
-                color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+                color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
             )
         }
     }
@@ -217,8 +217,8 @@ struct PrivacySection: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.8),
-                                    (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color).opacity(0.04)
+                                    (themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color).opacity(0.8),
+                                    (themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color).opacity(0.04)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing

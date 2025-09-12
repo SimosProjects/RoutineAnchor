@@ -22,13 +22,13 @@ struct FeatureCard: View {
     private var scheme: ThemeColorScheme { theme.colorScheme }
 
     private var iconGradient: LinearGradient {
-        let base = tint ?? scheme.workflowPrimary.color
-        let mate = tint == nil ? scheme.creativeSecondary.color : base.opacity(0.7)
+        let base = tint ?? scheme.normal.color
+        let mate = tint == nil ? scheme.secondaryUIElement.color : base.opacity(0.7)
         return LinearGradient(colors: [base, mate], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 
     private var borderColor: Color {
-        (tint ?? scheme.workflowPrimary.color).opacity(0.28)
+        (tint ?? scheme.normal.color).opacity(0.28)
     }
 
     var body: some View {
@@ -43,7 +43,7 @@ struct FeatureCard: View {
                             .font(.system(size: 22, weight: .medium))
                             .foregroundStyle(theme.primaryTextColor)
                     )
-                    .shadow(color: (tint ?? scheme.workflowPrimary.color).opacity(0.35), radius: 10, x: 0, y: 6)
+                    .shadow(color: (tint ?? scheme.normal.color).opacity(0.35), radius: 10, x: 0, y: 6)
 
                 // Copy
                 VStack(alignment: .leading, spacing: 4) {

@@ -83,7 +83,7 @@ struct AboutView: View {
                             Circle()
                                 .fill(.ultraThinMaterial)
                                 .background(
-                                    Circle().fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
+                                    Circle().fill(Color(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color))
                                 )
                         )
                 }
@@ -97,14 +97,14 @@ struct AboutView: View {
                     RoundedRectangle(cornerRadius: 20)
                         .fill(
                             LinearGradient(
-                                colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                                colors: [themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.buttonGradient[0].color, themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.buttonGradient[1].color],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .frame(width: 80, height: 80)
                         .scaleEffect(animationPhase == 0 ? 1.0 : 1.05)
-                        .shadow(color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.4), radius: 20, x: 0, y: 10)
+                        .shadow(color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color.opacity(0.4), radius: 20, x: 0, y: 10)
                     
                     Image(systemName: "clock.badge.checkmark")
                         .font(.system(size: 32, weight: .medium))
@@ -135,7 +135,7 @@ struct AboutView: View {
             icon: "info.circle",
             title: "About Routine Anchor",
             content: "Routine Anchor helps you build consistent daily routines through time-blocking. Create structured schedules, track your progress, and develop productive habits that stick.",
-            color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+            color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
         )
     }
     
@@ -145,7 +145,7 @@ struct AboutView: View {
             icon: "target",
             title: "Our Mission",
             content: "We believe everyone deserves to live intentionally. Routine Anchor empowers you to take control of your time, build meaningful habits, and create a life aligned with your values.",
-            color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+            color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
         )
     }
     
@@ -173,7 +173,7 @@ struct AboutView: View {
             icon: "person.circle",
             title: "Made with ❤️",
             content: "Routine Anchor is crafted by Christopher Simonson, an indie developer passionate about productivity and beautiful software. Built with SwiftUI for iOS.",
-            color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
+            color: themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color
         )
     }
     
@@ -212,13 +212,13 @@ struct AboutView: View {
                 .frame(height: 48)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                        colors: [themeManager?.currentTheme.colorScheme.buttonGradient[0].color ?? Theme.defaultTheme.colorScheme.buttonGradient[0].color, themeManager?.currentTheme.colorScheme.buttonGradient[1].color ?? Theme.defaultTheme.colorScheme.buttonGradient[1].color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(12)
-                .shadow(color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color.opacity(0.3), radius: 8, x: 0, y: 4)
             }
             
             Text("© 2025 Simo's Media & Tech, LLC. All rights reserved.")
@@ -317,7 +317,7 @@ struct ActionButton: View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
             
             VStack(spacing: 2) {
                 Text(title)
@@ -331,11 +331,11 @@ struct ActionButton: View {
         }
         .frame(maxWidth: .infinity)
         .padding(16)
-        .background(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)
+        .background(themeManager?.currentTheme.colorScheme.elevatedBackground.color ?? Theme.defaultTheme.colorScheme.elevatedBackground.color)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color, lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.elevatedBackground.color ?? Theme.defaultTheme.colorScheme.elevatedBackground.color, lineWidth: 1)
         )
     }
 }

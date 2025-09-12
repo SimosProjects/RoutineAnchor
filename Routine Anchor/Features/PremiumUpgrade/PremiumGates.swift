@@ -24,7 +24,7 @@ struct PremiumGateView: View {
 
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(scheme.warningColor.color)
+                    .foregroundStyle(scheme.warning.color)
                     .offset(x: 20, y: -20)
             }
 
@@ -46,7 +46,7 @@ struct PremiumGateView: View {
         .padding(24)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(scheme.secondaryBackground.color.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20)
@@ -81,7 +81,7 @@ struct TimeBlockLimitGate: View {
                 }
 
                 ProgressView(value: Double(currentCount), total: Double(limit))
-                    .tint(scheme.warningColor.color)
+                    .tint(scheme.warning.color)
                     .scaleEffect(y: 1.6)
             }
 
@@ -112,7 +112,7 @@ struct AnalyticsGate: View {
 
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(scheme.warningColor.color)
+                    .foregroundStyle(scheme.warning.color)
                     .offset(x: 20, y: -20)
             }
 
@@ -132,7 +132,7 @@ struct AnalyticsGate: View {
             DesignedButton(title: "Upgrade to Premium", style: .gradient, action: onUpgrade)
         }
         .padding(24)
-        .background(RoundedRectangle(cornerRadius: 20).fill(scheme.surface2.color.opacity(0.9)))
+        .background(RoundedRectangle(cornerRadius: 20).fill(scheme.secondaryBackground.color.opacity(0.9)))
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(scheme.border.color.opacity(0.85), lineWidth: 1))
         .shadow(color: .black.opacity(0.25), radius: 12, x: 0, y: 6)
         .padding(.horizontal)
@@ -194,7 +194,7 @@ struct PremiumBadge: View {
         .padding(.vertical, 4)
         .background(
             Capsule().fill(
-                LinearGradient(colors: [scheme.warningColor.color, scheme.actionSuccess.color],
+                LinearGradient(colors: [scheme.warning.color, scheme.success.color],
                                startPoint: .leading, endPoint: .trailing)
             )
         )
@@ -222,7 +222,7 @@ struct PremiumFeatureCard: View {
                     if isLocked {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(scheme.warningColor.color)
+                            .foregroundStyle(scheme.warning.color)
                             .offset(x: 12, y: -12)
                     }
                 }
@@ -242,13 +242,13 @@ struct PremiumFeatureCard: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(
                         isLocked
-                        ? scheme.surface2.color.opacity(0.85)
-                        : scheme.surface3.color.opacity(0.9)
+                        ? scheme.secondaryBackground.color.opacity(0.85)
+                        : scheme.elevatedBackground.color.opacity(0.9)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(
-                                isLocked ? scheme.border.color.opacity(0.85) : scheme.workflowPrimary.color.opacity(0.35),
+                                isLocked ? scheme.border.color.opacity(0.85) : scheme.normal.color.opacity(0.35),
                                 lineWidth: 1
                             )
                     )
@@ -274,7 +274,7 @@ struct PremiumMiniPrompt: View {
         HStack(spacing: 12) {
             Image(systemName: "crown.fill")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(scheme.warningColor.color)
+                .foregroundStyle(scheme.warning.color)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -296,15 +296,15 @@ struct PremiumMiniPrompt: View {
             .foregroundStyle(theme.primaryTextColor)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Capsule().fill(scheme.workflowPrimary.color))
+            .background(Capsule().fill(scheme.normal.color))
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(scheme.secondaryBackground.color.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(scheme.workflowPrimary.color.opacity(0.35), lineWidth: 1)
+                        .stroke(scheme.normal.color.opacity(0.35), lineWidth: 1)
                 )
         )
     }

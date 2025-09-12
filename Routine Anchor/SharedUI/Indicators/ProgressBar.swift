@@ -20,7 +20,7 @@ struct ProgressBar: View {
             ZStack(alignment: .leading) {
                 // Track
                 Capsule()
-                    .fill(Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
+                    .fill(Color(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color))
                     .frame(height: 4)
                 
                 // Progress

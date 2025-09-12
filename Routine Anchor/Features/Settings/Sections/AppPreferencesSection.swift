@@ -26,7 +26,7 @@ struct AppPreferencesSection: View {
         SettingsSection(
             title: "Preferences",
             icon: "slider.horizontal.3",
-            color: scheme.actionSuccess.color
+            color: scheme.success.color
         ) {
             VStack(spacing: 16) {
 
@@ -51,7 +51,7 @@ struct AppPreferencesSection: View {
 
                 // Divider
                 Rectangle()
-                    .fill(scheme.uiElementSecondary.color.opacity(0.3))
+                    .fill(scheme.secondaryUIElement.color.opacity(0.3))
                     .frame(height: 1)
                     .padding(.vertical, 4)
 
@@ -60,7 +60,7 @@ struct AppPreferencesSection: View {
                     title: "Reset Today's Progress",
                     subtitle: "Set all of today's blocks back to Not Started",
                     icon: "arrow.uturn.backward",
-                    color: scheme.workflowPrimary.color,
+                    color: scheme.normal.color,
                     action: {
                         HapticManager.shared.lightImpact()
                         showingResetConfirmation = true
@@ -101,7 +101,7 @@ struct AppPreferencesSection: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "hand.tap")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(scheme.actionSuccess.color.opacity(0.85))
+                    .foregroundStyle(scheme.success.color.opacity(0.85))
                     .frame(width: 16, height: 16)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -121,7 +121,7 @@ struct AppPreferencesSection: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "moon.stars")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(scheme.organizationAccent.color.opacity(0.85))
+                    .foregroundStyle(scheme.primaryAccent.color.opacity(0.85))
                     .frame(width: 16, height: 16)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -140,7 +140,7 @@ struct AppPreferencesSection: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(scheme.secondaryBackground.color.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)

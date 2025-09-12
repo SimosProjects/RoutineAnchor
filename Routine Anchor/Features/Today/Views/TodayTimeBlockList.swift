@@ -71,9 +71,9 @@ struct TodayTimeBlocksList: View {
             } label: {
                 Image(systemName: useGroupedView ? "square.grid.2x2" : "list.bullet")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(scheme.workflowPrimary.color)
+                    .foregroundStyle(scheme.normal.color)
                     .frame(width: 32, height: 32)
-                    .background(scheme.workflowPrimary.color.opacity(0.15))
+                    .background(scheme.normal.color.opacity(0.15))
                     .cornerRadius(8)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
@@ -186,7 +186,7 @@ struct TodayTimeBlocksList: View {
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
+                        colors: [scheme.normal.color, scheme.primaryAccent.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -196,7 +196,7 @@ struct TodayTimeBlocksList: View {
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
                 )
-                .shadow(color: scheme.workflowPrimary.color.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: scheme.normal.color.opacity(0.3), radius: 8, x: 0, y: 4)
             }
         }
         .padding(.vertical, 40)

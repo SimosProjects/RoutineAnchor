@@ -27,7 +27,7 @@ struct SupportInfoSection: View {
         SettingsSection(
             title: "Support & Info",
             icon: "questionmark.circle",
-            color: scheme.creativeSecondary.color
+            color: scheme.secondaryUIElement.color
         ) {
             VStack(spacing: 16) {
                 // Help & FAQ
@@ -35,7 +35,7 @@ struct SupportInfoSection: View {
                     title: "Help & FAQ",
                     subtitle: "Get answers to common questions",
                     icon: "questionmark.circle",
-                    color: scheme.workflowPrimary.color,
+                    color: scheme.normal.color,
                     action: {
                         onShowHelp()
                     }
@@ -46,7 +46,7 @@ struct SupportInfoSection: View {
                     title: "About Routine Anchor",
                     subtitle: "App info and acknowledgments",
                     icon: "info.circle",
-                    color: scheme.organizationAccent.color,
+                    color: scheme.primaryAccent.color,
                     action: {
                         onShowAbout()
                     }
@@ -60,7 +60,7 @@ struct SupportInfoSection: View {
                     title: "Rate the App",
                     subtitle: showThankYou ? "Thank you! ❤️" : "Support development",
                     icon: "star",
-                    color: scheme.warningColor.color,
+                    color: scheme.warning.color,
                     action: {
                         HapticManager.shared.anchorSuccess()
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
@@ -96,7 +96,7 @@ struct SupportInfoSection: View {
                     title: "Contact Support",
                     subtitle: "Get help from our team",
                     icon: "envelope",
-                    color: scheme.actionSuccess.color,
+                    color: scheme.success.color,
                     action: {
                         onContactSupport()
                     }
@@ -112,7 +112,7 @@ struct SupportInfoSection: View {
     private var supportDivider: some View {
         HStack(spacing: 12) {
             Rectangle()
-                .fill(scheme.uiElementSecondary.color.opacity(0.3))
+                .fill(scheme.secondaryUIElement.color.opacity(0.3))
                 .frame(height: 1)
 
             Text("SUPPORT")
@@ -121,7 +121,7 @@ struct SupportInfoSection: View {
                 .tracking(1)
 
             Rectangle()
-                .fill(scheme.uiElementSecondary.color.opacity(0.3))
+                .fill(scheme.secondaryUIElement.color.opacity(0.3))
                 .frame(height: 1)
         }
         .padding(.vertical, 4)
@@ -133,7 +133,7 @@ struct SupportInfoSection: View {
             HStack(spacing: 8) {
                 Image(systemName: "lightbulb")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(scheme.warningColor.color)
+                    .foregroundStyle(scheme.warning.color)
 
                 Text("Quick Tips")
                     .font(.system(size: 13, weight: .semibold))
@@ -149,11 +149,11 @@ struct SupportInfoSection: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(scheme.creativeSecondary.color.opacity(0.10))
+                .fill(scheme.secondaryUIElement.color.opacity(0.10))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(scheme.creativeSecondary.color.opacity(0.20), lineWidth: 1)
+                .stroke(scheme.secondaryUIElement.color.opacity(0.20), lineWidth: 1)
         )
     }
 }
@@ -171,11 +171,11 @@ struct SupportingInfoQuickTip: View {
         HStack(alignment: .top, spacing: 8) {
             Text(number)
                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(scheme.creativeSecondary.color)
+                .foregroundStyle(scheme.secondaryUIElement.color)
                 .frame(width: 16, height: 16)
                 .background(
                     Circle()
-                        .fill(scheme.creativeSecondary.color.opacity(0.20))
+                        .fill(scheme.secondaryUIElement.color.opacity(0.20))
                 )
 
             Text(text)

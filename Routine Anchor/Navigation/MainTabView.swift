@@ -35,15 +35,15 @@ struct MainTabView: View {
 
     private var themePrimaryText: Color { theme.primaryTextColor }
     private var themeAccent: Color { theme.buttonAccentColor }
-    private var themeBackground: Color { scheme.appBackground.color }
+    private var themeBackground: Color { scheme.primaryBackground.color }
 
     // Helper gradient per tab
     private func gradientColors(for tab: Tab) -> [Color] {
         switch tab {
-        case .today:    return [scheme.workflowPrimary.color, scheme.creativeSecondary.color]
-        case .schedule: return [scheme.organizationAccent.color, scheme.workflowPrimary.color]
-        case .summary:  return [scheme.actionSuccess.color, scheme.creativeSecondary.color]
-        case .analytics:return [scheme.warningColor.color, scheme.organizationAccent.color]
+        case .today:    return [scheme.normal.color, scheme.secondaryUIElement.color]
+        case .schedule: return [scheme.primaryAccent.color, scheme.normal.color]
+        case .summary:  return [scheme.success.color, scheme.secondaryUIElement.color]
+        case .analytics:return [scheme.warning.color, scheme.primaryAccent.color]
         case .settings: return [theme.secondaryTextColor, theme.subtleTextColor]
         }
     }
@@ -477,11 +477,11 @@ struct BasicAnalyticsView: View {
                 } label: {
                     Image(systemName: "crown.fill")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(scheme.warningColor.color)
+                        .foregroundStyle(scheme.warning.color)
                         .padding(8)
                         .background(
                             Circle()
-                                .fill(scheme.surface2.color)
+                                .fill(scheme.secondaryBackground.color)
                                 .overlay(Circle().stroke(scheme.border.color.opacity(0.85), lineWidth: 1))
                         )
                 }
@@ -540,14 +540,14 @@ struct BasicAnalyticsView: View {
                             title: "Completed",
                             value: "\(progress.completedBlocks)",
                             subtitle: "blocks",
-                            color: scheme.actionSuccess.color,
+                            color: scheme.success.color,
                             icon: "checkmark.circle.fill"
                         )
                         StatCard(
                             title: "Progress",
                             value: "\(Int(progress.completionPercentage * 100))%",
                             subtitle: "today",
-                            color: scheme.workflowPrimary.color,
+                            color: scheme.normal.color,
                             icon: "chart.pie.fill"
                         )
                     }
@@ -558,14 +558,14 @@ struct BasicAnalyticsView: View {
                                 title: "This Week",
                                 value: "\(weeklyStats.completedBlocks)",
                                 subtitle: "completed",
-                                color: scheme.organizationAccent.color,
+                                color: scheme.primaryAccent.color,
                                 icon: "calendar.circle.fill"
                             )
                             StatCard(
                                 title: "Average",
                                 value: "\(Int(weeklyStats.averageCompletion * 100))%",
                                 subtitle: "weekly",
-                                color: scheme.creativeSecondary.color,
+                                color: scheme.secondaryUIElement.color,
                                 icon: "chart.line.uptrend.xyaxis"
                             )
                         }
@@ -605,25 +605,25 @@ struct BasicAnalyticsView: View {
                         icon: "chart.line.uptrend.xyaxis",
                         title: "Productivity Trends",
                         description: "Track your completion rates over time",
-                        color: scheme.workflowPrimary.color
+                        color: scheme.normal.color
                     )
                     PremiumFeaturePreview(
                         icon: "brain.head.profile",
                         title: "Peak Performance Times",
                         description: "Discover when you're most productive",
-                        color: scheme.actionSuccess.color
+                        color: scheme.success.color
                     )
                     PremiumFeaturePreview(
                         icon: "lightbulb.fill",
                         title: "AI-Powered Insights",
                         description: "Get personalized recommendations",
-                        color: scheme.warningColor.color
+                        color: scheme.warning.color
                     )
                     PremiumFeaturePreview(
                         icon: "target",
                         title: "Category Performance",
                         description: "Analyze completion by activity type",
-                        color: scheme.organizationAccent.color
+                        color: scheme.primaryAccent.color
                     )
                 }
             }
@@ -690,7 +690,7 @@ struct PremiumFeaturePreview: View {
             Spacer()
             Image(systemName: "lock.fill")
                 .font(.system(size: 12))
-                .foregroundStyle(theme.colorScheme.warningColor.color)
+                .foregroundStyle(theme.colorScheme.warning.color)
         }
         .padding(.vertical, 8)
     }
@@ -713,7 +713,7 @@ struct FloatingActionButton: View {
         [theme.buttonPrimaryColor, theme.buttonAccentColor]
     }
     private var shadowColor: Color { theme.buttonPrimaryColor.opacity(0.4) }
-    private var backgroundShadowColor: Color { theme.colorScheme.appBackground.color.opacity(0.2) }
+    private var backgroundShadowColor: Color { theme.colorScheme.primaryBackground.color.opacity(0.2) }
 
     var body: some View {
         Button(action: {

@@ -30,8 +30,8 @@ struct CategoryChip: View {
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(isSelected ? color :
-                            (themeManager?.currentTheme.colorScheme.uiElementPrimary.color.opacity(0.3) ??
-                             Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)))
+                            (themeManager?.currentTheme.colorScheme.primaryUIElement.color.opacity(0.3) ??
+                             Color(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color)))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)

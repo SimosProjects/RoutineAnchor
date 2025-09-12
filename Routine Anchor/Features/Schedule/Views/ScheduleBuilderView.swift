@@ -28,17 +28,15 @@ struct ScheduleBuilderView: View {
             ThemedAnimatedBackground()
                 .ignoresSafeArea()
                 .overlay(
-                    // Subtle vignette from theme
                     RadialGradient(
                         colors: [
-                            theme.colorScheme.todayHeroVignette.color,
+                            theme.primaryAccentColor.opacity(theme.glowIntensitySecondary),
                             .clear
                         ],
                         center: .top,
                         startRadius: 0,
                         endRadius: 520
                     )
-                    .opacity(theme.colorScheme.todayHeroVignetteOpacity)
                     .blendMode(.softLight)
                     .ignoresSafeArea()
                 )
@@ -135,8 +133,8 @@ struct ScheduleBuilderView: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [theme.colorScheme.workflowPrimary.color,
-                                         theme.colorScheme.organizationAccent.color],
+                                colors: [theme.colorScheme.normal.color,
+                                         theme.colorScheme.primaryAccent.color],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -160,12 +158,12 @@ struct ScheduleBuilderView: View {
                             Text("Reset All")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundStyle(theme.colorScheme.errorColor.color)
+                        .foregroundStyle(theme.colorScheme.error.color)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(
                             Capsule(style: .continuous)
-                                .fill(theme.colorScheme.errorColor.color.opacity(0.12))
+                                .fill(theme.colorScheme.error.color.opacity(0.12))
                         )
                         .overlay(
                             Capsule(style: .continuous)
@@ -269,8 +267,8 @@ struct ScheduleBuilderView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                theme.colorScheme.workflowPrimary.color.opacity(0.4),
-                                theme.colorScheme.organizationAccent.color.opacity(0.2),
+                                theme.colorScheme.normal.color.opacity(0.4),
+                                theme.colorScheme.primaryAccent.color.opacity(0.2),
                                 .clear
                             ],
                             center: .center,
@@ -285,8 +283,8 @@ struct ScheduleBuilderView: View {
                     .font(.system(size: 80, weight: .thin))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [theme.colorScheme.workflowPrimary.color,
-                                     theme.colorScheme.organizationAccent.color],
+                            colors: [theme.colorScheme.normal.color,
+                                     theme.colorScheme.primaryAccent.color],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -299,8 +297,8 @@ struct ScheduleBuilderView: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [theme.colorScheme.workflowPrimary.color,
-                                     theme.colorScheme.organizationAccent.color],
+                            colors: [theme.colorScheme.normal.color,
+                                     theme.colorScheme.primaryAccent.color],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -347,7 +345,7 @@ struct ScheduleBuilderView: View {
             Spacer()
             
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: theme.colorScheme.workflowPrimary.color))
+                .progressViewStyle(CircularProgressViewStyle(tint: theme.colorScheme.normal.color))
                 .scaleEffect(1.5)
             
             Text("Setting up your schedule...")
@@ -397,10 +395,10 @@ struct SimpleTimeBlockRow: View {
     
     private var accentColors: [Color] {
         switch timeBlock.status {
-        case .notStarted: return [theme.colorScheme.organizationAccent.color, theme.colorScheme.workflowPrimary.color]
-        case .inProgress: return [theme.colorScheme.workflowPrimary.color, theme.colorScheme.creativeSecondary.color]
-        case .completed:  return [theme.colorScheme.actionSuccess.color, theme.colorScheme.creativeSecondary.color]
-        case .skipped:    return [theme.colorScheme.errorColor.color, theme.colorScheme.warningColor.color]
+        case .notStarted: return [theme.colorScheme.primaryAccent.color, theme.colorScheme.normal.color]
+        case .inProgress: return [theme.colorScheme.normal.color, theme.colorScheme.secondaryUIElement.color]
+        case .completed:  return [theme.colorScheme.success.color, theme.colorScheme.secondaryUIElement.color]
+        case .skipped:    return [theme.colorScheme.error.color, theme.colorScheme.warning.color]
         }
     }
     
@@ -416,9 +414,9 @@ struct SimpleTimeBlockRow: View {
     private var statusColor: Color {
         switch timeBlock.status {
         case .notStarted: return theme.secondaryTextColor.opacity(0.85)
-        case .inProgress: return theme.colorScheme.workflowPrimary.color
-        case .completed:  return theme.colorScheme.actionSuccess.color
-        case .skipped:    return theme.colorScheme.warningColor.color
+        case .inProgress: return theme.colorScheme.normal.color
+        case .completed:  return theme.colorScheme.success.color
+        case .skipped:    return theme.colorScheme.warning.color
         }
     }
     
@@ -444,7 +442,7 @@ struct SimpleTimeBlockRow: View {
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(theme.colorScheme.surface3.color)
+                        .fill(theme.colorScheme.elevatedBackground.color)
                 )
                 
                 // Title & notes
@@ -476,18 +474,18 @@ struct SimpleTimeBlockRow: View {
                     Button(action: onEdit) {
                         Image(systemName: "pencil")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(theme.colorScheme.workflowPrimary.color)
+                            .foregroundStyle(theme.colorScheme.normal.color)
                             .frame(width: 32, height: 32)
-                            .background(theme.colorScheme.workflowPrimary.color.opacity(0.15))
+                            .background(theme.colorScheme.normal.color.opacity(0.15))
                             .cornerRadius(8)
                     }
                     
                     Button(action: onDelete) {
                         Image(systemName: "trash")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(theme.colorScheme.errorColor.color)
+                            .foregroundStyle(theme.colorScheme.error.color)
                             .frame(width: 32, height: 32)
-                            .background(theme.colorScheme.errorColor.color.opacity(0.15))
+                            .background(theme.colorScheme.error.color.opacity(0.15))
                             .cornerRadius(8)
                     }
                 }
@@ -497,7 +495,7 @@ struct SimpleTimeBlockRow: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(theme.colorScheme.surface2.color.opacity(0.9))
+                .fill(theme.colorScheme.secondaryBackground.color.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -545,7 +543,7 @@ struct StaticParticles: View {
         GeometryReader { geometry in
             ForEach(0..<10, id: \.self) { index in
                 Circle()
-                    .fill(theme.colorScheme.workflowPrimary.color.opacity(0.12))
+                    .fill(theme.colorScheme.normal.color.opacity(0.12))
                     .frame(width: 4, height: 4)
                     .position(
                         x: CGFloat(20 + index * 40).truncatingRemainder(dividingBy: geometry.size.width),

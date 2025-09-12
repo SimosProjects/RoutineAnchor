@@ -110,7 +110,7 @@ struct PremiumAnalyticsView: View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 40))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color)
             
             Text("Error Loading Analytics")
                 .font(.system(size: 18, weight: .semibold))
@@ -128,7 +128,7 @@ struct PremiumAnalyticsView: View {
             .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
-            .background(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+            .background(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
             .cornerRadius(8)
         }
         .padding()
@@ -151,7 +151,7 @@ struct PremiumAnalyticsView: View {
                         .padding(.vertical, 12)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(selectedTimeRange == range ? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color : Color.clear)
+                                .fill(selectedTimeRange == range ? themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color : Color.clear)
                         )
                 }
             }
@@ -159,7 +159,7 @@ struct PremiumAnalyticsView: View {
         .padding(4)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)
+                .fill(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color)
         )
     }
     
@@ -179,7 +179,7 @@ struct PremiumAnalyticsView: View {
                     title: "Completion Rate",
                     value: "\(Int(report.completionRate * 100))%",
                     subtitle: formatTrendChange(report.trends.percentageChange),
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color,
                     icon: "checkmark.circle.fill",
                     trend: trendToDirection(report.trends.direction)
                 )
@@ -188,7 +188,7 @@ struct PremiumAnalyticsView: View {
                     title: "Total Blocks",
                     value: "\(report.totalBlocks)",
                     subtitle: "this week",
-                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                    color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color,
                     icon: "calendar",
                     trend: .neutral
                 )
@@ -197,7 +197,7 @@ struct PremiumAnalyticsView: View {
                     title: "Focus Time",
                     value: formatDuration(report.totalCompletedTime),
                     subtitle: "completed",
-                    color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
+                    color: themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color,
                     icon: "brain.head.profile",
                     trend: .neutral
                 )
@@ -206,7 +206,7 @@ struct PremiumAnalyticsView: View {
                     title: "Current Streak",
                     value: "\(report.currentStreak)",
                     subtitle: "days",
-                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
                     icon: "flame.fill",
                     trend: report.currentStreak > report.longestStreak / 2 ? .up : .neutral
                 )
@@ -232,7 +232,7 @@ struct PremiumAnalyticsView: View {
                     title: "Total Time",
                     value: formatDuration(report.totalTimeCompleted),
                     subtitle: "completed",
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color,
+                    color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color,
                     icon: "clock.fill",
                     trend: .neutral
                 )
@@ -241,7 +241,7 @@ struct PremiumAnalyticsView: View {
                     title: "Productive Days",
                     value: "\(report.mostProductiveDays.count)",
                     subtitle: "high performance",
-                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
+                    color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color,
                     icon: "star.fill",
                     trend: .up
                 )
@@ -250,7 +250,7 @@ struct PremiumAnalyticsView: View {
                     title: "Weekly Average",
                     value: formatWeeklyAverage(report.weeklyBreakdowns),
                     subtitle: "completion rate",
-                    color: themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color,
+                    color: themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color,
                     icon: "chart.line.uptrend.xyaxis",
                     trend: .neutral
                 )
@@ -259,7 +259,7 @@ struct PremiumAnalyticsView: View {
                     title: "Improvements",
                     value: "\(report.improvements.count)",
                     subtitle: "suggestions",
-                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color,
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color,
                     icon: "lightbulb.fill",
                     trend: .neutral
                 )
@@ -496,7 +496,7 @@ struct PremiumAnalyticsView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 30))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.successColor.color ?? Theme.defaultTheme.colorScheme.successColor.color)
+                        .foregroundStyle(themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color)
                     
                     Text("You're doing great!")
                         .font(.system(size: 16, weight: .semibold))
@@ -631,11 +631,11 @@ struct PremiumAnalyticsView: View {
     private func trendColor(_ trend: TrendDirection) -> Color {
         switch trend {
         case .improving:
-            return themeManager?.currentTheme.colorScheme.successColor.color ?? Theme.defaultTheme.colorScheme.successColor.color
+            return themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
         case .declining:
-            return themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color
+            return themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
         case .stable:
-            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+            return themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
         }
     }
     
@@ -643,21 +643,21 @@ struct PremiumAnalyticsView: View {
         guard let theme = themeManager?.currentTheme else {
             // Fallback colors if no theme manager
             let defaultColors: [Color] = [
-                Theme.defaultTheme.colorScheme.workflowPrimary.color,
-                Theme.defaultTheme.colorScheme.actionSuccess.color,
-                Theme.defaultTheme.colorScheme.organizationAccent.color,
-                Theme.defaultTheme.colorScheme.creativeSecondary.color,
-                Theme.defaultTheme.colorScheme.warningColor.color
+                Theme.defaultTheme.colorScheme.normal.color,
+                Theme.defaultTheme.colorScheme.success.color,
+                Theme.defaultTheme.colorScheme.primaryAccent.color,
+                Theme.defaultTheme.colorScheme.secondaryUIElement.color,
+                Theme.defaultTheme.colorScheme.warning.color
             ]
             return defaultColors[index % defaultColors.count]
         }
         
         let colors: [Color] = [
-            theme.colorScheme.workflowPrimary.color,
-            theme.colorScheme.actionSuccess.color,
-            theme.colorScheme.organizationAccent.color,
-            theme.colorScheme.creativeSecondary.color,
-            theme.colorScheme.warningColor.color
+            theme.colorScheme.normal.color,
+            theme.colorScheme.success.color,
+            theme.colorScheme.primaryAccent.color,
+            theme.colorScheme.secondaryUIElement.color,
+            theme.colorScheme.warning.color
         ]
         return colors[index % colors.count]
     }
@@ -674,24 +674,24 @@ struct PremiumAnalyticsView: View {
     private func performanceColor(_ performance: Double) -> Color {
         switch performance {
         case 0.9...:
-            return themeManager?.currentTheme.colorScheme.successColor.color ?? Theme.defaultTheme.colorScheme.successColor.color
+            return themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
         case 0.7..<0.9:
-            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+            return themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
         case 0.5..<0.7:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         default:
-            return themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color
+            return themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
         }
     }
     
     private func suggestionColor(for impact: ImprovementSuggestion.ImpactLevel) -> Color {
         switch impact {
         case .high:
-            return themeManager?.currentTheme.colorScheme.errorColor.color ?? Theme.defaultTheme.colorScheme.errorColor.color
+            return themeManager?.currentTheme.colorScheme.error.color ?? Theme.defaultTheme.colorScheme.error.color
         case .medium:
-            return themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+            return themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
         case .low:
-            return themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+            return themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
         }
     }
 }
@@ -727,7 +727,7 @@ struct DailyStatsRow: View {
                 Text("\(Int(dailyStats.completionRate * 100))%")
                     .font(.system(size: 12))
                     .foregroundStyle(dailyStats.completionRate > 0.8 ?
-                        (themeManager?.currentTheme.colorScheme.successColor.color ?? Theme.defaultTheme.colorScheme.successColor.color) :
+                        (themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color) :
                         (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor).opacity(0.85))
             }
         }
@@ -773,7 +773,7 @@ struct ProductiveDayRow: View {
         HStack {
             Text("#\(rank)")
                 .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                 .frame(width: 30)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -791,8 +791,8 @@ struct ProductiveDayRow: View {
             Text("\(Int(productiveDay.completionRate * 100))%")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(
-                    themeManager?.currentTheme.colorScheme.successColor.color
-                    ?? Theme.defaultTheme.colorScheme.successColor.color
+                    themeManager?.currentTheme.colorScheme.success.color
+                    ?? Theme.defaultTheme.colorScheme.success.color
                 )
         }
         .padding(.vertical, 8)
@@ -875,9 +875,9 @@ enum TrendDisplayDirection {
         let t = theme ?? Theme.defaultTheme
         switch self {
         case .up:
-            return t.colorScheme.successColor.color
+            return t.colorScheme.success.color
         case .down:
-            return t.colorScheme.errorColor.color
+            return t.colorScheme.error.color
         case .neutral:
             return t.secondaryTextColor.opacity(0.85)
         }

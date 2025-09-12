@@ -90,8 +90,8 @@ struct StatusGroupSection: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            scheme.surface2.color,
-                            scheme.surface3.color.opacity(0.7)
+                            scheme.secondaryBackground.color,
+                            scheme.elevatedBackground.color.opacity(0.7)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing

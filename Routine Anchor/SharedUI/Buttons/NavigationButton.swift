@@ -42,7 +42,7 @@ struct NavigationButton: View {
     
     private var themeGradient: LinearGradient {
         guard let theme = themeManager?.currentTheme else {
-            return Theme.defaultTheme.backgroundGradient
+            return Theme.defaultTheme.backgroundColorsLinear
         }
         
         switch style {
@@ -54,7 +54,7 @@ struct NavigationButton: View {
             )
         case .secondary:
             return LinearGradient(
-                colors: [theme.colorScheme.uiElementPrimary.color, theme.colorScheme.uiElementSecondary.color],
+                colors: [theme.colorScheme.primaryUIElement.color, theme.colorScheme.secondaryUIElement.color],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -66,7 +66,7 @@ struct NavigationButton: View {
             )
         case .success:
             return LinearGradient(
-                colors: [theme.colorScheme.actionSuccess.color, theme.colorScheme.creativeSecondary.color],
+                colors: [theme.colorScheme.success.color, theme.colorScheme.secondaryUIElement.color],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -82,11 +82,11 @@ struct NavigationButton: View {
         case .primary:
             return theme.buttonPrimaryColor.opacity(0.3)
         case .secondary:
-            return theme.colorScheme.uiElementPrimary.color.opacity(0.3)
+            return theme.colorScheme.primaryUIElement.color.opacity(0.3)
         case .accent:
             return theme.buttonAccentColor.opacity(0.3)
         case .success:
-            return theme.colorScheme.actionSuccess.color.opacity(0.3)
+            return theme.colorScheme.success.color.opacity(0.3)
         }
     }
     

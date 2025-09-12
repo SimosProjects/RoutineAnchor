@@ -289,7 +289,7 @@ extension PrimaryButton {
         }
     }
     .padding(20)
-    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+    .background(Theme.defaultTheme.colorScheme.secondaryUIElement.color)
 }
 
 #Preview("Dark Mode") {
@@ -301,6 +301,6 @@ extension PrimaryButton {
             .buttonStyle(.outlined)
     }
     .padding(20)
-    .background(Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+    .background(Theme.defaultTheme.colorScheme.secondaryUIElement.color)
     .preferredColorScheme(.dark)
 }

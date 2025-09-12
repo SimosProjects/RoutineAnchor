@@ -121,7 +121,7 @@ struct CompletionActions: View {
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [scheme.actionSuccess.color, scheme.creativeSecondary.color],
+                        colors: [scheme.success.color, scheme.secondaryUIElement.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -132,7 +132,7 @@ struct CompletionActions: View {
                         .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
                 )
                 .scaleEffect(isViewSummaryPressed ? 0.97 : 1)
-                .shadow(color: scheme.actionSuccess.color.opacity(0.3), radius: 6, x: 0, y: 3)
+                .shadow(color: scheme.success.color.opacity(0.3), radius: 6, x: 0, y: 3)
             }
             
             // Plan Tomorrow
@@ -155,7 +155,7 @@ struct CompletionActions: View {
                 .padding(.vertical, 12)
                 .background(
                     LinearGradient(
-                        colors: [scheme.workflowPrimary.color, scheme.organizationAccent.color],
+                        colors: [scheme.normal.color, scheme.primaryAccent.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -166,7 +166,7 @@ struct CompletionActions: View {
                         .stroke(scheme.border.color.opacity(0.8), lineWidth: 1)
                 )
                 .scaleEffect(isPlanTomorrowPressed ? 0.97 : 1)
-                .shadow(color: scheme.workflowPrimary.color.opacity(0.3), radius: 6, x: 0, y: 3)
+                .shadow(color: scheme.normal.color.opacity(0.3), radius: 6, x: 0, y: 3)
             }
         }
     }

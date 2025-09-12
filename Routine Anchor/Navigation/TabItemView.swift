@@ -22,8 +22,8 @@ struct TabItemView: View {
                     isSelected ?
                     LinearGradient(
                         colors: [
-                            themeManager?.currentTheme.buttonPrimaryColor ?? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
-                            themeManager?.currentTheme.buttonAccentColor ?? themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
+                            themeManager?.currentTheme.buttonPrimaryColor ?? themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color,
+                            themeManager?.currentTheme.buttonAccentColor ?? themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -44,7 +44,7 @@ struct TabItemView: View {
                 .font(.system(size: 10, weight: isSelected ? .semibold : .medium))
                 .foregroundStyle(
                     isSelected ?
-                    (themeManager?.currentTheme.buttonPrimaryColor ?? themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color) :
+                    (themeManager?.currentTheme.buttonPrimaryColor ?? themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color) :
                     (themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                 )
         }

@@ -194,17 +194,17 @@ class ThemeManager {
     // MARK: - Theme Application Helpers
     
     /// Get the appropriate background gradient for current theme
-    var backgroundGradient: some View {
+    var backgroundColorsLinear: some View {
         switch currentTheme.gradientStyle {
         case .linear:
-            return AnyView(currentTheme.backgroundGradient)
+            return AnyView(currentTheme.backgroundColorsLinear)
         case .radial:
-            return AnyView(currentTheme.radialBackgroundGradient)
+            return AnyView(currentTheme.backgroundColorsLinearRadial)
         case .angular:
-            return AnyView(currentTheme.angularBackgroundGradient)
+            return AnyView(currentTheme.backgroundColorsLinearAngular)
         case .mesh:
-            // Fallback to linear for mesh (iOS 18+ feature)
-            return AnyView(currentTheme.backgroundGradient)
+            // Fallback to linear for mesh
+            return AnyView(currentTheme.backgroundColorsLinear)
         }
     }
     
@@ -249,18 +249,31 @@ struct ThemedView: ViewModifier {
     @Environment(\.themeManager) private var themeManager
     
     func body(content: Content) -> some View {
-        if let themeManager = themeManager {
-            content
-                .background(
-                    themeManager.backgroundGradient
-                        .ignoresSafeArea()
+        let theme = themeManager?.currentTheme ?? Theme.defaultTheme
+        
+        // Use backgroundColorsLinear if present, otherwise fall back to primary/secondary
+        let bgStops = theme.colorScheme.backgroundColors.isEmpty
+            ? [theme.colorScheme.primaryBackground, theme.colorScheme.secondaryBackground]
+            : theme.colorScheme.backgroundColors
+        let bgColors = bgStops.map { $0.color }
+        
+        // Infer light/dark from primary background brightness
+        let primaryBG = theme.colorScheme.primaryBackground.color
+        let isLightUI = primaryBG.luminance >= 0.5  // tweak threshold if needed
+        
+        return content
+            .background(
+                LinearGradient(
+                    colors: bgColors,
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
-                .preferredColorScheme(themeManager.currentTheme.isLight ? .light : .dark)
-        } else {
-            content
-        }
+                .ignoresSafeArea()
+            )
+            .preferredColorScheme(isLightUI ? .light : .dark)
     }
 }
+
 
 extension View {
     func themedBackground() -> some View {
@@ -319,10 +332,7 @@ extension ThemeManager {
     var scheme: ThemeColorScheme { currentTheme.colorScheme }
 
     // Elevation (handy for cards/sheets across the app)
-    var surface0: Color { scheme.surface0.color }
-    var surface1: Color { scheme.surface1.color }
-    var surface2: Color { scheme.surface2.color }
-    var surface3: Color { scheme.surface3.color }
+    var secondaryBackground: Color { scheme.secondaryBackground.color }
 
     // Lines / focus
     var divider: Color { scheme.divider.color }
@@ -333,15 +343,12 @@ extension ThemeManager {
     var todayHeroBackground: some View {
         ZStack {
             LinearGradient(
-                colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
+                colors: scheme.backgroundColors.map { $0.color },
                 startPoint: .top,
                 endPoint: .bottom
             )
             RadialGradient(
-                colors: [
-                    scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
-                    .clear
-                ],
+                colors: scheme.backgroundColors.map { $0.color },
                 center: .center,
                 startRadius: 0,
                 endRadius: 520
@@ -361,9 +368,6 @@ extension ThemeManager {
     var ringOuterAlpha: Double { scheme.ringOuterAlpha }
     var ringInnerStartAlpha: Double { scheme.ringInnerStartAlpha }
     var ringInnerEndAlpha: Double { scheme.ringInnerEndAlpha }
-
-    // Scrim
-    var scrim: Color { scheme.scrim.color }
 
     // Charts
     var chartColors: [Color] { scheme.chartPalette.map { $0.color } }

@@ -52,7 +52,7 @@ struct SettingsSection<Content: View>: View {
         .background(
             // Use themed surface instead of material to avoid gray cast
             RoundedRectangle(cornerRadius: 16)
-                .fill(scheme.surface2.color.opacity(0.9))
+                .fill(scheme.secondaryBackground.color.opacity(0.9))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -92,7 +92,7 @@ struct SettingsToggle: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(scheme.workflowPrimary.color)
+                .foregroundStyle(scheme.normal.color)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
@@ -125,8 +125,8 @@ struct DesignedToggleStyle: ToggleStyle {
         HStack {
             configuration.label
             
-            let onColor  = scheme.actionSuccess.color
-            let offColor = scheme.uiElementSecondary.color
+            let onColor  = scheme.success.color
+            let offColor = scheme.secondaryUIElement.color
             
             RoundedRectangle(cornerRadius: 16)
                 .fill(configuration.isOn ? onColor : offColor)
@@ -203,7 +203,7 @@ struct SettingsDatePicker: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(scheme.workflowPrimary.color)
+                .foregroundStyle(scheme.normal.color)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
@@ -221,7 +221,7 @@ struct SettingsDatePicker: View {
             DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
                 .labelsHidden()
                 .datePickerStyle(.compact)
-                .tint(scheme.workflowPrimary.color)
+                .tint(scheme.normal.color)
         }
     }
 }
@@ -242,7 +242,7 @@ struct SettingsPicker: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(scheme.workflowPrimary.color)
+                .foregroundStyle(scheme.normal.color)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
@@ -263,7 +263,7 @@ struct SettingsPicker: View {
                 }
             }
             .pickerStyle(.menu)
-            .tint(scheme.workflowPrimary.color)
+            .tint(scheme.normal.color)
         }
     }
 }

@@ -70,136 +70,108 @@ enum GradientStyle: String, Codable {
 
 // MARK: - Theme Color Scheme
 struct ThemeColorScheme: Codable, Equatable {
-    // Primary Colors
-    let buttonPrimary: ColorHex
-    let buttonSecondary: ColorHex
-    let tertiary: ColorHex
-    
     // Background Colors
-    let appBackground: ColorHex
-    let cardBackground: ColorHex
-    let overlayBackground: ColorHex
-    
-    // UI Element Colors
-    let uiElementPrimary: ColorHex
-    let uiElementSecondary: ColorHex
+    let primaryBackground: ColorHex
+    let secondaryBackground: ColorHex
+    let elevatedBackground: ColorHex
+    let backgroundColors: [ColorHex]
     
     // Text Colors
     let primaryText: ColorHex
     let secondaryText: ColorHex
     let subtleText: ColorHex
+    let invertedText: ColorHex
     
     // Accent Colors
+    let primaryAccent: ColorHex
+    let secondaryAccent: ColorHex
+    
+    // Button Colors
+    let primaryButton: ColorHex
+    let secondaryButton: ColorHex
     let buttonAccent: ColorHex
-    let warningColor: ColorHex
-    let successColor: ColorHex
-    let errorColor: ColorHex
+    let buttonGradient: [ColorHex]
     
-    // Special Colors
-    let workflowPrimary: ColorHex
-    let actionSuccess: ColorHex
-    let organizationAccent: ColorHex
-    let creativeSecondary: ColorHex
-    let socialAccent: ColorHex
+    // Icon Colors
+    let normal: ColorHex
+    let muted: ColorHex
     
-    let surface0: ColorHex            // lowest elevation background
-    let surface1: ColorHex
-    let surface2: ColorHex
-    let surface3: ColorHex
+    // Status Colors
+    let success: ColorHex
+    let warning: ColorHex
+    let error: ColorHex
+    let info: ColorHex
     
-    let divider: ColorHex             // hairlines (usually with 60% alpha in use)
-    let border: ColorHex              // emphasized borders (80% alpha in use)
-    let focusRing: ColorHex           // focus/active outline
+    // Lines & focus
+    let divider: ColorHex
+    let border: ColorHex
+    let focusRing: ColorHex
     
-    let todayHeroTop: ColorHex        // Today hero gradient start
-    let todayHeroBottom: ColorHex     // Today hero gradient end
-    let todayHeroVignette: ColorHex   // subtle vignette hue
-    let todayHeroVignetteOpacity: Double
-    
+    // Progress & rings
     let progressTrack: ColorHex
     let progressFillStart: ColorHex
     let progressFillEnd: ColorHex
-
     let ringOuterAlpha: Double
     let ringInnerStartAlpha: Double
     let ringInnerEndAlpha: Double
-
-    let scrim: ColorHex
-
-    let chartPalette: [ColorHex]
-    let chartGrid: ColorHex
-    let chartLabel: ColorHex
     
-    // Glass morphism effect
+    // Glass / glow
     let glassTint: ColorHex
     let glassOpacity: Double
-    
-    // Glow effect properties
     let glowIntensityPrimary: Double      // Main glow opacity (0.0-1.0)
     let glowIntensitySecondary: Double    // Secondary glow opacity
     let glowBlurRadius: Double            // Blur amount for glow effects
     let glowRadiusInner: Double           // Inner radius for radial gradients
     let glowRadiusOuter: Double           // Outer radius for radial gradients
     let glowAnimationScale: Double        // Scale factor for animations (1.0-2.0)
+
+    // Charts (Analytics + QuickStats)
+    let chartPalette: [ColorHex]
+    let chartGrid: ColorHex
+    let chartLabel: ColorHex
     
-    // Gradient colors for backgrounds
-    let gradientColors: [ColorHex]
+    // Additional Colors
+    let primaryUIElement: ColorHex
+    let secondaryUIElement: ColorHex
     
     init(
-        buttonPrimary: ColorHex,
-        buttonSecondary: ColorHex,
-        tertiary: ColorHex,
-        appBackground: ColorHex,
-        cardBackground: ColorHex,
-        overlayBackground: ColorHex,
-        uiElementPrimary: ColorHex,
-        uiElementSecondary: ColorHex,
+        primaryBackground: ColorHex,
+        secondaryBackground: ColorHex,
+        elevatedBackground: ColorHex,
+        backgroundColors: [ColorHex],
+        
         primaryText: ColorHex,
         secondaryText: ColorHex,
         subtleText: ColorHex,
+        invertedText: ColorHex,
+        
+        primaryAccent: ColorHex,
+        secondaryAccent: ColorHex,
+        
+        primaryButton: ColorHex,
+        secondaryButton: ColorHex,
         buttonAccent: ColorHex,
-        warningColor: ColorHex,
-        successColor: ColorHex,
-        errorColor: ColorHex,
-        workflowPrimary: ColorHex,
-        actionSuccess: ColorHex,
-        organizationAccent: ColorHex,
-        creativeSecondary: ColorHex,
-        socialAccent: ColorHex,
-
-        surface0: ColorHex = ColorHex("#0E1228"),
-        surface1: ColorHex = ColorHex("#131834"),
-        surface2: ColorHex = ColorHex("#1A2145"),
-        surface3: ColorHex = ColorHex("#212A57"),
-
-        divider: ColorHex = ColorHex("#2B3152"),
-        border: ColorHex  = ColorHex("#3B4474"),
-        focusRing: ColorHex = ColorHex("#7DB7FF"),
-
-        todayHeroTop: ColorHex = ColorHex("#0F1630"),
-        todayHeroBottom: ColorHex = ColorHex("#1D1C53"),
-        todayHeroVignette: ColorHex = ColorHex("#2E0B5F"),
-        todayHeroVignetteOpacity: Double = 0.18,
-
-        progressTrack: ColorHex = ColorHex("#2B3152"),
-        progressFillStart: ColorHex = ColorHex("#32D74B"),
-        progressFillEnd: ColorHex = ColorHex("#64D2FF"),
-
-        ringOuterAlpha: Double = 0.30,
-        ringInnerStartAlpha: Double = 0.30,
-        ringInnerEndAlpha: Double = 0.10,
-
-        scrim: ColorHex = ColorHex("#000000"),
-
-        chartPalette: [ColorHex] = [
-            ColorHex("#0A84FF"), ColorHex("#6E5AE6"), ColorHex("#64D2FF"),
-            ColorHex("#32D74B"), ColorHex("#FF9F0A"), ColorHex("#FFD66B"),
-            ColorHex("#FF6B6B"), ColorHex("#F472B6")
-        ],
-        chartGrid: ColorHex = ColorHex("#2B3152"),
-        chartLabel: ColorHex = ColorHex("#9AA4C0"),
-
-        // glass / glow / bg gradient
+        buttonGradient: [ColorHex],
+        
+        normal: ColorHex,
+        muted: ColorHex,
+        
+        success: ColorHex,
+        warning: ColorHex,
+        error: ColorHex,
+        info: ColorHex,
+        
+        divider: ColorHex,
+        border: ColorHex,
+        focusRing: ColorHex,
+        
+        progressTrack: ColorHex,
+        progressFillStart: ColorHex,
+        progressFillEnd: ColorHex,
+        ringOuterAlpha: Double,
+        ringInnerStartAlpha: Double,
+        ringInnerEndAlpha: Double,
+        
         glassTint: ColorHex,
         glassOpacity: Double = 0.08,
         glowIntensityPrimary: Double = 0.35,
@@ -208,58 +180,55 @@ struct ThemeColorScheme: Codable, Equatable {
         glowRadiusInner: Double = 32,
         glowRadiusOuter: Double = 84,
         glowAnimationScale: Double = 1.4,
-        gradientColors: [ColorHex]
+        
+        chartPalette: [ColorHex] = [
+            ColorHex("#0A84FF"), ColorHex("#6E5AE6"), ColorHex("#64D2FF"),
+            ColorHex("#32D74B"), ColorHex("#FF9F0A"), ColorHex("#FFD66B"),
+            ColorHex("#FF6B6B"), ColorHex("#F472B6")
+        ],
+        chartGrid: ColorHex,
+        chartLabel: ColorHex,
+        
+        primaryUIElement: ColorHex,
+        secondaryUIElement: ColorHex
     ) {
-        self.buttonPrimary = buttonPrimary
-        self.buttonSecondary = buttonSecondary
-        self.tertiary = tertiary
-        self.appBackground = appBackground
-        self.cardBackground = cardBackground
-        self.overlayBackground = overlayBackground
-        self.uiElementPrimary = uiElementPrimary
-        self.uiElementSecondary = uiElementSecondary
+        self.primaryBackground = primaryBackground
+        self.secondaryBackground = secondaryBackground
+        self.elevatedBackground = elevatedBackground
+        self.backgroundColors = backgroundColors
+        
         self.primaryText = primaryText
         self.secondaryText = secondaryText
         self.subtleText = subtleText
+        self.invertedText = invertedText
+        
+        self.primaryAccent = primaryAccent
+        self.secondaryAccent = secondaryAccent
+        
+        self.primaryButton = primaryButton
+        self.secondaryButton = secondaryButton
         self.buttonAccent = buttonAccent
-        self.warningColor = warningColor
-        self.successColor = successColor
-        self.errorColor = errorColor
-        self.workflowPrimary = workflowPrimary
-        self.actionSuccess = actionSuccess
-        self.organizationAccent = organizationAccent
-        self.creativeSecondary = creativeSecondary
-        self.socialAccent = socialAccent
-
-        self.surface0 = surface0
-        self.surface1 = surface1
-        self.surface2 = surface2
-        self.surface3 = surface3
-
+        self.buttonGradient = buttonGradient
+        
+        self.normal = normal
+        self.muted = muted
+        
+        self.success = success
+        self.warning = warning
+        self.error = error
+        self.info = info
+        
         self.divider = divider
         self.border = border
         self.focusRing = focusRing
-
-        self.todayHeroTop = todayHeroTop
-        self.todayHeroBottom = todayHeroBottom
-        self.todayHeroVignette = todayHeroVignette
-        self.todayHeroVignetteOpacity = todayHeroVignetteOpacity
-
+        
         self.progressTrack = progressTrack
         self.progressFillStart = progressFillStart
         self.progressFillEnd = progressFillEnd
-
         self.ringOuterAlpha = ringOuterAlpha
         self.ringInnerStartAlpha = ringInnerStartAlpha
         self.ringInnerEndAlpha = ringInnerEndAlpha
-
-        self.scrim = scrim
-
-        self.chartPalette = chartPalette
-        self.chartGrid = chartGrid
-        self.chartLabel = chartLabel
-
-        // glass / glow / bg gradient
+        
         self.glassTint = glassTint
         self.glassOpacity = glassOpacity
         self.glowIntensityPrimary = glowIntensityPrimary
@@ -268,9 +237,14 @@ struct ThemeColorScheme: Codable, Equatable {
         self.glowRadiusInner = glowRadiusInner
         self.glowRadiusOuter = glowRadiusOuter
         self.glowAnimationScale = glowAnimationScale
-        self.gradientColors = gradientColors
+        
+        self.chartPalette = chartPalette
+        self.chartGrid = chartGrid
+        self.chartLabel = chartLabel
+        
+        self.primaryUIElement = primaryUIElement
+        self.secondaryUIElement = secondaryUIElement
     }
-
 }
 
 // MARK: - Color Hex Helper
@@ -283,10 +257,6 @@ struct ColorHex: Codable, Equatable {
     
     var color: Color {
         Color(hex: hex)
-    }
-    
-    var uiColor: UIColor {
-        UIColor(hex: hex) ?? UIColor.clear
     }
 }
 
@@ -316,90 +286,74 @@ extension Color {
             opacity: Double(a) / 255
         )
     }
-}
+    
+    /// WCAG relative luminance in sRGB [0, 1]
+    var luminance: Double {
+        #if canImport(UIKit)
+        let c = UIColor(self)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard c.getRed(&r, green: &g, blue: &b, alpha: &a) else { return 0.0 }
+        #elseif canImport(AppKit)
+        let c = NSColor(self).usingColorSpace(.sRGB) ?? .white
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        c.getRed(&r, green: &g, blue: &b, alpha: &a)
+        #endif
 
-// MARK: - UIColor Extension
-extension UIColor {
-    convenience init?(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            return nil
+        func lin(_ v: CGFloat) -> Double {
+            let v = Double(v)
+            return v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4)
         }
-
-        self.init(
-            red: CGFloat(r) / 255,
-            green: CGFloat(g) / 255,
-            blue: CGFloat(b) / 255,
-            alpha: CGFloat(a) / 255
-        )
+        return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
     }
-}
 
-extension Theme {
-    var glowEffect: (primary: Double, secondary: Double, blur: Double, innerRadius: Double, outerRadius: Double, animationScale: Double) {
-        return (
-            primary: colorScheme.glowIntensityPrimary,
-            secondary: colorScheme.glowIntensitySecondary,
-            blur: colorScheme.glowBlurRadius,
-            innerRadius: colorScheme.glowRadiusInner,
-            outerRadius: colorScheme.glowRadiusOuter,
-            animationScale: colorScheme.glowAnimationScale
-        )
-    }
+    var isLight: Bool { luminance >= 0.5 }
 }
 
 // MARK: - Theme Extensions
+
 extension Theme {
-    // Computed properties for easy access to colors
-    var buttonPrimaryColor: Color { colorScheme.buttonPrimary.color }
-    var buttonSecondaryColor: Color { colorScheme.buttonSecondary.color }
-    var tertiaryColor: Color { colorScheme.tertiary.color }
+    // MARK: - Buttons
+    var buttonPrimaryColor: Color { colorScheme.primaryButton.color }
+    var buttonSecondaryColor: Color { colorScheme.secondaryButton.color }
     var buttonAccentColor: Color { colorScheme.buttonAccent.color }
-    
-    var backgroundColors: [Color] {
-        colorScheme.gradientColors.map { $0.color }
+    var buttonGradient: LinearGradient {
+        LinearGradient(
+            colors: colorScheme.buttonGradient.map { $0.color },
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
-    
-    var cardBackgroundColor: Color { colorScheme.cardBackground.color }
-    
+
+    // MARK: - Backgrounds
+    var primaryBackgroundColor: Color { colorScheme.primaryBackground.color }
+    var secondaryBackgroundColor: Color { colorScheme.secondaryBackground.color }
+    var elevatedBackgroundColor: Color { colorScheme.elevatedBackground.color }
+    var backgroundColorsGradient: [Color] { colorScheme.backgroundColors.map { $0.color }}
+
+    // MARK: - Text
     var primaryTextColor: Color { colorScheme.primaryText.color }
     var secondaryTextColor: Color { colorScheme.secondaryText.color }
     var subtleTextColor: Color { colorScheme.subtleText.color }
-    var creativeSecondaryTextColor: Color { colorScheme.creativeSecondary.color }
+    var invertedTextColor: Color { colorScheme.invertedText.color }
+
+    // MARK: - Accents & Icons
+    var primaryAccentColor: Color { colorScheme.primaryAccent.color }
+    var secondaryAccentColor: Color { colorScheme.secondaryAccent.color }
+    var iconNormalColor: Color { colorScheme.normal.color }
+    var iconMutedColor: Color { colorScheme.muted.color }
     
-    // Elevation
-    var surface0Color: Color { colorScheme.surface0.color }
-    var surface1Color: Color { colorScheme.surface1.color }
-    var surface2Color: Color { colorScheme.surface2.color }
-    var surface3Color: Color { colorScheme.surface3.color }
-    
-    // Lines / focus
+    // Status Colors
+    var success: Color { colorScheme.success.color }
+    var warning: Color { colorScheme.warning.color }
+    var error: Color { colorScheme.error.color }
+    var infoColor: Color { colorScheme.info.color }
+
+    // MARK: - Lines / Focus
     var dividerColor: Color { colorScheme.divider.color }
     var borderColor: Color { colorScheme.border.color }
     var focusRingColor: Color { colorScheme.focusRing.color }
-    
-    // Today hero background
-    var todayHeroGradient: LinearGradient {
-        LinearGradient(
-            colors: [colorScheme.todayHeroTop.color, colorScheme.todayHeroBottom.color],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    }
-    var todayHeroVignetteColor: Color { colorScheme.todayHeroVignette.color }
-    var todayHeroVignetteOpacity: Double { colorScheme.todayHeroVignetteOpacity }
-    
-    // Progress / rings
+
+    // MARK: - Progress / Rings
     var progressTrackColor: Color { colorScheme.progressTrack.color }
     var progressFillGradient: LinearGradient {
         LinearGradient(
@@ -411,75 +365,56 @@ extension Theme {
     var ringOuterAlpha: Double { colorScheme.ringOuterAlpha }
     var ringInnerStartAlpha: Double { colorScheme.ringInnerStartAlpha }
     var ringInnerEndAlpha: Double { colorScheme.ringInnerEndAlpha }
-    
-    // Scrim
-    var scrimColor: Color { colorScheme.scrim.color }
 
-    // Charts
+    // MARK: - Charts
     var chartColors: [Color] { colorScheme.chartPalette.map { $0.color } }
     var chartGridColor: Color { colorScheme.chartGrid.color }
     var chartLabelColor: Color { colorScheme.chartLabel.color }
-    
-    // Gradient creation
-    var backgroundGradient: LinearGradient {
+
+    // MARK: - Background Gradients
+    var backgroundColorsLinear: LinearGradient {
         LinearGradient(
-            colors: backgroundColors,
+            colors: backgroundColorsGradient,
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
     }
-    
-    var radialBackgroundGradient: RadialGradient {
+    var backgroundColorsLinearRadial: RadialGradient {
         RadialGradient(
-            colors: backgroundColors,
+            colors: backgroundColorsGradient,
             center: .center,
             startRadius: 0,
             endRadius: 300
         )
     }
-    
-    var angularBackgroundGradient: AngularGradient {
+    var backgroundColorsLinearAngular: AngularGradient {
         AngularGradient(
-            colors: backgroundColors,
+            colors: backgroundColorsGradient,
             center: .center
         )
     }
-    
-    // Glass morphism effect
-    var glassEffect: (Color, Double) {
-        (colorScheme.glassTint.color, colorScheme.glassOpacity)
-    }
-}
 
-// MARK: - Theme Preview Helpers
-extension Theme {
-    static var preview: Theme {
-        Theme.defaultTheme
-    }
-    
-    var isLight: Bool {
-        // Simple heuristic to determine if theme is light or dark
-        let bg = colorScheme.appBackground.color
-        return bg.luminance > 0.5
-    }
-}
+    // MARK: - Glass / Glow
+    var glassEffect: (Color, Double) { (colorScheme.glassTint.color, colorScheme.glassOpacity) }
+    var glowIntensityPrimary: Double { colorScheme.glowIntensityPrimary }
+    var glowIntensitySecondary: Double { colorScheme.glowIntensitySecondary }
+    var glowBlurRadius: Double { colorScheme.glowBlurRadius }
+    var glowRadiusInner: Double { colorScheme.glowRadiusInner }
+    var glowRadiusOuter: Double { colorScheme.glowRadiusOuter }
+    var glowAnimationScale: Double { colorScheme.glowAnimationScale }
 
-// MARK: - Color Luminance Extension
-extension Color {
-    var luminance: Double {
-        let uiColor = UIColor(self)
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-        
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        
-        // Calculate relative luminance
-        let rL = red <= 0.03928 ? red / 12.92 : pow((red + 0.055) / 1.055, 2.4)
-        let gL = green <= 0.03928 ? green / 12.92 : pow((green + 0.055) / 1.055, 2.4)
-        let bL = blue <= 0.03928 ? blue / 12.92 : pow((blue + 0.055) / 1.055, 2.4)
-        
-        return 0.2126 * rL + 0.7152 * gL + 0.0722 * bL
+    // MARK: - UI Elements
+    var primaryUIElementColor: Color { colorScheme.primaryUIElement.color }
+    var secondaryUIElementColor: Color { colorScheme.secondaryUIElement.color }
+    
+    var glowEffect: (primary: Double, secondary: Double, blur: Double, innerRadius: Double, outerRadius: Double, animationScale: Double) {
+        return (
+            primary: colorScheme.glowIntensityPrimary,
+            secondary: colorScheme.glowIntensitySecondary,
+            blur: colorScheme.glowBlurRadius,
+            innerRadius: colorScheme.glowRadiusInner,
+            outerRadius: colorScheme.glowRadiusOuter,
+            animationScale: colorScheme.glowAnimationScale
+        )
     }
 }

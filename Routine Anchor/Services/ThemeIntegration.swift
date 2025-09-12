@@ -31,14 +31,14 @@ struct ThemedAnimatedBackground: View {
             if showGlow {
                 RadialGradient(
                     colors: [
-                        theme.colorScheme.todayHeroVignette.color,
+                        theme.colorScheme.primaryAccent.color.opacity(theme.glowIntensitySecondary),
                         .clear
                     ],
                     center: .center,
                     startRadius: 0,
                     endRadius: 620
                 )
-                .opacity(theme.colorScheme.todayHeroVignetteOpacity)
+                .opacity(theme.colorScheme.glassOpacity)
                 .blendMode(.softLight)
                 .ignoresSafeArea()
             }
@@ -50,7 +50,7 @@ struct ThemedAnimatedBackground: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    theme.colorScheme.workflowPrimary.color.opacity(0.12),
+                                    theme.colorScheme.primaryAccent.color.opacity(0.12),
                                     .clear
                                 ],
                                 center: .center,
@@ -84,16 +84,12 @@ struct ThemedAnimatedBackground: View {
         switch kind {
         case .hero:
             LinearGradient(
-                colors: [
-                    theme.colorScheme.todayHeroTop.color,
-                    theme.colorScheme.todayHeroBottom.color
-                ],
+                colors: theme.colorScheme.backgroundColors.map { $0.color },
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         case .generic:
-            // Keep using a theme’s general gradient when requested
-            theme.backgroundGradient
+            theme.primaryBackgroundColor
         }
     }
 }
@@ -101,18 +97,19 @@ struct ThemedAnimatedBackground: View {
 // MARK: - Shared hero background
 struct ThemedHeroBackground: View {
     @Environment(\.themeManager) private var themeManager
+    
+    private var theme: Theme {
+        themeManager?.currentTheme ?? Theme.defaultTheme
+    }
+    
     var body: some View {
-        let scheme = (themeManager?.currentTheme.colorScheme ?? Theme.defaultTheme.colorScheme)
         ZStack {
             LinearGradient(
-                colors: [scheme.todayHeroTop.color, scheme.todayHeroBottom.color],
+                colors: theme.colorScheme.backgroundColors.map { $0.color },
                 startPoint: .top, endPoint: .bottom
             )
             RadialGradient(
-                colors: [
-                    scheme.todayHeroVignette.color.opacity(scheme.todayHeroVignetteOpacity),
-                    .clear
-                ],
+                colors: theme.colorScheme.backgroundColors.map { $0.color },
                 center: .center, startRadius: 0, endRadius: 520
             )
         }
@@ -126,58 +123,52 @@ struct ThemeSettingsRow: View {
     @Environment(\.themeManager) private var themeManager
     @State private var showThemeSelection = false
     
-    // Theme color helpers
-    private var themePrimaryText: Color {
-        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-    }
-    
-    private var themeSecondaryText: Color {
-        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
-    }
-    
-    private var themeTertiaryText: Color {
-        themeManager?.currentTheme.subtleTextColor ?? Theme.defaultTheme.subtleTextColor
-    }
-    
     var body: some View {
-        Button(action: {
+        let theme = themeManager?.currentTheme ?? Theme.defaultTheme
+        
+        Button {
             showThemeSelection = true
-        }) {
+        } label: {
             HStack(spacing: 16) {
-                // Theme preview
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(themeManager?.currentTheme.backgroundGradient ?? Theme.defaultTheme.backgroundGradient)
+                        .fill(
+                            LinearGradient(
+                                colors: theme.colorScheme.backgroundColors.map { $0.color },
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                         .frame(width: 32, height: 32)
-                    
+
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(themeTertiaryText.opacity(0.3), lineWidth: 1)
+                        .stroke(theme.subtleTextColor.opacity(0.3), lineWidth: 1)
                         .frame(width: 32, height: 32)
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    HStack {
+                    HStack(spacing: 6) {
                         Text("Theme")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(themePrimaryText)
+                            .foregroundStyle(theme.primaryTextColor)
                         
                         if themeManager?.currentTheme.isPremium == true {
                             Image(systemName: "crown.fill")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                                .foregroundStyle(theme.warning)
                         }
                     }
                     
                     Text(themeManager?.currentTheme.name ?? "Default")
                         .font(.system(size: 14))
-                        .foregroundStyle(themeSecondaryText)
+                        .foregroundStyle(theme.secondaryTextColor)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(themeSecondaryText)
+                    .foregroundStyle(theme.secondaryTextColor)
             }
             .padding(.vertical, 4)
         }
@@ -214,6 +205,8 @@ extension PremiumManager {
 
 // MARK: - Theme-Aware Component Examples
 struct ThemedButton: View {
+    @Environment(\.themeManager) private var themeManager
+    
     let title: String
     let style: ButtonStyle
     let action: () -> Void
@@ -222,66 +215,46 @@ struct ThemedButton: View {
         case primary, secondary, accent
     }
     
-    @Environment(\.themeManager) private var themeManager
-    
-    // Theme color helpers
-    private var themePrimaryText: Color {
-        themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
-    }
-    
-    private var themeSecondaryText: Color {
-        themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor
-    }
-    
     var body: some View {
+        let theme = themeManager?.currentTheme ?? Theme.defaultTheme
+        
         Button(action: action) {
             Text(title)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(textColor)
+                .foregroundStyle(textColor(for: theme))
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .background(backgroundGradient)
+                .background(backgroundColorsLinear(for: theme))
                 .cornerRadius(12)
         }
     }
     
-    private var textColor: Color {
+    private func textColor(for theme: Theme) -> Color {
         switch style {
         case .primary, .accent:
-            return themePrimaryText
+            return theme.invertedTextColor
         case .secondary:
-            return themeSecondaryText
+            return theme.primaryTextColor
         }
     }
     
-    private var backgroundGradient: LinearGradient {
-        guard let theme = themeManager?.currentTheme else {
-            return LinearGradient(
-                colors: [Theme.defaultTheme.buttonPrimaryColor, Theme.defaultTheme.buttonSecondaryColor],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        }
-        
+    private func backgroundColorsLinear(for theme: Theme) -> LinearGradient {
         switch style {
         case .primary:
+            // Use the theme's dedicated button gradient
             return LinearGradient(
-                colors: [theme.buttonPrimaryColor, theme.buttonSecondaryColor],
+                colors: theme.colorScheme.buttonGradient.map { $0.color },
                 startPoint: .leading,
                 endPoint: .trailing
             )
         case .secondary:
-            return LinearGradient(
-                colors: [theme.colorScheme.uiElementPrimary.color.opacity(0.3)],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
+            // Solid fill using secondary button color (duplicated as a gradient)
+            let c = theme.colorScheme.secondaryButton.color
+            return LinearGradient(colors: [c, c], startPoint: .leading, endPoint: .trailing)
         case .accent:
-            return LinearGradient(
-                colors: [theme.buttonAccentColor],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
+            // Solid fill using accent button color
+            let c = theme.buttonAccentColor
+            return LinearGradient(colors: [c, c], startPoint: .leading, endPoint: .trailing)
         }
     }
 }
@@ -318,8 +291,8 @@ struct ThemedCard<Content: View>: View {
                 ZStack {
                     // Base surface
                     RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill((themeManager?.currentTheme.cardBackgroundColor
-                               ?? Theme.defaultTheme.cardBackgroundColor)
+                        .fill((themeManager?.currentTheme.elevatedBackgroundColor
+                               ?? Theme.defaultTheme.elevatedBackgroundColor)
                               .opacity(0.95))
 
                     // Optional, subtle material (kept weak to avoid greying)
@@ -386,7 +359,7 @@ struct ThemedIconButton: View {
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(textColor)
                 .frame(width: 40, height: 40)
-                .background(backgroundGradient)
+                .background(backgroundColorsLinear)
                 .cornerRadius(12)
                 .shadow(
                     color: shadowColor,
@@ -402,7 +375,7 @@ struct ThemedIconButton: View {
         themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor
     }
     
-    private var backgroundGradient: LinearGradient {
+    private var backgroundColorsLinear: LinearGradient {
         guard let theme = themeManager?.currentTheme else {
             return LinearGradient(
                 colors: [Theme.defaultTheme.buttonPrimaryColor, Theme.defaultTheme.buttonSecondaryColor],
@@ -420,7 +393,7 @@ struct ThemedIconButton: View {
             )
         case .secondary:
             return LinearGradient(
-                colors: [theme.colorScheme.uiElementPrimary.color.opacity(0.3)],
+                colors: [theme.colorScheme.primaryUIElement.color.opacity(0.3)],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -439,8 +412,8 @@ struct ThemedIconButton: View {
             return themeManager?.currentTheme.buttonPrimaryColor.opacity(0.3) ??
                    Theme.defaultTheme.buttonPrimaryColor.opacity(0.3)
         case .secondary:
-            return themeManager?.currentTheme.colorScheme.uiElementSecondary.color.opacity(0.2) ??
-                   Theme.defaultTheme.colorScheme.uiElementSecondary.color.opacity(0.2)
+            return themeManager?.currentTheme.colorScheme.secondaryUIElement.color.opacity(0.2) ??
+                   Theme.defaultTheme.colorScheme.secondaryUIElement.color.opacity(0.2)
         case .accent:
             return themeManager?.currentTheme.buttonAccentColor.opacity(0.3) ??
                    Theme.defaultTheme.buttonAccentColor.opacity(0.3)
@@ -510,7 +483,7 @@ struct DebugThemeSwitcher: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(themeManager.currentTheme.colorScheme.workflowPrimary.color)
+                        .background(themeManager.currentTheme.colorScheme.primaryUIElement.color)
                         .foregroundStyle(themePrimaryText)
                         .cornerRadius(8)
                         
@@ -519,7 +492,7 @@ struct DebugThemeSwitcher: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(themeManager.currentTheme.colorScheme.actionSuccess.color)
+                        .background(themeManager.currentTheme.colorScheme.success.color)
                         .foregroundStyle(themePrimaryText)
                         .cornerRadius(8)
                         
@@ -528,7 +501,7 @@ struct DebugThemeSwitcher: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(themeManager.currentTheme.colorScheme.actionSuccess.color)
+                        .background(themeManager.currentTheme.colorScheme.success.color)
                         .foregroundStyle(themePrimaryText)
                         .cornerRadius(8)
                     }
@@ -550,8 +523,8 @@ struct ThemeSystemHealthCheck {
         
         // Check all themes have valid colors
         for theme in Theme.allAvailable {
-            if theme.colorScheme.gradientColors.isEmpty {
-                issues.append("Theme '\(theme.name)' has no gradient colors")
+            if theme.colorScheme.backgroundColors.isEmpty {
+                issues.append("Theme '\(theme.name)' has no background gradient colors")
             }
             
             if theme.name.isEmpty {

@@ -84,7 +84,7 @@ struct EmailPreferencesView: View {
                 .font(.system(size: 50, weight: .medium))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                        colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -109,7 +109,7 @@ struct EmailPreferencesView: View {
             HStack {
                 Image(systemName: "person.circle")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Email Address")
@@ -125,7 +125,7 @@ struct EmailPreferencesView: View {
                 
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 16))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color)
             }
             .padding(16)
             .background(
@@ -133,7 +133,7 @@ struct EmailPreferencesView: View {
                     .fill(.ultraThinMaterial)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color.opacity(0.3), lineWidth: 1)
+                            .stroke(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color.opacity(0.3), lineWidth: 1)
                     )
             )
         }
@@ -153,7 +153,7 @@ struct EmailPreferencesView: View {
                     title: "Productivity Tips",
                     description: "Weekly productivity insights",
                     isOn: $coursesAndTips,
-                    color: themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
                 )
                 
                 EmailPreferenceToggle(
@@ -161,7 +161,7 @@ struct EmailPreferencesView: View {
                     title: "Product Updates",
                     description: "New features and announcements",
                     isOn: $productUpdates,
-                    color: themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color
+                    color: themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color
                 )
                 
                 EmailPreferenceToggle(
@@ -169,7 +169,7 @@ struct EmailPreferencesView: View {
                     title: "Development Courses",
                     description: "iOS app building tutorials",
                     isOn: $marketingEmails,
-                    color: themeManager?.currentTheme.colorScheme.actionSuccess.color ?? Theme.defaultTheme.colorScheme.actionSuccess.color
+                    color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
                 )
             }
         }
@@ -194,7 +194,7 @@ struct EmailPreferencesView: View {
                 .frame(height: 50)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                        colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -214,7 +214,7 @@ struct EmailPreferencesView: View {
     private var unsubscribeSection: some View {
         VStack(spacing: 16) {
             Divider()
-                .background((themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color))
+                .background((themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color))
             
             VStack(spacing: 12) {
                 Text("Don't want any emails?")
@@ -225,7 +225,7 @@ struct EmailPreferencesView: View {
                     showingUnsubscribeConfirmation = true
                 }
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
             }
         }
     }
@@ -338,7 +338,7 @@ struct EmailPreferenceToggle: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(
-                            isOn ? color.opacity(0.3) : Color(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color),
+                            isOn ? color.opacity(0.3) : Color(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color),
                             lineWidth: 1
                         )
                 )

@@ -22,24 +22,24 @@ struct HelpView: View {
         }
         
         switch category {
-        case .all: return theme.colorScheme.workflowPrimary.color
-        case .gettingStarted: return theme.colorScheme.actionSuccess.color
-        case .timeBlocks: return theme.colorScheme.organizationAccent.color
-        case .notifications: return theme.colorScheme.warningColor.color
-        case .settings: return theme.colorScheme.creativeSecondary.color
-        case .troubleshooting: return theme.colorScheme.errorColor.color
+        case .all: return theme.colorScheme.normal.color
+        case .gettingStarted: return theme.colorScheme.success.color
+        case .timeBlocks: return theme.colorScheme.primaryAccent.color
+        case .notifications: return theme.colorScheme.warning.color
+        case .settings: return theme.colorScheme.secondaryUIElement.color
+        case .troubleshooting: return theme.colorScheme.error.color
         }
     }
     
     private func defaultCategoryColor(for category: HelpCategory) -> Color {
         let defaultTheme = Theme.defaultTheme
         switch category {
-        case .all: return defaultTheme.colorScheme.workflowPrimary.color
-        case .gettingStarted: return defaultTheme.colorScheme.actionSuccess.color
-        case .timeBlocks: return defaultTheme.colorScheme.organizationAccent.color
-        case .notifications: return defaultTheme.colorScheme.warningColor.color
-        case .settings: return defaultTheme.colorScheme.creativeSecondary.color
-        case .troubleshooting: return defaultTheme.colorScheme.errorColor.color
+        case .all: return defaultTheme.colorScheme.normal.color
+        case .gettingStarted: return defaultTheme.colorScheme.success.color
+        case .timeBlocks: return defaultTheme.colorScheme.primaryAccent.color
+        case .notifications: return defaultTheme.colorScheme.warning.color
+        case .settings: return defaultTheme.colorScheme.secondaryUIElement.color
+        case .troubleshooting: return defaultTheme.colorScheme.error.color
         }
     }
     
@@ -106,7 +106,7 @@ struct HelpView: View {
                             Circle()
                                 .fill(.ultraThinMaterial)
                                 .background(
-                                    Circle().fill(themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color)
+                                    Circle().fill(themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color)
                                 )
                         )
                 }
@@ -120,10 +120,10 @@ struct HelpView: View {
                         Text("Support")
                             .font(.system(size: 14, weight: .medium))
                     }
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+                    .background(themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color)
                     .cornerRadius(8)
                 }
             }
@@ -134,8 +134,8 @@ struct HelpView: View {
                     .foregroundStyle(
                         LinearGradient(
                             colors: [
-                                themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color,
-                                themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color
+                                themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color,
+                                themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -185,12 +185,12 @@ struct HelpView: View {
                 .fill(.ultraThinMaterial)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
+                        .fill((themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color).opacity(0.5))
                 )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color, lineWidth: 1)
+                .stroke(themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color, lineWidth: 1)
         )
         .padding(.horizontal, 24)
         .padding(.top, 16)
@@ -268,12 +268,12 @@ struct HelpCategoryChip: View {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? categoryColor : (themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color))
+                    .fill(isSelected ? categoryColor : (themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(
-                        isSelected ? Color.clear : (themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color),
+                        isSelected ? Color.clear : (themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color),
                         lineWidth: 1
                     )
             )
@@ -467,7 +467,7 @@ struct HelpItemView: View {
             if isExpanded {
                 VStack(alignment: .leading, spacing: 12) {
                     Divider()
-                        .background(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color)
+                        .background(themeManager?.currentTheme.colorScheme.secondaryUIElement.color ?? Theme.defaultTheme.colorScheme.secondaryUIElement.color)
                     
                     Text(item.content)
                         .font(TypographyConstants.Body.secondary)
@@ -487,7 +487,7 @@ struct HelpItemView: View {
                 .fill(.ultraThinMaterial)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill((themeManager?.currentTheme.colorScheme.uiElementPrimary.color ?? Theme.defaultTheme.colorScheme.uiElementPrimary.color).opacity(0.5))
+                        .fill((themeManager?.currentTheme.colorScheme.primaryUIElement.color ?? Theme.defaultTheme.colorScheme.primaryUIElement.color).opacity(0.5))
                 )
         )
         .overlay(

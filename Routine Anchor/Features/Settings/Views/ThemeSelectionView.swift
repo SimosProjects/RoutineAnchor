@@ -18,11 +18,11 @@ struct ThemeSelectionView: View {
             ZStack {
                 // Animated background
                 if let themeManager = themeManager {
-                    themeManager.backgroundGradient
+                    themeManager.backgroundColorsLinear
                         .ignoresSafeArea()
                         .animation(.easeInOut(duration: 0.5), value: themeManager.currentTheme.id)
                 } else {
-                    Theme.defaultTheme.backgroundGradient
+                    Theme.defaultTheme.backgroundColorsLinear
                         .ignoresSafeArea()
                 }
                 
@@ -208,7 +208,7 @@ struct ThemeSelectionView: View {
             HStack {
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                 
                 Text("Premium Themes")
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
@@ -238,7 +238,7 @@ struct ThemeSelectionView: View {
                 .frame(height: 48)
                 .background(
                     LinearGradient(
-                        colors: [themeManager?.currentTheme.colorScheme.workflowPrimary.color ?? Theme.defaultTheme.colorScheme.workflowPrimary.color, themeManager?.currentTheme.colorScheme.organizationAccent.color ?? Theme.defaultTheme.colorScheme.organizationAccent.color],
+                        colors: [themeManager?.currentTheme.colorScheme.normal.color ?? Theme.defaultTheme.colorScheme.normal.color, themeManager?.currentTheme.colorScheme.primaryAccent.color ?? Theme.defaultTheme.colorScheme.primaryAccent.color],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -307,7 +307,7 @@ struct CategoryPill: View {
                 .padding(.vertical, 8)
                 .background(
                     Capsule()
-                        .fill(isSelected ? (themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor) : Color(themeManager?.currentTheme.colorScheme.uiElementSecondary.color ?? Theme.defaultTheme.colorScheme.uiElementSecondary.color))
+                        .fill(isSelected ? (themeManager?.currentTheme.buttonSecondaryColor ?? Theme.defaultTheme.buttonSecondaryColor) : Color(themeManager?.currentTheme.colorScheme.secondaryButton.color ?? Theme.defaultTheme.colorScheme.secondaryButton.color))
                 )
         }
         .scaleEffect(isSelected ? 1.05 : 1.0)
@@ -352,7 +352,7 @@ struct ThemePreviewCard: View {
                 ZStack {
                     // Background gradient
                     RoundedRectangle(cornerRadius: size.cornerRadius)
-                        .fill(theme.backgroundGradient)
+                        .fill(theme.backgroundColorsLinear)
                         .frame(width: size.dimensions, height: size.dimensions)
                     
                     // Glass effect overlay
@@ -387,7 +387,7 @@ struct ThemePreviewCard: View {
                                 
                                 Image(systemName: "crown.fill")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warningColor.color ?? Theme.defaultTheme.colorScheme.warningColor.color)
+                                    .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
                             }
                         }
                     }
