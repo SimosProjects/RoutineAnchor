@@ -6,9 +6,11 @@ import SwiftUI
 import Foundation
 
 struct AddTimeBlockView: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @State private var formData = TimeBlockFormData()
+    @EnvironmentObject private var calendarVM: CalendarAccessViewModel
     
     // MARK: - State
     @State private var showingValidationErrors = false
@@ -16,11 +18,11 @@ struct AddTimeBlockView: View {
     @State private var selectedDuration: Int? = nil
     
     let existingTimeBlocks: [TimeBlock]
-    let onSave: (String, Date, Date, String?, String?) -> Void
+    let onSave: (String, Date, Date, String?, String?, Bool, String?) -> Void
     
     init(
         existingTimeBlocks: [TimeBlock] = [],
-        onSave: @escaping (String, Date, Date, String?, String?) -> Void
+        onSave: @escaping (String, Date, Date, String?, String?, Bool, String?) -> Void
     ) {
         self.existingTimeBlocks = existingTimeBlocks
         self.onSave = onSave
@@ -53,6 +55,18 @@ struct AddTimeBlockView: View {
                 
                 // Icon Section
                 iconSection(theme: theme, scheme: scheme)
+                
+                // Calendar Secction
+                CalendarLinkSection(
+                    linkToCalendar: Binding(
+                        get: { formData.linkToCalendar },
+                        set: { formData.linkToCalendar = $0 }
+                    ),
+                    selectedCalendarId: Binding(
+                        get: { formData.selectedCalendarId },
+                        set: { formData.selectedCalendarId = $0 }
+                    )
+                )
                 
                 // Action Buttons
                 actionButtons(theme: theme, scheme: scheme)
@@ -333,7 +347,7 @@ struct AddTimeBlockView: View {
         }
         
         let (title, notes, category) = formData.prepareForSave()
-        onSave(title, formData.startTime, formData.endTime, notes, category)
+        onSave(title, formData.startTime, formData.endTime, notes, category, formData.linkToCalendar, formData.selectedCalendarId)
         HapticManager.shared.anchorSuccess()
         dismiss()
     }
@@ -371,7 +385,7 @@ extension TimeBlockFormData {
 
 // MARK: - Preview
 #Preview {
-    AddTimeBlockView { title, startTime, endTime, notes, category in
+    AddTimeBlockView { title, startTime, endTime, notes, category, linkToCalendar, selectedCalendarId in
         print("Saving: \(title) from \(startTime) to \(endTime)")
     }
 }

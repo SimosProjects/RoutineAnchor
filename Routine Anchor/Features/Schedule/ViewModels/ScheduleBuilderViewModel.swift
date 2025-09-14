@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import SwiftData
+import EventKit
 
 enum ScheduleBuilderError: LocalizedError {
     case conflictingTimeBlock
@@ -147,58 +148,56 @@ class ScheduleBuilderViewModel {
     
     /// Add a new time block
     @MainActor
-    func addTimeBlock(title: String, startTime: Date, endTime: Date, notes: String? = nil, category: String? = nil) {
+    func addTimeBlock(title: String, startTime: Date, endTime: Date, notes: String? = nil, category: String? = nil, linkToCalendar: Bool = false, selectedCalendarId: String? = nil) {
+
         isLoading = true
         errorMessage = nil
 
         do {
-            // Validate before constructing the TimeBlock
+            // Validate
             let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmedTitle.isEmpty else {
-                throw ScheduleBuilderError.emptyTitle
+            guard !trimmedTitle.isEmpty else { throw ScheduleBuilderError.emptyTitle }
+            guard endTime > startTime else { throw ScheduleBuilderError.invalidTimeRange }
+
+            let hasConflict = timeBlocks.contains {
+                timeBlocksOverlap(start1: $0.startTime, end1: $0.endTime, start2: startTime, end2: endTime)
             }
-            
-            // Validate time range
-            guard endTime > startTime else {
-                throw ScheduleBuilderError.invalidTimeRange
-            }
-            
-            // Check for conflicts with existing blocks
-            let hasConflict = timeBlocks.contains { existing in
-                return timeBlocksOverlap(
-                    start1: existing.startTime, end1: existing.endTime,
-                    start2: startTime, end2: endTime
-                )
-            }
-            
-            if hasConflict {
-                throw ScheduleBuilderError.conflictingTimeBlock
+            if hasConflict { throw ScheduleBuilderError.conflictingTimeBlock }
+
+            // 1) Optionally create EKEvent first (so we can persist linkage)
+            var eventId: String? = nil
+            var calId: String? = nil
+            var lastMod: Date? = nil
+
+            if linkToCalendar, let targetCalId = selectedCalendarId, hasEventAccess() {
+                do {
+                    let result = try createEKEvent(in: targetCalId, title: trimmedTitle, notes: notes, start: startTime, end: endTime)
+                    eventId = result.eventId
+                    calId   = targetCalId
+                    lastMod = result.lastModified
+                } catch {
+                    print("EventKit create failed: \(error)")
+                    // continue; we still save the local block
+                }
             }
 
-            let block = TimeBlock(
-                title: title,
-                startTime: startTime,
-                endTime: endTime,
-                notes: notes,
-                category: category
-            )
+            // 2) Create & persist TimeBlock (with linkage if any)
+            var block = TimeBlock(title: trimmedTitle, startTime: startTime, endTime: endTime, notes: notes, category: category)
+            block.calendarEventId = eventId
+            block.calendarId = calId
+            block.calendarLastModified = lastMod
 
             try dataManager.addTimeBlock(block)
+
+            // 3) Refresh UI/notifications
             loadTimeBlocks()
             scheduleNotifications()
-            
-            NotificationCenter.default.post(
-                name: .timeBlocksDidChange,
-                object: nil,
-                userInfo: ["action": "added", "date": block.scheduledDate]
-            )
-
-            // Success feedback
+            NotificationCenter.default.post(name: .timeBlocksDidChange, object: nil, userInfo: ["action": "added", "date": block.scheduledDate])
             HapticManager.shared.success()
 
-        } catch let error as ScheduleBuilderError {
-            errorMessage = error.localizedDescription
-            print("Validation error: \(error)")
+        } catch let e as ScheduleBuilderError {
+            errorMessage = e.localizedDescription
+            print("Validation error: \(e)")
         } catch {
             errorMessage = "Failed to save time block: \(error.localizedDescription)"
             print("Error adding time block: \(error)")
@@ -218,77 +217,102 @@ class ScheduleBuilderViewModel {
     
     /// Update an existing time block
     @MainActor
-    func updateTimeBlock(_ block: TimeBlock) {
+    func updateTimeBlock(_ block: TimeBlock, linkToCalendar: Bool, selectedCalendarId: String?) {
         isLoading = true
         errorMessage = nil
-        
+
         do {
-            // Validate title
+            // Validate
             let trimmedTitle = block.title.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmedTitle.isEmpty else {
-                throw ScheduleBuilderError.emptyTitle
+            guard !trimmedTitle.isEmpty else { throw ScheduleBuilderError.emptyTitle }
+            guard block.endTime > block.startTime else { throw ScheduleBuilderError.invalidTimeRange }
+
+            let hasConflict = timeBlocks.contains {
+                $0.id != block.id && timeBlocksOverlap(start1: $0.startTime, end1: $0.endTime,
+                                                       start2: block.startTime, end2: block.endTime)
             }
-            
-            // Validate time range
-            guard block.endTime > block.startTime else {
-                throw ScheduleBuilderError.invalidTimeRange
-            }
-            
-            // Check for conflicts (excluding self)
-            let hasConflict = timeBlocks.contains { existing in
-                return existing.id != block.id && timeBlocksOverlap(
-                    start1: existing.startTime, end1: existing.endTime,
-                    start2: block.startTime, end2: block.endTime
-                )
-            }
-            
-            if hasConflict {
-                throw ScheduleBuilderError.conflictingTimeBlock
-            }
-            
+            if hasConflict { throw ScheduleBuilderError.conflictingTimeBlock }
+
+            // 1) Persist normal edits
             try dataManager.updateTimeBlock(block)
+
+            // 2) Calendar sync based on intent
+            if let eventId = block.calendarEventId {
+                if linkToCalendar {
+                    // Update existing event
+                    if hasEventAccess() {
+                        do {
+                            let last = try updateEKEvent(eventId: eventId, title: trimmedTitle, notes: block.notes, start: block.startTime, end: block.endTime)
+                            var updated = block
+                            updated.calendarLastModified = last
+                            try dataManager.updateTimeBlock(updated)
+                        } catch {
+                            print("EventKit update failed: \(error)")
+                            errorMessage = "Updated, but couldn’t update Calendar."
+                        }
+                    }
+                } else {
+                    // Unlink → delete event then clear ids
+                    do { try deleteEKEvent(eventId: eventId) } catch { print("EventKit delete failed: \(error)") }
+                    var cleared = block
+                    cleared.calendarEventId = nil
+                    cleared.calendarId = nil
+                    cleared.calendarLastModified = nil
+                    try dataManager.updateTimeBlock(cleared)
+                }
+            } else if linkToCalendar, let calId = selectedCalendarId, hasEventAccess() {
+                // Create new event for an unlinked block
+                do {
+                    let result = try createEKEvent(in: calId, title: trimmedTitle, notes: block.notes, start: block.startTime, end: block.endTime)
+                    var linked = block
+                    linked.calendarEventId = result.eventId
+                    linked.calendarId = calId
+                    linked.calendarLastModified = result.lastModified
+                    try dataManager.updateTimeBlock(linked)
+                } catch {
+                    print("EventKit create (on edit) failed: \(error)")
+                    errorMessage = "Saved, but couldn’t add to Calendar."
+                }
+            }
+
+            // 3) Refresh UI/notifications
             loadTimeBlocks()
             scheduleNotifications()
-            
-            // Success feedback
             HapticManager.shared.success()
-            
-        } catch let error as ScheduleBuilderError {
-            errorMessage = error.localizedDescription
+
+        } catch let e as ScheduleBuilderError {
+            errorMessage = e.localizedDescription
             HapticManager.shared.error()
         } catch DataManagerError.conflictDetected(let message) {
-            errorMessage = "Time conflict: \(message)"
-            HapticManager.shared.error()
+            errorMessage = "Time conflict: \(message)"; HapticManager.shared.error()
         } catch DataManagerError.validationFailed(let message) {
-            errorMessage = "Invalid time block: \(message)"
-            HapticManager.shared.error()
+            errorMessage = "Invalid time block: \(message)"; HapticManager.shared.error()
         } catch {
             errorMessage = "Failed to update time block: \(error.localizedDescription)"
             HapticManager.shared.error()
         }
-        
+
         isLoading = false
     }
+
     
     /// Delete a time block
     @MainActor
     func deleteTimeBlock(_ block: TimeBlock) {
         isLoading = true
         errorMessage = nil
-        
         do {
+            if let eventId = block.calendarEventId {
+                try? deleteEKEvent(eventId: eventId)
+            }
             try dataManager.deleteTimeBlock(block)
-            loadTimeBlocks() // Refresh the list
+            loadTimeBlocks()
             scheduleNotifications()
-            
-            // Success feedback
             HapticManager.shared.success()
-            
         } catch {
             errorMessage = "Failed to delete time block: \(error.localizedDescription)"
             HapticManager.shared.error()
         }
-        
         isLoading = false
     }
     
@@ -419,6 +443,48 @@ class ScheduleBuilderViewModel {
         }
         
         return errors
+    }
+    
+    // MARK: - EventKit Helpers
+    private let ekStore = EKEventStore()
+
+    private func hasEventAccess() -> Bool {
+        switch EKEventStore.authorizationStatus(for: .event) {
+        case .fullAccess, .writeOnly: return true
+        case .authorized: return true
+        default: return false
+        }
+    }
+
+    private func createEKEvent(in calendarId: String, title: String, notes: String?, start: Date, end: Date) throws -> (eventId: String, lastModified: Date?) {
+        guard let cal = ekStore.calendar(withIdentifier: calendarId) else {
+            throw NSError(domain: "Calendar", code: 404, userInfo: [NSLocalizedDescriptionKey: "Calendar not found"])
+        }
+        let ev = EKEvent(eventStore: ekStore)
+        ev.calendar = cal
+        ev.title    = title
+        ev.notes    = notes
+        ev.startDate = start
+        ev.endDate   = end
+        try ekStore.save(ev, span: .thisEvent, commit: true)
+        return (ev.eventIdentifier, ev.lastModifiedDate)
+    }
+
+    private func updateEKEvent(eventId: String, title: String, notes: String?, start: Date, end: Date) throws -> Date? {
+        guard let ev = ekStore.event(withIdentifier: eventId) else {
+            throw NSError(domain: "Calendar", code: 404, userInfo: [NSLocalizedDescriptionKey: "Event not found"])
+        }
+        ev.title     = title
+        ev.notes     = notes
+        ev.startDate = start
+        ev.endDate   = end
+        try ekStore.save(ev, span: .thisEvent, commit: true)
+        return ev.lastModifiedDate
+    }
+
+    private func deleteEKEvent(eventId: String) throws {
+        guard let ev = ekStore.event(withIdentifier: eventId) else { return }
+        try ekStore.remove(ev, span: .thisEvent, commit: true)
     }
     
     // MARK: - Computed Properties

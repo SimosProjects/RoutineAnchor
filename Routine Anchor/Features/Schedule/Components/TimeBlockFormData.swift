@@ -23,6 +23,8 @@ final class TimeBlockFormData {
     var hasChanges = false
     var excludedTimeBlockId: UUID? = nil
     var existingTimeBlocks: [TimeBlock] = []
+    var linkToCalendar: Bool = false
+    var selectedCalendarId: String? = nil
     
     // MARK: - Constants
     let categories = ["Work", "Personal", "Health", "Learning", "Social", "Other"]
@@ -35,6 +37,8 @@ final class TimeBlockFormData {
     private var originalNotes = ""
     private var originalCategory = ""
     private var originalIcon = ""
+    private var originalLinkToCalendar: Bool = false
+    private var originalSelectedCalendarId: String? = nil
     
     // MARK: - Initialization
     init() {
@@ -48,6 +52,8 @@ final class TimeBlockFormData {
         self.notes = timeBlock.notes ?? ""
         self.category = timeBlock.category ?? ""
         self.selectedIcon = timeBlock.icon ?? ""
+        self.linkToCalendar = (timeBlock.calendarEventId != nil)
+        self.selectedCalendarId = timeBlock.calendarId
         
         self.originalTitle = timeBlock.title
         self.originalStartTime = timeBlock.startTime
@@ -55,6 +61,8 @@ final class TimeBlockFormData {
         self.originalNotes = timeBlock.notes ?? ""
         self.originalCategory = timeBlock.category ?? ""
         self.originalIcon = timeBlock.icon ?? ""
+        self.originalLinkToCalendar = self.linkToCalendar
+        self.originalSelectedCalendarId = self.selectedCalendarId
     }
     
     // MARK: - Setup Methods
@@ -98,7 +106,7 @@ final class TimeBlockFormData {
             validationErrors.append("Time block cannot be longer than 24 hours")
         }
         
-        // NEW: Conflict validation
+        // Conflict validation
         validateConflicts()
         
         isFormValid = validationErrors.isEmpty
@@ -152,7 +160,9 @@ final class TimeBlockFormData {
             normalizedEndTime != normalizedOriginalEnd ||
             sanitizeString(notes) != sanitizeString(originalNotes) ||
             sanitizeString(category) != sanitizeString(originalCategory) ||
-            selectedIcon != originalIcon
+            selectedIcon != originalIcon ||
+            linkToCalendar != originalLinkToCalendar ||
+            selectedCalendarId != originalSelectedCalendarId
         )
     }
     

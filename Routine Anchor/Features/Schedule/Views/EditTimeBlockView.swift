@@ -5,6 +5,8 @@
 import SwiftUI
 
 struct EditTimeBlockView: View {
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var calendarVM: CalendarAccessViewModel
     @Environment(\.themeManager) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @State private var formData: TimeBlockFormData
@@ -16,12 +18,12 @@ struct EditTimeBlockView: View {
     // MARK: - Properties
     let originalTimeBlock: TimeBlock
     let existingTimeBlocks: [TimeBlock]
-    let onSave: (TimeBlock) -> Void
+    let onSave: (TimeBlock, Bool, String?) -> Void
     
     init(
         timeBlock: TimeBlock,
         existingTimeBlocks: [TimeBlock],
-        onSave: @escaping (TimeBlock) -> Void
+        onSave: @escaping (TimeBlock, Bool, String?) -> Void
     ) {
         self.originalTimeBlock = timeBlock
         self.existingTimeBlocks = existingTimeBlocks
@@ -58,6 +60,12 @@ struct EditTimeBlockView: View {
                 if originalTimeBlock.createdAt != Date.distantPast {
                     historySection
                 }
+                
+                // Calendar Link Section
+                CalendarLinkSection(
+                    linkToCalendar: $formData.linkToCalendar,
+                    selectedCalendarId: $formData.selectedCalendarId
+                )
                 
                 // Action Buttons
                 actionButtons
@@ -110,6 +118,8 @@ struct EditTimeBlockView: View {
         .onChange(of: formData.notes) { _, _ in formData.checkForChanges() }
         .onChange(of: formData.category) { _, _ in formData.checkForChanges() }
         .onChange(of: formData.selectedIcon) { _, _ in formData.checkForChanges() }
+        .onChange(of: formData.linkToCalendar) { _, _ in formData.checkForChanges() }
+        .onChange(of: formData.selectedCalendarId) { _, _ in formData.checkForChanges() }
         .alert("Invalid Time Block", isPresented: $showingValidationErrors) {
             Button("OK") {}
         } message: {
@@ -395,7 +405,7 @@ struct EditTimeBlockView: View {
         updatedBlock.icon = formData.selectedIcon.isEmpty ? nil : formData.selectedIcon
         updatedBlock.updatedAt = Date()
         
-        onSave(updatedBlock)
+        onSave(updatedBlock, formData.linkToCalendar, formData.selectedCalendarId)
         
         HapticManager.shared.anchorSuccess()
         dismiss()
@@ -433,8 +443,8 @@ struct EditTimeBlockView: View {
     
     return EditTimeBlockView(
         timeBlock: sampleBlock,
-        existingTimeBlocks: existingBlocks // ← Add this parameter!
-    ) { updatedBlock in
+        existingTimeBlocks: existingBlocks
+    ) { updatedBlock, linkToCal, calId in
         print("Updated: \(updatedBlock.title)")
     }
 }
@@ -451,8 +461,8 @@ struct EditTimeBlockView: View {
     
     return EditTimeBlockView(
         timeBlock: sampleBlock,
-        existingTimeBlocks: [] // ← Empty array = no conflicts
-    ) { updatedBlock in
+        existingTimeBlocks: []
+    ) { updatedBlock, linkToCal, calId in
         print("Updated: \(updatedBlock.title)")
     }
 }
@@ -469,7 +479,7 @@ struct EditTimeBlockView: View {
     
     AddTimeBlockView(
         existingTimeBlocks: existingBlocks
-    ) { title, startTime, endTime, notes, category in
+    ) { title, startTime, endTime, notes, category, linkToCal, calId in
         print("Saving: \(title) from \(startTime) to \(endTime)")
     }
 }

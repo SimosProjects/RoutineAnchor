@@ -98,12 +98,14 @@ struct ScheduleBuilderView: View {
             Text("Are you sure you want to delete this time block?")
         }
         .sheet(isPresented: $showingAddBlock) {
-            AddTimeBlockView(existingTimeBlocks: viewModel!.timeBlocks) { title, startTime, endTime, notes, category in
+            AddTimeBlockView(existingTimeBlocks: viewModel!.timeBlocks) { title, startTime, endTime, notes, category, linkToCal, calId in
                 viewModel?.addTimeBlock(title: title,
                                         startTime: startTime,
                                         endTime: endTime,
                                         notes: notes,
-                                        category: category)
+                                        category: category,
+                                        linkToCalendar: linkToCal,
+                                        selectedCalendarId: calId)
             }
             .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
@@ -111,8 +113,15 @@ struct ScheduleBuilderView: View {
         }
         .sheet(isPresented: $showingEditBlock) {
             if let block = selectedBlock {
-                EditTimeBlockView(timeBlock: block, existingTimeBlocks: viewModel!.timeBlocks) { updated in
-                    viewModel?.updateTimeBlock(updated)
+                EditTimeBlockView(
+                    timeBlock: block,
+                    existingTimeBlocks: viewModel!.timeBlocks
+                ) { updated, linkToCal, calId in
+                    viewModel?.updateTimeBlock(
+                        updated,
+                        linkToCalendar: linkToCal,
+                        selectedCalendarId: calId
+                    )
                 }
                 .environment(\.themeManager, themeManager)
                 .presentationDetents([.large])

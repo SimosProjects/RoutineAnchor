@@ -4,6 +4,7 @@
 //
 import SwiftUI
 import SwiftData
+import EventKit
 
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
@@ -13,6 +14,7 @@ struct MainTabView: View {
     @EnvironmentObject private var adManager: AdManager
 
     @State private var tabViewModel = MainTabViewModel()
+    @State private var calendarVM = CalendarAccessViewModel()
     @State private var selectedTab: Tab = .today
     @State private var tabBarOffset: CGFloat = 0
     @State private var showFloatingAction = false
@@ -150,7 +152,14 @@ struct MainTabView: View {
                 setupTabBarAppearance()
                 setupTabBar()
             }
-
+            .environmentObject(calendarVM)
+            .task {
+              calendarVM.attachModelContext(modelContext)   // keep it wired once
+              await calendarVM.reconcileLinkedBlocksIfNeeded() // one-off sweep on first launch
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+              Task { await calendarVM.reconcileLinkedBlocksIfNeeded() }
+            }
             .task { await setupInitialState() }
             .task { await monitorTabChangeRequests() }
             .task { await monitorNavigationNotifications() }
@@ -164,8 +173,8 @@ struct MainTabView: View {
         .sheet(isPresented: $showingAddTimeBlock) {
             AddTimeBlockView(
                 existingTimeBlocks: existingTimeBlocks
-            ) { title, startTime, endTime, notes, category in
-                createTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes ?? "", category: category ?? "")
+            ) { title, startTime, endTime, notes, category, linkToCal, calId in
+                createTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes ?? "", category: category ?? "", linkToCalendar: linkToCal, selectedCalendarId: calId)
             }
             .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
@@ -228,8 +237,52 @@ struct MainTabView: View {
         loadExistingTimeBlocks()
     }
 
-    private func createTimeBlock(title: String, startTime: Date, endTime: Date, notes: String, category: String) {
-        let newBlock = TimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes, category: category)
+    private func createTimeBlock(title: String, startTime: Date, endTime: Date, notes: String, category: String, linkToCalendar: Bool = false, selectedCalendarId: String? = nil) {
+        var eventId: String? = nil
+        var calId: String? = nil
+        var lastModified: Date? = nil
+
+        if linkToCalendar, let targetCalId = selectedCalendarId {
+            let store = EKEventStore()
+            if hasEventAccess() {
+                if let cal = store.calendar(withIdentifier: targetCalId) {
+                    do {
+                        let ev = EKEvent(eventStore: store)
+                        ev.calendar  = cal
+                        ev.title     = title
+                        ev.notes     = notes.isEmpty ? nil : notes
+                        ev.startDate = startTime
+                        ev.endDate   = endTime
+
+                        try store.save(ev, span: .thisEvent, commit: true)
+                        eventId      = ev.eventIdentifier
+                        calId        = targetCalId
+                        lastModified = ev.lastModifiedDate
+                    } catch {
+                        print("EventKit create failed: \(error)")
+                    }
+                } else {
+                    print("Calendar not found for id: \(targetCalId)")
+                }
+            } else {
+                print("EventKit not authorized; skipping calendar creation")
+            }
+        }
+
+        // Build the TimeBlock with (optional) linkage
+        let newBlock = TimeBlock(
+            title: title,
+            startTime: startTime,
+            endTime: endTime,
+            notes: notes,
+            icon: nil,
+            category: category,
+            colorId: nil,
+            calendarEventId: eventId,
+            calendarId: calId,
+            calendarLastModified: lastModified
+        )
+
         modelContext.insert(newBlock)
         do {
             try modelContext.save()
@@ -238,6 +291,18 @@ struct MainTabView: View {
         } catch {
             print("Failed to save time block: \(error)")
             HapticManager.shared.error()
+        }
+    }
+    
+    @inline(__always)
+    private func hasEventAccess() -> Bool {
+        switch EKEventStore.authorizationStatus(for: .event) {
+        case .fullAccess, .writeOnly:
+            return true
+        case .authorized:
+            return true
+        default:
+            return false
         }
     }
 

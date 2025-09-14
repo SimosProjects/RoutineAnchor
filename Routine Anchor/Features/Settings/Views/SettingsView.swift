@@ -80,7 +80,7 @@ struct SettingsView: View {
                         notificationSound: $notificationSound
                     )
                     
-                    // Use the new AppPreferencesSection component
+                    // AppPreferences Section
                     AppPreferencesSection(
                         hapticsEnabled: $hapticsEnabled,
                         autoResetEnabled: $autoResetEnabled,
@@ -281,7 +281,8 @@ struct SettingsView: View {
         guard viewModel == nil else { return }
         
         let dataManager = DataManager(modelContext: modelContext)
-        let newViewModel = SettingsViewModel(dataManager: dataManager)
+        let calendarActor = EventKitActor()
+        let newViewModel = SettingsViewModel(dataManager: dataManager, calendarActor: calendarActor)
         
         // Ensure ViewModel is properly initialized
         viewModel = newViewModel

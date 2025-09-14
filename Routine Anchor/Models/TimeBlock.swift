@@ -39,6 +39,10 @@ class TimeBlock {
     /// Optional color identifier for customization
     var colorId: String?
     
+    var calendarEventId: String?
+    var calendarId: String?
+    var calendarLastModified: Date?
+    
     // MARK: - Metadata
     
     /// When this time block was originally created
@@ -70,7 +74,10 @@ class TimeBlock {
         notes: String? = nil,
         icon: String? = nil,
         category: String? = nil,
-        colorId: String? = nil
+        colorId: String? = nil,
+        calendarEventId: String? = nil,
+        calendarId: String? = nil,
+        calendarLastModified: Date? = nil
     ) {
         self.id = UUID()
         self.title = title
@@ -83,7 +90,11 @@ class TimeBlock {
         self.colorId = colorId
         self.createdAt = Date()
         self.updatedAt = Date()
+        self.calendarEventId = calendarEventId
+        self.calendarId = calendarId
+        self.calendarLastModified = calendarLastModified
     }
+
     
     /// Create a time block for a specific date with time components
     convenience init(
@@ -255,6 +266,24 @@ extension TimeBlock {
     }
 }
 
+extension TimeBlock {
+    var isLinkedToCalendar: Bool { calendarEventId != nil }
+
+    func attachCalendar(eventId: String, calendarId: String, lastModified: Date?) {
+        self.calendarEventId = eventId
+        self.calendarId = calendarId
+        self.calendarLastModified = lastModified
+        self.updatedAt = Date()
+    }
+
+    func detachCalendar() {
+        self.calendarEventId = nil
+        self.calendarId = nil
+        self.calendarLastModified = nil
+        self.updatedAt = Date()
+    }
+}
+
 // MARK: - Validation
 extension TimeBlock {
     /// Whether this time block passes all validation checks
@@ -350,7 +379,10 @@ extension TimeBlock {
             notes: notes,
             icon: icon,
             category: category,
-            colorId: colorId
+            colorId: colorId,
+            calendarEventId: nil,
+            calendarId: nil,
+            calendarLastModified: nil
         )
     }
     

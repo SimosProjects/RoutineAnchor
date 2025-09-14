@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import UserNotifications
+import EventKit
 
 @Observable
 @MainActor
@@ -20,6 +21,7 @@ final class SettingsViewModel {
     // MARK: - Private Properties
     private let dataManager: DataManager
     private let notificationService = NotificationService.shared
+    private let calendarActor: EventKitActor
     private var midnightTimer: Timer?
     private var messageTimerTask: Task<Void, Never>?
     
@@ -87,8 +89,9 @@ final class SettingsViewModel {
     }
     
     // MARK: - Initialization
-    init(dataManager: DataManager) {
+    init(dataManager: DataManager, calendarActor: EventKitActor = EventKitActor()) {
         self.dataManager = dataManager
+        self.calendarActor = calendarActor
         
         // Observe notification permission changes
         Task {
@@ -307,54 +310,91 @@ final class SettingsViewModel {
     func clearTodaysSchedule() {
         isLoading = true
         errorMessage = nil
-        
-        // Use safe methods - need to add these to DataManager:
-        dataManager.deleteAllTimeBlocksSafely(for: Date())
-        dataManager.clearDailyProgressSafely(for: Date())
-        
-        HapticManager.shared.anchorSuccess()
-        successMessage = "Today's schedule has been cleared"
-        
-        // Notify other views to refresh
-        NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
-        NotificationCenter.default.post(name: .refreshTodayView, object: nil)
-        
-        isLoading = false
-        clearMessages()
+
+        Task { @MainActor in
+            do {
+                // 1) Gather today's blocks
+                let todaysBlocks = try dataManager.loadTodaysTimeBlocks()
+
+                // 2) Best-effort delete EK events for linked blocks
+                await deleteCalendarEvents(for: todaysBlocks)
+
+                // 3) Delete local SwiftData rows + clear progress
+                try dataManager.deleteAllTimeBlocks(for: Date())
+                dataManager.clearDailyProgressSafely(for: Date())
+
+                // 4) UX + notifications refresh
+                HapticManager.shared.anchorSuccess()
+                successMessage = "Today's schedule has been cleared"
+                NotificationCenter.default.post(name: .refreshScheduleView, object: nil)
+                NotificationCenter.default.post(name: .refreshTodayView, object: nil)
+            } catch {
+                errorMessage = "Failed to clear today: \(error.localizedDescription)"
+                HapticManager.shared.anchorError()
+            }
+
+            isLoading = false
+            clearMessages()
+        }
     }
     
     /// Clear all app data (routines, progress, etc.)
     func clearAllData() {
         isLoading = true
         errorMessage = nil
-        
-        let allTimeBlocks = dataManager.loadAllTimeBlocksSafely()
-        let allProgress = dataManager.loadDailyProgressRangeSafely(
-            from: Date.distantPast,
-            to: Date.distantFuture
-        )
-        
-        // Delete all time blocks safely
-        for block in allTimeBlocks {
-            dataManager.deleteTimeBlockSafely(block)
+
+        Task { @MainActor in
+            do {
+                // 1) Load everything once (before deletions)
+                let allBlocks = try dataManager.loadAllTimeBlocks()
+
+                // 2) Best-effort delete EK events
+                await deleteCalendarEvents(for: allBlocks)
+
+                // 3) Remove local data
+                for block in allBlocks {
+                    try dataManager.deleteTimeBlock(block)
+                }
+
+                let allProgress = dataManager.loadDailyProgressRangeSafely(
+                    from: .distantPast, to: .distantFuture
+                )
+                for progress in allProgress {
+                    dataManager.deleteModelSafely(progress)
+                }
+
+                // 4) Preferences + notifications
+                clearUserPreferences()
+                notificationService.removeAllPendingNotifications()
+
+                HapticManager.shared.anchorSuccess()
+                successMessage = "All data has been cleared"
+            } catch {
+                errorMessage = "Failed to delete all data: \(error.localizedDescription)"
+                HapticManager.shared.anchorError()
+            }
+
+            isLoading = false
+            clearMessages()
         }
-        
-        // Delete all progress records safely
-        for progress in allProgress {
-            dataManager.deleteModelSafely(progress)
+    }
+    
+    // MARK: - Calendar helpers
+
+    /// Deletes EK events for the given blocks. Ignores failures so local cleanup still proceeds.
+    private func deleteCalendarEvents(for blocks: [TimeBlock]) async {
+        for block in blocks {
+            guard let eventId = block.calendarEventId else { continue }
+            // Best-effort delete; don’t block the rest if one fails
+            do {
+                try calendarActor.deleteEvent(withIdentifier: eventId)
+            } catch {
+                // Log, but keep going
+                #if DEBUG
+                print("EK delete failed for \(eventId): \(error)")
+                #endif
+            }
         }
-        
-        // Clear user preferences
-        clearUserPreferences()
-        
-        // Clear all notifications
-        notificationService.removeAllPendingNotifications()
-        
-        HapticManager.shared.anchorSuccess()
-        successMessage = "All data has been cleared"
-        
-        isLoading = false
-        clearMessages()
     }
     
     /// Export all user data as JSON
