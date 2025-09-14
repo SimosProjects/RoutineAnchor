@@ -8,9 +8,9 @@ import Foundation
 struct AddTimeBlockView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.themeManager) private var themeManager
+    @Environment(\.premiumManager) private var premiumManager
     @Environment(\.dismiss) private var dismiss
     @State private var formData = TimeBlockFormData()
-    @EnvironmentObject private var calendarVM: CalendarAccessViewModel
     
     // MARK: - State
     @State private var showingValidationErrors = false
@@ -56,17 +56,19 @@ struct AddTimeBlockView: View {
                 // Icon Section
                 iconSection(theme: theme, scheme: scheme)
                 
-                // Calendar Secction
-                CalendarLinkSection(
-                    linkToCalendar: Binding(
-                        get: { formData.linkToCalendar },
-                        set: { formData.linkToCalendar = $0 }
-                    ),
-                    selectedCalendarId: Binding(
-                        get: { formData.selectedCalendarId },
-                        set: { formData.selectedCalendarId = $0 }
+                // Premium Calendar Secction
+                if premiumManager?.hasPremiumAccess == true {
+                    CalendarLinkSection(
+                        linkToCalendar: Binding(
+                            get: { formData.linkToCalendar },
+                            set: { formData.linkToCalendar = $0 }
+                        ),
+                        selectedCalendarId: Binding(
+                            get: { formData.selectedCalendarId },
+                            set: { formData.selectedCalendarId = $0 }
+                        )
                     )
-                )
+                }
                 
                 // Action Buttons
                 actionButtons(theme: theme, scheme: scheme)
@@ -347,7 +349,11 @@ struct AddTimeBlockView: View {
         }
         
         let (title, notes, category) = formData.prepareForSave()
-        onSave(title, formData.startTime, formData.endTime, notes, category, formData.linkToCalendar, formData.selectedCalendarId)
+        let isPremium = premiumManager?.hasPremiumAccess == true
+        let linkToCal = isPremium ? formData.linkToCalendar : false
+        let calId     = isPremium ? formData.selectedCalendarId : nil
+        
+        onSave(title, formData.startTime, formData.endTime, notes, category, linkToCal, calId)
         HapticManager.shared.anchorSuccess()
         dismiss()
     }

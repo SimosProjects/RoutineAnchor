@@ -154,7 +154,6 @@ class PremiumManager {
         return false
     }
     
-    /// Whether ads should be shown
     var shouldShowAds: Bool {
         return !hasPremiumAccess
     }

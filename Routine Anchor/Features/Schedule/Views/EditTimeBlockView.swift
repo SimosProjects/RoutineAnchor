@@ -8,6 +8,7 @@ struct EditTimeBlockView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var calendarVM: CalendarAccessViewModel
     @Environment(\.themeManager) private var themeManager
+    @Environment(\.premiumManager) private var premiumManager
     @Environment(\.dismiss) private var dismiss
     @State private var formData: TimeBlockFormData
     @State private var showingValidationErrors = false
@@ -61,11 +62,13 @@ struct EditTimeBlockView: View {
                     historySection
                 }
                 
-                // Calendar Link Section
-                CalendarLinkSection(
-                    linkToCalendar: $formData.linkToCalendar,
-                    selectedCalendarId: $formData.selectedCalendarId
-                )
+                // Premium calendar Link Section
+                if premiumManager?.hasPremiumAccess == true {
+                    CalendarLinkSection(
+                        linkToCalendar: $formData.linkToCalendar,
+                        selectedCalendarId: $formData.selectedCalendarId
+                    )
+                }
                 
                 // Action Buttons
                 actionButtons
@@ -405,7 +408,11 @@ struct EditTimeBlockView: View {
         updatedBlock.icon = formData.selectedIcon.isEmpty ? nil : formData.selectedIcon
         updatedBlock.updatedAt = Date()
         
-        onSave(updatedBlock, formData.linkToCalendar, formData.selectedCalendarId)
+        let isPremium = premiumManager?.hasPremiumAccess == true
+        let linkToCal = isPremium ? formData.linkToCalendar : false
+        let calId     = isPremium ? formData.selectedCalendarId : nil
+        
+        onSave(updatedBlock, linkToCal, calId)
         
         HapticManager.shared.anchorSuccess()
         dismiss()

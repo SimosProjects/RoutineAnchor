@@ -182,7 +182,7 @@ class ScheduleBuilderViewModel {
             }
 
             // 2) Create & persist TimeBlock (with linkage if any)
-            var block = TimeBlock(title: trimmedTitle, startTime: startTime, endTime: endTime, notes: notes, category: category)
+            let block = TimeBlock(title: trimmedTitle, startTime: startTime, endTime: endTime, notes: notes, category: category)
             block.calendarEventId = eventId
             block.calendarId = calId
             block.calendarLastModified = lastMod
@@ -243,7 +243,7 @@ class ScheduleBuilderViewModel {
                     if hasEventAccess() {
                         do {
                             let last = try updateEKEvent(eventId: eventId, title: trimmedTitle, notes: block.notes, start: block.startTime, end: block.endTime)
-                            var updated = block
+                            let updated = block
                             updated.calendarLastModified = last
                             try dataManager.updateTimeBlock(updated)
                         } catch {
@@ -254,7 +254,7 @@ class ScheduleBuilderViewModel {
                 } else {
                     // Unlink → delete event then clear ids
                     do { try deleteEKEvent(eventId: eventId) } catch { print("EventKit delete failed: \(error)") }
-                    var cleared = block
+                    let cleared = block
                     cleared.calendarEventId = nil
                     cleared.calendarId = nil
                     cleared.calendarLastModified = nil
@@ -264,7 +264,7 @@ class ScheduleBuilderViewModel {
                 // Create new event for an unlinked block
                 do {
                     let result = try createEKEvent(in: calId, title: trimmedTitle, notes: block.notes, start: block.startTime, end: block.endTime)
-                    var linked = block
+                    let linked = block
                     linked.calendarEventId = result.eventId
                     linked.calendarId = calId
                     linked.calendarLastModified = result.lastModified
