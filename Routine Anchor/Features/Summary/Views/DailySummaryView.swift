@@ -39,7 +39,7 @@ struct DailySummaryView: View {
 
     var body: some View {
         ZStack {
-            // Consistent hero background (matches Today/Schedule/Add)
+            // Consistent hero background
             ThemedAnimatedBackground()
                 .ignoresSafeArea()
 
@@ -150,13 +150,16 @@ struct DailySummaryView: View {
 
                 Spacer()
 
-                Button(action: { showingShareSheet = true }) {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(scheme.normal.color)
-                        .frame(width: 36, height: 36)
-                        .background(Circle().fill(scheme.secondaryBackground.color))
-                        .overlay(Circle().stroke(scheme.border.color.opacity(0.8), lineWidth: 1))
+                // Premium share data feature
+                if premiumManager?.hasPremiumAccess == true {
+                    Button(action: { showingShareSheet = true }) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(scheme.normal.color)
+                            .frame(width: 36, height: 36)
+                            .background(Circle().fill(scheme.secondaryBackground.color))
+                            .overlay(Circle().stroke(scheme.border.color.opacity(0.8), lineWidth: 1))
+                    }
                 }
             }
 

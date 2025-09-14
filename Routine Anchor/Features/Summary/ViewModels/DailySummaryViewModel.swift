@@ -50,7 +50,7 @@ class DailySummaryViewModel {
         taskToCancel?.cancel()
     }
     
-    // MARK: - Data Loading (FIXED with crash protection)
+    // MARK: - Data Loading
     
     /// Load all data for the specified date
     func loadData(for date: Date) async {
@@ -131,7 +131,7 @@ class DailySummaryViewModel {
         await loadData(for: selectedDate)
     }
     
-    // MARK: - Data Updates (FIXED with crash protection)
+    // MARK: - Data Updates
     
     /// Save day rating and notes
     @MainActor
@@ -179,7 +179,7 @@ class DailySummaryViewModel {
         }
     }
     
-    // MARK: - Computed Properties (FIXED with crash protection)
+    // MARK: - Computed Properties
     
     /// Whether we have any data to show
     var hasData: Bool {
@@ -255,7 +255,7 @@ class DailySummaryViewModel {
         return (completed, skipped, inProgress, upcoming)
     }
     
-    // MARK: - Analysis & Insights (FIXED with crash protection)
+    // MARK: - Analysis & Insights
     
     /// Get personalized insights based on performance
     func getPersonalizedInsights() -> [String] {
@@ -265,7 +265,7 @@ class DailySummaryViewModel {
         
         var insights: [String] = []
         
-        // FIXED: Wrap all progress property access in safe calls
+        // Wrap all progress property access in safe calls
         let performanceLevel = dataManager.safeModelAccess({ progress.performanceLevel }, fallback: .none)
         let completedBlocks = dataManager.safeModelAccess({ progress.completedBlocks }, fallback: 0)
         let skipRate = dataManager.safeModelAccess({ progress.skipRate }, fallback: 0.0)
@@ -394,7 +394,7 @@ class DailySummaryViewModel {
         return suggestions.isEmpty ? ["Keep experimenting to find your optimal routine!"] : suggestions
     }
     
-    // MARK: - Sharing & Export (FIXED with crash protection)
+    // MARK: - Sharing & Export
     
     /// Generate shareable text summary
     func generateShareableText() -> String {
@@ -498,7 +498,7 @@ class DailySummaryViewModel {
             ]
         }
         
-        // FIXED: Wrap all progress property access in safe calls
+        // Wrap all progress property access in safe calls
         let summaryData = dataManager.safeModelAccess({
             return [
                 "date": ISO8601DateFormatter().string(from: selectedDate),

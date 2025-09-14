@@ -7,6 +7,7 @@ import SwiftUI
 
 struct DataManagementSection: View {
     @Environment(\.themeManager) private var themeManager
+    @Environment(\.premiumManager) private var premiumManager
     
     let onExportData: () -> Void
     let onImportData: () -> Void
@@ -31,31 +32,34 @@ struct DataManagementSection: View {
                 ?? Theme.defaultTheme.colorScheme.primaryAccent.color
         ) {
             VStack(spacing: 16) {
-                // Export data button
-                SettingsButton(
-                    title: "Export My Data",
-                    subtitle: "Download your routine data",
-                    icon: "square.and.arrow.up",
-                    color: themeManager?.currentTheme.colorScheme.normal.color
-                        ?? Theme.defaultTheme.colorScheme.normal.color,
-                    action: {
-                        HapticManager.shared.lightImpact()
-                        onExportData()
-                    }
-                )
-                
-                // Import data button
-                SettingsButton(
-                    title: "Import Data",
-                    subtitle: "Restore from backup file",
-                    icon: "square.and.arrow.down",
-                    color: themeManager?.currentTheme.colorScheme.success.color
-                        ?? Theme.defaultTheme.colorScheme.success.color,
-                    action: {
-                        HapticManager.shared.lightImpact()
-                        onImportData()
-                    }
-                )
+                // Premium date features
+                if premiumManager?.hasPremiumAccess == true {
+                    // Export data button
+                    SettingsButton(
+                        title: "Export My Data",
+                        subtitle: "Download your routine data",
+                        icon: "square.and.arrow.up",
+                        color: themeManager?.currentTheme.colorScheme.normal.color
+                            ?? Theme.defaultTheme.colorScheme.normal.color,
+                        action: {
+                            HapticManager.shared.lightImpact()
+                            onExportData()
+                        }
+                    )
+                    
+                    // Import data button
+                    SettingsButton(
+                        title: "Import Data",
+                        subtitle: "Restore from backup file",
+                        icon: "square.and.arrow.down",
+                        color: themeManager?.currentTheme.colorScheme.success.color
+                            ?? Theme.defaultTheme.colorScheme.success.color,
+                        action: {
+                            HapticManager.shared.lightImpact()
+                            onImportData()
+                        }
+                    )
+                }
                 
                 // Privacy policy button
                 SettingsButton(
