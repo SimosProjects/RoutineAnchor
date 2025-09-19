@@ -148,7 +148,16 @@ class ScheduleBuilderViewModel {
     
     /// Add a new time block
     @MainActor
-    func addTimeBlock(title: String, startTime: Date, endTime: Date, notes: String? = nil, category: String? = nil, linkToCalendar: Bool = false, selectedCalendarId: String? = nil) {
+    func addTimeBlock(
+        title: String,
+        startTime: Date,
+        endTime: Date,
+        notes: String? = nil,
+        category: String? = nil,
+        icon: String? = nil,
+        linkToCalendar: Bool = false,
+        selectedCalendarId: String? = nil
+    ) {
 
         isLoading = true
         errorMessage = nil
@@ -182,7 +191,21 @@ class ScheduleBuilderViewModel {
             }
 
             // 2) Create & persist TimeBlock (with linkage if any)
-            let block = TimeBlock(title: trimmedTitle, startTime: startTime, endTime: endTime, notes: notes, category: category)
+            let block = TimeBlock(
+                title: trimmedTitle,
+                startTime: startTime,
+                endTime: endTime,
+                notes: notes,
+                category: category
+            )
+
+            // ✅ Persist the icon (treat empty string as nil)
+            if let icon, !icon.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                block.icon = icon
+            } else {
+                block.icon = nil
+            }
+
             block.calendarEventId = eventId
             block.calendarId = calId
             block.calendarLastModified = lastMod
@@ -192,7 +215,11 @@ class ScheduleBuilderViewModel {
             // 3) Refresh UI/notifications
             loadTimeBlocks()
             scheduleNotifications()
-            NotificationCenter.default.post(name: .timeBlocksDidChange, object: nil, userInfo: ["action": "added", "date": block.scheduledDate])
+            NotificationCenter.default.post(
+                name: .timeBlocksDidChange,
+                object: nil,
+                userInfo: ["action": "added", "date": block.scheduledDate]
+            )
             HapticManager.shared.success()
 
         } catch let e as ScheduleBuilderError {
@@ -205,6 +232,7 @@ class ScheduleBuilderViewModel {
 
         isLoading = false
     }
+
     
     private func timeBlocksOverlap(start1: Date, end1: Date, start2: Date, end2: Date) -> Bool {
         // Check if blocks are on the same day first

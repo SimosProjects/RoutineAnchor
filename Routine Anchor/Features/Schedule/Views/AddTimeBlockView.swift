@@ -18,11 +18,11 @@ struct AddTimeBlockView: View {
     @State private var selectedDuration: Int? = nil
     
     let existingTimeBlocks: [TimeBlock]
-    let onSave: (String, Date, Date, String?, String?, Bool, String?) -> Void
+    let onSave: (String, Date, Date, String?, String?, String?, Bool, String?) -> Void
     
     init(
         existingTimeBlocks: [TimeBlock] = [],
-        onSave: @escaping (String, Date, Date, String?, String?, Bool, String?) -> Void
+        onSave: @escaping (String, Date, Date, String?, String?, String?, Bool, String?) -> Void
     ) {
         self.existingTimeBlocks = existingTimeBlocks
         self.onSave = onSave
@@ -342,18 +342,15 @@ struct AddTimeBlockView: View {
     
     private func saveTimeBlock() {
         formData.validateForm()
-        
-        guard formData.isFormValid else {
-            showingValidationErrors = true
-            return
-        }
-        
+        guard formData.isFormValid else { showingValidationErrors = true; return }
+
         let (title, notes, category) = formData.prepareForSave()
         let isPremium = premiumManager?.hasPremiumAccess == true
         let linkToCal = isPremium ? formData.linkToCalendar : false
-        let calId     = isPremium ? formData.selectedCalendarId : nil
-        
-        onSave(title, formData.startTime, formData.endTime, notes, category, linkToCal, calId)
+        let calId = isPremium ? formData.selectedCalendarId : nil
+        let icon = formData.selectedIcon.isEmpty ? nil : formData.selectedIcon
+
+        onSave(title, formData.startTime, formData.endTime, notes, category, icon, linkToCal, calId)
         HapticManager.shared.anchorSuccess()
         dismiss()
     }
@@ -391,7 +388,7 @@ extension TimeBlockFormData {
 
 // MARK: - Preview
 #Preview {
-    AddTimeBlockView { title, startTime, endTime, notes, category, linkToCalendar, selectedCalendarId in
+    AddTimeBlockView { title, startTime, endTime, notes, category, icon, linkToCalendar, selectedCalendarId in
         print("Saving: \(title) from \(startTime) to \(endTime)")
     }
 }

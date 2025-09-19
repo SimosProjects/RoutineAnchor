@@ -192,14 +192,12 @@ struct SettingsView: View {
             ExportDataView()
                 .modelContainer(modelContext.container)
                 .environment(\.themeManager, themeManager)
-                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingImportView) {
             ImportDataView()
                 .modelContainer(modelContext.container)
                 .environment(\.themeManager, themeManager)
-                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingEmailPreferences) {

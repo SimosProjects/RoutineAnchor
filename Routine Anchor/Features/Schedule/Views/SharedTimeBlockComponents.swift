@@ -273,3 +273,29 @@ struct TimeBlockFormView<Content: View>: View {
         }
     }
 }
+
+
+extension Character {
+    /// Best-effort emoji check that handles both emoji scalars and emoji presentation.
+    var isEmoji: Bool {
+        // If any scalar says it's emoji and either it's the presentation form
+        // or it's in the higher codepoint range typically used for emoji.
+        unicodeScalars.contains {
+            $0.properties.isEmoji && ($0.properties.isEmojiPresentation || $0.value > 0x238C)
+        }
+    }
+}
+
+extension String {
+    /// If the first *character* is an emoji grapheme, returns (emoji, restWithoutEmojiAndLeadingSpace).
+    /// Otherwise returns (nil, self).
+    func peelLeadingEmoji() -> (emoji: String?, rest: String) {
+        guard let firstChar = first, firstChar.isEmoji else { return (nil, self) }
+        var rest = dropFirst()
+        // Skip a single space after the emoji if present
+        if let rFirst = rest.first, rFirst == " " {
+            rest = rest.dropFirst()
+        }
+        return (String(firstChar), String(rest))
+    }
+}

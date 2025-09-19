@@ -136,7 +136,7 @@ class ExportService {
     private func exportAsCSV(_ timeBlocks: [TimeBlock]) throws -> Data {
         var csvString = "Title,Start Time,End Time,Status,Category,Icon,Notes,Created At\n"
         
-        let dateFormatter = DateFormatter.exportDateFormatter
+        let dateFormatter = DateFormatter.dataTransferFormatter
         
         for block in timeBlocks.sorted(by: { $0.startTime < $1.startTime }) {
             let title = escapeCSV(block.title)
@@ -161,9 +161,7 @@ class ExportService {
     private func exportProgressAsCSV(_ progress: [DailyProgress]) throws -> Data {
         var csvString = "Date,Completion Rate,Completed Blocks,Total Blocks,Skipped Blocks,Day Rating,Notes\n"
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = .none
+        let dateFormatter = DateFormatter.dataTransferDateOnlyFormatter
         
         for day in progress.sorted(by: { $0.date < $1.date }) {
             let date = dateFormatter.string(from: day.date)

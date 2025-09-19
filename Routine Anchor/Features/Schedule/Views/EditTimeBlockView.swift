@@ -486,7 +486,7 @@ struct EditTimeBlockView: View {
     
     AddTimeBlockView(
         existingTimeBlocks: existingBlocks
-    ) { title, startTime, endTime, notes, category, linkToCal, calId in
+    ) { title, startTime, endTime, notes, category, icon, linkToCal, calId in
         print("Saving: \(title) from \(startTime) to \(endTime)")
     }
 }

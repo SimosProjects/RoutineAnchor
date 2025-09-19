@@ -47,11 +47,19 @@ struct ImportDataView: View {
             .navigationBarHidden(true)
             .fileImporter(
                 isPresented: $showingFilePicker,
-                allowedContentTypes: [.json, .commaSeparatedText],
+                allowedContentTypes: {
+                    var types: [UTType] = [.json, .commaSeparatedText, .plainText]
+                    if let txtByExt = UTType(filenameExtension: "txt") {
+                        types.append(txtByExt)
+                    }
+                    types.append(.data)
+                    return types
+                }(),
                 allowsMultipleSelection: false
             ) { result in
                 handleFileImport(result: result)
             }
+
             .alert("Import Complete", isPresented: $showingSuccessAlert, presenting: importResult) { result in
                 Button("OK") {
                     if result.isSuccess {
@@ -151,6 +159,13 @@ struct ImportDataView: View {
                     description: "Spreadsheet format for basic data",
                     color: themeManager?.currentTheme.colorScheme.success.color ?? Theme.defaultTheme.colorScheme.success.color
                 )
+                
+                FormatRow(
+                    icon: "doc.plaintext",
+                    title: "Text (TXT)",
+                    description: "Human-readable backup (now importable)",
+                    color: themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color
+                )
             }
         }
         .padding(20)
@@ -206,7 +221,7 @@ struct ImportDataView: View {
                     .foregroundStyle(themeManager?.currentTheme.primaryTextColor ?? Theme.defaultTheme.primaryTextColor)
             }
             
-            Text("• Imported time blocks will be added to your existing schedule\n• Duplicate entries will be skipped automatically\n• Make sure the file is in a supported format (JSON or CSV)")
+            Text("• Imported time blocks will be added to your existing schedule\n• Duplicate entries will be skipped automatically\n• Make sure the file is in a supported format (JSON, CSV, or TXT)")
                 .font(.system(size: 12, weight: .regular))
                 .foregroundStyle(themeManager?.currentTheme.secondaryTextColor ?? Theme.defaultTheme.secondaryTextColor)
                 .lineSpacing(2)

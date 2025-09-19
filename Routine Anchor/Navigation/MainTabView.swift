@@ -173,8 +173,8 @@ struct MainTabView: View {
         .sheet(isPresented: $showingAddTimeBlock) {
             AddTimeBlockView(
                 existingTimeBlocks: existingTimeBlocks
-            ) { title, startTime, endTime, notes, category, linkToCal, calId in
-                createTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes ?? "", category: category ?? "", linkToCalendar: linkToCal, selectedCalendarId: calId)
+            ) { title, startTime, endTime, notes, category, icon, linkToCal, calId in
+                createTimeBlock(title: title, startTime: startTime, endTime: endTime, notes: notes ?? "", category: category ?? "", icon: icon ?? "", linkToCalendar: linkToCal, selectedCalendarId: calId)
             }
             .environment(\.themeManager, themeManager)
             .presentationDetents([.large])
@@ -237,7 +237,16 @@ struct MainTabView: View {
         loadExistingTimeBlocks()
     }
 
-    private func createTimeBlock(title: String, startTime: Date, endTime: Date, notes: String, category: String, linkToCalendar: Bool = false, selectedCalendarId: String? = nil) {
+    private func createTimeBlock(
+        title: String,
+        startTime: Date,
+        endTime: Date,
+        notes: String,
+        category: String,
+        icon: String,
+        linkToCalendar: Bool = false,
+        selectedCalendarId: String? = nil
+    ) {
         var eventId: String? = nil
         var calId: String? = nil
         var lastModified: Date? = nil
@@ -250,7 +259,7 @@ struct MainTabView: View {
                         let ev = EKEvent(eventStore: store)
                         ev.calendar  = cal
                         ev.title     = title
-                        ev.notes     = notes.isEmpty ? nil : notes
+                        ev.notes     = notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : notes
                         ev.startDate = startTime
                         ev.endDate   = endTime
 
@@ -269,13 +278,17 @@ struct MainTabView: View {
             }
         }
 
-        // Build the TimeBlock with (optional) linkage
+        // Normalize inputs
+        let normalizedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : notes
+        let normalizedIcon  = icon.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : icon
+
+        // Build the TimeBlock
         let newBlock = TimeBlock(
             title: title,
             startTime: startTime,
             endTime: endTime,
-            notes: notes,
-            icon: nil,
+            notes: normalizedNotes,
+            icon: normalizedIcon,
             category: category,
             colorId: nil,
             calendarEventId: eventId,

@@ -98,12 +98,13 @@ struct ScheduleBuilderView: View {
             Text("Are you sure you want to delete this time block?")
         }
         .sheet(isPresented: $showingAddBlock) {
-            AddTimeBlockView(existingTimeBlocks: viewModel!.timeBlocks) { title, startTime, endTime, notes, category, linkToCal, calId in
+            AddTimeBlockView(existingTimeBlocks: viewModel!.timeBlocks) { title, startTime, endTime, notes, category, icon, linkToCal, calId in
                 viewModel?.addTimeBlock(title: title,
                                         startTime: startTime,
                                         endTime: endTime,
                                         notes: notes,
                                         category: category,
+                                        icon: icon,
                                         linkToCalendar: linkToCal,
                                         selectedCalendarId: calId)
             }
