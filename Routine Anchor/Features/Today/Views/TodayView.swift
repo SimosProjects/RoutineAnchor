@@ -10,10 +10,14 @@ struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.premiumManager) private var premiumManager
     @Environment(\.themeManager) private var themeManager
-    @Bindable var viewModel: TodayViewModel
-    @State private var dataManager: DataManager
+
+    // Own the VM here; build it after the environment is available.
+    @State private var viewModel: TodayViewModel? = nil
+
     @State private var refreshTask: Task<Void, Never>?
     @State private var animationTask: Task<Void, Never>?
+    @State private var showDatePicker = false
+    @State private var tempDate = Date()
     
     // MARK: - State
     @State private var isAboutToShowSheet = false
@@ -32,13 +36,32 @@ struct TodayView: View {
     @State private var scrollProxy: ScrollViewProxy?
     @State private var highlightedBlockId: UUID?
     
-    init(modelContext: ModelContext) {
-        let dataManager = DataManager(modelContext: modelContext)
-        self.dataManager = dataManager
-        self.viewModel = TodayViewModel(dataManager: dataManager)
-    }
-    
     var body: some View {
+        Group {
+            if let vm = viewModel {
+                content(vm)
+            } else {
+                ZStack {
+                    ThemedAnimatedBackground(kind: .hero).ignoresSafeArea()
+                    ProgressView()
+                }
+            }
+        }
+        .onAppear {
+            // Lazily build the VM once the environment is available
+            if viewModel == nil {
+                let dm = DataManager(modelContext: modelContext)
+                viewModel = TodayViewModel(
+                    dataManager: dm,
+                    isUserPremium: { premiumManager?.userIsPremium ?? false }
+                )
+            }
+        }
+    }
+
+    // MARK: - Split out the main content once VM exists
+    @ViewBuilder
+    private func content(_ vm: TodayViewModel) -> some View {
         ZStack {
             // Shared hero background
             ThemedAnimatedBackground(kind: .hero)
@@ -50,7 +73,7 @@ struct TodayView: View {
                         VStack(spacing: 0) {
                             // Header section
                             TodayHeaderView(
-                                viewModel: viewModel,
+                                viewModel: vm,
                                 showingSettings: $showingSettings,
                                 showingSummary: $showingSummary,
                                 showingQuickStats: $showingQuickStats
@@ -58,8 +81,8 @@ struct TodayView: View {
                             .padding(.top, geometry.safeAreaInsets.top + 20)
 
                             // Content based on state
-                            if viewModel.hasScheduledBlocks {
-                                mainContent
+                            if vm.hasScheduledBlocks {
+                                mainContent(vm)
                             } else {
                                 TodayEmptyStateView(
                                     onCreateRoutine: navigateToScheduleBuilder,
@@ -74,7 +97,7 @@ struct TodayView: View {
                         }
                     }
                     .onAppear { scrollProxy = proxy }
-                    .refreshable { await refreshData() }
+                    .refreshable { await refreshData(vm) }
                 }
             }
         }
@@ -91,23 +114,23 @@ struct TodayView: View {
             }
             
             Task { @MainActor in
-                await viewModel.refreshData()
-                viewModel.startPeriodicUpdates()
+                await vm.refreshData()
+                vm.startPeriodicUpdates()
             }
         }
         .onDisappear {
             viewIsActive = false
-            viewModel.stopPeriodicUpdates()
+            vm.stopPeriodicUpdates()
         }
-        .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+        .alert("Error", isPresented: .constant(vm.errorMessage != nil)) {
             Button("Retry") {
-                Task { await viewModel.retryLastOperation() }
+                Task { await vm.retryLastOperation() }
             }
             Button("Dismiss", role: .cancel) {
-                viewModel.clearError()
+                vm.clearError()
             }
         } message: {
-            Text(viewModel.errorMessage ?? "")
+            Text(vm.errorMessage ?? "")
         }
         .sheet(isPresented: $showingSettings) {
             NavigationStack { SettingsView() }
@@ -122,10 +145,53 @@ struct TodayView: View {
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingQuickStats) {
-            NavigationStack { QuickStatsView(viewModel: viewModel) }
+            NavigationStack { QuickStatsView(viewModel: vm) }
                 .environment(\.themeManager, themeManager)
                 .presentationDetents([.fraction(0.7)])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showDatePicker) {
+            NavigationStack {
+                VStack(spacing: 16) {
+                    DatePicker(
+                        "Select a day",
+                        selection: $tempDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .padding()
+
+                    HStack {
+                        Button("Cancel") { showDatePicker = false }
+                        Spacer()
+                        Button("Go") {
+                            showDatePicker = false
+                            Task { await vm.setSelectedDate(tempDate) }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 12)
+                }
+                .navigationTitle("Jump to date")
+                .navigationBarTitleDisplayMode(.inline)
+            }
+        }
+
+        .gesture(
+            DragGesture(minimumDistance: 30, coordinateSpace: .local)
+                .onEnded { value in
+                    if abs(value.translation.height) < 40 {
+                        if value.translation.width > 60 {
+                            Task { await vm.goToPreviousDay() }
+                        } else if value.translation.width < -60 {
+                            Task { await vm.goToNextDay() }
+                        }
+                    }
+                }
+        )
+        .onReceive(NotificationCenter.default.publisher(for: .showDatePicker)) { _ in
+            tempDate = vm.selectedDate
+            showDatePicker = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .showQuickStats)) { _ in
             showingQuickStats = true
@@ -134,37 +200,37 @@ struct TodayView: View {
             showingSummary = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .timeBlockCompleted)) { notification in
-            handleTimeBlockCompletion(notification)
+            handleTimeBlockCompletion(notification, vm: vm)
         }
         .onReceive(NotificationCenter.default.publisher(for: .timeBlockSkipped)) { notification in
-            handleTimeBlockSkip(notification)
+            handleTimeBlockSkip(notification, vm: vm)
         }
         .onReceive(NotificationCenter.default.publisher(for: .showTimeBlock)) { notification in
             handleShowTimeBlock(notification)
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshTodayView)) { _ in
             guard !isAboutToShowSheet && !justNavigatedToView else { return }
-            Task { await viewModel.refreshData() }
+            Task { await vm.refreshData() }
         }
     }
     
     // MARK: - Main Content
     @ViewBuilder
-    private var mainContent: some View {
+    private func mainContent(_ vm: TodayViewModel) -> some View {
         VStack(spacing: 24) {
             // Focus section
-            if let focusText = viewModel.getFocusModeText() {
+            if let focusText = vm.getFocusModeText() {
                 FocusCard(
                     text: focusText,
-                    currentBlock: viewModel.getCurrentBlock(),
-                    viewModel: viewModel
+                    currentBlock: vm.getCurrentBlock(),
+                    viewModel: vm
                 )
                 .padding(.horizontal, 24)
             }
             
             // Time blocks list
             TodayTimeBlocksList(
-                viewModel: viewModel,
+                viewModel: vm,
                 selectedTimeBlock: $selectedTimeBlock,
                 showingActionSheet: $showingActionSheet,
                 highlightedBlockId: $highlightedBlockId,
@@ -172,7 +238,7 @@ struct TodayView: View {
             )
             
             // Motivational section
-            MotivationalCard(viewModel: viewModel)
+            MotivationalCard(viewModel: vm)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 100)
         }
@@ -214,13 +280,13 @@ struct TodayView: View {
     
     // MARK: - Helper Methods
     
-    private func refreshData() async {
+    private func refreshData(_ vm: TodayViewModel) async {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             refreshTrigger.toggle()
         }
         // Small delay for visual feedback
         try? await Task.sleep(nanoseconds: 500_000_000)
-        await viewModel.refreshData()
+        await vm.refreshData()
         HapticManager.shared.lightImpact()
     }
     
@@ -236,8 +302,8 @@ struct TodayView: View {
     
     // MARK: - Scroll Support Methods
     
-    private func scrollToCurrentBlockIfNeeded() {
-        guard let currentBlock = viewModel.getCurrentBlock() else { return }
+    private func scrollToCurrentBlockIfNeeded(_ vm: TodayViewModel) {
+        guard let currentBlock = vm.getCurrentBlock() else { return }
         // Delay slightly to ensure view is laid out
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
@@ -258,16 +324,16 @@ struct TodayView: View {
     
     // MARK: - Notification Handlers
     
-    private func handleTimeBlockCompletion(_ notification: Notification) {
+    private func handleTimeBlockCompletion(_ notification: Notification, vm: TodayViewModel) {
         guard let blockId = notification.userInfo?["blockId"] as? UUID,
-              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else { return }
-        Task { @MainActor in await viewModel.markBlockCompleted(block) }
+              let block = vm.timeBlocks.first(where: { $0.id == blockId }) else { return }
+        Task { @MainActor in await vm.markBlockCompleted(block) }
     }
     
-    private func handleTimeBlockSkip(_ notification: Notification) {
+    private func handleTimeBlockSkip(_ notification: Notification, vm: TodayViewModel) {
         guard let blockId = notification.userInfo?["blockId"] as? UUID,
-              let block = viewModel.timeBlocks.first(where: { $0.id == blockId }) else { return }
-        Task { @MainActor in await viewModel.markBlockSkipped(block) }
+              let block = vm.timeBlocks.first(where: { $0.id == blockId }) else { return }
+        Task { @MainActor in await vm.markBlockSkipped(block) }
     }
     
     private func handleShowTimeBlock(_ notification: Notification) {
@@ -292,7 +358,7 @@ struct TodayView: View {
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
     let tm = ThemeManager.preview(with: Theme.defaultTheme)
-    return TodayView(modelContext: container.mainContext)
+    return TodayView()
         .environment(\.themeManager, tm)
         .modelContainer(container)
 }

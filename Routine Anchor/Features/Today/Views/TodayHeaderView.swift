@@ -14,6 +14,7 @@ struct TodayHeaderView: View {
     @Binding var showingQuickStats: Bool
     
     // MARK: - State
+    @State private var shouldShowSwipeHint = true
     @State private var greetingOpacity: Double = 0
     @State private var dateOpacity: Double = 0
     @State private var buttonsOpacity: Double = 0
@@ -61,65 +62,160 @@ struct TodayHeaderView: View {
     
     // MARK: - Navigation Bar
     private var navigationBar: some View {
-        HStack {
-            // Date and greeting
-            dateAndGreetingSection
-            
-            Spacer()
-            
-            // Action buttons
-            actionButtons
-        }
-        .padding(.horizontal, 24)
-    }
-    
-    // MARK: - Date and Greeting Section
-    private var dateAndGreetingSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Animated greeting
-            HStack(spacing: 6) {
-                Text(viewModel.greetingText)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(themeSecondaryText)
-                
-                if viewModel.isSpecialDay {
-                    Image(systemName: viewModel.specialDayIcon)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color ?? Theme.defaultTheme.colorScheme.warning.color)
-                        .scaleEffect(animationPhase == 0 ? 1.0 : 1.2)
-                        .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animationPhase)
+        VStack(spacing: 12) {
+
+            // ROW 1: greeting + date + arrows/calendar
+            VStack(alignment: .leading, spacing: 8) {
+                // Greeting row
+                HStack(spacing: 6) {
+                    Text(viewModel.greetingText)
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(themeSecondaryText)
+
+                    if viewModel.isSpecialDay {
+                        Image(systemName: viewModel.specialDayIcon)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(themeManager?.currentTheme.colorScheme.warning.color
+                                             ?? Theme.defaultTheme.colorScheme.warning.color)
+                    }
                 }
-            }
-            .opacity(greetingOpacity)
-            .offset(y: greetingOpacity < 1 ? 10 : 0)
-            .onAppear {
-                withAnimation(.easeOut(duration: 0.8)) {
-                    greetingOpacity = 1
+                .opacity(greetingOpacity)
+                .offset(y: greetingOpacity < 1 ? 10 : 0)
+                .onAppear {
+                    withAnimation(.easeOut(duration: 0.8)) { greetingOpacity = 1 }
+                    animationPhase = 1
                 }
-                animationPhase = 1
-            }
-            
-            // Date with day of week
-            VStack(alignment: .leading, spacing: 2) {
-                Text(viewModel.currentDateText)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(themePrimaryText)
+
+                // Date row: ←  [   DATE   ]  →  📅
+                HStack(spacing: 12) {
+                    circleButton("chevron.left", accessibility: "Previous Day") {
+                        HapticManager.shared.lightImpact()
+                        Task { await viewModel.goToPreviousDay() }
+                    }
+
+                    // Centered two-line date
+                    VStack(spacing: 2) {
+                        Text(weekdayTitle(for: viewModel.selectedDate))
+                            .font(.system(size: 22, weight: .semibold, design: .rounded))
+                            .foregroundStyle(themePrimaryText)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                            .allowsTightening(true)
+
+                        Text(dateSubtitle(for: viewModel.selectedDate))
+                            .font(.system(size: 18, weight: .medium, design: .rounded))
+                            .foregroundStyle(themeSecondaryText)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                            .allowsTightening(true)
+                    }
+                    .frame(maxWidth: .infinity)
                     .opacity(dateOpacity)
                     .offset(y: dateOpacity < 1 ? 10 : 0)
                     .onAppear {
-                        withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
-                            dateOpacity = 1
+                        withAnimation(.easeOut(duration: 0.8).delay(0.2)) { dateOpacity = 1 }
+                    }
+
+                    HStack(spacing: 10) {
+                        circleButton("chevron.right", accessibility: "Next Day") {
+                            HapticManager.shared.lightImpact()
+                            Task { await viewModel.goToNextDay() }
+                        }
+                        circleButton("calendar", accessibility: "Jump to Date") {
+                            HapticManager.shared.lightImpact()
+                            NotificationCenter.default.post(name: .showDatePicker, object: nil)
                         }
                     }
-                
-                Text(viewModel.dailyQuote)
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(themeSubtleText)
-                    .lineLimit(1)
+                }
             }
-            .opacity(dateOpacity)
-            .offset(y: dateOpacity < 1 ? 10 : 0)
+            
+            if viewModel.atFreeHistoryFloor {
+                HStack(spacing: 8) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                    Text("You’ve reached your free history limit (3 days). Upgrade to browse more.")
+                        .font(.system(size: 12, weight: .semibold))
+                        .lineLimit(2)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.ultraThinMaterial)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke((themeManager?.currentTheme.colorScheme.warning.color
+                                 ?? Theme.defaultTheme.colorScheme.warning.color).opacity(0.25), lineWidth: 1)
+                )
+                .foregroundStyle(themeSecondaryText)
+            }
+
+            // ROW 2: quick action buttons aligned to the trailing edge
+            if isViewingToday {
+                HStack {
+                    Spacer()
+                    actionButtons
+                }
+                .opacity(buttonsOpacity)
+                .onAppear {
+                    withAnimation(.easeOut(duration: 0.8).delay(0.4)) { buttonsOpacity = 1 }
+                }
+            }
         }
+        .padding(.horizontal, 24)
+    }
+
+    // Small circular control
+    @ViewBuilder
+    private func circleButton(_ systemName: String, accessibility: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(themePrimaryText.opacity(0.95))
+                .frame(width: 34, height: 34)
+                .background(Circle().fill(.ultraThinMaterial))
+        }
+        .accessibilityLabel(accessibility)
+    }
+    
+    private var isViewingToday: Bool {
+        Calendar.current.isDateInToday(viewModel.selectedDate)
+    }
+    
+    private func weekdayTitle(for date: Date) -> String {
+        if Calendar.current.isDateInToday(date) { return "Today" }
+        let df = DateFormatter()
+        df.dateFormat = "EEEE" // Wednesday
+        return df.string(from: date)
+    }
+
+    private func dateSubtitle(for date: Date) -> String {
+        let cal = Calendar.current
+        let sameYear = cal.component(.year, from: date) == cal.component(.year, from: Date())
+        let df = DateFormatter()
+        df.dateFormat = sameYear ? "MMMM d" : "MMMM d, yyyy" // September 24 / September 24, 2026
+        return df.string(from: date)
+    }
+    
+    // MARK: - Big date/title
+    private var dateRow: some View {
+        Text(dateTitle(for: viewModel.selectedDate))
+            .font(.system(size: 30, weight: .bold, design: .rounded))
+            .foregroundStyle(themePrimaryText)
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
+            .allowsTightening(true)
+    }
+
+    // Formats the big date title from selectedDate
+    private func dateTitle(for date: Date) -> String {
+        if Calendar.current.isDateInToday(date) { return "Today" }
+        let df = DateFormatter()
+        let sameYear = Calendar.current.component(.year, from: date) ==
+                       Calendar.current.component(.year, from: Date())
+        df.dateFormat = sameYear ? "EEEE, MMM d" : "EEEE, MMM d, yyyy"
+        return df.string(from: date)
     }
     
     // MARK: - Action Buttons

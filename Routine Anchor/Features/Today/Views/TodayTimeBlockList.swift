@@ -43,9 +43,11 @@ struct TodayTimeBlocksList: View {
     // MARK: - Section Header
     private func sectionHeader(theme: Theme, scheme: ThemeColorScheme) -> some View {
         HStack {
-            Text("Today's Schedule")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(theme.primaryTextColor)
+            Text(Calendar.current.isDateInToday(viewModel.selectedDate)
+                 ? "Today's Schedule"
+                 : "Schedule for \(viewModel.selectedDate.formatted(date: .abbreviated, time: .omitted))"
+            ).font(.system(size: 24, weight: .bold, design: .rounded))
+             .foregroundStyle(theme.primaryTextColor)
             
             Spacer()
             

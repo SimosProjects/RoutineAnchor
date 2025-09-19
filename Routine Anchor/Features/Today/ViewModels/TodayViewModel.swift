@@ -2,9 +2,6 @@
 //  TodayViewModel.swift
 //  Routine Anchor
 //
-//  Created by Christopher Simonson on 7/19/25.
-//  Swift 6 Compatible Version
-//
 import SwiftUI
 import SwiftData
 import Observation
@@ -17,17 +14,21 @@ final class TodayViewModel {
     var dailyProgress: DailyProgress?
     var isLoading = false
     var errorMessage: String?
+    var selectedDate: Date = Date()
     
     // MARK: - Private Properties
     private let dataManager: DataManager
+    private let isUserPremium: () -> Bool
+    private let freeHistoryWindowDays = 3
     
     // MARK: - Nonisolated Properties
     nonisolated(unsafe) private var updateTimer: Timer?
     nonisolated(unsafe) private var notificationObserver: NSObjectProtocol?
     
     // MARK: - Initialization
-    init(dataManager: DataManager) {
+    init(dataManager: DataManager, isUserPremium: @escaping () -> Bool) {
         self.dataManager = dataManager
+        self.isUserPremium = isUserPremium
         setupNotificationObserver()
         
         // Load today's blocks asynchronously
@@ -61,6 +62,60 @@ final class TodayViewModel {
             NotificationCenter.default.removeObserver(observer)
         }
     }
+    
+    // MARK: - Change day
+    
+    func goToPreviousDay() async { await changeDay(by: -1) }
+    func goToNextDay() async { await changeDay(by: 1) }
+    
+    func changeDay(by delta: Int) async {
+        let cal = Calendar.current
+        let newDate = cal.date(byAdding: .day, value: delta, to: selectedDate) ?? selectedDate
+        await setSelectedDate(newDate)
+    }
+    
+    private var freeHistoryFloor: Date {
+        let earliest = Calendar.current.date(byAdding: .day, value: -freeHistoryWindowDays, to: Date())!
+        return Calendar.current.startOfDay(for: earliest)
+    }
+    
+    @MainActor
+    func setSelectedDate(_ date: Date) async {
+        if !isUserPremium() {
+            let floor = freeHistoryFloor
+            if date < floor {
+                // Snap back to floor, load that day, and prompt to upgrade
+                selectedDate = floor
+                await loadBlocks(for: selectedDate)
+                HapticManager.shared.lightImpact()
+                NotificationCenter.default.post(name: .requestPremiumUpgrade, object: nil, userInfo: ["source": "history-gate"])
+                return
+            }
+        }
+        selectedDate = calStartOfDay(date)
+        await loadBlocks(for: selectedDate)
+    }
+    
+    var atFreeHistoryFloor: Bool {
+        !isUserPremium() && Calendar.current.isDate(calStartOfDay(selectedDate), inSameDayAs: freeHistoryFloor)
+    }
+    
+    // MARK: - Load by date
+    func loadBlocks(for date: Date) async {
+        isLoading = true
+        errorMessage = nil
+        let day = calStartOfDay(date)
+        do {
+            // Use DataManager to fetch a single day (add this method if missing)
+            self.timeBlocks = dataManager.loadTimeBlocksSafely(for: day)
+            // Update progress for that day (recalculated each time)
+            dataManager.updateDailyProgressSafely(for: day)
+            self.dailyProgress = nil
+        }
+        isLoading = false
+    }
+    
+    private func calStartOfDay(_ d: Date) -> Date { Calendar.current.startOfDay(for: d) }
     
     // MARK: - Timer Management
 
@@ -132,7 +187,6 @@ final class TodayViewModel {
             dailyProgress = nil // Clear any existing reference
             
             print("🔄 ✅ Daily progress updated")
-            
         }
         
         isLoading = false

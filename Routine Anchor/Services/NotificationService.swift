@@ -710,7 +710,9 @@ extension Notification.Name {
     static let navigateToToday = Notification.Name("navigateToToday")
     static let showTemplatesInSchedule = Notification.Name("showTemplatesInSchedule")
     static let showQuickStats = Notification.Name("showQuickStats")
+    static let showDatePicker = Notification.Name("showDatePicker")
     static let saveTimeBlock = Notification.Name("saveTimeBlock")
     static let refreshAllDataAfterAd = Notification.Name("refreshAllDataAfterAd")
     static let premiumStatusChanged = Notification.Name("premiumStatusChanged")
+    static let requestPremiumUpgrade = Notification.Name("requestPremiumUpgrade")
 }

@@ -8,7 +8,7 @@ import EventKit
 
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.premiumManager) private var premiumManager
+    @Environment(\.premiumManager) private var premiumManager: PremiumManager?
     @Environment(\.themeManager) private var themeManager
     @EnvironmentObject private var authManager: AuthenticationManager
     @EnvironmentObject private var adManager: AdManager
@@ -27,7 +27,6 @@ struct MainTabView: View {
     @State private var isInternalTabChange = false
     // Track if we've already handled email capture on this app launch
     @State private var hasHandledEmailCaptureThisSession = false
-
     // Use fallback if premiumManager is nil
     private var safePremiumManager: PremiumManager { premiumManager ?? PremiumManager() }
 
@@ -58,7 +57,7 @@ struct MainTabView: View {
             TabView(selection: tabSelectionBinding) {
                 // Today
                 NavigationStack {
-                    TodayView(modelContext: modelContext)
+                    TodayView()
                         .environment(\.themeManager, themeManager)
                         .background(Color.clear)
                 }
@@ -202,6 +201,9 @@ struct MainTabView: View {
             }
             loadExistingTimeBlocks()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .requestPremiumUpgrade)) { _ in
+            showingPremiumUpgrade = true
+        }
         .onReceive(authManager.$shouldShowEmailCapture) { shouldShow in
             if shouldShow && !showingEmailCapture && !authManager.isEmailCaptured {
                 showingEmailCapture = true
@@ -232,7 +234,7 @@ struct MainTabView: View {
     private func handleTabChangeWithAds(from oldTab: Tab, to newTab: Tab) {
         guard !adManager.isShowingAd else { return }
         if shouldShowInterstitialAd() {
-            adManager.showInterstitialIfAllowed(premiumManager: safePremiumManager)
+            adManager.showInterstitialIfAllowed(premiumManager: premiumManager)
         }
         loadExistingTimeBlocks()
     }
@@ -342,7 +344,7 @@ struct MainTabView: View {
 
     private func checkForEmailCapture() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            authManager.checkShouldShowEmailCapture(premiumManager: safePremiumManager)
+            authManager.checkShouldShowEmailCapture(premiumManager: premiumManager)
         }
     }
 
